@@ -231,9 +231,9 @@ If you know of others, please feel free to
 [add](https://github.com/gungraun/gungraun/blob/5bec95ee37330954916ea29e7a7dc40ca62bc454/docs/src/regressions.md)
 them to this list.
 
-[`EventKind`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.EventKind.html
-[`CallgrindMetrics`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.CallgrindMetrics.html
-[`CachegrindMetric`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.CachegrindMetric.html
-[`CachegrindMetrics`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.CachegrindMetrics.html
-[`DhatMetric`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.DhatMetric.html
-[`DhatMetrics`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.DhatMetrics.html
+[`EventKind`]: https://docs.rs/gungraun/0.16.1/gungraun/enum.EventKind.html
+[`CallgrindMetrics`]: https://docs.rs/gungraun/0.16.1/gungraun/enum.CallgrindMetrics.html
+[`CachegrindMetric`]: https://docs.rs/gungraun/0.16.1/gungraun/enum.CachegrindMetric.html
+[`CachegrindMetrics`]: https://docs.rs/gungraun/0.16.1/gungraun/enum.CachegrindMetrics.html
+[`DhatMetric`]: https://docs.rs/gungraun/0.16.1/gungraun/enum.DhatMetric.html
+[`DhatMetrics`]: https://docs.rs/gungraun/0.16.1/gungraun/enum.DhatMetrics.html

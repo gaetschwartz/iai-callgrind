@@ -231,8 +231,8 @@ pub struct CommandLineArgs {
     ///
     /// This is a `,` separate list of CachegrindMetric=limit or CachegrindMetrics=limit
     /// (key=value) pairs. See the description of --callgrind-limits for the details and
-    /// <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.CachegrindMetrics.html>
-    /// respectively <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.CachegrindMetric.html>
+    /// <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetrics.html>
+    /// respectively <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetric.html>
     /// for valid metrics and group members.
     ///
     /// See the the guide
@@ -271,9 +271,9 @@ pub struct CommandLineArgs {
     /// to appear in the terminal output of cachegrind.
     ///
     /// See `--callgrind-metrics` for more details and
-    /// <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.CachegrindMetrics.html>
+    /// <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetrics.html>
     /// respectively
-    /// <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.CachegrindMetric.html> for valid
+    /// <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetric.html> for valid
     /// metrics and group members.
     ///
     /// The `group` names, their abbreviations if present and `event` kinds are exactly the same as
@@ -342,8 +342,8 @@ pub struct CommandLineArgs {
     ///
     /// See the guide (https://gungraun.github.io/gungraun/latest/html/regressions.html)
     /// for more details, the docs of `CallgrindMetrics`
-    /// (<https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.CallgrindMetrics.html>) and
-    /// `EventKind` <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.EventKind.html> for a
+    /// (<https://docs.rs/gungraun/latest/gungraun/enum.CallgrindMetrics.html>) and
+    /// `EventKind` <https://docs.rs/gungraun/latest/gungraun/enum.EventKind.html> for a
     /// list of metrics and groups with their members.
     ///
     /// A performance regression check for an `EventKind` fails if the limit is exceeded. If
@@ -377,8 +377,8 @@ pub struct CommandLineArgs {
     /// described in the `--callgrind-limits` option.
     ///
     /// For a list of valid metrics, groups and their members see the docs of `CallgrindMetrics`
-    /// (<https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.CallgrindMetrics.html>) and
-    /// `EventKind` <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.EventKind.html>.
+    /// (<https://docs.rs/gungraun/latest/gungraun/enum.CallgrindMetrics.html>) and
+    /// `EventKind` <https://docs.rs/gungraun/latest/gungraun/enum.EventKind.html>.
     ///
     /// Note that setting the metrics here does not imply that these metrics are actually
     /// collected. This option just sets the order and appearance of metrics in case they are
@@ -453,8 +453,8 @@ pub struct CommandLineArgs {
     ///
     /// This is a `,` separate list of DhatMetrics=limit or DhatMetric=limit (key=value) pairs. See
     /// the description of --callgrind-limits for the details and
-    /// <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.DhatMetrics.html> respectively
-    /// <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.DhatMetric.html> for valid metrics
+    /// <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetrics.html> respectively
+    /// <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetric.html> for valid metrics
     /// and group members.
     ///
     /// See the the guide
@@ -499,8 +499,8 @@ pub struct CommandLineArgs {
     /// appear in the terminal output of dhat.
     ///
     /// See `--callgrind-metrics` for more details and
-    /// <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.DhatMetrics.html> respectively
-    /// <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.DhatMetric.html> for valid metrics
+    /// <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetrics.html> respectively
+    /// <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetric.html> for valid metrics
     /// and group members.
     ///
     /// The `group` names, their abbreviations if present and `event` kinds are exactly the same as
@@ -547,7 +547,7 @@ pub struct CommandLineArgs {
     /// output of drd. The `group` and `event` are the same as for `--memcheck-metrics`.
     ///
     /// See `--callgrind-metrics` for more details and
-    /// <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.ErrorMetric.html> for valid error
+    /// <https://docs.rs/gungraun/latest/gungraun/enum.ErrorMetric.html> for valid error
     /// metrics.
     ///
     /// Since this is a very small set of metrics, there is only one `group`: `@all`
@@ -620,7 +620,7 @@ pub struct CommandLineArgs {
     /// output of helgrind. The `group` and `event` are the same as for `--memcheck-metrics`.
     ///
     /// See `--callgrind-metrics` for more details and
-    /// <https://docs.rs/gungraun/latest/iai_callgrind/enum.ErrorMetric.html> for valid error
+    /// <https://docs.rs/gungraun/latest/gungraun/enum.ErrorMetric.html> for valid error
     /// metrics.
     ///
     /// Examples:
@@ -738,7 +738,7 @@ pub struct CommandLineArgs {
     ///           | ( "suppressedcontexts" | "sctx" )
     ///
     /// See `--callgrind-metrics` for more details and
-    /// <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.ErrorMetric.html> for valid
+    /// <https://docs.rs/gungraun/latest/gungraun/enum.ErrorMetric.html> for valid
     /// metrics.
     ///
     /// Examples:

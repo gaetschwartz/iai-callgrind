@@ -169,9 +169,9 @@ As the standard toggle is now switched off and the option
 `LibraryBenchmarkConfig::raw_callgrind_args`.
 
 Please see the
-[`docs`](https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/client_requests) for
+[`docs`](https://docs.rs/gungraun/0.16.1/gungraun/client_requests) for
 more details!
 
 [Callgrind Arguments]: https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options
 
-[EntryPoint]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.EntryPoint.html
+[EntryPoint]: https://docs.rs/gungraun/0.16.1/gungraun/enum.EntryPoint.html
