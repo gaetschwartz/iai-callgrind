@@ -1,7 +1,7 @@
 # Introduction
 
 Welcome to the Gungraun guide, your comprehensive resource for a one-shot
-benchmarking framework and harness that leverages Valgrind's powerful CPU,
+benchmarking harness and framework that leverages Valgrind's powerful CPU,
 cache, and memory profiling tools:
 [Callgrind](https://valgrind.org/docs/manual/cl-manual.html),
 [Cachegrind](https://valgrind.org/docs/manual/cg-manual.html), and

@@ -201,8 +201,8 @@ path = "benches/test_lib_bench/cache_sim/test_lib_bench_cache_sim.rs"
 
 [[bench]]
 harness = false
-name = "test_lib_bench_groups"
-path = "benches/test_lib_bench/groups/test_lib_bench_groups.rs"
+name = "test_lib_bench_intro"
+path = "benches/test_lib_bench/intro/test_lib_bench_intro.rs"
 
 [[bench]]
 harness = false

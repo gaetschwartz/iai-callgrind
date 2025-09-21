@@ -1077,7 +1077,7 @@ impl ToolOutputPath {
     /// Sanitize file names for a specific tool
     ///
     /// Empty files are cleaned up. For more details on a specific tool see the respective
-    /// sanitize_<tool> method.
+    /// `sanitize_<tool>` method.
     pub fn sanitize(&self) -> Result<()> {
         match self.tool {
             ValgrindTool::Callgrind => self.sanitize_callgrind()?,

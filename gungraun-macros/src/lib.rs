@@ -145,8 +145,8 @@ impl CargoMetadata {
 ///
 /// The `#[benches]` attribute lets you define multiple benchmarks in one go. This attribute accepts
 /// the same parameters as the [`#[bench]`][bench] attribute: `args`, `config`, `setup` and
-/// `teardown` and additionally the `file` parameter. In contrast to the `args` parameter in
-/// [`#[bench]`][bench], `args` takes an array of arguments. The id (`#[benches::id(*/ parameters
+/// `teardown` and additionally the `iter` and `file` parameter. In contrast to the `args` parameter
+/// in [`#[bench]`][bench], `args` takes an array of arguments. The id (`#[benches::id(*/ parameters
 /// */)]`) is getting suffixed with the index of the current element of the `args` array.
 ///
 /// ```rust
@@ -229,11 +229,43 @@ impl CargoMetadata {
 ///
 /// but a lot more concise especially if a lot of values are passed to the same `setup` function.
 ///
-/// The `file` parameter goes a step further and reads the specified file line by line creating a
-/// benchmark from each line. The line is passed to the benchmark function as `String` or if the
-/// `setup` parameter is also present to the `setup` function. A small example assuming you have a
-/// file `benches/inputs` (relative paths are interpreted to the workspace root) with the following
-/// content
+/// The `iter` parameter accepts an iterator expression as argument (anything that implements
+/// [`std::iter::IntoIterator`]) which creates a benchmark case per iterator element. For example
+/// the following will create three benchmark cases `0`, `1` and `2`  from the `0..3` range:
+///
+/// ```rust
+/// # use gungraun_macros::library_benchmark;
+/// # mod gungraun {
+/// # pub mod client_requests { pub mod cachegrind {
+/// # pub fn start_instrumentation() {}
+/// # pub fn stop_instrumentation() {}
+/// # }}
+/// # pub struct LibraryBenchmarkConfig {}
+/// # pub mod __internal {
+/// # pub enum InternalLibFunctionKind { None, Default(fn()), Iter(fn(Option<usize>) -> usize) }
+/// # pub struct InternalMacroLibBench {
+/// #   pub id_display: Option<&'static str>,
+/// #   pub args_display: Option<&'static str>,
+/// #   pub func: InternalLibFunctionKind,
+/// #   pub config: Option<fn() -> InternalLibraryBenchmarkConfig>
+/// # }
+/// # pub struct InternalLibraryBenchmarkConfig {}
+/// # }
+/// # }
+/// # mod my_lib { pub fn u64_to_string(_: u64) -> String { "0".to_owned() } }
+/// use std::hint::black_box;
+/// #[library_benchmark]
+/// #[benches::from_iter(iter = 0..3)]
+/// fn some_bench(num: u64) -> String {
+///     black_box(my_lib::u64_to_string(num))
+/// }
+/// # fn main() {}
+/// ```
+///
+/// The `file` parameter reads the specified file line by line creating a benchmark from each line.
+/// The line is passed to the benchmark function as `String` or if the `setup` parameter is also
+/// present to the `setup` function. A small example assuming you have a file `benches/inputs`
+/// (relative paths are interpreted to the workspace root) with the following content
 ///
 /// ```text
 /// 1

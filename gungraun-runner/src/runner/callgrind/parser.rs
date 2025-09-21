@@ -123,8 +123,6 @@ impl From<ParserOutput> for CallgrindProperties {
 impl Sentinel {
     /// Create a new Sentinel
     ///
-    /// The input value is converted to a [`Glob`]
-    ///
     /// # Examples
     ///
     /// ```rust

@@ -85,7 +85,8 @@ impl Metrics {
 
     /// Return true if costs are already summarized
     ///
-    /// This method just probes for [`EventKind::EstimatedCycles`] to detect the summarized state.
+    /// This method just probes for [`crate::api::EventKind::EstimatedCycles`] to detect the
+    /// summarized state.
     pub fn is_summarized(&self) -> bool {
         self.metric_by_kind(&CachegrindMetric::EstimatedCycles)
             .is_some()
@@ -93,8 +94,8 @@ impl Metrics {
 
     /// Return true if costs can be summarized
     ///
-    /// This method probes for [`EventKind::I1mr`] which is present if cachegrind was run with the
-    /// cache simulation (`--cache-sim=yes`) enabled.
+    /// This method probes for [`crate::api::EventKind::I1mr`] which is present if cachegrind was
+    /// run with the cache simulation (`--cache-sim=yes`) enabled.
     pub fn can_summarize(&self) -> bool {
         self.metric_by_kind(&CachegrindMetric::I1mr).is_some()
     }
