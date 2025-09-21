@@ -11,7 +11,7 @@ feature
 
 ```toml
 [dev-dependencies]
-gungraun = { version = "0.16.1", features = ["client_requests"] }
+gungraun = { version = "0.17.0", features = ["client_requests"] }
 ```
 
 ## The cachegrind feature
@@ -22,7 +22,7 @@ finally look like this:
 
 ```toml
 [dev-dependencies]
-gungraun = { version = "0.16.1", features = ["cachegrind"] }
+gungraun = { version = "0.17.0", features = ["cachegrind"] }
 ```
 
 The `cachegrind` feature automatically activates the `client_requests` feature,

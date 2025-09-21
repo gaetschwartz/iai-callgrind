@@ -106,4 +106,4 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-[`LibraryBenchmarkConfig`]: https://docs.rs/gungraun/0.16.1/gungraun/struct.LibraryBenchmarkConfig.html
+[`LibraryBenchmarkConfig`]: https://docs.rs/gungraun/0.17.0/gungraun/struct.LibraryBenchmarkConfig.html

@@ -130,7 +130,7 @@ impl Runner {
         module_path: &str,
         bench_bin: String,
     ) -> Self {
-        const LIBRARY_VERSION: &str = "0.16.1";
+        const LIBRARY_VERSION: &str = "0.17.0";
 
         let mut cmd = std::process::Command::new(exe.unwrap_or("gungraun-runner"));
         cmd.arg(LIBRARY_VERSION);

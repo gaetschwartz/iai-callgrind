@@ -152,9 +152,9 @@ Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regression
 
 and `Instructions` displays `Tolerance` instead of a difference.
 
-[`Callgrind`]: https://docs.rs/gungraun/0.16.1/gungraun/struct.Callgrind.html
-[`Callgrind.format`]: https://docs.rs/gungraun/0.16.1/gungraun/struct.Callgrind.html#method.format
-[`CallgrindMetrics`]: https://docs.rs/gungraun/0.16.1/gungraun/enum.CallgrindMetrics.html
-[`OutputFormat`]: https://docs.rs/gungraun/0.16.1/gungraun/struct.OutputFormat.html
-[`OutputFormat.show_grid`]: https://docs.rs/gungraun/0.16.1/gungraun/struct.OutputFormat.html#method.show_grid
-[`OutputFormat.truncate_description`]: https://docs.rs/gungraun/0.16.1/gungraun/struct.OutputFormat.html#method.truncate_description
+[`Callgrind`]: https://docs.rs/gungraun/0.17.0/gungraun/struct.Callgrind.html
+[`Callgrind.format`]: https://docs.rs/gungraun/0.17.0/gungraun/struct.Callgrind.html#method.format
+[`CallgrindMetrics`]: https://docs.rs/gungraun/0.17.0/gungraun/enum.CallgrindMetrics.html
+[`OutputFormat`]: https://docs.rs/gungraun/0.17.0/gungraun/struct.OutputFormat.html
+[`OutputFormat.show_grid`]: https://docs.rs/gungraun/0.17.0/gungraun/struct.OutputFormat.html#method.show_grid
+[`OutputFormat.truncate_description`]: https://docs.rs/gungraun/0.17.0/gungraun/struct.OutputFormat.html#method.truncate_description

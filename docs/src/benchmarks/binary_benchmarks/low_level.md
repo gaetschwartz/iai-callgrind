@@ -2,7 +2,7 @@
 
 I'm not going into full detail of the low-level api here since it is fully
 documented in the [api
-Documentation](https://docs.rs/gungraun/0.16.1/gungraun/index.html).
+Documentation](https://docs.rs/gungraun/0.17.0/gungraun/index.html).
 
 ## The basic structure
 

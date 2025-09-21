@@ -14,7 +14,7 @@ Client requests are deactivated by default but can be activated with the
 
 ```toml
 [dev-dependencies]
-gungraun = { version = "0.16.1", features = ["client_requests"] }
+gungraun = { version = "0.17.0", features = ["client_requests"] }
 ```
 
 If you need the client requests in your production code, you don't want them to
@@ -25,12 +25,12 @@ to your runtime dependencies and with the `client_requests` feature to your
 
 ```toml
 [dependencies]
-gungraun = { version = "0.16.1", default-features = false, features = [
+gungraun = { version = "0.17.0", default-features = false, features = [
     "client_requests_defs"
 ] }
 
 [dev-dependencies]
-gungraun = { version = "0.16.1", features = ["client_requests"] }
+gungraun = { version = "0.17.0", features = ["client_requests"] }
 ```
 
 With just the `client_requests_defs` feature activated, the client requests
@@ -169,9 +169,9 @@ As the standard toggle is now switched off and the option
 `LibraryBenchmarkConfig::raw_callgrind_args`.
 
 Please see the
-[`docs`](https://docs.rs/gungraun/0.16.1/gungraun/client_requests) for
+[`docs`](https://docs.rs/gungraun/0.17.0/gungraun/client_requests) for
 more details!
 
 [Callgrind Arguments]: https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options
 
-[EntryPoint]: https://docs.rs/gungraun/0.16.1/gungraun/enum.EntryPoint.html
+[EntryPoint]: https://docs.rs/gungraun/0.17.0/gungraun/enum.EntryPoint.html
