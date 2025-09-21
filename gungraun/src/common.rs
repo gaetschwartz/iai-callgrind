@@ -1123,21 +1123,16 @@ impl Dhat {
     ///
     /// # Details
     ///
-    /// There are subtle differences to the entry point in callgrind and the calculation of the
-    /// final metrics shown in the DHAT output can only be done on a best-effort basis. As opposed
-    /// to callgrind, the default entry point [`EntryPoint::Default`] is applied after the benchmark
-    /// run based on the output files because DHAT does not have a command line argument like
-    /// `--toggle-collect`. The DHAT output files however, can't be used to reliably exclude the
-    /// `setup` and `teardown` of the benchmark function. As a consequence, allocations and
-    /// deallocations in the `setup` and `teardown` function are included in the final metrics. All
-    /// other (de-)allocations in the benchmark file (around `2000` - `2500` bytes) to prepare the
-    /// benchmark run are not included what stabilizes the metrics enough to be able to specify
-    /// limits with [`Dhat::limits`] for regression checks and focus the metrics on the benchmark
-    /// function.
+    /// The [`EntryPoint`] for [`Dhat`] works exactly the same way as the entry point for
+    /// [`Callgrind`]. As a consequence, allocations and deallocations in the `setup` and
+    /// `teardown` function are excluded from the final metrics. This behavior typically aligns with
+    /// user expectations. However, DHAT has a unique characteristic: if the benchmarked function
+    /// utilizes an array created in the setup function, the metrics will not capture the reads and
+    /// writes to that array. To accurately measure these reads and writes, it is necessary to set
+    /// the entry point to the setup function.
     ///
     /// Since there is no `--toggle-collect` argument, it's possible to define additional `frames`
-    /// (the Gungraun specific DHAT equivalent of callgrind toggles) in the [`Dhat::frames`]
-    /// method.
+    /// (the Gungraun specific DHAT equivalent of callgrind toggles) in the [`Dhat::frames`] method.
     ///
     /// The [`EntryPoint::Default`] matches the benchmark function and a [`EntryPoint::Custom`] is
     /// convenience for specifying [`EntryPoint::None`] and a frame in [`Dhat::frames`].

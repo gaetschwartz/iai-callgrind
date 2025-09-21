@@ -18,10 +18,147 @@ This is the combined CHANGELOG for all packages: `gungraun`, `gungraun-runner` a
 version used here. `gungraun-macros` uses a different version number but is not a standalone
 package, so its changes are also listed here.
 
+With the `0.17.0` version the project was renamed to `Gungraun`. The packages
+were renamed from `iai-callgrind` to `gungraun`, `iai-callgrind-runner` to
+`gungraun-runner` and `iai-callgrind-macros` to `gungraun-macros`.
+
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.17.0] - 2025-09-21
+
+We've outgrown our original name! From `0.17.0` version onwards this project's
+name is `Gungraun`. The packages were renamed from `iai-callgrind` to
+`gungraun`, `iai-callgrind-runner` to `gungraun-runner` and
+`iai-callgrind-macros` to `gungraun-macros`.
+
+Here's a migration check-list:
+
+* Update the library: Rename `iai-callgrind` to `gungraun` in your `Cargo.toml`
+  and use a version `>=0.17.0`.
+* Update the binary: Uninstall the old binary with `cargo uninstall
+  iai-callgrind-runner`. Install the new binary for example with binstall:
+  `cargo binstall gungraun-runner@0.17.0`
+* Update any scripts which installed `iai-callgrind-runner` in the CI to use
+  `gungraun-runner`.
+* If you are parsing the benchmark output: The summary line has changed from
+  `Iai-Callgrind result: Ok, ...` to `Gungraun result: Ok, ...`
+* Update any environment variable names to use the `GUNGRAUN` prefix instead of
+  `IAI_CALLGRIND`. For example `IAI_CALLGRIND_LOG=warn` -> `GUNGRAUN_LOG=warn`
+  or `IAI_CALLGRIND_VALGRIND_INCLUDE=...` to `GUNGRAUN_VALGRIND_INCLUDE=...`.
+* If you want to keep the old benchmark output from the `target/iai` directory,
+  simply rename it to `target/gungraun`.
+* Rename benchmark files to use `gungraun` instead of `iai` or `iai_callgrind`.
+  This will also change the output directory. If you want to keep the old files,
+  for example when renaming the old benchmarks of the
+  `my_iai_callgrind_benchmarks.rs` file to `my_gungraun_benchmarks.rs`, then the
+  output directory changes from
+  `target/iai/my_package/my_iai_callgrind_benchmarks` to
+  `target/gungraun/my_package/my_gungraun_benchmarks`
+
+All changes are detailed below. Notably, this version introduces two other
+significant updates: DHAT metrics now exclude setup and teardown costs, aligning
+them with the behavior of callgrind and cachegrind. Additionally, the new `iter`
+keyword in the `#[benches]` attribute enables the creation of benchmarks from an
+iterator. For instance, `#[benches::some_id(iter = 0..3)]` generates three
+benchmarks with the inputs `0`, `1`, and `2`, while also supporting more complex
+iterators.
+
+### Added
+
+* ([#427](https://github.com/iai-callgrind/iai-callgrind/pull/427)): Support
+  assembly optimized valgrind client requests for the
+  `riscv64gc-unknown-linux-gnu` target
+* ([#429](https://github.com/iai-callgrind/iai-callgrind/pull/429)): Add new
+  `iter` syntax for the `benches` macro which takes an iterator as argument and
+  creates a benchmark for each iterator element. For example
+  `#[benches::some_id(iter = [1, 2, 3])]` creates a benchmark for the inputs
+  `1`, `2` and `3`.
+* ([#434](https://github.com/iai-callgrind/iai-callgrind/pull/434)): Add the
+  command-line arguments `--show-intermediate`, `--truncate-description` and
+  `--show-grid` and respective environment variables which work exactly like the
+  already existing options for the `OutputFormat`.
+* ([#436](https://github.com/iai-callgrind/iai-callgrind/pull/436)): Add
+  command-line argument `--show-only-comparison` and the respective environment
+  variable to show only the comparison by id with other benchmarks excluding the
+  self-comparison.
+
+### Changed
+
+* ([#429](https://github.com/iai-callgrind/iai-callgrind/pull/429)): Dhat
+  metrics now exclude setup costs exactly like callgrind and cachegrind metrics.
+* ([#475](https://github.com/iai-callgrind/iai-callgrind/pull/475)): The package
+  names have been changed from
+    * `iai-callgrind` -> `gungraun`
+    * `iai-callgrind-runner` -> `gungraun-runner`
+    * `iai-callgrind-macros` -> `gungraun-macros`
+  The name of the `iai-callgrind-runner` binary has changed with the package
+  name to `gungraun-runner`.
+* ([#475](https://github.com/iai-callgrind/iai-callgrind/pull/475)): All
+  environment variables have changed their prefix from `IAI_CALLGRIND` to
+  `GUNGRAUN` without any exceptions. Here's an incomplete list:
+    * `IAI_CALLGRIND_ALLOW_ASLR` -> `GUNGRAUN_ALLOW_ASLR`
+    * `IAI_CALLGRIND_BASELINE` -> `GUNGRAUN_BASELINE`
+    * `IAI_CALLGRIND_BBV_ARGS` -> `GUNGRAUN_BBV_ARGS`
+    * `IAI_CALLGRIND_CACHEGRIND_ARGS` -> `GUNGRAUN_CACHEGRIND_ARGS`
+    * `IAI_CALLGRIND_CACHEGRIND_LIMITS` -> `GUNGRAUN_CACHEGRIND_LIMITS`
+    * `IAI_CALLGRIND_CACHEGRIND_METRICS` -> `GUNGRAUN_CACHEGRIND_METRICS`
+    * `IAI_CALLGRIND_CALLGRIND_ARGS` -> `GUNGRAUN_CALLGRIND_ARGS`
+    * `IAI_CALLGRIND_CALLGRIND_LIMITS` -> `GUNGRAUN_CALLGRIND_LIMITS`
+    * `IAI_CALLGRIND_CALLGRIND_METRICS` -> `GUNGRAUN_CALLGRIND_METRICS`
+    * `IAI_CALLGRIND_COLOR` -> `GUNGRAUN_COLOR`
+    * `IAI_CALLGRIND_DEFAULT_TOOL` -> `GUNGRAUN_DEFAULT_TOOL`
+    * `IAI_CALLGRIND_DHAT_ARGS` -> `GUNGRAUN_DHAT_ARGS`
+    * `IAI_CALLGRIND_DHAT_LIMITS` -> `GUNGRAUN_DHAT_LIMITS`
+    * `IAI_CALLGRIND_DHAT_METRICS` -> `GUNGRAUN_DHAT_METRICS`
+    * `IAI_CALLGRIND_DRD_ARGS` -> `GUNGRAUN_DRD_ARGS`
+    * `IAI_CALLGRIND_DRD_METRICS` -> `GUNGRAUN_DRD_METRICS`
+    * `IAI_CALLGRIND_FILTER` -> `GUNGRAUN_FILTER`
+    * `IAI_CALLGRIND_HELGRIND_ARGS` -> `GUNGRAUN_HELGRIND_ARGS`
+    * `IAI_CALLGRIND_HELGRIND_METRICS` -> `GUNGRAUN_HELGRIND_METRICS`
+    * `IAI_CALLGRIND_HOME` -> `GUNGRAUN_HOME`
+    * `IAI_CALLGRIND_LIST` -> `GUNGRAUN_LIST`
+    * `IAI_CALLGRIND_LOAD_BASELINE` -> `GUNGRAUN_LOAD_BASELINE`
+    * `IAI_CALLGRIND_LOG` -> `GUNGRAUN_LOG`
+    * `IAI_CALLGRIND_MASSIF_ARGS` -> `GUNGRAUN_MASSIF_ARGS`
+    * `IAI_CALLGRIND_MEMCHECK_ARGS` -> `GUNGRAUN_MEMCHECK_ARGS`
+    * `IAI_CALLGRIND_MEMCHECK_METRICS` -> `GUNGRAUN_MEMCHECK_METRICS`
+    * `IAI_CALLGRIND_NOCAPTURE` -> `GUNGRAUN_NOCAPTURE`
+    * `IAI_CALLGRIND_NOSUMMARY` -> `GUNGRAUN_NOSUMMARY`
+    * `IAI_CALLGRIND_OUTPUT_FORMAT` -> `GUNGRAUN_OUTPUT_FORMAT`
+    * `IAI_CALLGRIND_REGRESSION_FAIL_FAST` -> `GUNGRAUN_REGRESSION_FAIL_FAST`
+    * `IAI_CALLGRIND_SAVE_BASELINE` -> `GUNGRAUN_SAVE_BASELINE`
+    * `IAI_CALLGRIND_SAVE_SUMMARY` -> `GUNGRAUN_SAVE_SUMMARY`
+    * `IAI_CALLGRIND_SEPARATE_TARGETS` -> `GUNGRAUN_SEPARATE_TARGETS`
+    * `IAI_CALLGRIND_SHOW_GRID` -> `GUNGRAUN_SHOW_GRID`
+    * `IAI_CALLGRIND_SHOW_INTERMEDIATE` -> `GUNGRAUN_SHOW_INTERMEDIATE`
+    * `IAI_CALLGRIND_SHOW_ONLY_COMPARISON` -> `GUNGRAUN_SHOW_ONLY_COMPARISON`
+    * `IAI_CALLGRIND_TOLERANCE` -> `GUNGRAUN_TOLERANCE`
+    * `IAI_CALLGRIND_TOOLS` -> `GUNGRAUN_TOOLS`
+    * `IAI_CALLGRIND_TRUNCATE_DESCRIPTION` -> `GUNGRAUN_TRUNCATE_DESCRIPTION`
+    * `IAI_CALLGRIND_VALGRIND_ARGS` -> `GUNGRAUN_VALGRIND_ARGS`
+* ([#475](https://github.com/iai-callgrind/iai-callgrind/pull/475)): The default
+  output directory for the benchmark files has been moved from `target/iai` to
+  `target/gungraun`.
+* ([#475](https://github.com/iai-callgrind/iai-callgrind/pull/475)): The summary
+  line now concludes with `Gungraun result: Ok, ...` instead of `Iai-Callgrind
+  result: Ok, ...`.
+* ([#477](https://github.com/iai-callgrind/iai-callgrind/pull/477)): The
+  positional command-line argument `FILTER` now matches the full module path
+  with wildcard patterns to filter and run only the selected benchmarks. The
+  summary line in the benchmark output now shows an additional field with the
+  amount of filtered benchmarks. For example:
+  `Gungraun result: Ok. ...; 1 filtered; 2 benchmarks ...`
+* Update direct dependencies: `cc`, `serde`, `serde_json`, `clap`, `slab`,
+  `syn`, `proc-macro2`, `regex`, `indexmap`, `cfg-if`, `log`
+
+### Fixed
+
+* ([#455](https://github.com/iai-callgrind/iai-callgrind/pull/455)): The `old`
+  details of a `ProfilePart` were stored on the wrong side `left` (`new`)
+  instead of `right` (`old`).
 
 ## [0.16.1] - 2025-07-30
 

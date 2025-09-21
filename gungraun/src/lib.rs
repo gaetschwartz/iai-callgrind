@@ -1,8 +1,10 @@
-//! Gungraun is a benchmarking framework/harness which primarily uses [Valgrind's
-//! Callgrind](https://valgrind.org/docs/manual/cl-manual.html) to provide extremely accurate and
+//! Gungraun is a one-shot benchmarking harness and framework which uses Valgrind's [
+//! Callgrind](https://valgrind.org/docs/manual/cl-manual.html),
+//! [Cachegrind](https://valgrind.org/docs/manual/cg-manual.html), and
+//! [DHAT](https://valgrind.org/docs/manual/dh-manual.html) to provide extremely accurate and
 //! consistent measurements of Rust code, making it perfectly suited to run in environments like a
-//! CI. Gungraun is flexible and despite its name it's possible to run Cachegrind or any other
-//! Valgrind tool like DHAT in addition to or instead of Callgrind.
+//! CI. Its flexibility allows you to access all Valgrind tools, even `Memcheck`, and utilize
+//! [Valgrind client requests](./client_requests.md) effortlessly.
 //!
 //! The [online guide][Guide] contains all the details to start profiling with Gungraun.
 //!
@@ -26,8 +28,8 @@
 //! - __Precision__: High-precision measurements allow you to reliably detect very small
 //!   optimizations of your code
 //! - __Consistency__: Gungraun can take accurate measurements even in virtualized CI environments
-//! - __Performance__: Since Gungraun only executes a benchmark once, it is typically a lot faster
-//!   to run than benchmarks measuring the execution and wall-clock time
+//! - __Performance__: Since Gungraun only executes a benchmark once (hence one-shot), it is
+//!   typically a lot faster to run than benchmarks measuring the execution and wall-clock time
 //! - __Regression__: Gungraun reports the difference between benchmark runs to make it easy to spot
 //!   detailed performance regressions and improvements.
 //! - __CPU and Cache Profiling__: Gungraun generates a Callgrind profile of your code while
@@ -36,9 +38,9 @@
 //!   or the visualizer [kcachegrind](https://kcachegrind.github.io/html/Home.html) to analyze the
 //!   results in detail.
 //! - __Memory Profiling__: You can run other Valgrind tools like [DHAT: a dynamic heap analysis tool](https://valgrind.org/docs/manual/dh-manual.html)
-//!   and [Massif: a heap profiler](https://valgrind.org/docs/manual/ms-manual.html) with the
-//!   Gungraun benchmarking framework. Their profiles are stored next to the callgrind profiles and
-//!   are ready to be examined with analyzing tools like `dh_view.html`, `ms_print` and others.
+//!   and [Massif: a heap profiler](https://valgrind.org/docs/manual/ms-manual.html) with Gungraun.
+//!   Their profiles are stored next to the callgrind profiles and are ready to be examined with
+//!   analyzing tools like `dh_view.html`, `ms_print` and others.
 //! - __Visualization__: Gungraun is capable of creating regular and differential flamegraphs from
 //!   the Callgrind output format.
 //! - __Valgrind Client Requests__: Support of zero overhead [Valgrind Client Requests](https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq)
@@ -47,8 +49,8 @@
 //!
 //! ## Benchmarking
 //!
-//! `gungraun` can be divided into two sections: Benchmarking the library and
-//! its public functions and benchmarking of the binaries of a crate.
+//! Gungraun can be divided into two sections: Benchmarking the library and its public functions and
+//! benchmarking of the binaries of a crate.
 //!
 //! ### Library Benchmarks
 //!
@@ -131,6 +133,7 @@
 //! // instead reroute them to a `setup` function. In that case the (black boxed) return value of
 //! // the setup function is passed as parameter to the benchmarking function.
 //! #[benches::with_setup(args = [1, 5], setup = setup_worst_case_array)]
+//! #[benches::with_iter(iter = 1..4, setup = setup_worst_case_array)]
 //! fn bench_bubble_sort_with_benches_attribute(input: Vec<i32>) -> Vec<i32> {
 //!     black_box(bubble_sort(input))
 //! }

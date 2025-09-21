@@ -56,6 +56,10 @@
     - [Changing the color output](./cli_and_env/output/color.md)
     - [Changing the logging output](./cli_and_env/output/logging.md)
 
+# Migration
+
+- [Migrating from Iai-Callgrind to Gungraun](./migration/iai-callgrind-to-gungraun.md)
+
 # Troubleshooting
 
 - [I'm getting the error `Sentinel ... not found`](./troubleshooting/im-getting-the-error-sentinel-not-found.md)

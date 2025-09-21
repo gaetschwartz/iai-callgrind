@@ -1,12 +1,14 @@
 //! This is an example for setting up library benchmarks. It's best to read all the comments from
 //! top to bottom to get a better understanding of the api.
 
+use std::fs::File;
 use std::hint::black_box;
+use std::io::{BufRead, BufReader};
 
 // These two functions from the benchmark-tests library serve as functions we want to benchmark
 use benchmark_tests::{bubble_sort, fibonacci};
 use gungraun::{
-    library_benchmark, library_benchmark_group, main, Callgrind, Dhat, EventKind,
+    library_benchmark, library_benchmark_group, main, Callgrind, Dhat, EntryPoint, EventKind,
     LibraryBenchmarkConfig, Massif,
 };
 
@@ -99,6 +101,25 @@ fn bench_bubble_sort_with_benches_attribute(input: Vec<i32>) -> Vec<i32> {
     black_box(bubble_sort(input))
 }
 
+/// Read the content of a file and produce an iterable vector with valid `u64` numbers as elements
+fn read_file(path: &str) -> Vec<u64> {
+    BufReader::new(File::open(path).unwrap())
+        .lines()
+        .filter_map(|line| line.ok().and_then(|line| line.parse::<u64>().ok()))
+        .collect()
+}
+
+#[library_benchmark]
+// A simple example with the iter parameter which uses ranges. `iter` accepts every argument that
+// implements `IntoIterator` and there are no other limitations.
+#[benches::ranges(iter = 1..3)]
+// A more complex example to read the content of a file and produce a single benchmark cases per
+// iterator element.
+#[benches::from_file(iter = read_file("benches/fixtures/with_empty_line.fix"))]
+fn bench_fibonacci_with_iter(a: u64) -> u64 {
+    black_box(fibonacci(a))
+}
+
 // A benchmarking function with multiple parameters requires the elements to be specified as tuples.
 #[library_benchmark]
 #[benches::multiple((1, 2), (3, 4))]
@@ -171,27 +192,29 @@ library_benchmark_group!(
     benchmarks =
         bench_fibonacci_sum,
         bench_fibonacci_with_config,
-        bench_fibonacci_with_config_at_bench_level
+        bench_fibonacci_with_config_at_bench_level,
+        bench_fibonacci_with_iter
 );
 
 // Finally, the mandatory main! macro which collects all `library_benchmark_groups` and optionally
 // accepts a `config = ...` argument before the `library_benchmark_groups` argument. The main! macro
 // creates a benchmarking harness and runs all the benchmarks defined in the groups and benches.
 //
-// We configure the regression checks to fail gracefully at the end of the whole benchmark run
-// (`fail-fast = false`) using `EventKind::Ir` (Total instructions executed) with a limit of `+5%`
-// and `EventKind::EstimatedCycles` with a limit of `+10%`. This `LibraryBenchmarkConfig` applies to
-// all benchmarks in all groups (specified below) if it is not overwritten.
+// Per default there are no regression checks. We configure the regression checks using
+// `EventKind::Ir` (Total instructions executed) with a limit of `+5%` and
+// `EventKind::EstimatedCycles` with a limit of `+10%`. These numbers are deliberate and may vary
+// for your benchmarks. This `LibraryBenchmarkConfig` applies to all benchmarks in all groups
+// (specified below) if it is not overwritten.
 //
-// In addition to running `callgrind` it's possible to run other valgrind tools like DHAT, Massif,
-// (the experimental) BBV, Memcheck, Helgrind or DRD. Below we specify to run DHAT in addition to
-// callgrind for all benchmarks (if not specified otherwise and/or overridden in a lower-level
-// configuration). It's also possible to change the default tool to something else than callgrind
-// with `LibraryBenchmarkConfig::default_tool`for example if you're just interested in running DHAT.
-// Running cachegrind instead of callgrind is also possible but requires additional steps. This is
-// best described in the guide:
-// https://gungraun.github.io/gungraun/latest/html/index.html. You can also find a lot of
-// other Gungraun feature descriptions there.
+// In addition to or instead of running Callgrind it's possible to run other valgrind tools like
+// Cachegrind, DHAT, Massif, (the experimental) BBV, Memcheck, Helgrind or DRD. Below we specify to
+// run DHAT in addition to callgrind for all benchmarks (if not specified otherwise and/or
+// overridden in a lower-level configuration). It's also possible to change the default tool to
+// something else than callgrind with `LibraryBenchmarkConfig::default_tool`for example if you're
+// just interested in running DHAT. Running cachegrind instead of callgrind is also possible but
+// requires additional steps. This is best described in the guide:
+// https://gungraun.github.io/gungraun/latest/html/index.html. You can also find a lot of other
+// Gungraun feature descriptions there.
 //
 // The output files of the profiling tools (DHAT, Massif, BBV) can be found next to the output files
 // of the callgrind runs in `target/gungraun/...`.
@@ -200,5 +223,15 @@ main!(
         .tool(Callgrind::default()
             .soft_limits([(EventKind::Ir, 5.0), (EventKind::EstimatedCycles, 10.0)])
         )
-        .tool(Dhat::default());
+        .tool(
+            Dhat::default()
+                // The default entry point of `Dhat`, similar to `Callgrind`, excludes setup costs.
+                // As a result, it does not account for memory reads and writes in the bubble sort
+                // function, since the arrays are allocated outside the benchmark function during
+                // its setup phase. To address this issue, we utilize a custom entry point.
+                // Fortunately, all our bubble sort benchmark functions contain the string
+                // `bench_bubble_sort`, making it easy to identify them.
+                .entry_point(EntryPoint::Custom("*bench_bubble_sort*".to_owned())
+        )
+    );
     library_benchmark_groups = bubble_sort, fibonacci);

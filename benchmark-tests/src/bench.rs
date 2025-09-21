@@ -83,7 +83,7 @@ lazy_static! {
         Regex::new(r"^(##(?: \S+: \S+)+)(\s*)([|].*)$").expect("Regex should compile");
     static ref ABSOLUTE_PATH_RE: Regex =
         Regex::new(r"(\s+)([/][^/]*)+").expect("Regex should compile");
-    // Gungraun result: Success. 2 completed without regressions; 0 regressed; 2 benchmarks finished in 0.296s
+    // Gungraun result: Success. 2 completed without regressions; 0 regressed; 0 filtered; 2 benchmarks finished in 0.296s
     static ref SUMMARY_LINE_RE: Regex =
         Regex::new(r"^(Gungraun result:.*finished in\s*)([0-9.]+)(s)$").expect("Regex should compile");
     static ref THREAD_PANICKED: Regex =

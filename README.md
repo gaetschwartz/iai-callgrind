@@ -8,7 +8,7 @@
 <div align="center">
     <a href="https://gungraun.github.io/gungraun">Guide</a>
     |
-    <a href="https://docs.rs/crate/iai-callgrind/">Released API Docs</a>
+    <a href="https://docs.rs/crate/gungraun/">Released API Docs</a>
     |
     <a href="https://github.com/gungraun/gungraun/blob/main/CHANGELOG.md">Changelog</a>
 </div>
@@ -17,11 +17,11 @@
     <a href="https://github.com/gungraun/gungraun/actions/workflows/cicd.yml">
         <img src="https://github.com/gungraun/gungraun/actions/workflows/cicd.yml/badge.svg" alt="GitHub branch checks state"/>
     </a>
-    <a href="https://crates.io/crates/iai-callgrind">
-        <img src="https://img.shields.io/crates/v/iai-callgrind.svg" alt="Crates.io"/>
+    <a href="https://crates.io/crates/gungraun">
+        <img src="https://img.shields.io/crates/v/gungraun.svg" alt="Crates.io"/>
     </a>
-    <a href="https://docs.rs/iai-callgrind/">
-        <img src="https://docs.rs/iai-callgrind/badge.svg" alt="docs.rs"/>
+    <a href="https://docs.rs/gungraun/">
+        <img src="https://docs.rs/gungraun/badge.svg" alt="docs.rs"/>
     </a>
     <a href="https://github.com/rust-lang/rust">
         <img src="https://img.shields.io/badge/MSRV-1.74.1-brightgreen" alt="MSRV"/>
@@ -43,22 +43,22 @@ Gungraun is integrated in [Bencher].
 
 Gungraun is:
 
-- __Precise__: High-precision measurements of `Instruction` counts and many
+- **Precise**: High-precision measurements of `Instruction` counts and many
   other metrics allow you to reliably detect very small optimizations and
   regressions of your code.
-- __Consistent__: Gungraun can take accurate measurements even in
+- **Consistent**: Gungraun can take accurate measurements even in
   virtualized CI environments and make them comparable between different systems
   completely negating the noise of the environment.
-- __Fast__: Each benchmark is only run once, which is usually much faster than
+- **Fast**: Each benchmark is only run once, which is usually much faster than
   benchmarks which measure execution and wall-clock time. Benchmarks measuring
   the wall-clock time have to be run many times to increase their accuracy,
   detect outliers, filter out noise, etc.
-- __Visualizable__: Gungraun generates a Callgrind (DHAT, ...) profile of
+- **Visualizable**: Gungraun generates a Callgrind (DHAT, ...) profile of
   the benchmarked code and can be configured to create flamegraph-like charts
   from Callgrind metrics. In general, all Valgrind-compatible tools like
   [callgrind_annotate][Callgrind Annotate], [kcachegrind] or `dh_view.html` and
   others to analyze the results in detail are fully supported.
-- __Easy__: The API for setting up benchmarks is easy to use and allows you to
+- **Easy**: The API for setting up benchmarks is easy to use and allows you to
   quickly create concise and clear benchmarks. Focus more on profiling and your
   code than on the framework.
 
@@ -136,9 +136,6 @@ for inclusion in the work by you shall be dual licensed as in
 
 ### Related Projects
 
-- [Iai](https://github.com/bheisler/iai): The repository from which
-  Gungraun was initially forked to use Callgrind instead of Cachegrind as
-  primary profiling tool. See [Comparison][Comparison.iai].
 - [Criterion-rs](https://github.com/bheisler/criterion.rs): A Statistics-driven
   benchmarking library for Rust. Wall-clock times based benchmarks.
 - [hyperfine](https://github.com/sharkdp/hyperfine): A command-line benchmarking
@@ -175,13 +172,11 @@ According to [Valgrind's documentation][Valgrind Client Request Mechanism]:
 We have included the original license where we made use of the original header
 files.
 
-[Api Docs]: https://docs.rs/iai-callgrind/latest/iai_callgrind/
+[Api Docs]: https://docs.rs/gungraun/latest/gungraun/
 
 [Bencher]: https://bencher.dev/learn/benchmarking/rust/iai/
 
 [Guide]: https://gungraun.github.io/gungraun/
-
-[Comparison.iai]: https://gungraun.github.io/gungraun/latest/html/comparison/iai.html
 
 [kcachegrind]: https://kcachegrind.github.io/html/Home.html
 

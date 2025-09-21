@@ -88,7 +88,7 @@ pub trait Parser {
 impl ParserOutput {
     /// Compare by target ids `pid`, `part` and `thread`
     ///
-    /// Same as in [`CallgrindProperties::compare_target_ids`]
+    /// Same as in [`crate::runner::callgrind::parser::CallgrindProperties::compare_target_ids`]
     ///
     /// Highest precedence takes `pid`. Second is `part` and third is `thread` all sorted ascending.
     /// See also [Callgrind Format](https://valgrind.org/docs/manual/cl-format.html#cl-format.reference.grammar)

@@ -25,7 +25,7 @@ A default Gungraun benchmark run displays the following metrics:
 <span style="color:#555">  </span>Total read+write:                    <b>2362</b>|2362                 (<span style="color:#555">No change</span>)
 <span style="color:#555">  </span>Estimated Cycles:                    <b>2464</b>|2464                 (<span style="color:#555">No change</span>)
 
-Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 1 benchmarks finished in 0.49333s</code></pre>
+Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.49333s</code></pre>
 
 The cache and ram hits, `Total read+write` and `Estimated Cycles` are actually
 not part of the original collected callgrind metrics but calculated from them.
@@ -80,7 +80,7 @@ The Gungraun output will then show all cache metrics:
 <span style="color:#555">  </span>Total read+write:                    <b>2362</b>|N/A                  (<span style="color:#555">*********</span>)
 <span style="color:#555">  </span>Estimated Cycles:                    <b>2464</b>|N/A                  (<span style="color:#555">*********</span>)
 
-Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 1 benchmarks finished in 0.48898s</code></pre>
+Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.48898s</code></pre>
 
 The callgrind output format can be fully customized showing only the metrics
 you're interested in and in any order. The docs of
@@ -148,13 +148,13 @@ that:
 <span style="color:#555">  </span>Total read+write:                   <b>26417</b>|26145                (<b><span style="color:#F55">+1.04035%</span></b>) [<b><span style="color:#F55">+1.01040x</span></b>]
 <span style="color:#555">  </span>Estimated Cycles:                   <b>27165</b>|26893                (<b><span style="color:#F55">+1.01142%</span></b>) [<b><span style="color:#F55">+1.01011x</span></b>]
 
-Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 1 benchmarks finished in 0.15735s</code></pre>
+Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.15735s</code></pre>
 
 and `Instructions` displays `Tolerance` instead of a difference.
 
-[`Callgrind`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/struct.Callgrind.html
-[`Callgrind.format`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/struct.Callgrind.html#method.format
-[`CallgrindMetrics`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.CallgrindMetrics.html
-[`OutputFormat`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/struct.OutputFormat.html
-[`OutputFormat.show_grid`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/struct.OutputFormat.html#method.show_grid
-[`OutputFormat.truncate_description`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/struct.OutputFormat.html#method.truncate_description
+[`Callgrind`]: https://docs.rs/gungraun/0.17.0/gungraun/struct.Callgrind.html
+[`Callgrind.format`]: https://docs.rs/gungraun/0.17.0/gungraun/struct.Callgrind.html#method.format
+[`CallgrindMetrics`]: https://docs.rs/gungraun/0.17.0/gungraun/enum.CallgrindMetrics.html
+[`OutputFormat`]: https://docs.rs/gungraun/0.17.0/gungraun/struct.OutputFormat.html
+[`OutputFormat.show_grid`]: https://docs.rs/gungraun/0.17.0/gungraun/struct.OutputFormat.html#method.show_grid
+[`OutputFormat.truncate_description`]: https://docs.rs/gungraun/0.17.0/gungraun/struct.OutputFormat.html#method.truncate_description

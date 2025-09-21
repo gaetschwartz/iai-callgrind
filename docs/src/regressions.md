@@ -176,7 +176,7 @@ following output:
 <span style="color:#555">  </span>Total read+write:                     <b>206</b>|N/A                  (<span style="color:#555">*********</span>)
 <span style="color:#555">  </span>Estimated Cycles:                     <b>376</b>|N/A                  (<span style="color:#555">*********</span>)
 
-Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 1 benchmarks finished in 0.14477s</code></pre>
+Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.14477s</code></pre>
 
 Let's assume there's a change in `my_lib::bubble_sort` with a negative impact on
 the performance, then running the benchmark again results in an output something
@@ -196,7 +196,7 @@ Regressions:
   <span style="color:#0A0">lib_bench_regression::my_group::bench_library</span>:
     <b>Instructions</b> (152 -> <b>264</b>): <b><span style="color:#F55">+73.6842</span></b><b><span style="color:#F55">%</span></b> exceeds limit of <span style="color:#555">+5.00000</span><span style="color:#555">%</span>
 
-Gungraun result: <b><span style="color:#F55">Regressed</span></b>. 0 without regressions; 1 regressed; 1 benchmarks finished in 0.14849s
+Gungraun result: <b><span style="color:#F55">Regressed</span></b>. 0 without regressions; 1 regressed; 0 filtered; 1 benchmarks finished in 0.14849s
 error: bench failed, to rerun pass `-p benchmark-tests --bench lib_bench_regression`
 
 Caused by:
@@ -231,9 +231,9 @@ If you know of others, please feel free to
 [add](https://github.com/gungraun/gungraun/blob/5bec95ee37330954916ea29e7a7dc40ca62bc454/docs/src/regressions.md)
 them to this list.
 
-[`EventKind`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.EventKind.html
-[`CallgrindMetrics`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.CallgrindMetrics.html
-[`CachegrindMetric`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.CachegrindMetric.html
-[`CachegrindMetrics`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.CachegrindMetrics.html
-[`DhatMetric`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.DhatMetric.html
-[`DhatMetrics`]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.DhatMetrics.html
+[`EventKind`]: https://docs.rs/gungraun/0.17.0/gungraun/enum.EventKind.html
+[`CallgrindMetrics`]: https://docs.rs/gungraun/0.17.0/gungraun/enum.CallgrindMetrics.html
+[`CachegrindMetric`]: https://docs.rs/gungraun/0.17.0/gungraun/enum.CachegrindMetric.html
+[`CachegrindMetrics`]: https://docs.rs/gungraun/0.17.0/gungraun/enum.CachegrindMetrics.html
+[`DhatMetric`]: https://docs.rs/gungraun/0.17.0/gungraun/enum.DhatMetric.html
+[`DhatMetrics`]: https://docs.rs/gungraun/0.17.0/gungraun/enum.DhatMetrics.html

@@ -44,6 +44,7 @@ pub struct BenchesArgs(pub Option<Vec<Args>>);
 #[derive(Debug, Default, Clone)]
 pub struct File(pub Option<LitStr>);
 
+/// The `iter` parameter of the `#[benches]` attribute
 #[derive(Debug, Clone, Default)]
 pub struct Iter(pub Option<Expr>);
 

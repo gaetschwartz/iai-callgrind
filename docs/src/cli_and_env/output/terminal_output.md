@@ -73,7 +73,7 @@ Error output during teardown: 20
   Total read+write: <b>           1264</b>|N/A             (<span style="color:#555">*********</span>)
   Estimated Cycles: <b>           3528</b>|N/A             (<span style="color:#555">*********</span>)
 
-Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 1 benchmarks finished in 0.49333s</code></pre>
+Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.49333s</code></pre>
 
 Everything between the headline and the `- end of stdout/stderr` line is output
 from your benchmark. The `- end of stdout/stderr` line changes depending on the

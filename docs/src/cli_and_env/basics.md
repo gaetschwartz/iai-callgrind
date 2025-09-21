@@ -30,13 +30,28 @@ Boolish command line arguments take also one of `y`, `yes`, `t`, `true`, `on`, `
 instead of `true` and one of `n`, `no`, `f`, `false`, `off`, and `0` instead of
 `false`
 
-Usage: cargo bench ... [BENCHNAME] -- [OPTIONS]
+Usage: cargo bench ... [FILTER] -- [OPTIONS]
 
 Arguments:
-  [BENCHNAME]
-          If specified, only run benches containing this string in their names
+  [FILTER]
+          If specified, only run benchmarks matching this wildcard pattern
 
-          Note that a benchmark name might differ from the benchmark file name.
+          The wildcard pattern can contain `*` to match any amount of characters, `?` to match a
+          single character and simple classes `[...]` like `[abc] `to match the characters `a` or `b`
+          or `c`. Character classes can contain ranges, so `[abc]` could be rewritten as `[a-c]` and
+          they can be negated with `[!...]` to not match the contained characters.
+
+          This pattern matches the whole module path of benchmarks. A list of all benchmarks with
+          their module path as recognized by this option can be obtained by running `--list`. The
+          general structure of the module path of a benchmark is:
+
+          `FILENAME::GROUP::FUNCTION::ID`
+
+          Examples:
+            * `*::my_benchmark_id` runs all benchmarks with the id `my_benchmark_id`
+            * `gungraun_benchmarks::*` runs all benchmarks in the file `gungraun_benchmarks`
+            * `my_file::some_group::*` runs all benchmarks in the file `my_file` and the group
+              `some_group`
 
           [env: GUNGRAUN_FILTER=]
 
@@ -46,8 +61,7 @@ Options:
 
           The output format is intended to be the same as the output format of the libtest harness.
           However, future changes of the output format by cargo might not be incorporated into
-          gungraun. As a consequence, it is not considered safe to rely on the output in
-          scripts.
+          gungraun. As a consequence, it is not considered safe to rely on the output in scripts.
 
           [env: GUNGRAUN_LIST=]
           [default: false]
@@ -105,17 +119,16 @@ Options:
       --home <HOME>
           Specify the home directory of gungraun benchmark output files
 
-          All output files are per default stored under the `$PROJECT_ROOT/target/gungraun` directory.
-          This option lets you customize this home directory, and it will be created if it doesn't
-          exist.
+          All output files are per default stored under the `$PROJECT_ROOT/target/gungraun`
+          directory. This option lets you customize this home directory, and it will be created if it
+          doesn't exist.
 
           [env: GUNGRAUN_HOME=]
 
       --separate-targets[=<SEPARATE_TARGETS>]
           Separate gungraun benchmark output files by target
 
-          The default output path for files created by gungraun and valgrind during the
-          benchmark is
+          The default output path for files created by gungraun and valgrind during the benchmark is
 
           `target/gungraun/$PACKAGE_NAME/$BENCHMARK_FILE/$GROUP/$BENCH_FUNCTION.$BENCH_ID`.
 
@@ -155,8 +168,8 @@ Options:
 
           This option is currently restricted to the `callgrind` run of benchmarks. The output of
           additional tool runs like DHAT, Memcheck, ... is still captured, to prevent showing the
-          same output of benchmarks multiple times. Use `GUNGRAUN_LOG=info` to also show
-          captured and logged output.
+          same output of benchmarks multiple times. Use `GUNGRAUN_LOG=info` to also show captured and
+          logged output.
 
           If no value is given, the default missing value is `true` and doesn't capture stdout and
           stderr. Besides `true` or `false` you can specify the special values `stdout` or `stderr`.
@@ -195,23 +208,62 @@ Options:
 
           which transforms `{...}\n{...}` into `[{...},{...}]`
 
-          [env: GUNGRAUN_OUTPUT_FORMAT=]
-          [default: default]
-
           Possible values:
           - default:     The default terminal output
           - json:        Json terminal output
           - pretty-json: Pretty json terminal output
 
+          [env: GUNGRAUN_OUTPUT_FORMAT=]
+          [default: default]
+
       --save-summary[=<SAVE_SUMMARY>]
           Save a machine-readable summary of each benchmark run in json format next to the usual
           benchmark output
 
-          [env: GUNGRAUN_SAVE_SUMMARY=]
-
           Possible values:
           - json:        The format in a space optimal json representation without newlines
           - pretty-json: The format in pretty printed json
+
+          [env: GUNGRAUN_SAVE_SUMMARY=]
+
+      --show-grid[=<SHOW_GRID>]
+          Show an ascii grid in the benchmark terminal output
+
+          A matter of taste but the guiding lines can also be helpful reading benchmark output when
+          running multiple tools with multiple threads and subprocesses for example by using
+          `--show-intermediate`.
+
+          [env: GUNGRAUN_SHOW_GRID=]
+          [possible values: true, false]
+
+      --show-intermediate[=<SHOW_INTERMEDIATE>]
+          Show intermediate metrics from parts, subprocesses, threads, ... (Default: false)
+
+          In callgrind, threads are treated as separate units (similar to subprocesses) and the
+          metrics for them are dumped into an own file. Other valgrind tools usually separate the
+          output files only by subprocesses. Use this option, to also show the metrics of any
+          intermediate fragments and not just the total over all of them.
+
+          Temporarily setting `show_intermediate` to `true` can help to find misconfigurations in
+          multi-thread/multi-process benchmarks.
+
+          [env: GUNGRAUN_SHOW_INTERMEDIATE=]
+          [possible values: true, false]
+
+      --show-only-comparison[=<SHOW_ONLY_COMPARISON>]
+          Show only the comparison between different benchmarks when using `compare_by_id`
+
+          If you're only interested in the comparisons between different benchmarks but not the
+          metric
+          differences between the self comparisons of the new and old benchmark run, use this option.
+          This option is only useful if `compare_by_id` is used in the `library_benchmark_group!` or
+          `binary_benchmark_group!`. Note, that it does not prevent any benchmarks to be run,
+          especially benchmarks which are not compared to another benchmark. Such benchmarks have
+          only
+          the usual benchmark headline printed.
+
+          [env: GUNGRAUN_SHOW_ONLY_COMPARISON=]
+          [possible values: true, false]
 
       --tolerance[=<TOLERANCE>]
           Show changes only when they are above the `tolerance` level
@@ -227,6 +279,28 @@ Options:
           * --tolerance=0.1 (set the tolerance level to `0.1`)
 
           [env: GUNGRAUN_TOLERANCE=]
+
+      --truncate-description[=<TRUNCATE_DESCRIPTION>]
+          Adjust, enable or disable the truncation of the description in the Gungraun output
+
+          The default is to truncate the description to the size of 50 ascii characters. A false
+          value disables the truncation entirely and a value will truncate the description to the
+          given amount of characters excluding the ellipsis.
+
+          To clearify which part of the output is meant by `DESCRIPTION`:
+
+          ```text
+          benchmark_file::group_name::function_name id:DESCRIPTION
+            Instructions:              352135|352135          (No change)
+            ...
+          ```
+
+          Examples:
+            * --truncate-description=no (disables truncation)
+            * --truncate-description=100 (set the truncation to 100 ascii chars)
+            * --truncate-description (this is the default and sets the size of 50 ascii chars)
+
+          [env: GUNGRAUN_TRUNCATE_DESCRIPTION=]
 
       --bbv-args <BBV_ARGS>
           The command-line arguments to pass through to the experimental BBV
@@ -345,9 +419,8 @@ Options:
 
           This is a `,` separate list of CachegrindMetric=limit or CachegrindMetrics=limit
           (key=value) pairs. See the description of --callgrind-limits for the details and
-          <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.CachegrindMetrics.html>
-          respectively
-          <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.CachegrindMetric.html>
+          <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetrics.html>
+          respectively <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetric.html>
           for valid metrics and group members.
 
           See the the guide
@@ -397,8 +470,8 @@ Options:
 
           See the guide (https://gungraun.github.io/gungraun/latest/html/regressions.html)
           for more details, the docs of `CallgrindMetrics`
-          (<https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.CallgrindMetrics.html>) and
-          `EventKind` <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.EventKind.html> for a
+          (<https://docs.rs/gungraun/latest/gungraun/enum.CallgrindMetrics.html>) and
+          `EventKind` <https://docs.rs/gungraun/latest/gungraun/enum.EventKind.html> for a
           list of metrics and groups with their members.
 
           A performance regression check for an `EventKind` fails if the limit is exceeded. If
@@ -418,8 +491,8 @@ Options:
 
           This is a `,` separate list of DhatMetrics=limit or DhatMetric=limit (key=value) pairs. See
           the description of --callgrind-limits for the details and
-          <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.DhatMetrics.html> respectively
-          <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.DhatMetric.html> for valid metrics
+          <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetrics.html> respectively
+          <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetric.html> for valid metrics
           and group members.
 
           See the the guide
@@ -465,9 +538,9 @@ Options:
           to appear in the terminal output of cachegrind.
 
           See `--callgrind-metrics` for more details and
-          <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.CachegrindMetrics.html>
+          <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetrics.html>
           respectively
-          <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.CachegrindMetric.html> for valid
+          <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetric.html> for valid
           metrics and group members.
 
           The `group` names, their abbreviations if present and `event` kinds are exactly the same as
@@ -492,8 +565,8 @@ Options:
           described in the `--callgrind-limits` option.
 
           For a list of valid metrics, groups and their members see the docs of `CallgrindMetrics`
-          (<https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.CallgrindMetrics.html>) and
-          `EventKind` <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.EventKind.html>.
+          (<https://docs.rs/gungraun/latest/gungraun/enum.CallgrindMetrics.html>) and
+          `EventKind` <https://docs.rs/gungraun/latest/gungraun/enum.EventKind.html>.
 
           Note that setting the metrics here does not imply that these metrics are actually
           collected. This option just sets the order and appearance of metrics in case they are
@@ -514,8 +587,8 @@ Options:
           appear in the terminal output of dhat.
 
           See `--callgrind-metrics` for more details and
-          <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.DhatMetrics.html> respectively
-          <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.DhatMetric.html> for valid metrics
+          <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetrics.html> respectively
+          <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetric.html> for valid metrics
           and group members.
 
           The `group` names, their abbreviations if present and `event` kinds are exactly the same as
@@ -535,7 +608,7 @@ Options:
           output of drd. The `group` and `event` are the same as for `--memcheck-metrics`.
 
           See `--callgrind-metrics` for more details and
-          <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.ErrorMetric.html> for valid error
+          <https://docs.rs/gungraun/latest/gungraun/enum.ErrorMetric.html> for valid error
           metrics.
 
           Since this is a very small set of metrics, there is only one `group`: `@all`
@@ -554,7 +627,7 @@ Options:
           output of helgrind. The `group` and `event` are the same as for `--memcheck-metrics`.
 
           See `--callgrind-metrics` for more details and
-          <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.ErrorMetric.html> for valid error
+          <https://docs.rs/gungraun/latest/gungraun/enum.ErrorMetric.html> for valid error
           metrics.
 
           Examples:
@@ -579,7 +652,7 @@ Options:
                     | ( "suppressedcontexts" | "sctx" )
 
           See `--callgrind-metrics` for more details and
-          <https://docs.rs/iai-callgrind/latest/iai_callgrind/enum.ErrorMetric.html> for valid
+          <https://docs.rs/gungraun/latest/gungraun/enum.ErrorMetric.html> for valid
           metrics.
 
           Examples:

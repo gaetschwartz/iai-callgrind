@@ -1,16 +1,17 @@
 # Introduction
 
-This is the guide for Gungraun, a benchmarking framework/harness which uses
-[Valgrind's Callgrind](https://valgrind.org/docs/manual/cl-manual.html) to
-provide extremely accurate and consistent measurements of Rust code, making it
-perfectly suited to run in environments like a CI. Gungraun is flexible and
-despite its name it's possible to run [Cachegrind](./cachegrind.md) or any other
-[Valgrind tool](./tools.md) like DHAT in addition to or instead of Callgrind.
+Welcome to the Gungraun guide, your comprehensive resource for a one-shot
+benchmarking harness and framework that leverages Valgrind's powerful CPU,
+cache, and memory profiling tools:
+[Callgrind](https://valgrind.org/docs/manual/cl-manual.html),
+[Cachegrind](https://valgrind.org/docs/manual/cg-manual.html), and
+[DHAT](https://valgrind.org/docs/manual/dh-manual.html). Gungraun delivers
+highly accurate and consistent measurements of Rust code, making it an ideal
+choice for continuous integration (CI) environments. Its flexibility allows you
+to access all Valgrind tools, even `Memcheck`, and utilize [Valgrind client
+requests](./client_requests.md) effortlessly.
 
-Gungraun is fully documented in this guide and in the api documentation at
-[docs.rs](https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/).
-
-Gungraun is also:
+Gungraun is:
 
 - __Precise__: High-precision measurements of `Instruction` counts and many
   other metrics allow you to reliably detect very small optimizations and
@@ -49,7 +50,7 @@ on profiling and your code!
 Although Gungraun is useful in many projects, there are cases where
 Gungraun is not a good fit.
 
-- If you need wall-clock times, Gungraun cannot help you much. The
+- If you need only wall-clock times, Gungraun cannot help you much. The
   estimation of cpu cycles merely correlates to wall-clock times but is not a
   replacement for wall-clock times. The cycles estimation is primarily designed
   to be a relative metric to be used for comparison.

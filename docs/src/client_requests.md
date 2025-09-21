@@ -14,7 +14,7 @@ Client requests are deactivated by default but can be activated with the
 
 ```toml
 [dev-dependencies]
-gungraun = { version = "0.16.1", features = ["client_requests"] }
+gungraun = { version = "0.17.0", features = ["client_requests"] }
 ```
 
 If you need the client requests in your production code, you don't want them to
@@ -25,12 +25,12 @@ to your runtime dependencies and with the `client_requests` feature to your
 
 ```toml
 [dependencies]
-gungraun = { version = "0.16.1", default-features = false, features = [
+gungraun = { version = "0.17.0", default-features = false, features = [
     "client_requests_defs"
 ] }
 
 [dev-dependencies]
-gungraun = { version = "0.16.1", features = ["client_requests"] }
+gungraun = { version = "0.17.0", features = ["client_requests"] }
 ```
 
 With just the `client_requests_defs` feature activated, the client requests
@@ -39,7 +39,13 @@ simply provides the "definitions", method signatures and macros without body.
 Only with the activated `client_requests` feature they will be actually
 executed. Note that the client requests do not depend on any other part of
 Gungraun, so you could even use the client requests without the rest of
-Gungraun.
+Gungraun by disabling the default-features:
+
+```toml
+gungraun = { version = "0.17.0", default-features = false, features = [
+    "client_requests"
+] }
+```
 
 When building Gungraun with client requests, the valgrind header files must
 exist in your standard include path (most of the time `/usr/include`). This is
@@ -169,9 +175,9 @@ As the standard toggle is now switched off and the option
 `LibraryBenchmarkConfig::raw_callgrind_args`.
 
 Please see the
-[`docs`](https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/client_requests) for
+[`docs`](https://docs.rs/gungraun/0.17.0/gungraun/client_requests) for
 more details!
 
 [Callgrind Arguments]: https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options
 
-[EntryPoint]: https://docs.rs/iai-callgrind/0.16.1/iai_callgrind/enum.EntryPoint.html
+[EntryPoint]: https://docs.rs/gungraun/0.17.0/gungraun/enum.EntryPoint.html

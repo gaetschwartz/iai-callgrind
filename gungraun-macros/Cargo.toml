@@ -1,7 +1,10 @@
 [package]
-authors = ["Joining7943 <joining@posteo.de>"]
+authors = ["Joining7943 <joining@posteo.de>", "gamma0987 <gamma0987@posteo.de>"]
 categories.workspace = true
-description = "Proc macros for gungraun, a high-precision and consistent benchmarking framework/harness for Rust"
+description = """
+Proc macros for Gungraun: A high-precision, one-shot and consistent benchmarking \
+framework/harness for Rust.
+"""
 edition.workspace = true
 homepage.workspace = true
 keywords.workspace = true
@@ -10,7 +13,7 @@ name = "gungraun-macros"
 readme = "README.md"
 repository.workspace = true
 rust-version.workspace = true
-version = "0.6.1"
+version = "0.7.0"
 
 [features]
 cachegrind = []

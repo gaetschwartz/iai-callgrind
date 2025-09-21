@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD041 MD033 -->
 # Comparing with baselines
 
-Usually, two consecutive benchmark runs let Iai-Callgrind compare these two
+Usually, two consecutive benchmark runs let Gungraun compare these two
 runs. It's sometimes desirable to compare the current benchmark run against a
 static reference, instead. For example, if you're working longer on the
 implementation of a feature, you may wish to compare against a baseline from
@@ -48,7 +48,7 @@ prints something like that with an additional line `Baselines` in the output.
   Total read+write: <b>            381</b>|N/A             (<span style="color:#555">*********</span>)
   Estimated Cycles: <b>            589</b>|N/A             (<span style="color:#555">*********</span>)
 
-Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 1 benchmarks finished in 0.49333s</code></pre>
+Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.49333s</code></pre>
 
 After you've made some changes to your code, running
 
@@ -67,4 +67,4 @@ prints something like the following:
   Total read+write: <b>            294</b>|381             (<b><span style="color:#42c142">-22.8346%</span></b>) [<b><span style="color:#42c142">-1.29592x</span></b>]
   Estimated Cycles: <b>            502</b>|589             (<b><span style="color:#42c142">-14.7708%</span></b>) [<b><span style="color:#42c142">-1.17331x</span></b>]
 
-Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 1 benchmarks finished in 0.49333s</code></pre>
+Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.49333s</code></pre>

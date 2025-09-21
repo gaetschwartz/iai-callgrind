@@ -2,10 +2,12 @@
 //! macro. There's a lot of overlap with the way how library benchmarks are set up, so I recommend
 //! reading the documentation for library benchmarks first. Or, have a look at the equivalent of
 //! this file but for library benchmarks in
-//! `benchmark-tests/benches/test_lib_bench/groups/test_lib_bench_groups.rs`
+//! `benchmark-tests/benches/test_lib_bench/groups/test_lib_bench_intro.rs`
 //!
 //! It's best to read all the comments from top to bottom to get a better understanding of the api.
 
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 
 use gungraun::{
@@ -94,6 +96,44 @@ fn bench_with_setup(path: &str, content: &str) -> gungraun::Command {
         .build()
 }
 
+/// Used to read all files with the `.fix` extension in a directory line by line
+fn read_dir(path: &str) -> Vec<String> {
+    let mut lines = vec![];
+    // We're only interested in files having the `.fix` suffix
+    for path in std::fs::read_dir(path).unwrap().filter(|entry| {
+        entry
+            .as_ref()
+            .ok()
+            .and_then(|entry| entry.path().extension().map(|extension| extension == "fix"))
+            .is_some_and(|is_fix| is_fix)
+    }) {
+        lines.extend(
+            BufReader::new(File::open(path.unwrap().path()).unwrap())
+                .lines()
+                // Sort out empty lines or lines that contain only whitespace
+                .filter_map(|l| l.ok().and_then(|l| (!l.trim().is_empty()).then_some(l))),
+        );
+    }
+
+    // We sort the lines for a consistent benchmark output and remove duplicates, but it's not
+    // strictly necessary
+    lines.sort_unstable();
+    lines.dedup();
+    lines
+}
+
+// Again, we use a `Sandbox` for the benches in this `binary_benchmark`.
+#[binary_benchmark(config = BinaryBenchmarkConfig::default().sandbox(Sandbox::new(true)))]
+// The `iter` parameter. However, that's not very different from the `args` parameter.
+#[benches::from_array(iter = ["1".to_owned(), "2".to_owned()])]
+// This example couldn't have been achieved without `iter`. Each element of the iterator argument
+// (anything that implements `IntoIterator`) represents a benchmark case. Here we read all files in
+// the `benches/fixtures` directory line by line. These files contain a number on each line.
+#[benches::from_iter(iter = read_dir("benches/fixtures"))]
+fn benches_from_iter(line: String) -> gungraun::Command {
+    gungraun::Command::new(ECHO_EXE).arg(line).build()
+}
+
 // A small helper function because we need to do the same in the benchmark function
 // `benches_from_file` and the setup function `setup_file` and the moment the input file format
 // changes we only need to change the code in this function.
@@ -107,7 +147,6 @@ fn setup_file(line: String) {
     create_file_with_content(path, content);
 }
 
-// Again, we use a `Sandbox` for the benches in this `binary_benchmark`.
 #[binary_benchmark(config = BinaryBenchmarkConfig::default().sandbox(Sandbox::new(true)))]
 // If you want/need to store and read benchmark inputs from a file, you can do so with the `file`
 // parameter of the `#[benches]` attribute. Note this parameter is not available in `#[bench]`. Each
@@ -137,7 +176,7 @@ fn benches_from_file(line: String) -> gungraun::Command {
 // the `benchmarks` parameter.
 binary_benchmark_group!(
     name = read_file_group;
-    benchmarks = bench_with_setup, benches_from_file
+    benchmarks = bench_with_setup, benches_from_file, benches_from_iter
 );
 
 fn setup_pipe(additional_content: &str) {
