@@ -73,6 +73,63 @@ main!(library_benchmark_groups = my_group);
 but a lot more concise especially if a lot of values are passed to the same
 `setup` function.
 
+### The `iter` parameter
+
+Specifying a lot of benchmarks with args (`args = [1, 2, 3, 4, 5, 6, 7]` and so) on
+can be cumbersome. Gungraun supports creating multiple benchmarks from an
+iterator, more precisely anything that implements
+[`IntoIterator`](https://doc.rust-lang.org/std/iter/trait.IntoIterator.html)
+from the standard library. Each element of the iterator creates a separate benchmark
+case. For example creating multiple benchmarks from a range:
+
+```rust
+# extern crate gungraun;
+# mod my_lib { pub fn u64_to_string(input: u64) -> String { "1".to_owned() } }
+use gungraun::{library_benchmark, library_benchmark_group, main};
+use std::hint::black_box;
+
+#[library_benchmark]
+#[benches::from_iter(iter = 0..10)]
+fn some_bench(input: u64) -> String {
+    black_box(my_lib::u64_to_string(input))
+}
+
+library_benchmark_group!(name = my_group; benchmarks = some_bench);
+# fn main() {
+main!(library_benchmark_groups = my_group);
+# }
+```
+
+or reading a directory with benchmark fixtures and each returned path is a
+separate benchmark.
+
+```rust
+# extern crate gungraun;
+# mod my_lib { pub fn count_lines_fast(_path: std::path::PathBuf) -> usize { 0 } }
+use std::hint::black_box;
+use std::path::PathBuf;
+
+use gungraun::{library_benchmark, library_benchmark_group, main};
+
+fn read_dir() -> Vec<PathBuf> {
+    std::fs::read_dir("benches/fixtures")
+        .unwrap()
+        .map(|d| d.unwrap().path())
+        .collect()
+}
+
+#[library_benchmark]
+#[benches::from_iter(iter = read_dir())]
+fn bench_count_lines_fast(path: PathBuf) -> usize {
+    black_box(my_lib::count_lines_fast(path))
+}
+
+library_benchmark_group!(name = my_group; benchmarks = bench_count_lines_fast);
+# fn main() {
+main!(library_benchmark_groups = my_group);
+# }
+```
+
 ### The `file` parameter
 
 Reading inputs from a file allows for example sharing the same inputs between

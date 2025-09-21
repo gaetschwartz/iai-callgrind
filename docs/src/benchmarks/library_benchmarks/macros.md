@@ -134,12 +134,12 @@ main!(library_benchmark_groups = bubble_sort_group);
 
 ### The `#[benches]` attribute
 
-This attribute is used to specify multiple benchmarks at once. It accepts the
-same parameters as the [`#[bench]`](#the-bench-attribute) attribute: `args`,
-`config`, `setup` and `teardown` and additionally the `file` parameter which is
-explained in detail [here](./multiple_benches.md). In contrast to the `args`
-parameter in [`#[bench]`](#the-bench-attribute), `args` takes an array of
-arguments.
+This attribute is used to specify multiple benchmarks. It accepts the same
+parameters as the [`#[bench]`](#the-bench-attribute) attribute: `args`,
+`config`, `setup` and `teardown` and additionally the `iter` and `file`
+parameters which are explained in full detail in [Specifying multiple benchmarks
+at once](./multiple_benches.md). In contrast to the `args` parameter in
+[`#[bench]`](#the-bench-attribute), `args` takes an array of arguments.
 
 ```rust
 # extern crate gungraun;

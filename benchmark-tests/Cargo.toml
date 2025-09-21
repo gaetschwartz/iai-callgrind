@@ -343,3 +343,8 @@ path = "benches/guide/lib_bench_find_primes.rs"
 harness = false
 name = "lib_bench_tolerance"
 path = "benches/guide/lib_bench_tolerance.rs"
+
+[[bench]]
+harness = false
+name = "lib_bench_iter"
+path = "benches/guide/lib_bench_iter.rs"

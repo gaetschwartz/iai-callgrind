@@ -39,7 +39,13 @@ simply provides the "definitions", method signatures and macros without body.
 Only with the activated `client_requests` feature they will be actually
 executed. Note that the client requests do not depend on any other part of
 Gungraun, so you could even use the client requests without the rest of
-Gungraun.
+Gungraun by disabling the default-features:
+
+```toml
+gungraun = { version = "0.17.0", default-features = false, features = [
+    "client_requests"
+] }
+```
 
 When building Gungraun with client requests, the valgrind header files must
 exist in your standard include path (most of the time `/usr/include`). This is
