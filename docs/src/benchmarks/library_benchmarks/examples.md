@@ -8,4 +8,4 @@ package.
 
 Each system test there can serve you as an example, but for a fully documented
 and commented one see the [library benchmark
-intro](https://github.com/gungraun/gungraun/blob/main/benchmark-tests/benches/test_lib_bench/groups/test_lib_bench_intro.rs).
+intro](https://github.com/gungraun/gungraun/blob/main/benchmark-tests/benches/test_lib_bench/intro/test_lib_bench_intro.rs).

@@ -2,7 +2,7 @@
 //! macro. There's a lot of overlap with the way how library benchmarks are set up, so I recommend
 //! reading the documentation for library benchmarks first. Or, have a look at the equivalent of
 //! this file but for library benchmarks in
-//! `benchmark-tests/benches/test_lib_bench/groups/test_lib_bench_intro.rs`
+//! `benchmark-tests/benches/test_lib_bench/intro/test_lib_bench_intro.rs`
 //!
 //! It's best to read all the comments from top to bottom to get a better understanding of the api.
 

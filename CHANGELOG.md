@@ -38,6 +38,7 @@ Here's a migration check-list:
 
 * Update the library: Rename `iai-callgrind` to `gungraun` in your `Cargo.toml`
   and use a version `>=0.17.0`.
+* Update all usages of `use iai_callgrind` to `use gungraun`
 * Update the binary: Uninstall the old binary with `cargo uninstall
   iai-callgrind-runner`. Install the new binary for example with binstall:
   `cargo binstall gungraun-runner@0.17.0`
