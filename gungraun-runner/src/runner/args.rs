@@ -65,7 +65,6 @@ pub enum TruncateDescription {
     None,
 }
 
-// TODO: Fix about and use new description
 /// The command line arguments the user provided after `--` when running cargo bench
 ///
 /// These arguments are not the command line arguments passed to `gungraun-runner`. We collect
@@ -76,7 +75,7 @@ pub enum TruncateDescription {
 #[command(
     author,
     version,
-    about = "High-precision and consistent benchmarking framework/harness for Rust
+    about = "High-precision, one-shot and consistent benchmarking framework/harness for Rust
 
 Boolish command line arguments take also one of `y`, `yes`, `t`, `true`, `on`, `1`
 instead of `true` and one of `n`, `no`, `f`, `false`, `off`, and `0` instead of
