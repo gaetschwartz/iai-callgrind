@@ -39,6 +39,7 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use args::CommandLineArgs;
+use clap::Parser;
 use common::{BenchmarkSummaries, Config, ModulePath};
 use format::OutputFormatKind;
 use log::debug;
@@ -50,6 +51,12 @@ use crate::error::Error;
 
 /// The default toggle/frame used by the [`crate::api::EntryPoint::Default`]
 pub const DEFAULT_TOGGLE: &str = "*::__gungraun_wrapper_mod::*";
+
+enum Cli {
+    Runner(RunnerArgs),
+    Help,
+    Version,
+}
 
 /// Execute post benchmark run actions like printing the summary line with regressions
 #[derive(Debug)]
@@ -74,6 +81,19 @@ struct RunnerArgs {
 }
 
 struct RunnerArgsIterator(ArgsOs);
+
+impl Cli {
+    fn parse() -> Result<Self> {
+        let mut args = std::env::args_os().skip(1);
+
+        let next = args.next().map(|s| s.to_string_lossy().into_owned());
+        match next.as_deref() {
+            Some("--help" | "-h") | None => Ok(Self::Help),
+            Some("--version" | "-V") => Ok(Self::Version),
+            _ => Ok(Self::Runner(RunnerArgs::new()?)),
+        }
+    }
+}
 
 impl PostRun {
     /// Create a new `PostRun`
@@ -230,6 +250,18 @@ where
 
 /// Run this benchmark
 pub fn run() -> Result<()> {
+    let runner_args = match Cli::parse()? {
+        Cli::Runner(runner_args) => runner_args,
+        Cli::Help => {
+            CommandLineArgs::parse_from(["--help"]);
+            return Ok(());
+        }
+        Cli::Version => {
+            CommandLineArgs::parse_from(["--version"]);
+            return Ok(());
+        }
+    };
+
     let RunnerArgs {
         bench_kind,
         package_dir,
@@ -238,7 +270,7 @@ pub fn run() -> Result<()> {
         module,
         bench_bin,
         num_bytes,
-    } = RunnerArgs::new()?;
+    } = runner_args;
 
     let post_run = match bench_kind {
         BenchmarkKind::LibraryBenchmark => {

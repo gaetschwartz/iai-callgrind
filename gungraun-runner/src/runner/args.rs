@@ -65,6 +65,7 @@ pub enum TruncateDescription {
     None,
 }
 
+// TODO: Fix about and use new description
 /// The command line arguments the user provided after `--` when running cargo bench
 ///
 /// These arguments are not the command line arguments passed to `gungraun-runner`. We collect
