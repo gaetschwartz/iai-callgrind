@@ -154,7 +154,7 @@ jobs:
         env:
           # GUNGRAUN_LOG: trace
           RUST_BACKTRACE: "0"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: ${{ !cancelled() }}
         with:
           name: gungraun-benchmarks-${{ matrix.toolchain }}
