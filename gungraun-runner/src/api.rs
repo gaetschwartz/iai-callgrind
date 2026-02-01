@@ -631,11 +631,12 @@ pub enum DhatMetrics {
 /// The `Direction` in which the flamegraph should grow.
 ///
 /// The default is `TopToBottom`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum Direction {
     /// Grow from top to bottom with the highest event costs at the top
     TopToBottom,
     /// Grow from bottom to top with the highest event costs at the bottom
+    #[default]
     BottomToTop,
 }
 
@@ -1630,12 +1631,6 @@ impl FromStr for DhatMetrics {
             // Use `string` instead of `lower` for the correct error message
             None => DhatMetric::from_str(string).map(Self::SingleMetric),
         }
-    }
-}
-
-impl Default for Direction {
-    fn default() -> Self {
-        Self::BottomToTop
     }
 }
 

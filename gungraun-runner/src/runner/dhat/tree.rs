@@ -55,7 +55,7 @@ pub struct DhatTree {
 /// The [`Node`] in a [`Tree`]
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Node {
-    children: Vec<Node>,
+    children: Vec<Self>,
     data: Data,
     prefix: Vec<usize>,
 }

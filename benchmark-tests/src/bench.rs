@@ -689,16 +689,20 @@ impl BenchmarkOutput {
                         let percent = caps.name("percent").unwrap().as_str();
                         let num = &percent[1..percent.len() - 2];
                         let pos = num.find(['+', '-']);
-                        if pos.is_some() && num[pos.unwrap() + 1..].parse::<f64>().is_ok() {
-                            write!(
-                                string,
-                                "{white1}({}{}%)",
-                                &num[..pos.unwrap() + 1],
-                                " ".repeat(num.len() - pos.unwrap() - 1)
-                            )
-                            .unwrap();
-                        } else {
-                            write!(string, "{white1}{percent}").unwrap();
+
+                        match pos {
+                            Some(pos) if num[pos + 1..].parse::<f64>().is_ok() => {
+                                write!(
+                                    string,
+                                    "{white1}({}{}%)",
+                                    &num[..pos + 1],
+                                    " ".repeat(num.len() - pos - 1)
+                                )
+                                .unwrap();
+                            }
+                            Some(_) | None => {
+                                write!(string, "{white1}{percent}").unwrap();
+                            }
                         }
                     }
                     if caps.name("diff_factor").is_some() {
@@ -706,16 +710,19 @@ impl BenchmarkOutput {
                         let factor = caps.name("factor").unwrap().as_str();
                         let num = &factor[1..factor.len() - 2];
                         let pos = num.find(['+', '-']);
-                        if pos.is_some() && num[pos.unwrap() + 1..].parse::<f64>().is_ok() {
-                            write!(
-                                string,
-                                "{white2}[{}{}x]",
-                                &num[..pos.unwrap() + 1],
-                                " ".repeat(num.len() - pos.unwrap() - 1)
-                            )
-                            .unwrap();
-                        } else {
-                            write!(string, "{white2}{factor}").unwrap();
+                        match pos {
+                            Some(pos) if num[pos + 1..].parse::<f64>().is_ok() => {
+                                write!(
+                                    string,
+                                    "{white2}[{}{}x]",
+                                    &num[..pos + 1],
+                                    " ".repeat(num.len() - pos - 1)
+                                )
+                                .unwrap();
+                            }
+                            Some(_) | None => {
+                                write!(string, "{white2}{factor}").unwrap();
+                            }
                         }
                     }
                 }

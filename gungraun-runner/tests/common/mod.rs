@@ -162,6 +162,7 @@ impl RunnerOutput {
 }
 
 impl Version {
+    #[allow(clippy::needless_collect)]
     pub fn new(version: &str) -> Self {
         let [major, minor, patch] = version
             .split('.')
