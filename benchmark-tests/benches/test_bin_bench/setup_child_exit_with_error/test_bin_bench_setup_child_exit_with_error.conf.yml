@@ -1,12 +1,12 @@
 groups:
   - runs:
       - args: ["--nocapture"]
-        rust_version: "=nightly"
+        rust_version: "<=1.74.1"
         expected:
           exit_code: 1
-          stderr: expected_stderr.nightly
+          stderr: expected_stderr.msrv
       - args: ["--nocapture"]
-        rust_version: "!=nightly"
+        rust_version: ">1.74.1"
         expected:
           exit_code: 1
-          stderr: expected_stderr.not-nightly
+          stderr: expected_stderr.not-msrv
