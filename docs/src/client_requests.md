@@ -121,7 +121,7 @@ main!(library_benchmark_groups = my_group);
 
 The default [`EntryPoint`][EntryPoint] sets the [`--toggle-collect`][Callgrind
 Arguments] to the benchmark function (here `bench_function`) and
-`--collect-at-start=no`. So, `Callgrind` starts collecting the events when
+`--collect-atstart=no`. So, `Callgrind` starts collecting the events when
 entering the benchmark function, not the moment `start_instrumentation` is
 called. This behaviour can be remedied with `EntryPoint::None`:
 
@@ -153,7 +153,7 @@ pub mod my_lib {
 
 #[library_benchmark(
     config = LibraryBenchmarkConfig::default()
-        .tool(Callgrind::with_args(["--collect-at-start=no"])
+        .tool(Callgrind::with_args(["--collect-atstart=no"])
             .entry_point(EntryPoint::None)
         )
 )]
@@ -170,8 +170,8 @@ main!(library_benchmark_groups = my_group);
 ```
 
 As the standard toggle is now switched off and the option
-`--collect-at-start=no` is also omitted, you must specify
-`--collect-at-start=no` manually in
+`--collect-atstart=no` is also omitted, you must specify
+`--collect-atstart=no` manually in
 `LibraryBenchmarkConfig::raw_callgrind_args`.
 
 Please see the
