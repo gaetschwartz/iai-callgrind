@@ -51,27 +51,24 @@ fn group_teardown() {
 }
 
 library_benchmark_group!(
-    name = simple_group_with_setup;
-    setup = group_setup();
-    teardown = group_teardown();
-    benchmarks = simple_bench, check_file_exists
+    name = simple_group_with_setup,
+    setup = group_setup(),
+    teardown = group_teardown(),
+    benchmarks = [simple_bench, check_file_exists]
 );
 
 // No setup and teardown
-library_benchmark_group!(
-    name = check_group;
-    benchmarks = check_file_not_exists
-);
+library_benchmark_group!(name = check_group, benchmarks = check_file_not_exists);
 
 library_benchmark_group!(
-    name = group_only_setup;
-    setup = group_setup();
+    name = group_only_setup,
+    setup = group_setup(),
     benchmarks = delete_file_bench
 );
 
 library_benchmark_group!(
-    name = group_only_teardown;
-    teardown = group_teardown();
+    name = group_only_teardown,
+    teardown = group_teardown(),
     benchmarks = create_file_bench
 );
 
@@ -84,12 +81,14 @@ fn main_teardown() {
 }
 
 main!(
-    setup = main_setup();
-    teardown = main_teardown();
-    library_benchmark_groups = simple_group_with_setup,
-    // Check group is supposed to run directory after `simple_group_with_setup`
-    check_group,
-    // The groups below can be run in any order
-    group_only_setup,
-    group_only_teardown
+    setup = main_setup(),
+    teardown = main_teardown(),
+    library_benchmark_groups = [
+        simple_group_with_setup,
+        // Check group is supposed to run directory after `simple_group_with_setup`
+        check_group,
+        // The groups below can be run in any order
+        group_only_setup,
+        group_only_teardown
+    ]
 );

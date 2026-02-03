@@ -19,13 +19,9 @@ fn bench_fibonacci(value: u64) -> u64 {
     black_box(fibonacci(value))
 }
 
-library_benchmark_group!(
-    name = bench_fibonacci_group;
-    benchmarks = bench_fibonacci
-);
+library_benchmark_group!(name = bench_fibonacci_group, benchmarks = bench_fibonacci);
 
 main!(
-    config = LibraryBenchmarkConfig::default()
-        .tool(Callgrind::with_args(["collect-jumps=yes"]));
+    config = LibraryBenchmarkConfig::default().tool(Callgrind::with_args(["collect-jumps=yes"])),
     library_benchmark_groups = bench_fibonacci_group
 );

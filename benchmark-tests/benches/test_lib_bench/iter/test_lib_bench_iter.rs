@@ -95,17 +95,17 @@ where
 }
 
 library_benchmark_group!(
-    name = my_group;
-    benchmarks =
+    name = my_group,
+    benchmarks = [
         bench_when_tuple,
         bench_single,
         bench_allocation,
         bench_generic
+    ]
 );
+
 main!(
     config = LibraryBenchmarkConfig::default()
-        .output_format(OutputFormat::default()
-            .truncate_description(None)
-        );
+        .output_format(OutputFormat::default().truncate_description(None)),
     library_benchmark_groups = my_group
 );

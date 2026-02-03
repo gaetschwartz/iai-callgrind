@@ -94,9 +94,11 @@ fn alloc_in_func(start: i32) -> Vec<i32> {
     setup_worst_case_array(start)
 }
 
-library_benchmark_group!(name = my_group; benchmarks = heap, copy, ad_hoc, alloc_in_func);
+library_benchmark_group!(
+    name = my_group,
+    benchmarks = [heap, copy, ad_hoc, alloc_in_func]
+);
 main!(
-    config = LibraryBenchmarkConfig::default()
-        .default_tool(ValgrindTool::DHAT);
+    config = LibraryBenchmarkConfig::default().default_tool(ValgrindTool::DHAT),
     library_benchmark_groups = my_group
 );

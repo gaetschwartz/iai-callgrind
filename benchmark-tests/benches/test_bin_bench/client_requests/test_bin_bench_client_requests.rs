@@ -10,10 +10,9 @@ fn run() -> Command {
 }
 
 binary_benchmark_group!(
-    name = client_requests;
-    config = BinaryBenchmarkConfig::default()
-        .tool(Callgrind::with_args(["--instr-atstart=no"]));
-    benchmarks = run,
+    name = client_requests,
+    config = BinaryBenchmarkConfig::default().tool(Callgrind::with_args(["--instr-atstart=no"])),
+    benchmarks = run
 );
 
 main!(binary_benchmark_groups = client_requests);

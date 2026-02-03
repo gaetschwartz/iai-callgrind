@@ -14,14 +14,11 @@ fn bench_library(array: Vec<i32>) -> Vec<i32> {
     black_box(my_lib::bubble_sort(array))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_library);
+library_benchmark_group!(name = my_group, benchmarks = bench_library);
 
 main!(
-    config = LibraryBenchmarkConfig::default()
-        .tool(Dhat::default()
-            .entry_point(
-                EntryPoint::Custom("*::setup_worst_case_array".to_owned())
-            )
-        );
+    config = LibraryBenchmarkConfig::default().tool(
+        Dhat::default().entry_point(EntryPoint::Custom("*::setup_worst_case_array".to_owned()))
+    ),
     library_benchmark_groups = my_group
 );

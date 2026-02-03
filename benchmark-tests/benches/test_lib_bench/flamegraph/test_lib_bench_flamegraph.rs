@@ -88,12 +88,13 @@ fn function_with_many_stacks() {
 }
 
 library_benchmark_group!(
-    name = benches;
-    benchmarks =
+    name = benches,
+    benchmarks = [
         bench_level_flamegraphs,
         without_bench_attribute,
         main_level_flamegraph_config,
         function_with_many_stacks
+    ]
 );
 
 #[library_benchmark]
@@ -103,21 +104,19 @@ fn recursive_function(n: u64) -> u64 {
 }
 
 library_benchmark_group!(
-    name = recursive;
-    config = LibraryBenchmarkConfig::default()
-        .tool(Callgrind::default()
-            .flamegraph(
+    name = recursive,
+    config =
+        LibraryBenchmarkConfig::default()
+            .tool(Callgrind::default().flamegraph(
                 FlamegraphConfig::default().title("Group level flamegraph".to_owned())
-            )
-        );
+            )),
     benchmarks = recursive_function
 );
 
 main!(
-    config = LibraryBenchmarkConfig::default()
-        .tool(Callgrind::default()
-            .flamegraph(
-                FlamegraphConfig::default().title("Main level flamegraph".to_owned())
-            )
-        );
-    library_benchmark_groups = benches, recursive);
+    config = LibraryBenchmarkConfig::default().tool(
+        Callgrind::default()
+            .flamegraph(FlamegraphConfig::default().title("Main level flamegraph".to_owned()))
+    ),
+    library_benchmark_groups = [benches, recursive]
+);

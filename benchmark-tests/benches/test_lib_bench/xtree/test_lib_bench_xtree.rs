@@ -78,10 +78,12 @@ fn bench_with_xtree_in_subprocess(end: usize) -> std::io::Result<std::process::O
 }
 
 library_benchmark_group!(
-    name = my_group;
-    benchmarks =
+    name = my_group,
+    benchmarks = [
         bench_with_xtree_no_leak,
         bench_with_xtree_in_subprocess,
         bench_with_memcheck_when_leak
+    ]
 );
+
 main!(library_benchmark_groups = my_group);

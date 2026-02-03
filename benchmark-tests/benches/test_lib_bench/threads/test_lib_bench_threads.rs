@@ -76,13 +76,14 @@ fn bench_thread_in_thread_in_subprocess() {
 }
 
 library_benchmark_group!(
-    name = bench_group;
-    compare_by_id = true;
-    benchmarks =
+    name = bench_group,
+    compare_by_id = true,
+    benchmarks = [
         bench_find_primes_multi_thread,
         bench_thread_in_subprocess,
         bench_thread_in_thread,
         bench_thread_in_thread_in_subprocess
+    ]
 );
 
 main!(
@@ -99,6 +100,6 @@ main!(
                 "--suppressions=benches/test_lib_bench/threads/valgrind-suppressions.supp"
         ]))
         .tool(Massif::default())
-        .tool(Bbv::default());
+        .tool(Bbv::default()),
     library_benchmark_groups = bench_group
 );

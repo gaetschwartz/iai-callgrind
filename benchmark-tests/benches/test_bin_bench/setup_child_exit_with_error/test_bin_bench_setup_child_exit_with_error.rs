@@ -17,9 +17,5 @@ fn benchmark() -> gungraun::Command {
         .build()
 }
 
-binary_benchmark_group!(
-    name = group;
-    benchmarks = benchmark
-);
-
+binary_benchmark_group!(name = group, benchmarks = benchmark);
 main!(binary_benchmark_groups = group);

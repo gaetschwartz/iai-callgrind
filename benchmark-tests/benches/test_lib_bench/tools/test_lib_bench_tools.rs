@@ -92,20 +92,26 @@ fn bad_memory() {
     }
 }
 library_benchmark_group!(
-    name = bench_group;
-    benchmarks = bench_bubble_sort_allocate, bench_subprocess, bench_bubble_sort, bad_memory
+    name = bench_group,
+    benchmarks = [
+        bench_bubble_sort_allocate,
+        bench_subprocess,
+        bench_bubble_sort,
+        bad_memory
+    ]
 );
 
 main!(
     config = LibraryBenchmarkConfig::default()
-        .tool(Callgrind::default()
-            .soft_limits([(EventKind::Ir, 5.0), (EventKind::EstimatedCycles, 10.0)])
+        .tool(
+            Callgrind::default()
+                .soft_limits([(EventKind::Ir, 5.0), (EventKind::EstimatedCycles, 10.0)])
         )
         .tool(Dhat::with_args(["--time-stamp=yes"]))
         .tool(Massif::default())
         .tool(Bbv::default())
         .tool(Memcheck::with_args(["--time-stamp=yes"]))
         .tool(Drd::default())
-        .tool(Helgrind::default());
+        .tool(Helgrind::default()),
     library_benchmark_groups = bench_group
 );

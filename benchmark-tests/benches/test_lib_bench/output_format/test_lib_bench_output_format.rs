@@ -285,22 +285,27 @@ fn bench_with_tolerance(map: HashMap<String, usize>) -> Option<usize> {
 }
 
 library_benchmark_group!(
-    name = my_group;
+    name = my_group,
     config = LibraryBenchmarkConfig::default()
-        .tool(Callgrind::with_args([
-            "--toggle-collect=benchmark_tests::find_primes_multi_thread",
-            "--toggle-collect=benchmark_tests::find_primes"
+        .tool(
+            Callgrind::with_args([
+                "--toggle-collect=benchmark_tests::find_primes_multi_thread",
+                "--toggle-collect=benchmark_tests::find_primes"
             ])
             .entry_point(EntryPoint::None)
         )
-        .tool(Dhat::default());
-    compare_by_id = true;
-    benchmarks = bench_without_format, bench_with_format
+        .tool(Dhat::default()),
+    compare_by_id = true,
+    benchmarks = [bench_without_format, bench_with_format]
 );
 
 library_benchmark_group!(
-    name = custom_format;
-    benchmarks = bench_with_custom_callgrind_format, bench_with_custom_format, bench_with_tolerance
+    name = custom_format,
+    benchmarks = [
+        bench_with_custom_callgrind_format,
+        bench_with_custom_format,
+        bench_with_tolerance
+    ]
 );
 
-main!(library_benchmark_groups = my_group, custom_format);
+main!(library_benchmark_groups = [my_group, custom_format]);

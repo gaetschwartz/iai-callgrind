@@ -75,16 +75,16 @@ fn bench_multiple_threads_in_subprocess() -> ExitStatus {
 }
 
 library_benchmark_group!(
-    name = my_group;
-    benchmarks =
+    name = my_group,
+    benchmarks = [
         bench_no_thread,
         bench_multiple_threads,
         bench_multiple_threads_in_subprocess
+    ]
 );
 
 main!(
     config = LibraryBenchmarkConfig::default()
-        .output_format(OutputFormat::default()
-            .show_intermediate(true)
-        );
-    library_benchmark_groups = my_group);
+        .output_format(OutputFormat::default().show_intermediate(true)),
+    library_benchmark_groups = my_group
+);

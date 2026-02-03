@@ -11,10 +11,10 @@ fn bench_library(data: Vec<i32>) -> Vec<i32> {
     black_box(my_lib::bubble_sort(data))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_library);
+library_benchmark_group!(name = my_group, benchmarks = bench_library);
 
 main!(
     config = LibraryBenchmarkConfig::default()
-        .tool(Callgrind::default().soft_limits([(EventKind::Ir, 5.0)]));
+        .tool(Callgrind::default().soft_limits([(EventKind::Ir, 5.0)])),
     library_benchmark_groups = my_group
 );

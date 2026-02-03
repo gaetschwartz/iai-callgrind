@@ -165,16 +165,18 @@ fn bench_fibonacci_with_config_at_bench_level(first: u64, second: u64) -> u64 {
 // soon as a performance regression happens. This'll overwrite `limits` and `fail_fast` of the
 // configuration of the `main!` macro.
 library_benchmark_group!(
-    name = bubble_sort;
-    config = LibraryBenchmarkConfig::default()
-        .tool(Callgrind::default()
-            .soft_limits([(EventKind::Ir, 10.0)]).fail_fast(false)
-        );
-    benchmarks =
+    name = bubble_sort,
+    config = LibraryBenchmarkConfig::default().tool(
+        Callgrind::default()
+            .soft_limits([(EventKind::Ir, 10.0)])
+            .fail_fast(false)
+    ),
+    benchmarks = [
         bench_bubble_sort_empty,
         bench_bubble_sort,
         bench_bubble_sort_with_benches_attribute,
         bench_bubble_sort_with_multiple_parameters
+    ]
 );
 
 // In our example file here, we could have put the fibonacci benchmarks into the same group as the
@@ -186,14 +188,14 @@ library_benchmark_group!(
 // are shown separately in the output of the callgrind run and the output files of a callgrind run
 // are put in separate folders for each group.
 library_benchmark_group!(
-    name = fibonacci;
-    config = LibraryBenchmarkConfig::default()
-        .tool(Dhat::default().enable(false));
-    benchmarks =
+    name = fibonacci,
+    config = LibraryBenchmarkConfig::default().tool(Dhat::default().enable(false)),
+    benchmarks = [
         bench_fibonacci_sum,
         bench_fibonacci_with_config,
         bench_fibonacci_with_config_at_bench_level,
         bench_fibonacci_with_iter
+    ]
 );
 
 // Finally, the mandatory main! macro which collects all `library_benchmark_groups` and optionally
@@ -220,11 +222,11 @@ library_benchmark_group!(
 // of the callgrind runs in `target/gungraun/...`.
 main!(
     config = LibraryBenchmarkConfig::default()
-        .tool(Callgrind::default()
-            .soft_limits([(EventKind::Ir, 5.0), (EventKind::EstimatedCycles, 10.0)])
-        )
         .tool(
-            Dhat::default()
+            Callgrind::default()
+                .soft_limits([(EventKind::Ir, 5.0), (EventKind::EstimatedCycles, 10.0)])
+        )
+        .tool(Dhat::default()
                 // The default entry point of `Dhat`, similar to `Callgrind`, excludes setup costs.
                 // As a result, it does not account for memory reads and writes in the bubble sort
                 // function, since the arrays are allocated outside the benchmark function during
@@ -232,6 +234,6 @@ main!(
                 // Fortunately, all our bubble sort benchmark functions contain the string
                 // `bench_bubble_sort`, making it easy to identify them.
                 .entry_point(EntryPoint::Custom("*bench_bubble_sort*".to_owned())
-        )
-    );
-    library_benchmark_groups = bubble_sort, fibonacci);
+        )),
+    library_benchmark_groups = [bubble_sort, fibonacci]
+);

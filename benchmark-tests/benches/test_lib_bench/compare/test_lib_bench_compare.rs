@@ -43,29 +43,35 @@ fn bench_bubble_sort_dhat_other(input: Vec<i32>) -> Vec<i32> {
 }
 
 library_benchmark_group!(
-    name = bubble_sort_compare_one;
-    compare_by_id = true;
+    name = bubble_sort_compare_one,
+    compare_by_id = true,
     benchmarks = bench_bubble_sort_best_case
 );
 
 library_benchmark_group!(
-    name = bubble_sort_compare_two;
-    compare_by_id = true;
-    benchmarks = bench_bubble_sort_best_case, bench_bubble_sort_worst_case
+    name = bubble_sort_compare_two,
+    compare_by_id = true,
+    benchmarks = [bench_bubble_sort_best_case, bench_bubble_sort_worst_case]
 );
 
 library_benchmark_group!(
-    name = bubble_sort_compare_three;
-    compare_by_id = true;
-    benchmarks =
-        bench_bubble_sort_best_case, bench_bubble_sort_worst_case, bench_bubble_sort_mixed_case
+    name = bubble_sort_compare_three,
+    compare_by_id = true,
+    benchmarks = [
+        bench_bubble_sort_best_case,
+        bench_bubble_sort_worst_case,
+        bench_bubble_sort_mixed_case
+    ]
 );
 
 library_benchmark_group!(
-    name = bubble_sort_compare_with_dhat;
-    compare_by_id = true;
-    benchmarks =
-        bench_bubble_sort_dhat, bench_bubble_sort_dhat_other, bench_bubble_sort_mixed_case
+    name = bubble_sort_compare_with_dhat,
+    compare_by_id = true,
+    benchmarks = [
+        bench_bubble_sort_dhat,
+        bench_bubble_sort_dhat_other,
+        bench_bubble_sort_mixed_case
+    ]
 );
 
 #[library_benchmark]
@@ -79,17 +85,17 @@ fn bench_bubble_sort_no_id_2() -> Vec<i32> {
 }
 
 library_benchmark_group!(
-    name = bubble_sort_compare_no_id;
-    compare_by_id = true;
-    benchmarks =
-        bench_bubble_sort_no_id_1,
-        bench_bubble_sort_no_id_2,
+    name = bubble_sort_compare_no_id,
+    compare_by_id = true,
+    benchmarks = [bench_bubble_sort_no_id_1, bench_bubble_sort_no_id_2]
 );
 
 main!(
-    library_benchmark_groups = bubble_sort_compare_one,
-    bubble_sort_compare_two,
-    bubble_sort_compare_three,
-    bubble_sort_compare_no_id,
-    bubble_sort_compare_with_dhat,
+    library_benchmark_groups = [
+        bubble_sort_compare_one,
+        bubble_sort_compare_two,
+        bubble_sort_compare_three,
+        bubble_sort_compare_no_id,
+        bubble_sort_compare_with_dhat
+    ]
 );

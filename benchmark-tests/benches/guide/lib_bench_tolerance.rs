@@ -26,5 +26,5 @@ fn bench_hash_map(map: HashMap<String, usize>) -> Option<usize> {
     )
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_hash_map);
+library_benchmark_group!(name = my_group, benchmarks = bench_hash_map);
 main!(library_benchmark_groups = my_group);

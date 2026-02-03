@@ -76,15 +76,13 @@ fn with_current_dir() -> gungraun::Command {
 }
 
 binary_benchmark_group!(
-    name = my_group;
-    benchmarks = with_sandbox, without_sandbox, with_current_dir
+    name = my_group,
+    benchmarks = [with_sandbox, without_sandbox, with_current_dir]
 );
 
 main!(
     config = BinaryBenchmarkConfig::default()
         .sandbox(Sandbox::new(true))
-        .output_format(OutputFormat::default()
-            .truncate_description(None)
-        );
+        .output_format(OutputFormat::default().truncate_description(None)),
     binary_benchmark_groups = my_group
 );
