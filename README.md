@@ -134,9 +134,6 @@ for inclusion in the work by you shall be dual licensed as in
   DHAT.
 - [cargo-valgrind](https://github.com/jfrimmel/cargo-valgrind): A cargo
   subcommand, that runs valgrind and collects its output in a helpful manner.
-- [crabgrind](https://github.com/2dav/crabgrind): Valgrind Client Request
-  interface for Rust programs. A small library that enables Rust programs to tap
-  into Valgrind's tools and virtualized environment.
 
 ### Credits
 
