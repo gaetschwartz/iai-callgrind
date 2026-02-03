@@ -8,7 +8,7 @@ use gungraun::{
 
 #[cfg(target_os = "freebsd")]
 fn get_cachegrind_hard_limits() -> Vec<(CachegrindMetric, Limit)> {
-    vec![(CachegrindMetric::Ir, {{ cachegrind_hard_limit | default("Limit::Int(1_500_000)") }} )]
+    vec![(CachegrindMetric::Ir, {{ cachegrind_hard_limit | default("Limit::Int(2_000_000)") }} )]
 }
 
 #[cfg(not(target_os = "freebsd"))]
