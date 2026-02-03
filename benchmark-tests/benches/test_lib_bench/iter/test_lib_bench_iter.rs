@@ -60,7 +60,7 @@ fn bench_single(num: u64) -> u64 {
     iter = vec![1, 2],
     config = LibraryBenchmarkConfig::default()
         .tool(Dhat::default()
-            .frames(["*::setup_with_alloc"])
+            .frames(["*::setup_with_alloc", "*::setup_worst_case_array"])
         ),
     setup = setup_with_alloc
 )]
