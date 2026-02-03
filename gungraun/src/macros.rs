@@ -387,6 +387,32 @@ macro_rules! main {
         }
     };
     (
+        $( config = $config:expr, $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        binary_benchmark_groups = $group:ident
+    ) => {
+        main!(
+            $( config = $config; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            binary_benchmark_groups = $group
+        );
+    };
+    (
+        $( config = $config:expr, $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        binary_benchmark_groups = [ $( $group:ident ),+ $(,)* ]
+    ) => {
+        main!(
+            $( config = $config; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            binary_benchmark_groups = $( $group ),+
+        );
+    };
+    (
         $( config = $config:expr; $(;)* )?
         $( setup = $setup:expr ; $(;)* )?
         $( teardown = $teardown:expr ; $(;)* )?
@@ -542,6 +568,32 @@ macro_rules! main {
                 std::hint::black_box(__run());
             };
         }
+    };
+    (
+        $( config = $config:expr , $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        library_benchmark_groups = $group:ident
+    ) => {
+        main!(
+            $( config = $config; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            library_benchmark_groups = $group
+        );
+    };
+    (
+        $( config = $config:expr , $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        library_benchmark_groups = [ $( $group:ident ),+ $(,)* ]
+    ) => {
+        main!(
+            $( config = $config; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            library_benchmark_groups = $( $group ),+
+        );
     };
     (
         callgrind_args = $( $args:literal ),* $(,)*; $(;)*
@@ -948,6 +1000,40 @@ macro_rules! binary_benchmark_group {
         }
     };
     (
+        name = $name:ident, $(,)*
+        $( config = $config:expr , $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr, $(,)* )?
+        $( teardown = $teardown:expr, $(,)* )?
+        benchmarks = $function:ident
+    ) => {
+        binary_benchmark_group!(
+            name = $name;
+            $( config = $config; )?
+            $( compare_by_id = $compare; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            benchmarks = $function
+        );
+    };
+    (
+        name = $name:ident, $(,)*
+        $( config = $config:expr , $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr, $(,)* )?
+        $( teardown = $teardown:expr, $(,)* )?
+        benchmarks = [ $( $function:ident ),+ $(,)* ]
+    ) => {
+        binary_benchmark_group!(
+            name = $name;
+            $( config = $config; )?
+            $( compare_by_id = $compare; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            benchmarks = $( $function ),+
+        );
+    };
+    (
         $( config = $config:expr; $(;)* )?
         $( compare_by_id = $compare:literal ; $(;)* )?
         $( setup = $setup:expr; $(;)* )?
@@ -1164,6 +1250,40 @@ macro_rules! binary_benchmark_group {
             benchmarks = |$group: &mut BinaryBenchmarkGroup| $body
         );
     };
+    (
+        name = $name:ident, $(,)*
+        $( config = $config:expr, $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr, $(,)* )?
+        $( teardown = $teardown:expr, $(,)* )?
+        benchmarks = |$group:ident: &mut BinaryBenchmarkGroup| $body:expr
+    ) => {
+        binary_benchmark_group!(
+            name = $name;
+            $( config = $config; )?
+            $( compare_by_id = $compare; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            benchmarks = |$group: &mut BinaryBenchmarkGroup| $body
+        );
+    };
+    (
+        name = $name:ident, $(,)*
+        $( config = $config:expr, $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr, $(,)* )?
+        $( teardown = $teardown:expr, $(,)* )?
+        benchmarks = |$group:ident| $body:expr
+    ) => {
+        binary_benchmark_group!(
+            name = $name;
+            $( config = $config; )?
+            $( compare_by_id = $compare; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            benchmarks = |$group: &mut BinaryBenchmarkGroup| $body
+        );
+    };
 }
 
 /// Macro used to define a group of library benchmarks
@@ -1328,5 +1448,39 @@ macro_rules! library_benchmark_group {
                 }
             }
         }
+    };
+    (
+        name = $name:ident, $(,)*
+        $( config = $config:expr , $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        benchmarks = $function:ident
+    ) => {
+        library_benchmark_group!(
+            name = $name;
+            $( config = $config; )?
+            $( compare_by_id = $compare; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            benchmarks = $function
+        );
+    };
+    (
+        name = $name:ident, $(,)*
+        $( config = $config:expr , $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        benchmarks = [ $( $function:ident ),+ $(,)* ]
+    ) => {
+        library_benchmark_group!(
+            name = $name;
+            $( config = $config; )?
+            $( compare_by_id = $compare; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            benchmarks = $( $function ),+
+        );
     };
 }
