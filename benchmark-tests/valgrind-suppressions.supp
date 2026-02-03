@@ -5,7 +5,7 @@
    fun:_ZN3std3sys3pal4unix14stack_overflow11thread_info16set_current_info*
    fun:_ZN3std3sys3pal4unix14stack_overflow3imp12make_handler*
    fun:new
-   fun:_ZN3std3sys3pal4unix6thread6Thread3new12thread_start*
+   fun:_ZN3std3sys*Thread3new12thread_start*
    ...
 }
 {
@@ -15,7 +15,7 @@
    fun:_ZN3std3sys3pal4unix14stack_overflow11thread_info16set_current_info*
    fun:_ZN3std3sys3pal4unix14stack_overflow3imp12make_handler*
    fun:new
-   fun:_ZN3std3sys3pal4unix6thread6Thread3new12thread_start*
+   fun:_ZN3std3sys*Thread3new12thread_start*
    obj:*/valgrind/vgpreload_drd-amd64-linux.so
    ...
    fun:clone
@@ -28,7 +28,7 @@
    fun:_ZN3std3sys3pal4unix14stack_overflow3imp12drop_handler*
    fun:drop
    fun:drop_in_place<std::sys::pal::unix::stack_overflow::Handler>
-   fun:_ZN3std3sys3pal4unix6thread6Thread3new12thread_start*
+   fun:_ZN3std3sys*Thread3new12thread_start*
    ...
 }
 {
@@ -39,7 +39,7 @@
    fun:_ZN3std3sys3pal4unix14stack_overflow3imp12drop_handler*
    fun:drop
    fun:drop_in_place<std::sys::pal::unix::stack_overflow::Handler>
-   fun:_ZN3std3sys3pal4unix6thread6Thread3new12thread_start*
+   fun:_ZN3std3sys*Thread3new12thread_start*
    obj:*/valgrind/vgpreload_drd-amd64-linux.so
    ...
    fun:clone

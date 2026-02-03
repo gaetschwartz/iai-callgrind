@@ -512,7 +512,7 @@ impl From<api::Delay> for Delay {
                     "Poll duration is equal to or greater than the timeout duration ({poll:?} >= \
                      {timeout:?})."
                 );
-                poll = timeout - Duration::from_millis(5);
+                poll = timeout.saturating_sub(Duration::from_millis(5));
                 warn!("Using poll duration {poll:?} instead");
             }
             (poll, timeout)
