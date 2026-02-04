@@ -203,4 +203,5 @@ library_benchmark_group!(
         bench_multi_threads
     ]
 );
+
 main!(library_benchmark_groups = my_group);

@@ -17,7 +17,7 @@ use gungraun::{
 };
 
 binary_benchmark_group!(
-    name = my_group;
+    name = my_group,
     benchmarks = |group: &mut BinaryBenchmarkGroup| {
         group.binary_benchmark(BinaryBenchmark::new("bench_binary")
             .bench(Bench::new("some_id")
@@ -82,7 +82,7 @@ fn attribute_benchmark(arg: &str) -> gungraun::Command {
 }
 
 binary_benchmark_group!(
-    name = low_level;
+    name = low_level,
     benchmarks = |group: &mut BinaryBenchmarkGroup| {
         group
             .binary_benchmark(binary_benchmark_attribute!(attribute_benchmark))

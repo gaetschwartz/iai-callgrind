@@ -29,7 +29,7 @@ fn bench_bubble_sort_with_benches_attribute(input: Vec<i32>) -> Vec<i32> {
     black_box(bubble_sort(input))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_bubble_sort_with_benches_attribute);
+library_benchmark_group!(name = my_group, benchmarks = bench_bubble_sort_with_benches_attribute);
 # fn main () {
 main!(library_benchmark_groups = my_group);
 # }
@@ -64,7 +64,7 @@ fn bench_bubble_sort_with_benches_attribute(input: Vec<i32>) -> Vec<i32> {
     black_box(bubble_sort(input))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_bubble_sort_with_benches_attribute);
+library_benchmark_group!(name = my_group, benchmarks = bench_bubble_sort_with_benches_attribute);
 # fn main () {
 main!(library_benchmark_groups = my_group);
 # }
@@ -94,7 +94,7 @@ fn some_bench(input: u64) -> String {
     black_box(my_lib::u64_to_string(input))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = some_bench);
+library_benchmark_group!(name = my_group, benchmarks = some_bench);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }
@@ -124,7 +124,7 @@ fn bench_count_lines_fast(path: PathBuf) -> usize {
     black_box(my_lib::count_lines_fast(path))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_count_lines_fast);
+library_benchmark_group!(name = my_group, benchmarks = bench_count_lines_fast);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }
@@ -163,7 +163,7 @@ fn some_bench(line: String) -> Result<u64, String> {
     black_box(my_lib::string_to_u64(line))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = some_bench);
+library_benchmark_group!(name = my_group, benchmarks = some_bench);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }
@@ -183,7 +183,7 @@ fn some_bench(line: String) -> Result<u64, String> {
     black_box(my_lib::string_to_u64(line))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = some_bench);
+library_benchmark_group!(name = my_group, benchmarks = some_bench);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }
@@ -225,7 +225,7 @@ fn some_bench((a, b, c): (u8, u8, u8)) -> (u16, u8, u8) {
     black_box(my_lib::rgb_to_hsv(black_box(a), black_box(b), black_box(c)))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = some_bench);
+library_benchmark_group!(name = my_group, benchmarks = some_bench);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }

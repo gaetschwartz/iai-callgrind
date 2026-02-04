@@ -50,12 +50,12 @@ fn bench_library() -> Vec<i32> {
     black_box(my_lib::bubble_sort(vec![3, 2, 1]))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_library);
+library_benchmark_group!(name = my_group, benchmarks = bench_library);
 
 # fn main() {
 main!(
     config = LibraryBenchmarkConfig::default()
-        .tool(Dhat::default());
+        .tool(Dhat::default()),
     library_benchmark_groups = my_group
 );
 # }

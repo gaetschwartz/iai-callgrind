@@ -36,7 +36,7 @@ fn bench() -> Vec<i32> { // <-- DEFAULT ENTRY POINT starts collecting events
     black_box(my_lib::bubble_sort(vec![3, 2, 1]))
 } // <-- stop collecting events
 
-library_benchmark_group!( name = my_group; benchmarks = bench);
+library_benchmark_group!( name = my_group, benchmarks = bench);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }
@@ -93,7 +93,7 @@ fn bench_private(array: Vec<i32>) -> Vec<i32> {
     black_box(my_lib::access_point(array))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_private);
+library_benchmark_group!(name = my_group, benchmarks = bench_private);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }

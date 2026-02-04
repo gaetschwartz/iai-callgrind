@@ -65,10 +65,9 @@
 //! #### Quickstart (#library-benchmarks)
 //!
 //! ```rust
-//! use gungraun::{
-//!     library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig
-//! };
 //! use std::hint::black_box;
+//!
+//! use gungraun::{library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig};
 //!
 //! // Our function we want to test. Just assume this is a public function in your
 //! // library.
@@ -148,12 +147,13 @@
 //!
 //! // A group in which we can put all our benchmark functions
 //! library_benchmark_group!(
-//!     name = bubble_sort_group;
-//!     benchmarks =
+//!     name = bubble_sort_group,
+//!     benchmarks = [
 //!         bench_bubble_sort_empty,
 //!         bench_bubble_sort,
 //!         bench_bubble_sort_with_benches_attribute,
 //!         bench_bubble_sort_with_multiple_parameters
+//!     ]
 //! );
 //!
 //! # fn main() {
@@ -220,11 +220,10 @@
 //!
 //! ```rust
 //! # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-//! use gungraun::{
-//!     main, binary_benchmark, binary_benchmark_group,
-//! };
-//! use std::path::PathBuf;
 //! use std::ffi::OsString;
+//! use std::path::PathBuf;
+//!
+//! use gungraun::{binary_benchmark, binary_benchmark_group, main};
 //!
 //! // In binary benchmarks there's no need to return a value from the setup function
 //! fn my_setup() {
@@ -262,7 +261,7 @@
 //! // The function can be generic, too.
 //! fn bench_bar<P>(path: P) -> gungraun::Command
 //! where
-//!    P: Into<OsString>
+//!     P: Into<OsString>,
 //! {
 //!     gungraun::Command::new(env!("CARGO_BIN_EXE_my-bar"))
 //!         .arg(path)
@@ -271,10 +270,7 @@
 //!
 //! // Put all `#[binary_benchmark]` annotated functions you want to benchmark into the `benchmarks`
 //! // section of this macro
-//! binary_benchmark_group!(
-//!     name = my_group;
-//!     benchmarks = bench_foo, bench_bar
-//! );
+//! binary_benchmark_group!(name = my_group, benchmarks = [bench_foo, bench_bar]);
 //!
 //! # fn main() {
 //! // As last step specify all groups you want to benchmark in the macro argument
@@ -335,14 +331,13 @@
 //!
 //! ```rust
 //! # use gungraun::{library_benchmark, library_benchmark_group};
-//! use gungraun::{main, LibraryBenchmarkConfig, Dhat};
+//! use gungraun::{main, Dhat, LibraryBenchmarkConfig};
 //! # #[library_benchmark]
 //! # fn some_func() {}
-//! # library_benchmark_group!(name = some_group; benchmarks = some_func);
+//! # library_benchmark_group!(name = some_group, benchmarks = some_func);
 //! # fn main() {
 //! main!(
-//!     config = LibraryBenchmarkConfig::default()
-//!                 .tool(Dhat::default());
+//!     config = LibraryBenchmarkConfig::default().tool(Dhat::default()),
 //!     library_benchmark_groups = some_group
 //! );
 //! # }
@@ -356,11 +351,10 @@
 //! use gungraun::{main, LibraryBenchmarkConfig, ValgrindTool};
 //! # #[library_benchmark]
 //! # fn some_func() {}
-//! # library_benchmark_group!(name = some_group; benchmarks = some_func);
+//! # library_benchmark_group!(name = some_group, benchmarks = some_func);
 //! # fn main() {
 //! main!(
-//!     config = LibraryBenchmarkConfig::default()
-//!                 .default_tool(ValgrindTool::DHAT);
+//!     config = LibraryBenchmarkConfig::default().default_tool(ValgrindTool::DHAT),
 //!     library_benchmark_groups = some_group
 //! );
 //! # }

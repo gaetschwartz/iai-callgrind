@@ -72,7 +72,7 @@ fn bench_library(array: Vec<i32>) -> Vec<i32> {
     black_box(my_lib::bubble_sort(array))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_library);
+library_benchmark_group!(name = my_group, benchmarks = bench_library);
 # fn main() {
 main!(
     config = LibraryBenchmarkConfig::default()
@@ -80,7 +80,7 @@ main!(
             .entry_point(
                 EntryPoint::Custom("*::setup_worst_case_array".to_owned())
             )
-        );
+        ),
     library_benchmark_groups = my_group
 );
 # }
@@ -160,12 +160,12 @@ fn bench_bubble_sort(array: Vec<i32>) -> Vec<i32> {
     black_box(my_lib::bubble_sort(array))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_bubble_sort);
+library_benchmark_group!(name = my_group, benchmarks = bench_bubble_sort);
 
 # fn main() {
 main!(
     config = LibraryBenchmarkConfig::default()
-        .tool(Dhat::default());
+        .tool(Dhat::default()),
     library_benchmark_groups = my_group
 );
 # }
@@ -208,7 +208,7 @@ fn bench_library() -> Vec<u64> {
     black_box(benchmark_tests::find_primes_multi_thread(black_box(1)))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_library);
+library_benchmark_group!(name = my_group, benchmarks = bench_library);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }
@@ -338,7 +338,7 @@ fn bench_library() -> Vec<u64> {
     black_box(benchmark_tests::find_primes_multi_thread(black_box(1)))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_library);
+library_benchmark_group!(name = my_group, benchmarks = bench_library);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }
@@ -386,7 +386,7 @@ fn bench_library() -> Vec<u64> {
     black_box(benchmark_tests::find_primes_multi_thread(black_box(1)))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_library);
+library_benchmark_group!(name = my_group, benchmarks = bench_library);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }

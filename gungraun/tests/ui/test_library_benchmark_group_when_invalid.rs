@@ -10,7 +10,7 @@ mod test_library_benchmark_group_when_no_benchmarks {
     use gungraun::library_benchmark_group;
 
     library_benchmark_group!(
-        name = some_name;
+        name = some_name,
         benchmarks =
     );
 }

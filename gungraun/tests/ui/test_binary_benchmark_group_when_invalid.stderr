@@ -1,6 +1,6 @@
 error: A binary_benchmark_group! needs a unique name. See the documentation of this macro for further details.
 
-       hint = binary_benchmark_group!(name = some_ident; benchmarks = |group| ... );
+       hint = binary_benchmark_group!(name = some_ident; benchmarks = some_binary_benchmark);
  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:3:5
   |
 3 | /     binary_benchmark_group!(
@@ -14,7 +14,7 @@ error: A binary_benchmark_group! needs a unique name. See the documentation of t
 
 error: A binary_benchmark_group! needs a unique name. See the documentation of this macro for further details.
 
-       hint = binary_benchmark_group!(name = some_ident; benchmarks = |group: &mut BinaryBenchmarkGroup| ... );
+       hint = binary_benchmark_group!(name = some_ident; benchmarks = some_binary_benchmark);
   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:12:5
    |
 12 |     binary_benchmark_group!(benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
@@ -24,7 +24,7 @@ error: A binary_benchmark_group! needs a unique name. See the documentation of t
 
 error: A binary_benchmark_group! needs a unique name. See the documentation of this macro for further details.
 
-       hint = binary_benchmark_group!(name = some_ident; benchmarks = |group| ... );
+       hint = binary_benchmark_group!(name = some_ident; benchmarks = some_binary_benchmark);
   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:17:5
    |
 17 |     binary_benchmark_group!(benchmarks = |_group| {});
@@ -59,7 +59,7 @@ error: A binary_benchmark_group! needs at least 1 benchmark function which is an
 
 error: This low level form of the binary_benchmark_group! needs you to use the `BinaryBenchmarkGroup` to setup benchmarks. See the documentation of this macro for further details.
 
-       hint = binary_benchmark_group!(name = some_ident; benchmarks = |group| { group.binary_benchmark(/* BinaryBenchmark::new */); });
+       hint = binary_benchmark_group!(name = some_ident, benchmarks = |group| { group.binary_benchmark(/* BinaryBenchmark::new */); });
   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:37:5
    |
 37 | /     binary_benchmark_group!(
@@ -72,7 +72,7 @@ error: This low level form of the binary_benchmark_group! needs you to use the `
 
 error: This low level form of the binary_benchmark_group! needs you to use the `BinaryBenchmarkGroup` to setup benchmarks. See the documentation of this macro for further details.
 
-       hint = binary_benchmark_group!(name = some_ident; benchmarks = |group: &mut BinaryBenchmarkGroup| { group.binary_benchmark(/* BinaryBenchmark::new */); });
+       hint = binary_benchmark_group!(name = some_ident, benchmarks = |group: &mut BinaryBenchmarkGroup| { group.binary_benchmark(/* BinaryBenchmark::new */); });
   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:45:5
    |
 45 | /     binary_benchmark_group!(

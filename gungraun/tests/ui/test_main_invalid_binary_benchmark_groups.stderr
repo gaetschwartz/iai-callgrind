@@ -1,7 +1,7 @@
 error: The binary_benchmark_groups argument needs at least one `name` of a `binary_benchmark_group!`
-  --> tests/ui/test_main_invalid_binary_benchmark_groups.rs:27:5
+  --> tests/ui/test_main_invalid_binary_benchmark_groups.rs:24:5
    |
-27 |     main!(binary_benchmark_groups = );
+24 |     main!(binary_benchmark_groups = );
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
    = note: this error originates in the macro `main` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -15,11 +15,8 @@ error[E0433]: failed to resolve: use of undeclared crate or module `some_func`
 error[E0277]: the trait bound `InternalBinaryBenchmarkConfig: From<&str>` is not satisfied
   --> tests/ui/test_main_invalid_binary_benchmark_groups.rs:19:5
    |
-19 | /     main!(
-20 | |         config = "some string";
-21 | |         binary_benchmark_groups = some
-22 | |     );
-   | |_____^ the trait `From<&str>` is not implemented for `InternalBinaryBenchmarkConfig`
+19 |     main!(config = "some string", binary_benchmark_groups = some);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `From<&str>` is not implemented for `InternalBinaryBenchmarkConfig`
    |
    = help: the following other types implement trait `From<T>`:
              <InternalBinaryBenchmarkConfig as From<BinaryBenchmarkConfig>>

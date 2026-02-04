@@ -22,13 +22,12 @@ use crate::EntryPoint;
 /// # use gungraun::{library_benchmark, library_benchmark_group};
 /// # #[library_benchmark]
 /// # fn some_func() {}
-/// # library_benchmark_group!(name = some_group; benchmarks = some_func);
-/// use gungraun::{LibraryBenchmarkConfig, main, Bbv};
+/// # library_benchmark_group!(name = some_group, benchmarks = some_func);
+/// use gungraun::{main, Bbv, LibraryBenchmarkConfig};
 ///
 /// # fn main() {
 /// main!(
-///     config = LibraryBenchmarkConfig::default()
-///         .tool(Bbv::default());
+///     config = LibraryBenchmarkConfig::default().tool(Bbv::default()),
 ///     library_benchmark_groups = some_group
 /// );
 /// # }
@@ -47,13 +46,12 @@ pub struct Bbv(__internal::InternalTool);
 /// # use gungraun::{library_benchmark, library_benchmark_group};
 /// # #[library_benchmark]
 /// # fn some_func() {}
-/// # library_benchmark_group!(name = some_group; benchmarks = some_func);
-/// use gungraun::{LibraryBenchmarkConfig, main, Cachegrind};
+/// # library_benchmark_group!(name = some_group, benchmarks = some_func);
+/// use gungraun::{main, Cachegrind, LibraryBenchmarkConfig};
 ///
 /// # fn main() {
 /// main!(
-///     config = LibraryBenchmarkConfig::default()
-///         .tool(Cachegrind::default());
+///     config = LibraryBenchmarkConfig::default().tool(Cachegrind::default()),
 ///     library_benchmark_groups = some_group
 /// );
 /// # }
@@ -72,13 +70,12 @@ pub struct Cachegrind(__internal::InternalTool);
 /// # use gungraun::{library_benchmark, library_benchmark_group};
 /// # #[library_benchmark]
 /// # fn some_func() {}
-/// # library_benchmark_group!(name = some_group; benchmarks = some_func);
-/// use gungraun::{LibraryBenchmarkConfig, main, Callgrind};
+/// # library_benchmark_group!(name = some_group, benchmarks = some_func);
+/// use gungraun::{main, Callgrind, LibraryBenchmarkConfig};
 ///
 /// # fn main() {
 /// main!(
-///     config = LibraryBenchmarkConfig::default()
-///         .tool(Callgrind::default());
+///     config = LibraryBenchmarkConfig::default().tool(Callgrind::default()),
 ///     library_benchmark_groups = some_group
 /// );
 /// # }
@@ -97,13 +94,12 @@ pub struct Callgrind(__internal::InternalTool);
 /// # use gungraun::{library_benchmark, library_benchmark_group};
 /// # #[library_benchmark]
 /// # fn some_func() {}
-/// # library_benchmark_group!(name = some_group; benchmarks = some_func);
-/// use gungraun::{LibraryBenchmarkConfig, main, Dhat};
+/// # library_benchmark_group!(name = some_group, benchmarks = some_func);
+/// use gungraun::{main, Dhat, LibraryBenchmarkConfig};
 ///
 /// # fn main() {
 /// main!(
-///     config = LibraryBenchmarkConfig::default()
-///         .tool(Dhat::default());
+///     config = LibraryBenchmarkConfig::default().tool(Dhat::default()),
 ///     library_benchmark_groups = some_group
 /// );
 /// # }
@@ -122,13 +118,12 @@ pub struct Dhat(__internal::InternalTool);
 /// # use gungraun::{library_benchmark, library_benchmark_group};
 /// # #[library_benchmark]
 /// # fn some_func() {}
-/// # library_benchmark_group!(name = some_group; benchmarks = some_func);
-/// use gungraun::{LibraryBenchmarkConfig, main, Drd};
+/// # library_benchmark_group!(name = some_group, benchmarks = some_func);
+/// use gungraun::{main, Drd, LibraryBenchmarkConfig};
 ///
 /// # fn main() {
 /// main!(
-///     config = LibraryBenchmarkConfig::default()
-///         .tool(Drd::default());
+///     config = LibraryBenchmarkConfig::default().tool(Drd::default()),
 ///     library_benchmark_groups = some_group
 /// );
 /// # }
@@ -157,16 +152,14 @@ pub struct Drd(__internal::InternalTool);
 ///
 /// ```rust
 /// # use gungraun::{library_benchmark, library_benchmark_group};
-/// use gungraun::{LibraryBenchmarkConfig, FlamegraphConfig, main, Callgrind};
+/// use gungraun::{main, Callgrind, FlamegraphConfig, LibraryBenchmarkConfig};
 /// # #[library_benchmark]
 /// # fn some_func() {}
-/// # library_benchmark_group!(name = some_group; benchmarks = some_func);
+/// # library_benchmark_group!(name = some_group, benchmarks = some_func);
 /// # fn main() {
 /// main!(
 ///     config = LibraryBenchmarkConfig::default()
-///                 .tool(Callgrind::default()
-///                     .flamegraph(FlamegraphConfig::default())
-///                 );
+///         .tool(Callgrind::default().flamegraph(FlamegraphConfig::default())),
 ///     library_benchmark_groups = some_group
 /// );
 /// # }
@@ -185,13 +178,12 @@ pub struct FlamegraphConfig(__internal::InternalFlamegraphConfig);
 /// # use gungraun::{library_benchmark, library_benchmark_group};
 /// # #[library_benchmark]
 /// # fn some_func() {}
-/// # library_benchmark_group!(name = some_group; benchmarks = some_func);
-/// use gungraun::{LibraryBenchmarkConfig, main, Helgrind};
+/// # library_benchmark_group!(name = some_group, benchmarks = some_func);
+/// use gungraun::{main, Helgrind, LibraryBenchmarkConfig};
 ///
 /// # fn main() {
 /// main!(
-///     config = LibraryBenchmarkConfig::default()
-///         .tool(Helgrind::default());
+///     config = LibraryBenchmarkConfig::default().tool(Helgrind::default()),
 ///     library_benchmark_groups = some_group
 /// );
 /// # }
@@ -210,13 +202,12 @@ pub struct Helgrind(__internal::InternalTool);
 /// # use gungraun::{library_benchmark, library_benchmark_group};
 /// # #[library_benchmark]
 /// # fn some_func() {}
-/// # library_benchmark_group!(name = some_group; benchmarks = some_func);
-/// use gungraun::{LibraryBenchmarkConfig, main, Massif};
+/// # library_benchmark_group!(name = some_group, benchmarks = some_func);
+/// use gungraun::{main, LibraryBenchmarkConfig, Massif};
 ///
 /// # fn main() {
 /// main!(
-///     config = LibraryBenchmarkConfig::default()
-///         .tool(Massif::default());
+///     config = LibraryBenchmarkConfig::default().tool(Massif::default()),
 ///     library_benchmark_groups = some_group
 /// );
 /// # }
@@ -235,13 +226,12 @@ pub struct Massif(__internal::InternalTool);
 /// # use gungraun::{library_benchmark, library_benchmark_group};
 /// # #[library_benchmark]
 /// # fn some_func() {}
-/// # library_benchmark_group!(name = some_group; benchmarks = some_func);
-/// use gungraun::{LibraryBenchmarkConfig, main, Memcheck};
+/// # library_benchmark_group!(name = some_group, benchmarks = some_func);
+/// use gungraun::{main, LibraryBenchmarkConfig, Memcheck};
 ///
 /// # fn main() {
 /// main!(
-///     config = LibraryBenchmarkConfig::default()
-///         .tool(Memcheck::default());
+///     config = LibraryBenchmarkConfig::default().tool(Memcheck::default()),
 ///     library_benchmark_groups = some_group
 /// );
 /// # }
@@ -260,23 +250,22 @@ pub struct Memcheck(__internal::InternalTool);
 /// benchmarks in the same file with [`OutputFormat::truncate_description`]:
 ///
 /// ```rust
-/// use gungraun::{main, LibraryBenchmarkConfig, OutputFormat};
 /// # use gungraun::{library_benchmark, library_benchmark_group};
 /// # #[library_benchmark]
 /// # fn some_func() {}
 /// # library_benchmark_group!(
-/// #    name = some_group;
+/// #    name = some_group,
 /// #    benchmarks = some_func
 /// # );
 /// # fn main() {
+/// use gungraun::{main, LibraryBenchmarkConfig, OutputFormat};
 /// main!(
 ///     config = LibraryBenchmarkConfig::default()
-///         .output_format(OutputFormat::default()
-///             .truncate_description(Some(200))
-///         );
+///         .output_format(OutputFormat::default().truncate_description(Some(200))),
 ///     library_benchmark_groups = some_group
 /// );
 /// # }
+/// ```
 #[derive(Debug, Clone, Default, IntoInner, AsRef)]
 pub struct OutputFormat(__internal::InternalOutputFormat);
 
@@ -691,7 +680,7 @@ impl Callgrind {
     ///     black_box(to_be_benchmarked())
     /// }
     ///
-    /// library_benchmark_group!(name = some_group; benchmarks = some_bench);
+    /// library_benchmark_group!(name = some_group, benchmarks = some_bench);
     /// # fn main() {
     /// main!(library_benchmark_groups = some_group);
     /// # }
@@ -724,7 +713,7 @@ impl Callgrind {
     ///
     /// // ...
     ///
-    /// # library_benchmark_group!(name = some_group; benchmarks = some_bench);
+    /// # library_benchmark_group!(name = some_group, benchmarks = some_bench);
     /// # fn main() {
     /// # main!(library_benchmark_groups = some_group);
     /// # }
@@ -905,19 +894,15 @@ impl Callgrind {
     /// # use gungraun::{library_benchmark, library_benchmark_group};
     /// # #[library_benchmark]
     /// # fn some_func() {}
-    /// # library_benchmark_group!(name = some_group; benchmarks = some_func);
-    /// use gungraun::{
-    ///     LibraryBenchmarkConfig, main, FlamegraphConfig, FlamegraphKind, Callgrind
-    /// };
+    /// # library_benchmark_group!(name = some_group, benchmarks = some_func);
+    /// use gungraun::{main, Callgrind, FlamegraphConfig, FlamegraphKind, LibraryBenchmarkConfig};
     ///
     /// # fn main() {
     /// main!(
-    ///     config = LibraryBenchmarkConfig::default()
-    ///         .tool(Callgrind::default()
-    ///             .flamegraph(FlamegraphConfig::default()
-    ///                 .kind(FlamegraphKind::Differential)
-    ///             )
-    ///         );
+    ///     config = LibraryBenchmarkConfig::default().tool(
+    ///         Callgrind::default()
+    ///             .flamegraph(FlamegraphConfig::default().kind(FlamegraphKind::Differential))
+    ///     ),
     ///     library_benchmark_groups = some_group
     /// );
     /// # }
@@ -960,15 +945,14 @@ impl Callgrind {
     ///
     /// ```rust
     /// # use gungraun::{library_benchmark, library_benchmark_group};
-    /// use gungraun::{main, LibraryBenchmarkConfig, OutputFormat, CallgrindMetrics, Callgrind};
+    /// use gungraun::{main, Callgrind, CallgrindMetrics, LibraryBenchmarkConfig, OutputFormat};
     /// # #[library_benchmark]
     /// # fn some_func() {}
-    /// # library_benchmark_group!(name = some_group; benchmarks = some_func);
+    /// # library_benchmark_group!(name = some_group, benchmarks = some_func);
     /// # fn main() {
     /// main!(
     ///     config = LibraryBenchmarkConfig::default()
-    ///                  .tool(Callgrind::default()
-    ///                      .format([CallgrindMetrics::All]));
+    ///         .tool(Callgrind::default().format([CallgrindMetrics::All])),
     ///     library_benchmark_groups = some_group
     /// );
     /// # }
@@ -1144,22 +1128,23 @@ impl Dhat {
     ///
     /// ```rust
     /// # mod my_lib { pub fn to_be_benchmarked() -> Vec<i32> { vec![0] } }
-    /// use gungraun::{
-    ///     main, LibraryBenchmarkConfig, library_benchmark, library_benchmark_group, Dhat,
-    ///     EntryPoint
-    /// };
     /// use std::hint::black_box;
+    ///
+    /// use gungraun::{
+    ///     library_benchmark, library_benchmark_group, main, Dhat, EntryPoint, LibraryBenchmarkConfig,
+    /// };
     /// use my_lib::to_be_benchmarked;
     ///
     /// #[library_benchmark(
     ///     config = LibraryBenchmarkConfig::default()
     ///         .tool(Dhat::default().entry_point(EntryPoint::Default))
     /// )]
-    /// fn some_bench() -> Vec<i32> { // <-- DEFAULT ENTRY POINT
+    /// // DEFAULT ENTRY POINT
+    /// fn some_bench() -> Vec<i32> {
     ///     black_box(to_be_benchmarked())
     /// }
     ///
-    /// library_benchmark_group!(name = some_group; benchmarks = some_bench);
+    /// library_benchmark_group!(name = some_group, benchmarks = some_bench);
     /// # fn main() {
     /// main!(library_benchmark_groups = some_group);
     /// # }
@@ -1191,7 +1176,7 @@ impl Dhat {
     ///     black_box(to_be_benchmarked())
     /// }
     ///
-    /// library_benchmark_group!(name = some_group; benchmarks = some_bench);
+    /// library_benchmark_group!(name = some_group, benchmarks = some_bench);
     /// # fn main() {
     /// main!(library_benchmark_groups = some_group);
     /// # }
@@ -1992,15 +1977,13 @@ impl OutputFormat {
     /// # #[library_benchmark]
     /// # fn some_func() {}
     /// # library_benchmark_group!(
-    /// #    name = some_group;
+    /// #    name = some_group,
     /// #    benchmarks = some_func
     /// # );
     /// # fn main() {
     /// main!(
     ///     config = LibraryBenchmarkConfig::default()
-    ///         .output_format(OutputFormat::default()
-    ///             .truncate_description(None)
-    ///         );
+    ///         .output_format(OutputFormat::default().truncate_description(None)),
     ///     library_benchmark_groups = some_group
     /// );
     /// # }
@@ -2032,8 +2015,8 @@ impl OutputFormat {
     ///
     /// ```rust
     /// use gungraun::{
-    ///     main, LibraryBenchmarkConfig, OutputFormat, EntryPoint, library_benchmark,
-    ///     library_benchmark_group, Callgrind
+    ///     library_benchmark, library_benchmark_group, main, Callgrind, EntryPoint,
+    ///     LibraryBenchmarkConfig, OutputFormat,
     /// };
     /// # mod my_lib { pub fn heavy_calculation() -> u64 { 42 }}
     ///
@@ -2049,7 +2032,7 @@ impl OutputFormat {
     ///     handle.join().unwrap()
     /// }
     ///
-    /// library_benchmark_group!(name = some_group; benchmarks = bench_thread);
+    /// library_benchmark_group!(name = some_group, benchmarks = bench_thread);
     /// # fn main() {
     /// main!(library_benchmark_groups = some_group);
     /// # }

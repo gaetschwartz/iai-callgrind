@@ -10,16 +10,13 @@ mod test_main_when_config_is_not_a_binary_benchmark_config {
     use gungraun::{binary_benchmark_group, main};
 
     binary_benchmark_group!(
-        name = some;
+        name = some,
         benchmarks = |group: &mut BinaryBenchmarkGroup| {
             // do nothing
         }
     );
 
-    main!(
-        config = "some string";
-        binary_benchmark_groups = some
-    );
+    main!(config = "some string", binary_benchmark_groups = some);
 }
 
 mod test_main_when_no_group {

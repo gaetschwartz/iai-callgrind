@@ -66,7 +66,7 @@ fn bench_binary(path: &str) -> gungraun::Command {
         .build()
 }
 
-binary_benchmark_group!(name = my_group; benchmarks = bench_binary);
+binary_benchmark_group!(name = my_group, benchmarks = bench_binary);
 # fn main() {
 main!(binary_benchmark_groups = my_group);
 # }
@@ -95,7 +95,7 @@ fn bench_binary(path: &str) -> gungraun::Command {
         .build()
 }
 
-binary_benchmark_group!(name = my_group; benchmarks = bench_binary);
+binary_benchmark_group!(name = my_group, benchmarks = bench_binary);
 # fn main() {
 main!(binary_benchmark_groups = my_group);
 # }
@@ -138,7 +138,7 @@ fn bench_binary(path: &str) -> gungraun::Command {
         .build()
 }
 
-binary_benchmark_group!(name = my_group; benchmarks = bench_binary);
+binary_benchmark_group!(name = my_group, benchmarks = bench_binary);
 # fn main() {
 main!(binary_benchmark_groups = my_group);
 # }
