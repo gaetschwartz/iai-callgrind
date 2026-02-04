@@ -30,7 +30,7 @@ jobs:
           - "--deny warnings advisories"
           - bans licenses sources
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: EmbarkStudios/cargo-deny-action@v2
         with:
           command: check ${{ matrix.checks }}
@@ -45,7 +45,7 @@ jobs:
           - stable
           - nightly
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@master
         if: ${{ startsWith(matrix.toolchain, 'nightly') }}
         with:
@@ -71,7 +71,7 @@ jobs:
     name: Check format and spelling
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
@@ -98,7 +98,7 @@ jobs:
             components: clippy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
@@ -181,7 +181,7 @@ jobs:
             target: riscv64gc-unknown-linux-gnu
     runs-on: ${{ matrix.job.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - uses: taiki-e/install-action@cross
       - uses: taiki-e/install-action@just
@@ -210,7 +210,7 @@ jobs:
       GUNGRAUN_VALGRIND_INCLUDE: "/usr/local/include"
       GUNGRAUN_VALGRIND_PATH: "/usr/local/bin"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup and run tests
         id: test
         uses: vmactions/freebsd-vm@v1
@@ -241,7 +241,7 @@ jobs:
     env:
       DOCS_RS: "1"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
       - name: Build gungraun without valgrind headers
