@@ -176,13 +176,7 @@ fn benches_from_file(line: String) -> gungraun::Command {
 // the `benchmarks` parameter.
 binary_benchmark_group!(
     name = read_file_group,
-    benchmarks = [
-        bench_with_setup,
-        benches_from_file,
-        benches_from_iter,
-        benches_from_iter,
-        benches_from_iter
-    ]
+    benchmarks = [bench_with_setup, benches_from_file, benches_from_iter]
 );
 
 fn setup_pipe(additional_content: &str) {

@@ -21,10 +21,12 @@ error: A library_benchmark_group! needs at least 1 benchmark function annotated 
    |
    = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error: no rules expected the token `something`
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:21:30
+error: You are using an invalid or deprecated syntax of the library_benchmark_group! macro to set up library benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
+
+       hint: library_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
+  --> tests/ui/test_library_benchmark_group_when_invalid.rs:21:5
    |
 21 |     library_benchmark_group!(something);
-   |                              ^^^^^^^^^ no rules expected this token in macro call
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
-   = note: while trying to match end of macro
+   = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
