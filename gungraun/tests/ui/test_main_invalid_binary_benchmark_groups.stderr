@@ -6,6 +6,14 @@ error: The binary_benchmark_groups argument needs at least one `name` of a `bina
    |
    = note: this error originates in the macro `main` (in Nightly builds, run with -Z macro-backtrace for more info)
 
+error: You are using an invalid or deprecated syntax of the main! macro to set up benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) and docs (https://docs.rs/gungraun/latest/gungraun/) for further details.
+  --> tests/ui/test_main_invalid_binary_benchmark_groups.rs:29:5
+   |
+29 |     main!(something);
+   |     ^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in the macro `main` (in Nightly builds, run with -Z macro-backtrace for more info)
+
 error[E0433]: failed to resolve: use of undeclared crate or module `some_func`
  --> tests/ui/test_main_invalid_binary_benchmark_groups.rs:6:37
   |

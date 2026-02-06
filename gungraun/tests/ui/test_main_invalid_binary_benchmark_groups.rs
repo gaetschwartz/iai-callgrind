@@ -24,4 +24,9 @@ mod test_main_when_no_group {
     main!(binary_benchmark_groups = );
 }
 
+mod test_main_when_invalid_syntax {
+    use gungraun::main;
+    main!(something);
+}
+
 fn main() {}

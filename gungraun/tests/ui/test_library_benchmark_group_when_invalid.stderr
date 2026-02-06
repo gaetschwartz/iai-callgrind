@@ -1,22 +1,149 @@
+error: A library_benchmark_group! needs a name and at least 1 benchmark function annotated with #[library_benchmark]. See the documentation of this macro for more details.
+
+       hint: library_benchmark_group!(name = some_ident, benchmarks = [ bench_1, bench_2 ]);
+ --> tests/ui/test_library_benchmark_group_when_invalid.rs:4:5
+  |
+4 |     library_benchmark_group!();
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+
 error: A library_benchmark_group! needs a name
 
        hint: library_benchmark_group!(name = some_ident; benchmarks = ...);
- --> tests/ui/test_library_benchmark_group_when_invalid.rs:6:5
-  |
-6 |     library_benchmark_group!(benchmarks = some_func);
-  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  |
-  = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+  --> tests/ui/test_library_benchmark_group_when_invalid.rs:13:5
+   |
+13 |     library_benchmark_group!(benchmarks = some_func);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: A library_benchmark_group! needs a name
+
+       hint: library_benchmark_group!(name = some_ident, benchmarks = ...);
+  --> tests/ui/test_library_benchmark_group_when_invalid.rs:16:5
+   |
+16 | /     library_benchmark_group!(
+17 | |         config = LibraryBenchmarkConfig::default(),
+18 | |         compare_by_id = true,
+19 | |         setup = setup(),
+20 | |         teardown = teardown(),
+21 | |         benchmarks = some_func
+22 | |     );
+   | |_____^
+   |
+   = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: A library_benchmark_group! needs a name
+
+       hint: library_benchmark_group!(name = some_ident; benchmarks = ...);
+  --> tests/ui/test_library_benchmark_group_when_invalid.rs:24:5
+   |
+24 | /     library_benchmark_group!(
+25 | |         config = LibraryBenchmarkConfig::default();
+26 | |         compare_by_id = true;
+27 | |         setup = setup();
+28 | |         teardown = teardown();
+29 | |         benchmarks = some_func
+30 | |     );
+   | |_____^
+   |
+   = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: A library_benchmark_group! needs a name
+
+       hint: library_benchmark_group!(name = some_ident; benchmarks = ...);
+  --> tests/ui/test_library_benchmark_group_when_invalid.rs:32:5
+   |
+32 |     library_benchmark_group!(benchmarks = [some_func]);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: A library_benchmark_group! needs a name
+
+       hint: library_benchmark_group!(name = some_ident; benchmarks = ...);
+  --> tests/ui/test_library_benchmark_group_when_invalid.rs:33:5
+   |
+33 |     library_benchmark_group!(benchmarks = some_func, some_func);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: A library_benchmark_group! needs a name
+
+       hint: library_benchmark_group!(name = some_ident; benchmarks = ...);
+  --> tests/ui/test_library_benchmark_group_when_invalid.rs:34:5
+   |
+34 |     library_benchmark_group!(benchmarks = [some_func, some_func]);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: You are using an invalid or deprecated syntax of the library_benchmark_group! macro to set up library benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
+
+       hint: library_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
+  --> tests/ui/test_library_benchmark_group_when_invalid.rs:40:5
+   |
+40 |     library_benchmark_group!(name = some_name);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: A library_benchmark_group! needs at least 1 benchmark function annotated with #[library_benchmark]
 
        hint: library_benchmark_group!(name = some_ident, benchmarks = some_library_benchmark);
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:12:5
+  --> tests/ui/test_library_benchmark_group_when_invalid.rs:47:5
    |
-12 | /     library_benchmark_group!(
-13 | |         name = some_name,
-14 | |         benchmarks =
-15 | |     );
+47 | /     library_benchmark_group!(
+48 | |         name = some_name,
+49 | |         benchmarks =
+50 | |     );
+   | |_____^
+   |
+   = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: A library_benchmark_group! needs at least 1 benchmark function annotated with #[library_benchmark]
+
+       hint: library_benchmark_group!(name = some_ident, benchmarks = some_library_benchmark);
+  --> tests/ui/test_library_benchmark_group_when_invalid.rs:51:5
+   |
+51 | /     library_benchmark_group!(
+52 | |         name = some_name,
+53 | |         config = LibraryBenchmarkConfig::default(),
+54 | |         compare_by_id = true,
+...  |
+57 | |         benchmarks =
+58 | |     );
+   | |_____^
+   |
+   = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: A library_benchmark_group! needs at least 1 benchmark function annotated with #[library_benchmark]
+
+       hint: library_benchmark_group!(name = some_ident; benchmarks = some_library_benchmark);
+  --> tests/ui/test_library_benchmark_group_when_invalid.rs:61:5
+   |
+61 | /     library_benchmark_group!(
+62 | |         name = some_name;
+63 | |         benchmarks =
+64 | |     );
+   | |_____^
+   |
+   = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: A library_benchmark_group! needs at least 1 benchmark function annotated with #[library_benchmark]
+
+       hint: library_benchmark_group!(name = some_ident; benchmarks = some_library_benchmark);
+  --> tests/ui/test_library_benchmark_group_when_invalid.rs:65:5
+   |
+65 | /     library_benchmark_group!(
+66 | |         name = some_name;
+67 | |         config = LibraryBenchmarkConfig::default();
+68 | |         compare_by_id = true;
+...  |
+71 | |         benchmarks =
+72 | |     );
    | |_____^
    |
    = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -24,9 +151,9 @@ error: A library_benchmark_group! needs at least 1 benchmark function annotated 
 error: You are using an invalid or deprecated syntax of the library_benchmark_group! macro to set up library benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
        hint: library_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:21:5
+  --> tests/ui/test_library_benchmark_group_when_invalid.rs:78:5
    |
-21 |     library_benchmark_group!(something);
+78 |     library_benchmark_group!(something);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
    = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)

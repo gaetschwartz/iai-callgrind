@@ -799,6 +799,19 @@ macro_rules! binary_benchmark_group {
                 benchmarks = [ benchmark_1, benchmark_2 ]);");
     };
     (
+        $( config = $config:expr , $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr, $(,)* )?
+        $( teardown = $teardown:expr, $(,)* )?
+        benchmarks = $( $some:tt )*
+    ) => {
+        compile_error!(
+            "A binary_benchmark_group! needs a unique name. See the documentation of this macro for \
+            further details.\n\n\
+            hint = binary_benchmark_group!(name = some_ident, benchmarks = some_binary_benchmark);"
+        );
+    };
+    (
         $( config = $config:expr ; $(;)* )?
         $( compare_by_id = $compare:literal ; $(;)* )?
         $( setup = $setup:expr; $(;)* )?
@@ -935,19 +948,6 @@ macro_rules! binary_benchmark_group {
 
             pub fn $name(_: &mut $crate::BinaryBenchmarkGroup) {}
         }
-    };
-    (
-        $( config = $config:expr , $(,)* )?
-        $( compare_by_id = $compare:literal , $(,)* )?
-        $( setup = $setup:expr, $(,)* )?
-        $( teardown = $teardown:expr, $(,)* )?
-        benchmarks = $( $some:tt )*
-    ) => {
-        compile_error!(
-            "A binary_benchmark_group! needs a unique name. See the documentation of this macro for \
-            further details.\n\n\
-            hint = binary_benchmark_group!(name = some_ident, benchmarks = some_binary_benchmark);"
-        );
     };
     (
         name = $name:ident, $(,)*
