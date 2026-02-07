@@ -19,7 +19,7 @@ fn bench_binary(path: &str) -> gungraun::Command {
 }
 
 binary_benchmark_group!(
-    name = my_group;
+    name = my_group,
     benchmarks = bench_binary
 );
 
@@ -79,7 +79,7 @@ but written in the low-level api:
 use gungraun::{BinaryBenchmark, Bench, binary_benchmark_group, main};
 
 binary_benchmark_group!(
-    name = my_group;
+    name = my_group,
     benchmarks = |group: &mut BinaryBenchmarkGroup| {
         group.binary_benchmark(BinaryBenchmark::new("bench_binary")
             .bench(Bench::new("some_id")

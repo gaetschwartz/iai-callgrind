@@ -41,7 +41,7 @@ fn count_bytes_fast(file: File) -> u64 {
     black_box(my_lib::count_bytes_fast(file))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = count_bytes_fast);
+library_benchmark_group!(name = my_group, benchmarks = count_bytes_fast);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }
@@ -102,7 +102,7 @@ fn count_bytes_fast(file: File) -> u64 {
     black_box(my_lib::count_bytes_fast(file))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = count_bytes_fast);
+library_benchmark_group!(name = my_group, benchmarks = count_bytes_fast);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }
@@ -147,7 +147,7 @@ fn count_bytes_fast(file: File) -> u64 {
     black_box(my_lib::count_bytes_fast(file))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = count_bytes_fast);
+library_benchmark_group!(name = my_group, benchmarks = count_bytes_fast);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }

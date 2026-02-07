@@ -23,7 +23,7 @@ fn generic_bench<T>(path: T) -> u64 where T: Into<PathBuf> {
     black_box(my_lib::count_lines_in_file_fast(black_box(path.into())))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = generic_bench);
+library_benchmark_group!(name = my_group, benchmarks = generic_bench);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }
@@ -52,7 +52,7 @@ fn not_generic_anymore(path: PathBuf) -> u64 {
     black_box(my_lib::count_lines_in_file_fast(path))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = not_generic_anymore);
+library_benchmark_group!(name = my_group, benchmarks = not_generic_anymore);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }

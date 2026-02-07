@@ -99,14 +99,15 @@ fn bench_global_setup_and_teardown(a: u64) -> gungraun::Command {
 }
 
 binary_benchmark_group!(
-    name = bench_group;
-    benchmarks =
+    name = bench_group,
+    benchmarks = [
         bench_just_binary_benchmark_attribute,
         simple_bench,
         bench_only_setup,
         bench_only_teardown,
         bench_setup_and_teardown,
         bench_global_setup_and_teardown
+    ]
 );
 
 fn setup_low_level_group(group: &mut BinaryBenchmarkGroup) {
@@ -186,8 +187,8 @@ fn setup_low_level_group(group: &mut BinaryBenchmarkGroup) {
 }
 
 binary_benchmark_group!(
-    name = low_level;
+    name = low_level,
     benchmarks = |group: &mut BinaryBenchmarkGroup| setup_low_level_group(group)
 );
 
-main!(binary_benchmark_groups = bench_group, low_level);
+main!(binary_benchmark_groups = [bench_group, low_level]);

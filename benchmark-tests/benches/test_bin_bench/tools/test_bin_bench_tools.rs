@@ -15,22 +15,19 @@ fn bench_subprocess() -> Command {
         .build()
 }
 
-binary_benchmark_group!(
-    name = bench_group;
-    benchmarks = bench_subprocess
-);
-
+binary_benchmark_group!(name = bench_group, benchmarks = bench_subprocess);
 main!(
     config = BinaryBenchmarkConfig::default()
-        .output_format(OutputFormat::default()
-            .show_intermediate(true)
-            .truncate_description(None)
+        .output_format(
+            OutputFormat::default()
+                .show_intermediate(true)
+                .truncate_description(None)
         )
         .tool(Dhat::with_args(["--time-stamp=yes"]))
         .tool(Massif::default())
         .tool(Bbv::default())
         .tool(Memcheck::with_args(["--time-stamp=yes"]))
         .tool(Drd::default())
-        .tool(Helgrind::default());
+        .tool(Helgrind::default()),
     binary_benchmark_groups = bench_group
 );

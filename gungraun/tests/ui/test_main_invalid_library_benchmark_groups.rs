@@ -11,15 +11,8 @@ mod test_main_when_invalid_config {
     #[library_benchmark]
     fn some_func() {}
 
-    library_benchmark_group!(
-        name = my_group;
-        benchmarks = some_func
-    );
-
-    main!(
-        config = "some";
-        library_benchmark_groups = my_group
-    );
+    library_benchmark_group!(name = my_group, benchmarks = some_func);
+    main!(config = "some", library_benchmark_groups = my_group);
 }
 
 fn main() {}

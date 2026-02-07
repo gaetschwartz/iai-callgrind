@@ -14,14 +14,11 @@ fn minimal_bench() -> Command {
     Command::new(ECHO).arg("minimal").build()
 }
 
-binary_benchmark_group!(
-    name = group_1;
-    benchmarks = minimal_bench
-);
+binary_benchmark_group!(name = group_1, benchmarks = minimal_bench);
 
 binary_benchmark_group!(
-    name = group_2;
-    benchmarks = minimal_bench, benches_with_id
+    name = group_2,
+    benchmarks = [minimal_bench, benches_with_id]
 );
 
-main!(binary_benchmark_groups = group_1, group_2);
+main!(binary_benchmark_groups = [group_1, group_2]);

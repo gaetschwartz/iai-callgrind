@@ -31,14 +31,15 @@ fn bench_without_cache_sim(value: Vec<i32>) -> Vec<i32> {
 }
 
 library_benchmark_group!(
-    name = bench_cache_sim;
-    benchmarks = bench_with_cache_sim, bench_without_cache_sim
+    name = bench_cache_sim,
+    benchmarks = [bench_with_cache_sim, bench_without_cache_sim]
 );
 
 main!(
-    config = LibraryBenchmarkConfig::default()
-        .tool(Callgrind::default()
+    config = LibraryBenchmarkConfig::default().tool(
+        Callgrind::default()
             .soft_limits([(EventKind::Ir, 10.0)])
             .flamegraph(FlamegraphConfig::default())
-        );
-    library_benchmark_groups = bench_cache_sim);
+    ),
+    library_benchmark_groups = bench_cache_sim
+);

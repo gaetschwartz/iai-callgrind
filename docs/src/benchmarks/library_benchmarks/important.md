@@ -46,12 +46,12 @@ fn bench_fibonacci() -> u64 {
     black_box(my_lib::fibonacci(10))
 }
 
-library_benchmark_group!(name = fibonacci_group; benchmarks = bench_fibonacci);
+library_benchmark_group!(name = fibonacci_group, benchmarks = bench_fibonacci);
 
 # fn main() {
 main!(
     config = LibraryBenchmarkConfig::default()
-        .tool(Callgrind::with_args(["--cache-sim=no"]));
+        .tool(Callgrind::with_args(["--cache-sim=no"])),
     library_benchmark_groups = fibonacci_group
 );
 # }

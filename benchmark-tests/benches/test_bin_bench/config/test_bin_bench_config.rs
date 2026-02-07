@@ -76,12 +76,12 @@ fn check_env_is_cleared() -> gungraun::Command {
 }
 
 binary_benchmark_group!(
-    name = my_group;
-    config = BinaryBenchmarkConfig::default().env("GROUP_ENV", "2");
-    benchmarks = bench_binary, check_env_is_cleared
+    name = my_group,
+    config = BinaryBenchmarkConfig::default().env("GROUP_ENV", "2"),
+    benchmarks = [bench_binary, check_env_is_cleared]
 );
 
 main!(
-    config = BinaryBenchmarkConfig::default().env("MAIN_ENV", "1");
+    config = BinaryBenchmarkConfig::default().env("MAIN_ENV", "1"),
     binary_benchmark_groups = my_group
 );

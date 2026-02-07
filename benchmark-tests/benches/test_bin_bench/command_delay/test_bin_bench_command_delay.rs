@@ -120,9 +120,9 @@ fn delay_udp() -> Command {
 }
 
 binary_benchmark_group!(
-    name = delay;
-    config = BinaryBenchmarkConfig::default().sandbox(Sandbox::new(true));
-    benchmarks = delay_duration, delay_path, delay_tcp, delay_udp
+    name = delay,
+    config = BinaryBenchmarkConfig::default().sandbox(Sandbox::new(true)),
+    benchmarks = [delay_duration, delay_path, delay_tcp, delay_udp]
 );
 
 main!(binary_benchmark_groups = delay);

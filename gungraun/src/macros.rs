@@ -8,7 +8,7 @@
 ///
 /// ```rust
 /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-/// use gungraun::{binary_benchmark_attribute, binary_benchmark_group, binary_benchmark};
+/// use gungraun::{binary_benchmark, binary_benchmark_attribute, binary_benchmark_group};
 ///
 /// #[binary_benchmark]
 /// fn bench_binary() -> gungraun::Command {
@@ -18,7 +18,7 @@
 /// }
 ///
 /// binary_benchmark_group!(
-///     name = my_group;
+///     name = my_group,
 ///     benchmarks = |group: &mut BinaryBenchmarkGroup| {
 ///         group.binary_benchmark(binary_benchmark_attribute!(bench_binary));
 ///     }
@@ -93,7 +93,7 @@ macro_rules! binary_benchmark_attribute {
 /// # #[library_benchmark]
 /// # fn bench_fibonacci() { }
 /// # library_benchmark_group!(
-/// #    name = some_group;
+/// #    name = some_group,
 /// #    benchmarks = bench_fibonacci
 /// # );
 /// # fn main() {
@@ -101,7 +101,7 @@ macro_rules! binary_benchmark_attribute {
 /// # }
 /// ```
 ///
-/// which accepts the following top-level arguments in this order (separated by a semicolon):
+/// which accepts the following top-level arguments in this order (separated by a comma):
 ///
 /// * __`config`__ (optional): Optionally specify a [`crate::LibraryBenchmarkConfig`] valid for all
 ///   benchmark groups
@@ -111,15 +111,16 @@ macro_rules! binary_benchmark_attribute {
 ///   benchmarks
 /// * __`library_benchmark_groups`__ (mandatory): The __name__ of one or more
 ///   [`library_benchmark_group!`](crate::library_benchmark_group) macros. Multiple __names__ are
-///   expected to be a comma separated list
+///   expected to be a comma separated array (`library_benchmark_groups = [group_1, group_2]`).
 ///
 /// A library benchmark consists of
 /// [`library_benchmark_groups`](crate::library_benchmark_group) and with
 /// [`#[library_benchmark]`](crate::library_benchmark) annotated benchmark functions.
 ///
 /// ```rust
-/// use gungraun::{main, library_benchmark_group, library_benchmark};
 /// use std::hint::black_box;
+///
+/// use gungraun::{library_benchmark, library_benchmark_group, main};
 ///
 /// fn fibonacci(n: u64) -> u64 {
 ///     match n {
@@ -136,10 +137,7 @@ macro_rules! binary_benchmark_attribute {
 ///     black_box(fibonacci(value))
 /// }
 ///
-/// library_benchmark_group!(
-///     name = bench_fibonacci_group;
-///     benchmarks = bench_fibonacci
-/// );
+/// library_benchmark_group!(name = bench_fibonacci_group, benchmarks = bench_fibonacci);
 ///
 /// # fn main() {
 /// main!(library_benchmark_groups = bench_fibonacci_group);
@@ -156,15 +154,15 @@ macro_rules! binary_benchmark_attribute {
 /// # #[library_benchmark]
 /// # fn bench_fibonacci() { }
 /// # library_benchmark_group!(
-/// #    name = some_group;
+/// #    name = some_group,
 /// #    benchmarks = bench_fibonacci
 /// # );
 /// # fn main() {
 /// main!(
-///     config = LibraryBenchmarkConfig::default()
-///                 .tool(Callgrind::with_args(
-///                     ["--arg-with-flags=yes", "arg-without-flags=is_ok_too"]
-///                 ));
+///     config = LibraryBenchmarkConfig::default().tool(Callgrind::with_args([
+///         "--arg-with-flags=yes",
+///         "arg-without-flags=is_ok_too"
+///     ])),
 ///     library_benchmark_groups = some_group
 /// );
 /// # }
@@ -183,7 +181,7 @@ macro_rules! binary_benchmark_attribute {
 ///
 /// ```rust
 /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-/// use gungraun::{main, binary_benchmark_group, binary_benchmark};
+/// use gungraun::{binary_benchmark, binary_benchmark_group, main};
 ///
 /// #[binary_benchmark]
 /// #[bench::hello_world("hello world")]
@@ -194,10 +192,7 @@ macro_rules! binary_benchmark_attribute {
 ///         .build()
 /// }
 ///
-/// binary_benchmark_group!(
-///     name = my_group;
-///     benchmarks = bench_binary
-/// );
+/// binary_benchmark_group!(name = my_group, benchmarks = bench_binary);
 ///
 /// # fn main() {
 /// main!(binary_benchmark_groups = my_group);
@@ -208,32 +203,14 @@ macro_rules! binary_benchmark_attribute {
 /// details.
 #[macro_export]
 macro_rules! main {
-    ( $( options = $( $options:literal ),+ $(,)*; )?
-      $( before = $before:ident $(, bench = $bench_before:literal )? ; )?
-      $( after = $after:ident $(, bench = $bench_after:literal )? ; )?
-      $( setup = $setup:ident $(, bench = $bench_setup:literal )? ; )?
-      $( teardown = $teardown:ident $(, bench = $bench_teardown:literal )? ; )?
-      $( sandbox = $sandbox:literal; )?
-      $( fixtures = $fixtures:literal $(, follow_symlinks = $follow_symlinks:literal )? ; )?
-      $( run = cmd = $cmd:expr
-            $(, envs = [ $( $envs:literal ),* $(,)* ] )?,
-            $( id = $id:literal, args = [ $( $args:literal ),* $(,)* ]  ),+ $(,)*
-      );+ $(;)*
-    ) => {
-        compile_error!(
-            "You are using a deprecated syntax of the main! macro to set up binary benchmarks. \
-            See the README (https://github.com/gungraun/gungraun) and \
-            docs (https://docs.rs/gungraun/latest/gungraun/) for further details."
-        );
-        pub fn main() {}
-    };
     (
         $( config = $config:expr; $(;)* )?
         $( setup = $setup:expr ; $(;)* )?
         $( teardown = $teardown:expr ; $(;)* )?
         binary_benchmark_groups =
     ) => {
-        compile_error!("The binary_benchmark_groups argument needs at least one `name` of a `binary_benchmark_group!`");
+        compile_error!("The binary_benchmark_groups argument needs at least one \
+            `name` of a `binary_benchmark_group!`");
     };
     (
         $( config = $config:expr; $(;)* )?
@@ -372,7 +349,9 @@ macro_rules! main {
                                         );
                                     }
                                 }
-                                (name, _) => panic!("Invalid function '{}' in group '{}'", name, group)
+                                (name, _) => panic!(
+                                    "Invalid function '{}' in group '{}'", name, group
+                                )
                             }
                         }
                     )+
@@ -385,6 +364,32 @@ macro_rules! main {
                 }
             };
         }
+    };
+    (
+        $( config = $config:expr, $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        binary_benchmark_groups = $group:ident
+    ) => {
+        main!(
+            $( config = $config; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            binary_benchmark_groups = $group
+        );
+    };
+    (
+        $( config = $config:expr, $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        binary_benchmark_groups = [ $( $group:ident ),+ $(,)* ]
+    ) => {
+        main!(
+            $( config = $config; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            binary_benchmark_groups = $( $group ),+
+        );
     };
     (
         $( config = $config:expr; $(;)* )?
@@ -544,21 +549,37 @@ macro_rules! main {
         }
     };
     (
-        callgrind_args = $( $args:literal ),* $(,)*; $(;)*
-        functions = $( $func_name:ident ),+ $(,)*
+        $( config = $config:expr , $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        library_benchmark_groups = $group:ident
     ) => {
-        compile_error!(
-            "You are using a deprecated syntax of the main! macro to set up library benchmarks. \
-            See the README (https://github.com/gungraun/gungraun) and \
-            docs (https://docs.rs/gungraun/latest/gungraun/) for further details."
+        main!(
+            $( config = $config; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            library_benchmark_groups = $group
         );
-        pub fn main() {}
     };
-    ( $( $func_name:ident ),+ $(,)* ) => {
+    (
+        $( config = $config:expr , $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        library_benchmark_groups = [ $( $group:ident ),+ $(,)* ]
+    ) => {
+        main!(
+            $( config = $config; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            library_benchmark_groups = $( $group ),+
+        );
+    };
+    ( $( $some:tt )* ) => {
         compile_error!(
-            "You are using a deprecated syntax of the main! macro to set up library benchmarks. \
-            See the README (https://github.com/gungraun/gungraun) and \
-            docs (https://docs.rs/gungraun/latest/gungraun/) for further details."
+            "You are using an invalid or deprecated syntax of the main! macro to set up \
+            benchmarks. See the documentation of this macro, the README \
+            (https://github.com/gungraun/gungraun) and docs \
+            (https://docs.rs/gungraun/latest/gungraun/) for further details."
         );
         pub fn main() {}
     };
@@ -581,14 +602,16 @@ macro_rules! main {
 /// # fn run_setup() {}
 /// # fn run_teardown() {}
 /// # #[binary_benchmark]
-/// # fn bench_binary() -> gungraun::Command { gungraun::Command::new("some") }
+/// # fn bench_1() -> gungraun::Command { gungraun::Command::new("some") }
+/// # #[binary_benchmark]
+/// # fn bench_2() -> gungraun::Command { gungraun::Command::new("some") }
 /// binary_benchmark_group!(
-///     name = my_group;
-///     config = BinaryBenchmarkConfig::default();
-///     compare_by_id = false;
-///     setup = run_setup();
-///     teardown = run_teardown();
-///     benchmarks = bench_binary
+///     name = my_group,
+///     config = BinaryBenchmarkConfig::default(),
+///     compare_by_id = false,
+///     setup = run_setup(),
+///     teardown = run_teardown(),
+///     benchmarks =  [ bench_1, bench_2 ]
 /// );
 /// # fn main() {
 /// # my_group::my_group(&mut BinaryBenchmarkGroup::default());
@@ -602,8 +625,8 @@ macro_rules! main {
 ///   part after the `::` in `#[bench::id(...)]`) match.
 /// * __`setup`__ (optional): A function which is executed before all benchmarks in this group
 /// * __`teardown`__ (optional): A function which is executed after all benchmarks in this group
-/// * __`benchmarks`__ (mandatory): A `,`-separated list of `#[binary_benchmark]` annotated function
-///   names you want to put into this group. Or, if you want to use the low level api
+/// * __`benchmarks`__ (mandatory): A `,`-separated array of `#[binary_benchmark]` annotated
+///   function names you want to put into this group. Or, if you want to use the low level api
 ///
 ///   `|IDENTIFIER: &mut BinaryBenchmarkGroup| EXPRESSION`
 ///
@@ -620,22 +643,19 @@ macro_rules! main {
 ///
 /// ```rust
 /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-/// use gungraun::{binary_benchmark_group, BinaryBenchmarkGroup, binary_benchmark};
+/// use gungraun::{binary_benchmark, binary_benchmark_group, BinaryBenchmarkGroup};
 ///
 /// #[binary_benchmark]
 /// #[bench::hello_world("hello world")]
 /// #[bench::foo("foo")]
 /// #[benches::multiple("bar", "baz")]
 /// fn bench_binary(arg: &str) -> gungraun::Command {
-///      gungraun::Command::new(env!("CARGO_BIN_EXE_my-foo"))
-///          .arg(arg)
-///          .build()
+///     gungraun::Command::new(env!("CARGO_BIN_EXE_my-foo"))
+///         .arg(arg)
+///         .build()
 /// }
 ///
-/// binary_benchmark_group!(
-///     name = my_group;
-///     benchmarks = bench_binary
-/// );
+/// binary_benchmark_group!(name = my_group, benchmarks = bench_binary);
 ///
 /// # fn main() {
 /// gungraun::main!(binary_benchmark_groups = my_group);
@@ -668,33 +688,27 @@ macro_rules! main {
 ///
 /// ```rust
 /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-/// use gungraun::{binary_benchmark_group, BinaryBenchmark, Bench};
+/// use gungraun::{binary_benchmark_group, Bench, BinaryBenchmark};
 ///
 /// binary_benchmark_group!(
 ///     // All the other options from the `binary_benchmark_group` are used as usual
-///     name = my_group;
-///
+///     name = my_group,
 ///     // Note there's also the shorter form `benchmarks = |group|` but in the examples we want
 ///     // to be more explicit
 ///     benchmarks = |group: &mut BinaryBenchmarkGroup| {
-///
 ///         // We have chosen `group` to be our identifier but it can be anything
 ///         group.binary_benchmark(
-///
 ///             // This is the equivalent of the `#[binary_benchmark]` attribute. The `id`
 ///             // mirrors the function name of the `#[binary_benchmark]` annotated function.
-///             BinaryBenchmark::new("some_id")
-///                 .bench(
-///
-///                     // The equivalent of the `#[bench]` attribute.
-///                     Bench::new("my_bench_id")
-///                         .command(
-///
-///                             // The `Command` stays the same
-///                             gungraun::Command::new(env!("CARGO_BIN_EXE_my-foo"))
-///                                 .arg("foo").build()
-///                         )
-///                 )
+///             BinaryBenchmark::new("some_id").bench(
+///                 // The equivalent of the `#[bench]` attribute.
+///                 Bench::new("my_bench_id").command(
+///                     // The `Command` stays the same
+///                     gungraun::Command::new(env!("CARGO_BIN_EXE_my-foo"))
+///                         .arg("foo")
+///                         .build(),
+///                 ),
+///             ),
 ///         )
 ///     }
 /// );
@@ -705,14 +719,14 @@ macro_rules! main {
 /// BinaryBenchmarkGroup|` if it resides in a separate function rather than the macro itself as in
 ///
 /// ```rust
-/// use gungraun::{binary_benchmark_group, BinaryBenchmark, Bench, BinaryBenchmarkGroup};
+/// use gungraun::{binary_benchmark_group, Bench, BinaryBenchmark, BinaryBenchmarkGroup};
 ///
 /// fn setup_my_group(group: &mut BinaryBenchmarkGroup) {
 ///     // Enjoy all the features of your IDE ...
 /// }
 ///
 /// binary_benchmark_group!(
-///     name = my_group;
+///     name = my_group,
 ///     benchmarks = |group: &mut BinaryBenchmarkGroup| setup_my_group(group)
 /// );
 /// # fn main() {}
@@ -738,8 +752,8 @@ macro_rules! main {
 /// ```rust
 /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
 /// use gungraun::{
-///     binary_benchmark, binary_benchmark_group, BinaryBenchmark, Bench, BinaryBenchmarkGroup,
-///     binary_benchmark_attribute
+///     binary_benchmark, binary_benchmark_attribute, binary_benchmark_group, Bench,
+///     BinaryBenchmark, BinaryBenchmarkGroup,
 /// };
 ///
 /// #[binary_benchmark]
@@ -770,43 +784,31 @@ macro_rules! main {
 /// }
 ///
 /// binary_benchmark_group!(
-///     name = my_group;
+///     name = my_group,
 ///     benchmarks = |group: &mut BinaryBenchmarkGroup| setup_my_group(group)
 /// );
 /// # fn main() {}
 /// ```
 #[macro_export]
 macro_rules! binary_benchmark_group {
-    (
-        name = $name:ident; $(;)*
-        $(before = $before:ident $(,bench = $bench_before:literal)? ; $(;)*)?
-        $(after = $after:ident $(,bench = $bench_after:literal)? ; $(;)*)?
-        $(setup = $setup:ident $(,bench = $bench_setup:literal)? ; $(;)*)?
-        $(teardown = $teardown:ident $(,bench = $bench_teardown:literal)? ; $(;)*)?
-        $( config = $config:expr ; $(;)* )?
-        benchmark = |$cmd:literal, $group:ident: &mut BinaryBenchmarkGroup| $body:expr
-    ) => {
-        compile_error!(
-            "You are using a deprecated syntax of the binary_benchmark_group! macro to set up binary \
-            benchmarks. See the README (https://github.com/gungraun/gungraun), the \
-            CHANGELOG on the same page and docs (https://docs.rs/gungraun/latest/gungraun) \
-            for further details."
-        );
+    () => {
+        compile_error!("A binary_benchmark_group! needs a name and at least 1 benchmark \
+            function annotated with #[binary_benchmark] or the low level syntax. See the \
+            documentation of this macro for more details.\n\n\
+            hint: binary_benchmark_group!(name = some_ident, \
+                benchmarks = [ benchmark_1, benchmark_2 ]);");
     };
     (
-        name = $name:ident; $(;)*
-        $( before = $before:ident $(,bench = $bench_before:literal)? ; $(;)* )?
-        $( after = $after:ident $(,bench = $bench_after:literal)? ; $(;)* )?
-        $( setup = $setup:ident $(,bench = $bench_setup:literal)? ; $(;)* )?
-        $( teardown = $teardown:ident $(,bench = $bench_teardown:literal )? ; $(;)* )?
-        $( config = $config:expr ; $(;)* )?
-        benchmark = |$group:ident: &mut BinaryBenchmarkGroup| $body:expr
+        $( config = $config:expr , $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr, $(,)* )?
+        $( teardown = $teardown:expr, $(,)* )?
+        benchmarks = $( $some:tt )*
     ) => {
         compile_error!(
-            "You are using a deprecated syntax of the binary_benchmark_group! macro to set up binary \
-            benchmarks. See the README (https://github.com/gungraun/gungraun), the \
-            CHANGELOG on the same page and docs (https://docs.rs/gungraun/latest/gungraun) \
-            for further details."
+            "A binary_benchmark_group! needs a unique name. See the documentation of this macro for \
+            further details.\n\n\
+            hint = binary_benchmark_group!(name = some_ident, benchmarks = some_binary_benchmark);"
         );
     };
     (
@@ -814,7 +816,7 @@ macro_rules! binary_benchmark_group {
         $( compare_by_id = $compare:literal ; $(;)* )?
         $( setup = $setup:expr; $(;)* )?
         $( teardown = $teardown:expr; $(;)* )?
-        benchmarks = $( $function:ident ),+ $(,)*
+        benchmarks = $( $some:tt )*
     ) => {
         compile_error!(
             "A binary_benchmark_group! needs a unique name. See the documentation of this macro for \
@@ -948,29 +950,66 @@ macro_rules! binary_benchmark_group {
         }
     };
     (
-        $( config = $config:expr; $(;)* )?
-        $( compare_by_id = $compare:literal ; $(;)* )?
-        $( setup = $setup:expr; $(;)* )?
-        $( teardown = $teardown:expr; $(;)* )?
-        benchmarks = |$group:ident: &mut BinaryBenchmarkGroup| $body:expr
+        name = $name:ident, $(,)*
+        $( config = $config:expr, $(,)* )?
+        $( compare_by_id = $compare:literal, $(,)* )?
+        $( setup = $setup:expr, $(,)* )?
+        $( teardown = $teardown:expr, $(,)* )?
+        benchmarks =
     ) => {
         compile_error!(
-            "A binary_benchmark_group! needs a unique name. See the documentation of this macro for \
-            further details.\n\n\
-            hint = binary_benchmark_group!(name = some_ident; benchmarks = |group: &mut BinaryBenchmarkGroup| ... );"
+            "A binary_benchmark_group! needs at least 1 benchmark function which is annotated with \
+            #[binary_benchmark] or you can use the low level syntax. See the documentation of this \
+            macro for further details.\n\n\
+            hint = binary_benchmark_group!(name = some_ident, benchmarks = some_binary_benchmark);"
         );
     };
     (
-        $( config = $config:expr; $(;)* )?
-        $( compare_by_id = $compare:literal ; $(;)* )?
-        $( setup = $setup:expr; $(;)* )?
-        $( teardown = $teardown:expr; $(;)* )?
-        benchmarks = |$group:ident| $body:expr
+        name = $name:ident, $(,)*
+        $( config = $config:expr , $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr, $(,)* )?
+        $( teardown = $teardown:expr, $(,)* )?
     ) => {
         compile_error!(
-            "A binary_benchmark_group! needs a unique name. See the documentation of this macro for \
-            further details.\n\n\
-            hint = binary_benchmark_group!(name = some_ident; benchmarks = |group| ... );"
+            "A binary_benchmark_group! needs at least 1 benchmark function which is annotated with \
+            #[binary_benchmark] or you can use the low level syntax. See the documentation of this \
+            macro for further details.\n\n\
+            hint = binary_benchmark_group!(name = some_ident, benchmarks = some_binary_benchmark);"
+        );
+    };
+    (
+        name = $name:ident, $(,)*
+        $( config = $config:expr , $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr, $(,)* )?
+        $( teardown = $teardown:expr, $(,)* )?
+        benchmarks = $function:ident
+    ) => {
+        binary_benchmark_group!(
+            name = $name;
+            $( config = $config; )?
+            $( compare_by_id = $compare; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            benchmarks = $function
+        );
+    };
+    (
+        name = $name:ident, $(,)*
+        $( config = $config:expr , $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr, $(,)* )?
+        $( teardown = $teardown:expr, $(,)* )?
+        benchmarks = [ $( $function:ident ),+ $(,)* ]
+    ) => {
+        binary_benchmark_group!(
+            name = $name;
+            $( config = $config; )?
+            $( compare_by_id = $compare; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            benchmarks = $( $function ),+
         );
     };
     (
@@ -985,7 +1024,7 @@ macro_rules! binary_benchmark_group {
             "This low level form of the binary_benchmark_group! needs you to use the \
             `BinaryBenchmarkGroup` to setup benchmarks. See the documentation of this macro for \
             further details.\n\n\
-            hint = binary_benchmark_group!(name = some_ident; benchmarks = |group| { \
+            hint = binary_benchmark_group!(name = some_ident, benchmarks = |group| { \
                 group.binary_benchmark(/* BinaryBenchmark::new */); });"
         );
     };
@@ -1001,7 +1040,7 @@ macro_rules! binary_benchmark_group {
             "This low level form of the binary_benchmark_group! needs you to use the \
             `BinaryBenchmarkGroup` to setup benchmarks. See the documentation of this macro for \
             further details.\n\n\
-            hint = binary_benchmark_group!(name = some_ident; benchmarks = |group: &mut \
+            hint = binary_benchmark_group!(name = some_ident, benchmarks = |group: &mut \
                 BinaryBenchmarkGroup| { group.binary_benchmark(/* BinaryBenchmark::new */); });"
         );
     };
@@ -1164,6 +1203,51 @@ macro_rules! binary_benchmark_group {
             benchmarks = |$group: &mut BinaryBenchmarkGroup| $body
         );
     };
+    (
+        name = $name:ident, $(,)*
+        $( config = $config:expr, $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr, $(,)* )?
+        $( teardown = $teardown:expr, $(,)* )?
+        benchmarks = |$group:ident: &mut BinaryBenchmarkGroup| $body:expr
+    ) => {
+        binary_benchmark_group!(
+            name = $name;
+            $( config = $config; )?
+            $( compare_by_id = $compare; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            benchmarks = |$group: &mut BinaryBenchmarkGroup| $body
+        );
+    };
+    (
+        name = $name:ident, $(,)*
+        $( config = $config:expr, $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr, $(,)* )?
+        $( teardown = $teardown:expr, $(,)* )?
+        benchmarks = |$group:ident| $body:expr
+    ) => {
+        binary_benchmark_group!(
+            name = $name;
+            $( config = $config; )?
+            $( compare_by_id = $compare; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            benchmarks = |$group: &mut BinaryBenchmarkGroup| $body
+        );
+    };
+    (
+        $( $m:tt )*
+    ) => {
+        compile_error!(
+            "You are using an invalid or deprecated syntax of the binary_benchmark_group! macro \
+            to set up binary benchmarks. See the documentation of this macro, the README \
+            (https://github.com/gungraun/gungraun) or the docs \
+            (https://docs.rs/gungraun/latest/gungraun) for further details.\n\n\
+            hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])"
+        );
+    };
 }
 
 /// Macro used to define a group of library benchmarks
@@ -1172,17 +1256,14 @@ macro_rules! binary_benchmark_group {
 /// annotated with `#[library_benchmark]` ([`crate::library_benchmark`]).
 ///
 /// ```rust
-/// use gungraun::{library_benchmark_group, library_benchmark};
+/// use gungraun::{library_benchmark, library_benchmark_group};
 ///
 /// #[library_benchmark]
 /// fn bench_something() -> u64 {
 ///     42
 /// }
 ///
-/// library_benchmark_group!(
-///     name = my_group;
-///     benchmarks = bench_something
-/// );
+/// library_benchmark_group!(name = my_group, benchmarks = bench_something);
 ///
 /// # fn main() {
 /// gungraun::main!(library_benchmark_groups = my_group);
@@ -1198,16 +1279,18 @@ macro_rules! binary_benchmark_group {
 /// ```rust
 /// # use gungraun::{library_benchmark, library_benchmark_group, LibraryBenchmarkConfig};
 /// # #[library_benchmark]
-/// # fn some_func() {}
+/// # fn bench_1() {}
+/// # #[library_benchmark]
+/// # fn bench_2() {}
 /// fn group_setup() {}
 /// fn group_teardown() {}
 /// library_benchmark_group!(
-///     name = my_group;
-///     config = LibraryBenchmarkConfig::default();
-///     compare_by_id = false;
-///     setup = group_setup();
-///     teardown = group_teardown();
-///     benchmarks = some_func
+///     name = my_group,
+///     config = LibraryBenchmarkConfig::default(),
+///     compare_by_id = false,
+///     setup = group_setup(),
+///     teardown = group_teardown(),
+///     benchmarks = [bench_1, bench_2]
 /// );
 /// # fn main() {
 /// # }
@@ -1223,18 +1306,27 @@ macro_rules! binary_benchmark_group {
 ///   benchmarks of this group
 /// * __`teardown`__ (optional): A teardown function or any valid expression which is run after all
 ///   benchmarks of this group
-/// * __`benchmarks`__ (mandatory): A list of comma separated benchmark functions which must be
-///   annotated with `#[library_benchmark]`
+/// * __`benchmarks`__ (mandatory): An array of benchmark functions annotated with
+///   `#[library_benchmark]`. For convenience, the brackets can be omitted if there is only a single
+///   benchmark function (`benchmarks = bench_1` instead of `benchmarks = [bench_1]`).
 #[macro_export]
 macro_rules! library_benchmark_group {
+    () => {
+        compile_error!("A library_benchmark_group! needs a name and at least 1 benchmark function \
+            annotated with #[library_benchmark]. See the documentation of this macro for more \
+            details.\n\n\
+            hint: library_benchmark_group!(name = some_ident, \
+                benchmarks = [ bench_1, bench_2 ]);");
+    };
     (
         $( config = $config:expr ; $(;)* )?
         $( compare_by_id = $compare:literal ; $(;)* )?
         $( setup = $setup:expr ; $(;)* )?
         $( teardown = $teardown:expr ; $(;)* )?
-        benchmarks = $( $function:ident ),+
+        benchmarks = $( $some:tt )*
     ) => {
-        compile_error!("A library_benchmark_group! needs a name\n\nlibrary_benchmark_group!(name = some_ident; benchmarks = ...);");
+        compile_error!("A library_benchmark_group! needs a name\
+            \n\nhint: library_benchmark_group!(name = some_ident; benchmarks = ...);");
     };
     (
         name = $name:ident;
@@ -1247,7 +1339,8 @@ macro_rules! library_benchmark_group {
         compile_error!(
             "A library_benchmark_group! needs at least 1 benchmark function \
             annotated with #[library_benchmark]\n\n\
-            library_benchmark_group!(name = some_ident; benchmarks = some_library_benchmark);");
+            hint: library_benchmark_group!(name = some_ident; \
+                benchmarks = some_library_benchmark);");
     };
     (
         name = $name:ident; $(;)*
@@ -1328,5 +1421,74 @@ macro_rules! library_benchmark_group {
                 }
             }
         }
+    };
+    (
+        $( config = $config:expr , $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        benchmarks = $( $some:tt )*
+    ) => {
+        compile_error!("A library_benchmark_group! needs a name\n\n\
+            hint: library_benchmark_group!(name = some_ident, benchmarks = ...);");
+    };
+    (
+        name = $name:ident,
+        $( config = $config:expr , $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        benchmarks =
+    ) => {
+        compile_error!(
+            "A library_benchmark_group! needs at least 1 benchmark function \
+            annotated with #[library_benchmark]\n\n\
+            hint: library_benchmark_group!(name = some_ident, \
+                benchmarks = some_library_benchmark);");
+    };
+    (
+        name = $name:ident, $(,)*
+        $( config = $config:expr , $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        benchmarks = $function:ident
+    ) => {
+        library_benchmark_group!(
+            name = $name;
+            $( config = $config; )?
+            $( compare_by_id = $compare; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            benchmarks = $function
+        );
+    };
+    (
+        name = $name:ident, $(,)*
+        $( config = $config:expr , $(,)* )?
+        $( compare_by_id = $compare:literal , $(,)* )?
+        $( setup = $setup:expr , $(,)* )?
+        $( teardown = $teardown:expr , $(,)* )?
+        benchmarks = [ $( $function:ident ),+ $(,)* ]
+    ) => {
+        library_benchmark_group!(
+            name = $name;
+            $( config = $config; )?
+            $( compare_by_id = $compare; )?
+            $( setup = $setup; )?
+            $( teardown = $teardown; )?
+            benchmarks = $( $function ),+
+        );
+    };
+    (
+        $( $m:tt )*
+    ) => {
+        compile_error!(
+            "You are using an invalid or deprecated syntax of the library_benchmark_group! macro \
+            to set up library benchmarks. See the documentation of this macro, the README \
+            (https://github.com/gungraun/gungraun) or the docs \
+            (https://docs.rs/gungraun/latest/gungraun) for further details.\n\n\
+            hint: library_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])"
+        );
     };
 }

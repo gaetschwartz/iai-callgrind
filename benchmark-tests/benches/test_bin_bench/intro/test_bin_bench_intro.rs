@@ -55,8 +55,8 @@ fn bench_with_bench(arg: &str) -> gungraun::Command {
 // the same group in the `benchmark` parameter
 binary_benchmark_group!(
     // A group needs a unique name which can be later used in the `main!` macro
-    name = echo_group;
-    benchmarks = simple_bench, bench_with_bench
+    name = echo_group,
+    benchmarks = [simple_bench, bench_with_bench]
 );
 
 fn setup_foo() {
@@ -175,8 +175,8 @@ fn benches_from_file(line: String) -> gungraun::Command {
 // the `config` parameter. The `BinaryBenchmarkConfig` at group level configures all benchmarks of
 // the `benchmarks` parameter.
 binary_benchmark_group!(
-    name = read_file_group;
-    benchmarks = bench_with_setup, benches_from_file, benches_from_iter
+    name = read_file_group,
+    benchmarks = [bench_with_setup, benches_from_file, benches_from_iter]
 );
 
 fn setup_pipe(additional_content: &str) {
@@ -218,15 +218,11 @@ fn bench_pipe(_: &str) -> gungraun::Command {
 
 // Our last group
 binary_benchmark_group!(
-    name = pipe_group;
+    name = pipe_group,
     // We specify at group level that all benchmarks in this group are run in a `Sandbox`
-    config = BinaryBenchmarkConfig::default().sandbox(Sandbox::new(true));
+    config = BinaryBenchmarkConfig::default().sandbox(Sandbox::new(true)),
     benchmarks = bench_pipe
 );
 
 // Collect all the groups by name in the `binary_benchmark_groups` parameter
-main!(
-    binary_benchmark_groups = echo_group,
-    read_file_group,
-    pipe_group
-);
+main!(binary_benchmark_groups = [echo_group, read_file_group, pipe_group]);

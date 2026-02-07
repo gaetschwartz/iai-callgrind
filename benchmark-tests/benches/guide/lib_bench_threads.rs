@@ -59,11 +59,9 @@ fn bench_threads(num_threads: usize) -> Vec<u64> {
     black_box(my_lib::find_primes_multi_thread(num_threads))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_threads);
+library_benchmark_group!(name = my_group, benchmarks = bench_threads);
 main!(
     config = LibraryBenchmarkConfig::default()
-        .output_format(OutputFormat::default()
-            .show_intermediate(true)
-        );
+        .output_format(OutputFormat::default().show_intermediate(true)),
     library_benchmark_groups = my_group
 );

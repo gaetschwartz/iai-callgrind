@@ -161,13 +161,10 @@ note: function defined here
   = note: this error originates in the macro `main` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `InternalLibraryBenchmarkConfig: From<&str>` is not satisfied
-  --> tests/ui/test_main_invalid_library_benchmark_groups.rs:19:5
+  --> tests/ui/test_main_invalid_library_benchmark_groups.rs:15:5
    |
-19 | /     main!(
-20 | |         config = "some";
-21 | |         library_benchmark_groups = my_group
-22 | |     );
-   | |_____^ the trait `From<&str>` is not implemented for `InternalLibraryBenchmarkConfig`
+15 |     main!(config = "some", library_benchmark_groups = my_group);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `From<&str>` is not implemented for `InternalLibraryBenchmarkConfig`
    |
    = help: the following other types implement trait `From<T>`:
              <InternalLibraryBenchmarkConfig as From<LibraryBenchmarkConfig>>

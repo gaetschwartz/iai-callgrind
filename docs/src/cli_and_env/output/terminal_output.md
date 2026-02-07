@@ -53,7 +53,7 @@ fn bench_library(value: u64) -> u64 {
     black_box(add_10_and_print(value))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_library);
+library_benchmark_group!(name = my_group, benchmarks = bench_library);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }

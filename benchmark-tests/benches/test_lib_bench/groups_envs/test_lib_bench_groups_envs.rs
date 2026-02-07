@@ -39,42 +39,50 @@ fn bench_print_env_when_config(args: &[&str]) {
 }
 
 library_benchmark_group!(
-    name = pass_through_single;
-    config = LibraryBenchmarkConfig::default().env_clear(true).pass_through_env("HOME");
+    name = pass_through_single,
+    config = LibraryBenchmarkConfig::default()
+        .env_clear(true)
+        .pass_through_env("HOME"),
     benchmarks = bench_print_env_single
 );
 
 library_benchmark_group!(
-    name = pass_through_multiple;
-    config = LibraryBenchmarkConfig::default().env_clear(true).pass_through_envs(["HOME", "PATH"]);
+    name = pass_through_multiple,
+    config = LibraryBenchmarkConfig::default()
+        .env_clear(true)
+        .pass_through_envs(["HOME", "PATH"]),
     benchmarks = bench_print_env_multiple
 );
 
 library_benchmark_group!(
-    name = custom_single;
-    config = LibraryBenchmarkConfig::default().env_clear(true).env("FOO", "BAR");
+    name = custom_single,
+    config = LibraryBenchmarkConfig::default()
+        .env_clear(true)
+        .env("FOO", "BAR"),
     benchmarks = bench_print_env_custom_single
 );
 
 library_benchmark_group!(
-    name = custom_multiple;
+    name = custom_multiple,
     config = LibraryBenchmarkConfig::default()
-        .env_clear(true).envs([("FOO", "BAR"), ("BAR","BAZ")]);
+        .env_clear(true)
+        .envs([("FOO", "BAR"), ("BAR", "BAZ")]),
     benchmarks = bench_print_env_custom_multiple
 );
 
 library_benchmark_group!(
-    name = configs;
-    config = LibraryBenchmarkConfig::default().env_clear(false);
+    name = configs,
+    config = LibraryBenchmarkConfig::default().env_clear(false),
     benchmarks = bench_print_env_when_config
 );
 
 main!(
-    config = LibraryBenchmarkConfig::default().env_clear(false);
-    library_benchmark_groups =
+    config = LibraryBenchmarkConfig::default().env_clear(false),
+    library_benchmark_groups = [
         pass_through_single,
         pass_through_multiple,
         custom_single,
         custom_multiple,
         configs
+    ]
 );

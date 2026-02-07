@@ -145,8 +145,12 @@ fn default_tool_with_another_tool() -> u64 {
 }
 
 library_benchmark_group!(
-    name = my_group;
-    benchmarks = default_tool, default_tool_with_config, default_tool_with_another_tool
+    name = my_group,
+    benchmarks = [
+        default_tool,
+        default_tool_with_config,
+        default_tool_with_another_tool
+    ]
 );
 
 main!(library_benchmark_groups = my_group);

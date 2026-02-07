@@ -63,8 +63,12 @@ fn manual_cachegrind_setup(array: Vec<i32>) -> Vec<i32> {
 }
 
 library_benchmark_group!(
-    name = my_group;
-    benchmarks = bench_default_tool, test_config_overwrite, manual_cachegrind_setup
+    name = my_group,
+    benchmarks = [
+        bench_default_tool,
+        test_config_overwrite,
+        manual_cachegrind_setup
+    ]
 );
 
 main!(library_benchmark_groups = my_group);

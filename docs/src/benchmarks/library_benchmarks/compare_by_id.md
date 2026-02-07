@@ -30,9 +30,12 @@ fn bench_bubble_sort_worst_case(input: Vec<i32>) -> Vec<i32> {
 }
 
 library_benchmark_group!(
-    name = bench_bubble_sort;
-    compare_by_id = true;
-    benchmarks = bench_bubble_sort_best_case, bench_bubble_sort_worst_case
+    name = bench_bubble_sort,
+    compare_by_id = true,
+    benchmarks = [
+        bench_bubble_sort_best_case,
+        bench_bubble_sort_worst_case
+    ]
 );
 
 # fn main() {

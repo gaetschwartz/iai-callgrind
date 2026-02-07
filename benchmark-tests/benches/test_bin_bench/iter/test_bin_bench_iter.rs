@@ -73,39 +73,26 @@ fn bench_assists(path: &str) -> gungraun::Command {
         .build()
 }
 
-binary_benchmark_group!(
-    name = high_level;
-    benchmarks = bench_tuple, bench_assists
-);
+binary_benchmark_group!(name = high_level, benchmarks = [bench_tuple, bench_assists]);
 
 binary_benchmark_group!(
-    name = low_level;
+    name = low_level,
     benchmarks = |group: &mut BinaryBenchmarkGroup| {
         group
-            .binary_benchmark(
-                binary_benchmark_attribute!(bench_assists)
-            )
+            .binary_benchmark(binary_benchmark_attribute!(bench_assists))
             .binary_benchmark(
                 BinaryBenchmark::new("low_level_benchmark")
-                    .bench(
-                        Bench::new("foo")
-                            .command(gungraun::Command::new(ECHO).arg("foo"))
-                    )
+                    .bench(Bench::new("foo").command(gungraun::Command::new(ECHO).arg("foo"))),
             )
             .binary_benchmark(
                 BinaryBenchmark::new("low_level_other")
-                    .bench(
-                        Bench::new("bar")
-                            .command(gungraun::Command::new(ECHO).arg("bar"))
-                    )
-                )
+                    .bench(Bench::new("bar").command(gungraun::Command::new(ECHO).arg("bar"))),
+            )
     }
 );
 
 main!(
     config = BinaryBenchmarkConfig::default()
-        .output_format(OutputFormat::default()
-            .truncate_description(None)
-        );
-    binary_benchmark_groups = high_level, low_level
+        .output_format(OutputFormat::default().truncate_description(None)),
+    binary_benchmark_groups = [high_level, low_level]
 );

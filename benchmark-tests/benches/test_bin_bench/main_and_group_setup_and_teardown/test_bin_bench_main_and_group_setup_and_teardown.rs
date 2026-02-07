@@ -44,16 +44,13 @@ fn check_file_not_exists() -> gungraun::Command {
 }
 
 binary_benchmark_group!(
-    name = simple_group_with_setup;
-    setup = group_setup();
-    teardown = group_teardown();
-    benchmarks = simple_bench, check_file_exists
+    name = simple_group_with_setup,
+    setup = group_setup(),
+    teardown = group_teardown(),
+    benchmarks = [simple_bench, check_file_exists]
 );
 
-binary_benchmark_group!(
-    name = check_group;
-    benchmarks = check_file_not_exists
-);
+binary_benchmark_group!(name = check_group, benchmarks = check_file_not_exists);
 
 fn main_setup() {
     println!("MAIN SETUP");
@@ -64,9 +61,7 @@ fn main_teardown() {
 }
 
 main!(
-    setup = main_setup();
-    teardown = main_teardown();
-    binary_benchmark_groups =
-        simple_group_with_setup,
-        check_group
+    setup = main_setup(),
+    teardown = main_teardown(),
+    binary_benchmark_groups = [simple_group_with_setup, check_group]
 );

@@ -162,12 +162,10 @@ fn assert_benchmarks() {
 }
 
 library_benchmark_group!(
-    name = my_group;
+    name = my_group,
     config = LibraryBenchmarkConfig::default()
-        .tool(Callgrind::default()
-            .flamegraph(FlamegraphConfig::default())
-        );
-    teardown = assert_benchmarks();
+        .tool(Callgrind::default().flamegraph(FlamegraphConfig::default())),
+    teardown = assert_benchmarks(),
     benchmarks = bench_lib
 );
 main!(library_benchmark_groups = my_group);

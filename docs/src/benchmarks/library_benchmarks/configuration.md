@@ -20,10 +20,10 @@ The different levels where a `LibraryBenchmarkConfig` can be specified.
 use gungraun::{main, LibraryBenchmarkConfig};
 
 # #[library_benchmark] fn bench() {}
-# library_benchmark_group!(name = my_group; benchmarks = bench);
+# library_benchmark_group!(name = my_group, benchmarks = bench);
 # fn main() {
 main!(
-    config = LibraryBenchmarkConfig::default();
+    config = LibraryBenchmarkConfig::default(),
     library_benchmark_groups = my_group
 );
 # }
@@ -38,8 +38,8 @@ use gungraun::{main, LibraryBenchmarkConfig, library_benchmark_group};
 
 # #[library_benchmark] fn bench() {}
 library_benchmark_group!(
-    name = my_group;
-    config = LibraryBenchmarkConfig::default();
+    name = my_group,
+    config = LibraryBenchmarkConfig::default(),
     benchmarks = bench
 );
 
@@ -64,8 +64,8 @@ fn bench() {
 }
 
 library_benchmark_group!(
-    name = my_group;
-    config = LibraryBenchmarkConfig::default();
+    name = my_group,
+    config = LibraryBenchmarkConfig::default(),
     benchmarks = bench
 );
 
@@ -96,8 +96,8 @@ fn bench(a: u8, b: u8) {
 }
 
 library_benchmark_group!(
-    name = my_group;
-    config = LibraryBenchmarkConfig::default();
+    name = my_group,
+    config = LibraryBenchmarkConfig::default(),
     benchmarks = bench
 );
 

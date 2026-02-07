@@ -27,13 +27,13 @@ fn bench_threads() -> Vec<u64> {
     black_box(my_lib::find_primes_multi_thread(2))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_threads);
+library_benchmark_group!(name = my_group, benchmarks = bench_threads);
 # fn main() {
 main!(
     config = LibraryBenchmarkConfig::default()
         .output_format(OutputFormat::default()
             .show_intermediate(true)
-        );
+        ),
     library_benchmark_groups = my_group
 );
 # }
@@ -120,13 +120,13 @@ fn bench_threads(num_threads: usize) -> Vec<u64> {
     black_box(my_lib::find_primes_multi_thread(num_threads))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_threads);
+library_benchmark_group!(name = my_group, benchmarks = bench_threads);
 # fn main() {
 main!(
     config = LibraryBenchmarkConfig::default()
         .output_format(OutputFormat::default()
             .show_intermediate(true)
-        );
+        ),
     library_benchmark_groups = my_group
 );
 # }
@@ -195,7 +195,7 @@ use std::hint::black_box;
 fn bench_threads(num_threads: usize) -> Vec<u64> {
     black_box(my_lib::find_primes_multi_thread(num_threads))
 }
-# library_benchmark_group!(name = my_group; benchmarks = bench_threads);
+# library_benchmark_group!(name = my_group, benchmarks = bench_threads);
 # fn main() {
 # main!(library_benchmark_groups = my_group);
 # }
@@ -320,7 +320,7 @@ use std::hint::black_box;
 fn bench_threads(num_threads: usize) -> Vec<u64> {
     black_box(my_lib::find_primes_multi_thread(num_threads))
 }
-# library_benchmark_group!(name = my_group; benchmarks = bench_threads);
+# library_benchmark_group!(name = my_group, benchmarks = bench_threads);
 # fn main() {
 # main!(library_benchmark_groups = my_group);
 # }
@@ -479,7 +479,7 @@ use std::hint::black_box;
 fn bench_threads(num_threads: usize) -> Vec<u64> {
     black_box(my_lib::find_primes_multi_thread(num_threads))
 }
-# library_benchmark_group!(name = my_group; benchmarks = bench_threads);
+# library_benchmark_group!(name = my_group, benchmarks = bench_threads);
 # fn main() {
 # main!(library_benchmark_groups = my_group);
 # }
@@ -607,13 +607,13 @@ fn bench_subprocess(path: PathBuf) -> io::Result<ExitStatus> {
     black_box(my_lib::cat(&path))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_subprocess);
+library_benchmark_group!(name = my_group, benchmarks = bench_subprocess);
 # fn main() {
 main!(
     config = LibraryBenchmarkConfig::default()
         .output_format(OutputFormat::default()
             .show_intermediate(true)
-        );
+        ),
     library_benchmark_groups = my_group
 );
 # }
@@ -683,7 +683,7 @@ benchmark will just work:
 fn bench_subprocess(path: PathBuf) -> io::Result<ExitStatus> {
     black_box(my_lib::cat(&path))
 }
-# library_benchmark_group!(name = my_group; benchmarks = bench_subprocess);
+# library_benchmark_group!(name = my_group, benchmarks = bench_subprocess);
 # fn main() {
 # main!(library_benchmark_groups = my_group);
 # }
@@ -774,7 +774,7 @@ without the toggle:
 fn bench_subprocess(path: PathBuf) -> io::Result<ExitStatus> {
     black_box(my_lib::cat(&path))
 }
-# library_benchmark_group!(name = my_group; benchmarks = bench_subprocess);
+# library_benchmark_group!(name = my_group, benchmarks = bench_subprocess);
 # fn main() {
 # main!(library_benchmark_groups = my_group);
 # }

@@ -42,7 +42,7 @@ fn bench_bubble_sort(values: Vec<i32>) -> Vec<i32> {
     black_box(my_lib::bubble_sort(values))
 }
 
-library_benchmark_group!(name = bubble_sort_group; benchmarks = bench_bubble_sort);
+library_benchmark_group!(name = bubble_sort_group, benchmarks = bench_bubble_sort);
 # fn main() {
 main!(library_benchmark_groups = bubble_sort_group);
 # }
@@ -77,7 +77,7 @@ fn bench_bubble_sort(values: Vec<i32>) -> Vec<i32> {
     black_box(my_lib::bubble_sort(values))
 }
 
-library_benchmark_group!(name = bubble_sort_group; benchmarks = bench_bubble_sort);
+library_benchmark_group!(name = bubble_sort_group, benchmarks = bench_bubble_sort);
 # fn main() {
 main!(library_benchmark_groups = bubble_sort_group);
 # }
@@ -126,7 +126,7 @@ fn bench_bubble_sort(value: Vec<i32>) -> Vec<i32> {
     black_box(my_lib::bubble_sort(value))
 }
 
-library_benchmark_group!(name = bubble_sort_group; benchmarks = bench_bubble_sort);
+library_benchmark_group!(name = bubble_sort_group, benchmarks = bench_bubble_sort);
 # fn main() {
 main!(library_benchmark_groups = bubble_sort_group);
 # }
@@ -162,7 +162,7 @@ fn bench_bubble_sort(value: Vec<i32>) -> Vec<i32> {
     black_box(my_lib::bubble_sort(value))
 }
 
-library_benchmark_group!(name = bubble_sort_group; benchmarks = bench_bubble_sort);
+library_benchmark_group!(name = bubble_sort_group, benchmarks = bench_bubble_sort);
 # fn main() {
 main!(library_benchmark_groups = bubble_sort_group);
 # }
@@ -171,7 +171,7 @@ main!(library_benchmark_groups = bubble_sort_group);
 ## The library_benchmark_group! macro
 
 The `library_benchmark_group` macro accepts the following parameters (in this
-order and separated by a semicolon):
+order and separated by a comma):
 
 - __`name`__ (mandatory): A unique name used to identify the group for the
   `main!` macro
@@ -187,8 +187,10 @@ order and separated by a semicolon):
   before all benchmarks of this group
 - __`teardown`__ (optional): A teardown function or any valid expression which
   is run after all benchmarks of this group
-- __`benchmarks`__ (mandatory): A list of comma separated paths of benchmark
-  functions which are annotated with `#[library_benchmark]`
+- __`benchmarks`__ (mandatory): An array of names of benchmark functions
+  annotated with `#[library_benchmark]`. Multiple names use the array-syntax
+  (`benchmarks = [bench_1, bench_2]`). For convenience a single function name
+  can be specified without brackets (`benchmarks = bench_1`).
 
 Note the `setup` and `teardown` parameters are different to the ones of
 `#[library_benchmark]`, `#[bench]` and `#[benches]`. They accept an expression
@@ -200,7 +202,7 @@ mentioned attributes.
 
 This macro is the entry point for Gungraun and creates the benchmark
 harness. It accepts the following top-level arguments in this order (separated
-by a semicolon):
+by a comma):
 
 - __`config`__ (optional): Optionally specify a
   [`LibraryBenchmarkConfig`](https://docs.rs/gungraun/0.17.0/gungraun/struct.LibraryBenchmarkConfig.html)
@@ -208,8 +210,10 @@ by a semicolon):
   before all benchmarks
 - __`teardown`__ (optional): A setup function or any valid expression which is
   run after all benchmarks
-- __`library_benchmark_groups`__ (mandatory): The name of one or more library
-  benchmark groups. Multiple names are separated by a comma.
+- __`library_benchmark_groups`__ (mandatory): The names of one or more library
+  benchmark groups. Multiple names use the array-syntax
+  (`library_benchmark_groups = [group_1, group_2]`). A single group can be
+  specified without brackets (`library_benchmark_groups = group_1`).
 
 Like the `setup` and `teardown` of the
 [`library_benchmark_group`](#the-library_benchmark_group-macro), these

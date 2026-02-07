@@ -37,9 +37,5 @@ fn bench(value: u64) -> u64 {
     value + black_box(100)
 }
 
-library_benchmark_group!(
-    name = bench_fibonacci_group;
-    benchmarks = bench,
-);
-
+library_benchmark_group!(name = bench_fibonacci_group, benchmarks = bench);
 main!(library_benchmark_groups = bench_fibonacci_group);

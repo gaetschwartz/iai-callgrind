@@ -34,11 +34,9 @@ fn bench_subprocess(path: PathBuf) -> io::Result<ExitStatus> {
     black_box(my_lib::cat(&path))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_subprocess);
+library_benchmark_group!(name = my_group, benchmarks = bench_subprocess);
 main!(
     config = LibraryBenchmarkConfig::default()
-        .output_format(OutputFormat::default()
-            .show_intermediate(true)
-        );
+        .output_format(OutputFormat::default().show_intermediate(true)),
     library_benchmark_groups = my_group
 );

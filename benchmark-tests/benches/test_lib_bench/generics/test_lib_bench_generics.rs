@@ -31,9 +31,5 @@ fn bench_format<I: std::fmt::Debug>(input: I) -> usize {
     black_box(run_format(input))
 }
 
-library_benchmark_group!(
-    name = bench_format_group;
-    benchmarks = bench_format
-);
-
+library_benchmark_group!(name = bench_format_group, benchmarks = bench_format);
 main!(library_benchmark_groups = bench_format_group);

@@ -48,7 +48,7 @@ fn bench_bubble_sort(values: Vec<i32>) -> Vec<i32> {
     black_box(my_lib::bubble_sort(values))
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_bubble_sort);
+library_benchmark_group!(name = my_group, benchmarks = bench_bubble_sort);
 
 # fn main() {
 main!(library_benchmark_groups = my_group);

@@ -41,11 +41,11 @@ fn bench_binary() -> gungraun::Command {
     gungraun::Command::new(env!("CARGO_BIN_EXE_my-foo"))
 }
 
-binary_benchmark_group!(name = my_group; benchmarks = bench_binary);
+binary_benchmark_group!(name = my_group, benchmarks = bench_binary);
 # fn main() {
 main!(
     config = BinaryBenchmarkConfig::default()
-        .tool(Callgrind::with_args(["--cache-sim=no"]));
+        .tool(Callgrind::with_args(["--cache-sim=no"])),
     binary_benchmark_groups = my_group
 );
 # }

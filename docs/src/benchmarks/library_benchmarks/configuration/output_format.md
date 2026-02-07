@@ -39,13 +39,13 @@ same file in the `main!` macro:
 use gungraun::{main, LibraryBenchmarkConfig, CallgrindMetrics, Callgrind};
 
 # #[library_benchmark] fn bench() {}
-# library_benchmark_group!(name = my_group; benchmarks = bench);
+# library_benchmark_group!(name = my_group, benchmarks = bench);
 # fn main() {
 main!(
     config = LibraryBenchmarkConfig::default()
         .tool(Callgrind::default()
             .format([CallgrindMetrics::All])
-        );
+        ),
     library_benchmark_groups = my_group
 );
 # }
@@ -128,7 +128,7 @@ fn bench_hash_map(map: HashMap<String, usize>) -> Option<usize> {
     )
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench_hash_map);
+library_benchmark_group!(name = my_group, benchmarks = bench_hash_map);
 # fn main() {
 main!(library_benchmark_groups = my_group);
 # }

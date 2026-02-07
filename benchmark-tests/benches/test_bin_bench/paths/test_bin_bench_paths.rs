@@ -45,12 +45,10 @@ fn bench_paths(path: &str) -> Command {
         .build()
 }
 
-binary_benchmark_group!(name = my_group; benchmarks = bench_paths);
+binary_benchmark_group!(name = my_group, benchmarks = bench_paths);
 main!(
     config = BinaryBenchmarkConfig::default()
         .tool(Callgrind::with_args(["trace-children=no"]))
-        .output_format(OutputFormat::default()
-            .truncate_description(None)
-        );
+        .output_format(OutputFormat::default().truncate_description(None)),
     binary_benchmark_groups = my_group
 );

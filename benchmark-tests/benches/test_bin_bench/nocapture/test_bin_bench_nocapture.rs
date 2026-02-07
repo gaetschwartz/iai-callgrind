@@ -30,9 +30,5 @@ fn bench_pipe() -> gungraun::Command {
         .build()
 }
 
-binary_benchmark_group!(
-    name = simple;
-    benchmarks = bench_echo, bench_pipe
-);
-
+binary_benchmark_group!(name = simple, benchmarks = [bench_echo, bench_pipe]);
 main!(binary_benchmark_groups = simple);

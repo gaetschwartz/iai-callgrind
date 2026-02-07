@@ -771,7 +771,7 @@ pub enum EventKind {
 ///
 /// # fn main() {
 /// main!(
-///     config = BinaryBenchmarkConfig::default().exit_with(ExitWith::Code(1));
+///     config = BinaryBenchmarkConfig::default().exit_with(ExitWith::Code(1)),
 ///     binary_benchmark_groups = my_group
 /// );
 /// # }

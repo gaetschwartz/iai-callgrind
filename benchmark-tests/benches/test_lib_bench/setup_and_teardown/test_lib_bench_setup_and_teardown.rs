@@ -92,13 +92,14 @@ fn benches_global_setup_and_teardown((value, expected): (u64, u64)) -> (u64, u64
 }
 
 library_benchmark_group!(
-    name = bench_fibonacci_group;
-    benchmarks =
+    name = bench_fibonacci_group,
+    benchmarks = [
         bench_only_setup,
         bench_only_teardown,
         benches_only_setup,
         benches_only_teardown,
         benches_global_setup_and_teardown
+    ]
 );
 
 main!(library_benchmark_groups = bench_fibonacci_group);

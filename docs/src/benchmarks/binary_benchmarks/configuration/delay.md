@@ -49,7 +49,7 @@ fn bench_client() -> gungraun::Command {
         .build()
 }
 
-binary_benchmark_group!(name = my_group; benchmarks = bench_client);
+binary_benchmark_group!(name = my_group, benchmarks = bench_client);
 # fn main() {
 main!(binary_benchmark_groups = my_group);
 # }

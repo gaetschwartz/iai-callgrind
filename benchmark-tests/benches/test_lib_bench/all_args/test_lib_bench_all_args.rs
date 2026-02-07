@@ -196,10 +196,12 @@ fn bench_multi_threads() -> Vec<u64> {
 }
 
 library_benchmark_group!(
-    name = my_group;
-    benchmarks =
+    name = my_group,
+    benchmarks = [
         bench_library,
         bench_with_client_request,
         bench_multi_threads
+    ]
 );
+
 main!(library_benchmark_groups = my_group);

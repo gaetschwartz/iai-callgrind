@@ -27,6 +27,14 @@ fn bench_with_bench_longer_name(value: u64) -> Vec<u64> {
     vec![value]
 }
 
-library_benchmark_group!(name = my_group; benchmarks = bench, bench_with_longer_name, bench_with_bench, bench_with_bench_longer_name);
+library_benchmark_group!(
+    name = my_group,
+    benchmarks = [
+        bench,
+        bench_with_longer_name,
+        bench_with_bench,
+        bench_with_bench_longer_name
+    ]
+);
 
 main!(library_benchmark_groups = my_group);
