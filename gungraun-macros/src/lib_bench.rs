@@ -224,24 +224,29 @@ impl Bench {
                 let (iter_count, iter_elem) = iter.render_as_code(&self.setup);
 
                 let (bench_id_func, pats) = callee.to_caller_signature(&elem_ident, bench_id);
+                let bench_id_mod = format_ident("__gungraun_wrapper_id_mod", Some(bench_id));
                 let call_bench_func = quote_spanned! { callee_ident.span() =>
                     std::hint::black_box(
                         __gungraun_wrapper_mod::#callee_ident(#(#pats),*)
                     )
                 };
 
-                let call_bench_id = self
-                    .teardown
-                    .render_as_code(quote_spanned! { bench_id.span() => #bench_id(#elem_ident) });
+                let call_bench_id = self.teardown.render_as_code(
+                    quote_spanned! { bench_id.span() => #bench_id_mod::#bench_id(#elem_ident) },
+                );
 
                 quote!(
-                   #[inline(never)]
-                   #bench_id_func {
-                       #call_bench_func
-                   }
-                   #[inline(never)]
-                   #export
-                   pub fn #run_func_id(#index_ident: Option<usize>) -> usize {
+                    mod #bench_id_mod {
+                        use super::*;
+                        #[inline(never)]
+                        pub(super) #bench_id_func {
+                           #call_bench_func
+                        }
+                    }
+
+                    #[inline(never)]
+                    #export
+                    pub fn #run_func_id(#index_ident: Option<usize>) -> usize {
                        let #iter_ident = #iter_expr;
 
                        if let Some(#index_ident) = #index_ident {
@@ -255,24 +260,25 @@ impl Bench {
                            #[allow(clippy::iter_count)]
                            #iter_count
                        }
-                   }
+                    }
                 )
             }
             BenchMode::Args(args) => {
                 let inner = self.setup.render_as_code(args);
+                let bench_id_mod = format_ident("__gungraun_wrapper_id_mod", Some(bench_id));
                 let call_bench_id = if self.setup.is_some() {
                     self.teardown.render_as_code(quote_spanned! {
                         bench_id.span() => {
                             #[allow(clippy::let_unit_value)]
                             let __setup = #inner;
-                            std::hint::black_box(#bench_id(__setup))
+                            std::hint::black_box(#bench_id_mod::#bench_id(__setup))
                         }
                     })
                 } else {
-                    self.teardown.render_as_code(
-                        quote_spanned! { bench_id.span() => std::hint::black_box(#bench_id(#inner))
-                        },
-                    )
+                    self.teardown
+                        .render_as_code(quote_spanned! { bench_id.span() =>
+                            std::hint::black_box(#bench_id_mod::#bench_id(#inner))
+                        })
                 };
 
                 let (bench_id_func, pats) = callee.to_caller_signature(&elem_ident, bench_id);
@@ -283,16 +289,19 @@ impl Bench {
                 };
 
                 quote!(
-                   #[inline(never)]
-                   #bench_id_func {
-                       #call_bench_func
-                   }
-                   #[inline(never)]
-                   #export
-                   pub fn #run_func_id() {
+                    mod #bench_id_mod {
+                        use super::*;
+                        #[inline(never)]
+                        pub(super) #bench_id_func {
+                           #call_bench_func
+                        }
+                    }
+                    #[inline(never)]
+                    #export
+                    pub fn #run_func_id() {
                        #[allow(clippy::let_unit_value)]
                        let _ = #call_bench_id;
-                   }
+                    }
                 )
             }
         };
@@ -572,13 +581,13 @@ impl LibraryBenchmark {
                 self.setup.expr().span() => {
                     #[allow(clippy::let_unit_value)]
                     let __setup = #inner;
-                    std::hint::black_box(#wrapper_ident(__setup))
+                    std::hint::black_box(__gungraun_wrapper_id_mod::#wrapper_ident(__setup))
                 }
             })
         } else {
             self.teardown.render_as_code(quote_spanned! {
                 inner.span() =>
-                    std::hint::black_box(#wrapper_ident(#inner))
+                    std::hint::black_box(__gungraun_wrapper_id_mod::#wrapper_ident(#inner))
             })
         };
 
@@ -616,17 +625,20 @@ impl LibraryBenchmark {
 
                 #config
 
-               #[inline(never)]
-               #wrapper_func {
-                   #call_bench_func
-               }
+                mod __gungraun_wrapper_id_mod {
+                    use super::*;
+                    #[inline(never)]
+                    pub(super) #wrapper_func {
+                       #call_bench_func
+                    }
+                }
 
-               #[inline(never)]
-               #export
-               pub fn #run_func_id() {
+                #[inline(never)]
+                #export
+                pub fn #run_func_id() {
                    #[allow(clippy::let_unit_value)]
                    let _ = #call_wrapper;
-               }
+                }
             }
         }
     }

@@ -179,7 +179,7 @@ impl ToolConfigBuilder {
         &mut self,
         default_entry_point: &EntryPoint,
         module_path: &ModulePath,
-        id: Option<&String>,
+        _id: Option<&String>,
     ) {
         match self.kind {
             ValgrindTool::Callgrind => {
@@ -211,6 +211,7 @@ impl ToolConfigBuilder {
                     .unwrap_or_else(|| default_entry_point.clone());
 
                 if entry_point == EntryPoint::Default {
+                    // TODO: Why are frames just applied when EntryPoint is Default?
                     let mut frames = if let Some(tool) = self.tool.as_ref() {
                         if let Some(frames) = &tool.frames {
                             frames.clone()
@@ -221,6 +222,7 @@ impl ToolConfigBuilder {
                         Vec::default()
                     };
 
+                    // TODO: UPDATE COMMENT
                     // DHAT does not resolve function calls the same way as callgrind does. Somehow
                     // the benchmark function matched by the `DEFAULT_TOGGLE` gets sometimes inlined
                     // (although annotated with `#[inline(never)]`), so we need to fall back to the
@@ -232,11 +234,9 @@ impl ToolConfigBuilder {
                     // wildcard to address the problem of functions with the same body being
                     // condensed into a single function by the compiler. Since in rare cases that
                     // can happen across modules the `module` is matched with a glob, too.
-                    if let [first, _, last] = module_path.components()[..] {
-                        frames.push(format!("{first}::{last}::*"));
-                        if let Some(id) = id {
-                            frames.push(format!("{first}::*::{id}"));
-                        }
+                    if let Some(file) = module_path.components().first() {
+                        // This frame matches the standalone wrapper mod id and all others
+                        frames.push(format!("{file}::*::__gungraun_wrapper_id_mod*::*"));
                     }
 
                     self.frames = frames;
