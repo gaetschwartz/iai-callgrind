@@ -210,7 +210,6 @@ impl Bench {
         let elem_ident = format_ident!("__elem");
         let run_func_id = format_ident("__run", Some(bench_id));
         let callee_ident = &callee.ident;
-        let export = generate_export_name(callee, &run_func_id);
 
         let func = match &self.mode {
             // The amount of input arguments of the benchmark function is already verified to be
@@ -245,7 +244,6 @@ impl Bench {
                     }
 
                     #[inline(never)]
-                    #export
                     pub fn #run_func_id(#index_ident: Option<usize>) -> usize {
                        let #iter_ident = #iter_expr;
 
@@ -297,7 +295,6 @@ impl Bench {
                         }
                     }
                     #[inline(never)]
-                    #export
                     pub fn #run_func_id() {
                        #[allow(clippy::let_unit_value)]
                        let _ = #call_bench_id;
@@ -598,7 +595,6 @@ impl LibraryBenchmark {
                 )
         };
 
-        let export = generate_export_name(&callee, &run_func_id);
         let func = quote! {
             gungraun::__internal::InternalLibFunctionKind::Default(#run_func_id)
         };
@@ -634,7 +630,6 @@ impl LibraryBenchmark {
                 }
 
                 #[inline(never)]
-                #export
                 pub fn #run_func_id() {
                    #[allow(clippy::let_unit_value)]
                    let _ = #call_wrapper;
@@ -850,15 +845,6 @@ fn create_item_fn(item_fn: &ItemFn) -> ItemFn {
         vis,
         sig: item_fn.sig.clone(),
         block: item_fn.block.clone(),
-    }
-}
-
-fn generate_export_name(callee: &Callee, run_func_id: &Ident) -> TokenStream {
-    let export_name = format!("__gungraun::{}::{run_func_id}", &callee.ident);
-    if cfg!(unsafe_keyword_needed) {
-        quote_spanned!(callee.span() => #[unsafe(export_name = #export_name)])
-    } else {
-        quote_spanned!(callee.span() => #[export_name = #export_name])
     }
 }
 
