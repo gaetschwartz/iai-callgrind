@@ -2,8 +2,8 @@ use std::hint::black_box;
 
 use benchmark_tests::{bubble_sort, setup_best_case_array, setup_worst_case_array};
 use gungraun::{
-    library_benchmark, library_benchmark_group, main, Dhat, EntryPoint, LibraryBenchmarkConfig,
-    ValgrindTool,
+    library_benchmark, library_benchmark_group, main, Dhat, DhatMetric, EntryPoint,
+    LibraryBenchmarkConfig, ValgrindTool,
 };
 
 #[inline(never)]
@@ -23,6 +23,12 @@ fn teardown(mut data: Vec<i32>) {
     config = LibraryBenchmarkConfig::default()
         .tool(Dhat::default()
             .frames(["*::custom_setup"])
+            .hard_limits([
+                (DhatMetric::TotalBytes, 40),
+                (DhatMetric::TotalBlocks, 2),
+                (DhatMetric::ReadsBytes, 80),
+                (DhatMetric::WritesBytes, 120)
+            ])
         )
 )]
 #[bench::with_entry_point(args = (5), setup = custom_setup, teardown = teardown)]
@@ -43,7 +49,12 @@ fn heap(data: Vec<i32>) -> Vec<i32> {
 #[bench::with_entry_point(
     args = (5),
     config = LibraryBenchmarkConfig::default()
-        .tool(Dhat::with_args(["--mode=copy"])),
+        .tool(Dhat::with_args(["--mode=copy"])
+            .hard_limits([
+                (DhatMetric::TotalBytes, 20),
+                (DhatMetric::TotalBlocks, 1)
+            ])
+        ),
     setup = custom_setup,
 )]
 #[bench::without_entry_point(
@@ -68,17 +79,23 @@ fn copy(mut src: Vec<i32>) -> (Vec<i32>, Vec<i32>) {
     (src, dst)
 }
 
-#[library_benchmark]
+#[library_benchmark(
+    config = LibraryBenchmarkConfig::default()
+        .tool(Dhat::with_args(["--mode=ad-hoc"])
+            .hard_limits([
+                (DhatMetric::TotalUnits, 15),
+                (DhatMetric::TotalEvents, 1)
+            ])
+        ),
+)]
 #[bench::with_entry_point(
     args = (5),
-    config = LibraryBenchmarkConfig::default()
-        .tool(Dhat::with_args(["--mode=ad-hoc"])),
     setup = setup_worst_case_array
 )]
 #[bench::without_entry_point(
     args = (5),
     config = LibraryBenchmarkConfig::default()
-        .tool(Dhat::with_args(["--mode=ad-hoc"])
+        .tool(Dhat::default()
             .entry_point(EntryPoint::None)
         ),
     setup = setup_worst_case_array
@@ -88,7 +105,19 @@ fn ad_hoc(data: Vec<i32>) -> Vec<i32> {
     black_box(bubble_sort(data))
 }
 
-#[library_benchmark]
+// This test also shows that dhat compiles differently and the default toggle matching
+// `__gungraun_wrapper_mod` is not present in the dhat output.
+#[library_benchmark(
+    config = LibraryBenchmarkConfig::default()
+        .tool(Dhat::default()
+            .hard_limits([
+                (DhatMetric::TotalBytes, 20),
+                (DhatMetric::TotalBlocks, 1),
+                (DhatMetric::ReadsBytes, 0),
+                (DhatMetric::WritesBytes, 20)
+            ])
+        )
+)]
 #[bench::five(5)]
 fn alloc_in_func(start: i32) -> Vec<i32> {
     setup_worst_case_array(start)

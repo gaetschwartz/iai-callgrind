@@ -29,7 +29,6 @@ impl CargoMetadata {
     }
 }
 
-// TODO: Update docs, also for binary benchmarks
 /// The `#[library_benchmark]` attribute lets you define a benchmark function which you can later
 /// use in the `library_benchmark_groups!` macro.
 ///
