@@ -20,12 +20,20 @@ cargo update
 echo Build with the feature powerset
 just build-hack
 
+# The freebsd github action vm tends to run out of space, so we run `cargo
+# clean` as often as possible
+cargo clean
+
 # This excludes the ui tests
 echo Run normal tests
 cargo test --workspace --exclude client-request-tests
 
+cargo clean
+
 echo Run client request tests
 cargo +stable test -p client-request-tests --test tests --release -- --nocapture
+
+cargo clean
 
 echo Run benchmark tests
 just full-bench-test-all
