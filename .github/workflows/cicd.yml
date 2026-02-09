@@ -1,6 +1,6 @@
 # spell-checker:ignore taiki rustfmt binstall clippy taplo rustup nocapture
 # spell-checker:ignore nofile gnuabi armv gnueabi mipsel vmactions usesh proto
-# spell-checker:ignore tlsv connrefused copyback
+# spell-checker:ignore tlsv connrefused copyback toolsdirectory ghcup
 
 name: Build and Check
 
@@ -206,26 +206,48 @@ jobs:
     name: Build, check and test/FreeBSD
     needs: [format]
     runs-on: ubuntu-latest
-    env:
-      GUNGRAUN_VALGRIND_INCLUDE: "/usr/local/include"
-      GUNGRAUN_VALGRIND_PATH: "/usr/local/bin"
     steps:
       - uses: actions/checkout@v6
-      - name: Setup and run tests
-        id: test
-        uses: vmactions/freebsd-vm@v1
+        # This job should free around 20 - 30 GB disk space which is needed for
+        # the custom freebsd image which requires 30 GB disk space
+        # Source: https://www.geraldonit.com/mastering-disk-space-on-github-actions-runners-a-deep-dive-into-cleanup-strategies-for-x64-and-arm64-runners/
+      - name: Free disk space
+        run: |
+          echo Disk usage before
+          df -h /
+
+          # Remove unused tool caches
+          sudo rm -rf /usr/lib/jvm # Java JDK
+          sudo rm -rf /usr/local/.ghcup # Haskell compiler installer
+          sudo rm -rf /usr/local/lib/android # Android SDK/NDK
+          sudo rm -rf /usr/local/share/powershell # Powershell SDKs
+          sudo rm -rf /usr/share/dotnet # .NET runtimes and SDKs
+          sudo rm -rf /usr/share/swift # Swift runtime and SDKs
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY" # Pre-cached tools (Node, Python, Go, Ruby, .NET SDKs, etc.)
+
+          echo Disk usage after
+          df -h /
+      - uses: cross-platform-actions/action@v0.32.0
+        env:
+          GUNGRAUN_VALGRIND_INCLUDE: "/usr/local/include"
+          GUNGRAUN_VALGRIND_PATH: "/usr/local/bin"
         with:
-          envs: "GUNGRAUN_VALGRIND_INCLUDE GUNGRAUN_VALGRIND_PATH"
-          usesh: true
-          sync: rsync
-          # copyback: `false` reduces run time by some minutes
-          copyback: false
-          prepare: |
-            pkg install -y valgrind curl llvm18 just npm-node22
-            curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain stable --profile minimal -y
+          environment_variables: GUNGRAUN_VALGRIND_INCLUDE GUNGRAUN_VALGRIND_PATH
+          operating_system: freebsd
+          architecture: x86-64
+          version: "15.0"
+          shell: bash
+          memory: 10G
+          sync_files: runner-to-vm
+          # Our custom freebsd image with increased disk space (30G instead of
+          # 12G) and dependencies pre-installed
+          image_url: https://github.com/gungraun/freebsd-builder/releases/download/v0.1.1-custom/freebsd-15.0-x86-64.qcow2
           run: |
+            curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain stable --profile minimal -y
             ./scripts/freebsd_print_info.sh
             ./scripts/freebsd_build_and_test.sh
+            echo Disk usage
+            df -h
       # Set `copyback` to `true` and enable for debugging.
       # - name: Upload target/gungraun
       #   if: ${{ always() }}

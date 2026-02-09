@@ -201,12 +201,12 @@ build-docs:
 # A thorough build of all packages with `cargo hack` and the feature powerset (Uses: 'cargo-hack')
 [group('build')]
 build-hack: build-hack-runner
-    cargo hack --workspace --feature-powerset --exclude gungraun-runner build
+    cargo hack --workspace --feature-powerset --exclude gungraun-runner {{ if args != '' { args } else { '' } }} build
 
 # A thorough build of the gungraun-runner package (Uses: 'cargo-hack')
 [group('build')]
 build-hack-runner:
-    cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features --exclude-features api build
+    cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features --exclude-features api {{ if args != '' { args } else { '' } }} build
 
 # A build of the tests in all packages with `cargo hack` and the feature powerset (Uses: 'cargo-hack')
 [group('build')]

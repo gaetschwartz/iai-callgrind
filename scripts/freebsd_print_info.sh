@@ -5,10 +5,13 @@ set -e
 # shellcheck disable=SC1090
 . ~/.cargo/env
 
+uname -a
+echo "$SHELL"
+df -h
 pwd
 ls -lah
 whoami
-env
+env | sort
 freebsd-version
 
 valgrind --version
