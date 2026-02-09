@@ -179,7 +179,7 @@ impl ToolConfigBuilder {
         &mut self,
         default_entry_point: &EntryPoint,
         module_path: &ModulePath,
-        id: Option<&String>,
+        _id: Option<&String>,
     ) {
         match self.kind {
             ValgrindTool::Callgrind => {
@@ -211,35 +211,23 @@ impl ToolConfigBuilder {
                     .unwrap_or_else(|| default_entry_point.clone());
 
                 if entry_point == EntryPoint::Default {
-                    let mut frames = if let Some(tool) = self.tool.as_ref() {
-                        if let Some(frames) = &tool.frames {
-                            frames.clone()
-                        } else {
-                            Vec::default()
-                        }
-                    } else {
-                        Vec::default()
-                    };
-
-                    // DHAT does not resolve function calls the same way as callgrind does. Somehow
-                    // the benchmark function matched by the `DEFAULT_TOGGLE` gets sometimes inlined
-                    // (although annotated with `#[inline(never)]`), so we need to fall back to the
-                    // next best thing which is the function that calls the benchmark function. At
-                    // this point the module path consists of `file::group::function`. The group in
-                    // the path is artificial and we need the real function path within the
-                    // benchmark file to create a matching glob pattern. That real path consists of
-                    // `file::module::id`. The `id`-function won't be matched literally but with a
-                    // wildcard to address the problem of functions with the same body being
-                    // condensed into a single function by the compiler. Since in rare cases that
-                    // can happen across modules the `module` is matched with a glob, too.
-                    if let [first, _, last] = module_path.components()[..] {
-                        frames.push(format!("{first}::{last}::*"));
-                        if let Some(id) = id {
-                            frames.push(format!("{first}::*::{id}"));
-                        }
+                    // DHAT does not resolve function calls the same way as callgrind does.
+                    // Sometimes the benchmark function matched by the `DEFAULT_TOGGLE` gets inlined
+                    // (although annotated with `#[inline(never)]`). So, in addition to the default
+                    // toggle we need a fall back to the next best thing which is the function that
+                    // calls the benchmark function. It is important to note that this function is
+                    // constructed in a way so that it does not contain code that initializes
+                    // memory. This "id"-function won't be matched literally but with a wildcard to
+                    // address the problem of functions with the same body being condensed into a
+                    // single function by the compiler. This also addresses rare cases in which the
+                    // id function is taken from another module.
+                    if let Some(file) = module_path.components().first() {
+                        // This frame glob matches the standalone wrapper mod id function
+                        // (`__gungraun_wrapper_id_mod`) and the constructed ones (for example
+                        // `__gungraun_wrapper_id_mod_my_benchmark_id`) unambiguously.
+                        self.frames
+                            .push(format!("{file}::*::__gungraun_wrapper_id_mod*::*"));
                     }
-
-                    self.frames = frames;
                 }
 
                 self.entry_point = Some(entry_point);
@@ -289,12 +277,21 @@ impl ToolConfigBuilder {
         valgrind_args: &RawArgs,
         default_entry_point: &EntryPoint,
     ) -> Result<Self> {
+        let (is_enabled, frames) = if let Some(tool) = tool.as_ref() {
+            let is_enabled = tool.enable.unwrap_or(true);
+            let frames = tool.frames.as_ref().map_or_else(Vec::default, Clone::clone);
+
+            (is_enabled, frames)
+        } else {
+            (true, Vec::default())
+        };
+
         let mut builder = Self {
-            is_enabled: is_default || tool.as_ref().map_or(true, |t| t.enable.unwrap_or(true)),
+            is_enabled,
+            frames,
             tool,
             entry_point: Option::default(),
             flamegraph_config: ToolFlamegraphConfig::None,
-            frames: Vec::default(),
             is_default,
             raw_args: default_args
                 .get(&valgrind_tool)

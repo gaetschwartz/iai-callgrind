@@ -80,6 +80,7 @@ pub trait Tree {
         Self: std::marker::Sized + Default,
     {
         let mut globs = frames.iter().collect::<Vec<_>>();
+
         let glob = match entry_point {
             EntryPoint::None => None,
             EntryPoint::Default => Some(DEFAULT_TOGGLE.into()),

@@ -14,13 +14,13 @@ error: expected attribute arguments in parentheses: `bench::missing_parentheses(
 9 | #[bench::missing_parentheses]
   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error[E0428]: the name `same` is defined multiple times
+error[E0428]: the name `__gungraun_wrapper_id_mod_same` is defined multiple times
   --> tests/ui/test_library_benchmark_invalid_bench_id.rs:12:1
    |
 12 | #[library_benchmark]
-   | ^^^^^^^^^^^^^^^^^^^^ `same` redefined here
+   | ^^^^^^^^^^^^^^^^^^^^ `__gungraun_wrapper_id_mod_same` redefined here
    |
-   = note: `same` must be defined only once in the value namespace of this module
+   = note: `__gungraun_wrapper_id_mod_same` must be defined only once in the type namespace of this module
    = note: this error originates in the attribute macro `library_benchmark` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0428]: the name `__run_same` is defined multiple times
@@ -32,13 +32,13 @@ error[E0428]: the name `__run_same` is defined multiple times
    = note: `__run_same` must be defined only once in the value namespace of this module
    = note: this error originates in the attribute macro `library_benchmark` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0428]: the name `same_0` is defined multiple times
+error[E0428]: the name `__gungraun_wrapper_id_mod_same_0` is defined multiple times
   --> tests/ui/test_library_benchmark_invalid_bench_id.rs:21:1
    |
 21 | #[library_benchmark]
-   | ^^^^^^^^^^^^^^^^^^^^ `same_0` redefined here
+   | ^^^^^^^^^^^^^^^^^^^^ `__gungraun_wrapper_id_mod_same_0` redefined here
    |
-   = note: `same_0` must be defined only once in the value namespace of this module
+   = note: `__gungraun_wrapper_id_mod_same_0` must be defined only once in the type namespace of this module
    = note: this error originates in the attribute macro `library_benchmark` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0428]: the name `__run_same_0` is defined multiple times
