@@ -75,9 +75,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
-      - uses: taiki-e/install-action@cargo-binstall
       - uses: taiki-e/install-action@just
-      - run: cargo binstall --no-confirm --no-symlinks taplo-cli
+      - uses: taiki-e/install-action@taplo
       - run: just check-fmt-all
 
   base:
