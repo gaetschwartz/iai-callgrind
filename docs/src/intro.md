@@ -57,6 +57,16 @@ Gungraun is not a good fit.
 - Gungraun cannot be run on Windows and platforms not supported by
   Valgrind.
 
+## Pronunciation and origin of the word Gungraun
+
+Like `valgrind`, the name has its roots in old norse mythology and is a
+composition of two words. The first is `gungnir`, Odin's legendary spear, in the
+sense of one shot (benchmark execution) and one hit never missing its target.
+The second word is `raun` which simply means test.
+
+The first syllable is pronounced like the english word `gun`. The second `g` is
+silent. The last syllable `raun` can be pronounced like the english word `rain`.
+
 ## Improving Gungraun
 
 You want to improve the guide? You have an idea for a new feature, are missing a
