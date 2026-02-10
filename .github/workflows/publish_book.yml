@@ -23,6 +23,33 @@ jobs:
       - uses: taiki-e/install-action@cargo-binstall
       - uses: taiki-e/install-action@just
 
+      - name: Delay book build and wait for docs.rs to finish
+        run: |
+          version=$(cargo metadata --format-version=1 |\
+            jq '.packages[] | select(.name == "gungraun").version' |\
+            tr -d '"'
+          )
+
+          # Give docs.rs some reasonable head start
+          sleep 300
+
+          counter=0
+          max=1800
+          echo "Waiting for docs.rs to build docs for gungraun v${version}"
+          while true; do
+            # The trailing slash is important. Without it the status code is 302
+            if curl -s -w '%{http_code}' -o /dev/null "https://docs.rs/gungraun/${version}/gungraun/" | grep -q 200; then
+              echo "Docs.rs documentation is online. Continue..."
+              break
+            elif ((counter > max)); then
+              echo "Timeout reached. Aborting..."
+              exit 1
+            else
+              counter=$((counter + 1))
+              printf '.'
+              sleep 1
+            fi
+          done
       - name: Install mdbook
         run: just args="--no-confirm" book-install
 
