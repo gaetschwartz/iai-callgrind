@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-* ([#532](https://github.com/iai-callgrind/iai-callgrind/pull/532)): Build on
+* ([#532](https://github.com/gungraun/gungraun/pull/532)): Build on
   docs.rs fails because docs_auto_cfg was removed and merged into docs_cfg in
   version 1.92.0
 
@@ -39,12 +39,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
-* ([#489](https://github.com/iai-callgrind/iai-callgrind/pull/489)): Support
+* ([#489](https://github.com/gungraun/gungraun/pull/489)): Support
   calling `gungraun-runner` with arguments `--help`, `-h` and `--version`, `-V`.
 
 ### Changed
 
-* ([#521](https://github.com/iai-callgrind/iai-callgrind/pull/521)): Added a
+* ([#521](https://github.com/gungraun/gungraun/pull/521)): Added a
   rustfmt-able syntax for the `library_benchmark_group!`,
   `binary_benchmark_group!` and `main!` macros. Instead of `;` using `,` and an
   array with bracket notation for the list of benchmarks and groups is a syntax
@@ -54,18 +54,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-* ([#515](https://github.com/iai-callgrind/iai-callgrind/pull/515)): Fix usages
+* ([#515](https://github.com/gungraun/gungraun/pull/515)): Fix usages
   of `--collect-at-start` to `--collect-atstart` in the guide.
-* ([#525](https://github.com/iai-callgrind/iai-callgrind/pull/525)): Nested
+* ([#525](https://github.com/gungraun/gungraun/pull/525)): Nested
   benchmark file structures were restricted by the internal usages of
   `#[export_name]`. These usages were removed and replaced by an improved
   internal structure of the benchmark module.
-* ([#525](https://github.com/iai-callgrind/iai-callgrind/pull/525)): Fixed
+* ([#525](https://github.com/gungraun/gungraun/pull/525)): Fixed
   possible ambiguous matches of dhat frames and functions when the default entry
   point was used.
-* ([#525](https://github.com/iai-callgrind/iai-callgrind/pull/525)): Fixed
+* ([#525](https://github.com/gungraun/gungraun/pull/525)): Fixed
   custom dhat frames were only matched when the default entry point was used.
-* ([#530](https://github.com/iai-callgrind/iai-callgrind/pull/530)): Fixed rare
+* ([#530](https://github.com/gungraun/gungraun/pull/530)): Fixed rare
   cases of callgrind stats depending on the function name.
 * Fixed dead links in the guide.
 
@@ -111,35 +111,35 @@ iterators.
 
 ### Added
 
-* ([#427](https://github.com/iai-callgrind/iai-callgrind/pull/427)): Support
+* ([#427](https://github.com/gungraun/gungraun/pull/427)): Support
   assembly optimized valgrind client requests for the
   `riscv64gc-unknown-linux-gnu` target
-* ([#429](https://github.com/iai-callgrind/iai-callgrind/pull/429)): Add new
+* ([#429](https://github.com/gungraun/gungraun/pull/429)): Add new
   `iter` syntax for the `benches` macro which takes an iterator as argument and
   creates a benchmark for each iterator element. For example
   `#[benches::some_id(iter = [1, 2, 3])]` creates a benchmark for the inputs
   `1`, `2` and `3`.
-* ([#434](https://github.com/iai-callgrind/iai-callgrind/pull/434)): Add the
+* ([#434](https://github.com/gungraun/gungraun/pull/434)): Add the
   command-line arguments `--show-intermediate`, `--truncate-description` and
   `--show-grid` and respective environment variables which work exactly like the
   already existing options for the `OutputFormat`.
-* ([#436](https://github.com/iai-callgrind/iai-callgrind/pull/436)): Add
+* ([#436](https://github.com/gungraun/gungraun/pull/436)): Add
   command-line argument `--show-only-comparison` and the respective environment
   variable to show only the comparison by id with other benchmarks excluding the
   self-comparison.
 
 ### Changed
 
-* ([#429](https://github.com/iai-callgrind/iai-callgrind/pull/429)): Dhat
+* ([#429](https://github.com/gungraun/gungraun/pull/429)): Dhat
   metrics now exclude setup costs exactly like callgrind and cachegrind metrics.
-* ([#475](https://github.com/iai-callgrind/iai-callgrind/pull/475)): The package
+* ([#475](https://github.com/gungraun/gungraun/pull/475)): The package
   names have been changed from
     * `iai-callgrind` -> `gungraun`
     * `iai-callgrind-runner` -> `gungraun-runner`
     * `iai-callgrind-macros` -> `gungraun-macros`
   The name of the `iai-callgrind-runner` binary has changed with the package
   name to `gungraun-runner`.
-* ([#475](https://github.com/iai-callgrind/iai-callgrind/pull/475)): All
+* ([#475](https://github.com/gungraun/gungraun/pull/475)): All
   environment variables have changed their prefix from `IAI_CALLGRIND` to
   `GUNGRAUN` without any exceptions. Here's an incomplete list:
     * `IAI_CALLGRIND_ALLOW_ASLR` -> `GUNGRAUN_ALLOW_ASLR`
@@ -182,13 +182,13 @@ iterators.
     * `IAI_CALLGRIND_TOOLS` -> `GUNGRAUN_TOOLS`
     * `IAI_CALLGRIND_TRUNCATE_DESCRIPTION` -> `GUNGRAUN_TRUNCATE_DESCRIPTION`
     * `IAI_CALLGRIND_VALGRIND_ARGS` -> `GUNGRAUN_VALGRIND_ARGS`
-* ([#475](https://github.com/iai-callgrind/iai-callgrind/pull/475)): The default
+* ([#475](https://github.com/gungraun/gungraun/pull/475)): The default
   output directory for the benchmark files has been moved from `target/iai` to
   `target/gungraun`.
-* ([#475](https://github.com/iai-callgrind/iai-callgrind/pull/475)): The summary
+* ([#475](https://github.com/gungraun/gungraun/pull/475)): The summary
   line now concludes with `Gungraun result: Ok, ...` instead of `Iai-Callgrind
   result: Ok, ...`.
-* ([#477](https://github.com/iai-callgrind/iai-callgrind/pull/477)): The
+* ([#477](https://github.com/gungraun/gungraun/pull/477)): The
   positional command-line argument `FILTER` now matches the full module path
   with wildcard patterns to filter and run only the selected benchmarks. The
   summary line in the benchmark output now shows an additional field with the
@@ -199,7 +199,7 @@ iterators.
 
 ### Fixed
 
-* ([#455](https://github.com/iai-callgrind/iai-callgrind/pull/455)): The `old`
+* ([#455](https://github.com/gungraun/gungraun/pull/455)): The `old`
   details of a `ProfilePart` were stored on the wrong side `left` (`new`)
   instead of `right` (`old`).
 
