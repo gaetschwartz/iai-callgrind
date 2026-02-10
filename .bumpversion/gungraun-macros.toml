@@ -1,5 +1,5 @@
 [tool.bumpversion]
-current_version = "0.7.1"
+current_version = "0.7.2"
 commit = true
 message = "Bump gungraun-macros version v{current_version} -> v{new_version}"
 
