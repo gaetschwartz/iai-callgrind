@@ -102,17 +102,7 @@ Gungraun is not a good fit.
   metric to be used for comparison.
 - Gungraun cannot be run on Windows and platforms not supported by Valgrind.
 
-## Pronunciation and origin of the word Gungraun
-
-Like `valgrind`, the name has its roots in old norse mythology and is a
-composition of two words. The first is `gungnir`, Odin's legendary spear, in the
-sense of one shot (benchmark execution) and one hit never missing its target.
-The second word is `raun` which simply means test.
-
-The first syllable is pronounced like the english word `gun`. The second `g` is
-silent. The last syllable `raun` can be pronounced like the english word `rain`.
-
-### Contributing
+## Contributing
 
 Thanks for helping to improve this project! A guideline about contributing to
 Gungraun can be found in the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
@@ -124,14 +114,25 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you shall be dual licensed as in
 [License](#license), without any additional terms or conditions.
 
-### Links
+## Pronunciation and origin of Gungraun
+
+Like `valgrind`, the name has its roots in old norse mythology and is a
+composition of two words. The first is `gungnir`, Odin's legendary spear, in the
+sense of one shot (benchmark execution) and one hit never missing its target.
+The second word is `raun` which simply means test.
+
+The first syllable is pronounced like the english word `gun`. The second `g` is
+silent. The last syllable `raun` can be pronounced like the english word `rain`.
+
+
+## Links
 
 - Gungraun/Iai-Callgrind is [mentioned](https://youtu.be/qfknfCsICUM?t=1228) in
   a talk at [RustNation UK](https://www.rustnationuk.com/) about [Towards
   Impeccable Rust](https://www.youtube.com/watch?v=qfknfCsICUM) by Jon Gjengset
 - Gungraun/Iai-Callgrind is supported by [Bencher]
 
-### Related Projects
+## Related Projects
 
 - [Criterion-rs](https://github.com/bheisler/criterion.rs): A Statistics-driven
   benchmarking library for Rust. Wall-clock times based benchmarks.
@@ -145,14 +146,14 @@ for inclusion in the work by you shall be dual licensed as in
 - [cargo-valgrind](https://github.com/jfrimmel/cargo-valgrind): A cargo
   subcommand, that runs valgrind and collects its output in a helpful manner.
 
-### Credits
+## Credits
 
 Gungraun is forked from <https://github.com/bheisler/iai> and the original idea
 is from Brook Heisler (@bheisler).
 
 Gungraun is powered by [Valgrind].
 
-### License
+## License
 
 Gungraun is like Iai dual licensed under the Apache 2.0 license and the MIT
 license at your option.
