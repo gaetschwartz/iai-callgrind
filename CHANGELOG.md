@@ -27,6 +27,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.17.2] - 2026-02-10
+
+### Fixed
+
+* ([#532](https://github.com/iai-callgrind/iai-callgrind/pull/532)): Build on
+  docs.rs fails because docs_auto_cfg was removed and merged into docs_cfg in
+  version 1.92.0
+
 ## [0.17.1] - 2026-02-10
 
 ### Added
