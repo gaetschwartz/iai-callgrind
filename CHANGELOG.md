@@ -27,6 +27,40 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.17.1] - 2025-09-21
+
+### Added
+
+* ([#489](https://github.com/iai-callgrind/iai-callgrind/pull/489)): Support
+  calling `gungraun-runner` with arguments `--help`, `-h` and `--version`, `-V`.
+
+### Changed
+
+* ([#521](https://github.com/iai-callgrind/iai-callgrind/pull/521)): Added a
+  rustfmt-able syntax for the `library_benchmark_group!`,
+  `binary_benchmark_group!` and `main!` macros. Instead of `;` using `,` and an
+  array with bracket notation for the list of benchmarks and groups is a syntax
+  that rustfmt recognizes and can therefore format properly. The old `;` syntax
+  is still valid but was replaced with the new one in all docs and examples.
+* Update dependencies
+
+### Fixed
+
+* ([#515](https://github.com/iai-callgrind/iai-callgrind/pull/515)): Fix usages
+  of `--collect-at-start` to `--collect-atstart` in the guide.
+* ([#525](https://github.com/iai-callgrind/iai-callgrind/pull/525)): Nested
+  benchmark file structures were restricted by the internal usages of
+  `#[export_name]`. These usages were removed and replaced by an improved
+  internal structure of the benchmark module.
+* ([#525](https://github.com/iai-callgrind/iai-callgrind/pull/525)): Fixed
+  possible ambiguous matches of dhat frames and functions when the default entry
+  point was used.
+* ([#525](https://github.com/iai-callgrind/iai-callgrind/pull/525)): Fixed
+  custom dhat frames were only matched when the default entry point was used.
+* ([#530](https://github.com/iai-callgrind/iai-callgrind/pull/530)): Fixed rare
+  cases of callgrind stats depending on the function name.
+* Fixed dead links in the guide.
+
 ## [0.17.0] - 2025-09-21
 
 We've outgrown our original name! From `0.17.0` version onwards this project's
