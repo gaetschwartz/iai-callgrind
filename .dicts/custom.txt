@@ -1,4 +1,3 @@
-gungraun
 ASLR
 Aparicio
 Assche
@@ -120,6 +119,8 @@ gnuabi
 gnueabi
 gnueabihf
 grcov
+gungnir
+gungraun
 hard_limit
 hitrate
 hitrates
@@ -205,6 +206,7 @@ punct
 quickstart
 ramhitrate
 ramhits
+raun
 readlink
 readsbytes
 realloc
