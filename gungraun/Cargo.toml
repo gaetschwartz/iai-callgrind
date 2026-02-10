@@ -64,7 +64,7 @@ derive_more = { workspace = true, default-features = false, features = [
   "as_ref",
 ], optional = true }
 gungraun-macros = { path = "../gungraun-macros", version = "=0.7.1", optional = true }
-gungraun-runner = { path = "../gungraun-runner", version = "=0.17.0", default-features = false, features = [
+gungraun-runner = { path = "../gungraun-runner", version = "=0.17.1", default-features = false, features = [
   "api",
 ], optional = true }
 
