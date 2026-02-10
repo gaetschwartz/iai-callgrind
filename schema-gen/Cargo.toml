@@ -14,7 +14,7 @@ rust-version.workspace = true
 version.workspace = true
 
 [dependencies]
-gungraun-runner = { path = "../gungraun-runner", version = "=0.17.1", default-features = false, features = [
+gungraun-runner = { path = "../gungraun-runner", version = "=0.17.2", default-features = false, features = [
   "schema",
 ] }
 schemars = { workspace = true, features = ["indexmap2"] }

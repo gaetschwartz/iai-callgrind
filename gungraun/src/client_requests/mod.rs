@@ -57,12 +57,12 @@
 //!
 //! ```toml
 //! [dependencies]
-//! gungraun = { version = "0.17.1", default-features = false, features = [
+//! gungraun = { version = "0.17.2", default-features = false, features = [
 //!     "client_requests_defs"
 //! ]}
 //!
 //! [dev-dependencies]
-//! gungraun = { version = "0.17.1", features = ["client_requests"] }
+//! gungraun = { version = "0.17.2", features = ["client_requests"] }
 //! ```
 //!
 //! If you would only need the client requests in `gungraun` benchmarks, you only need to add

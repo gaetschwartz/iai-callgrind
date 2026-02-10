@@ -9,13 +9,13 @@ To start with Gungraun, add the following to your `Cargo.toml` file:
 
 ```toml
 [dev-dependencies]
-gungraun = "0.17.1"
+gungraun = "0.17.2"
 ```
 
 or run
 
 ```bash
-cargo add --dev gungraun@0.17.1
+cargo add --dev gungraun@0.17.2
 ```
 
 ## Installation of the benchmark runner
@@ -27,7 +27,7 @@ interact with `gungraun-runner` as it is just an implementation detail.
 ### From Source
 
 ```shell
-cargo install --version 0.17.1 gungraun-runner
+cargo install --version 0.17.2 gungraun-runner
 ```
 
 There's also the possibility to install the binary somewhere else and point the
@@ -35,19 +35,19 @@ There's also the possibility to install the binary somewhere else and point the
 `gungraun-runner` binary like so:
 
 ```shell
-cargo install --version 0.17.1 --root /tmp gungraun-runner
+cargo install --version 0.17.2 --root /tmp gungraun-runner
 GUNGRAUN_RUNNER=/tmp/bin/gungraun-runner cargo bench --bench my-bench
 ```
 
 ### Binstall
 
 The `gungraun-runner` binary is
-[pre-built](https://github.com/gungraun/gungraun/releases/tag/v0.17.1)
+[pre-built](https://github.com/gungraun/gungraun/releases/tag/v0.17.2)
 for most platforms supported by valgrind and easily installable with
 [binstall](https://github.com/cargo-bins/cargo-binstall)
 
 ```shell
-cargo binstall gungraun-runner@0.17.1
+cargo binstall gungraun-runner@0.17.2
 ```
 
 ## Updating
