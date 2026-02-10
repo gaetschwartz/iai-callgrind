@@ -21,7 +21,7 @@ site-url = "/gungraun/"
 
 # https://github.com/Michael-F-Bryan/mdbook-linkcheck
 [output.linkcheck]
-follow-web-links = false
+follow-web-links = true
 traverse-parent-directories = true
 warning-policy = "error"
 exclude = ['https://sourceware.org/git/.*']
