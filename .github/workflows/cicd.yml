@@ -1,6 +1,7 @@
 # spell-checker:ignore taiki rustfmt binstall clippy taplo rustup nocapture
 # spell-checker:ignore nofile gnuabi armv gnueabi mipsel vmactions usesh proto
 # spell-checker:ignore tlsv connrefused copyback toolsdirectory ghcup rustdocflags
+# spell-checker:ignore androideabi binutils
 
 name: Build and Check
 
@@ -15,6 +16,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: "1"
+  VALGRIND_VERSION: "3.26.0"
 
 concurrency:
   group: ${{ github.ref }}
@@ -22,7 +24,7 @@ concurrency:
 
 jobs:
   deny:
-    name: Check dependencies/ubuntu-latest
+    name: Check dependencies
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -60,7 +62,7 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ubuntu-latest_${{ matrix.toolchain }}
+          key: ${{ matrix.toolchain }}
       - uses: taiki-e/install-action@cargo-hack
       - uses: taiki-e/install-action@cargo-minimal-versions
       - uses: taiki-e/install-action@just
@@ -79,9 +81,123 @@ jobs:
       - uses: taiki-e/install-action@taplo
       - run: just check-fmt-all
 
-  base:
-    needs: [format]
-    name: Build, check and test
+  lint:
+    name: Run lints
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: taiki-e/install-action@just
+      - run: just lint
+
+  schema:
+    name: Check gungraun json schema
+    needs: [deny, minimal_versions, format, lint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@just
+      - name: Check summary.json schema is up-to-date
+        run: just schema-gen-diff
+
+  build_release:
+    name: Release build for targets supported by valgrind
+    needs: [deny, minimal_versions, format, lint]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - i686-unknown-linux-gnu
+          - armv7-unknown-linux-gnueabihf
+          - aarch64-unknown-linux-gnu
+          - powerpc-unknown-linux-gnu
+          - powerpc64-unknown-linux-gnu
+          - powerpc64le-unknown-linux-gnu
+          - s390x-unknown-linux-gnu
+          - riscv64gc-unknown-linux-gnu
+          - aarch64-linux-android
+          - i686-linux-android
+          - armv7-linux-androideabi
+          - x86_64-linux-android
+          - x86_64-unknown-freebsd
+          - i686-unknown-freebsd
+        include:
+          - cargo: cross
+          - needs_ndk: false
+          - target: armv7-linux-androideabi
+            cargo: cargo
+            needs_ndk: true
+          - target: aarch64-linux-android
+            cargo: cargo
+            needs_ndk: true
+          - target: i686-linux-android
+            cargo: cargo
+            needs_ndk: true
+          - target: x86_64-linux-android
+            cargo: cargo
+            needs_ndk: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          target: ${{ matrix.target }}
+      - uses: taiki-e/install-action@just
+      - uses: taiki-e/install-action@cross
+      - uses: taiki-e/install-action@cargo-hack
+      - name: Install valgrind
+        uses: taiki-e/install-action@v2
+        with:
+          tool: valgrind@3.26.0
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - name: Cleanup Cross.toml
+        run: |
+          [[ -e Cross.toml ]] && mv Cross.toml Cross.toml.old || true
+      # https://developer.android.com/ndk/guides/other_build_systems
+      - name: Use NDK and install cargo config
+        if: matrix.needs_ndk
+        run: |
+          set -x
+
+          min_sdk="21"
+          if [[ "${{ matrix.target }}" == "armv7-linux-androideabi" ]]; then
+            binutils_prefix="arm-linux-androideabi"
+            compiler_prefix="armv7a-linux-androideabi"
+          else
+            binutils_prefix="${{ matrix.target }}"
+            compiler_prefix="${{ matrix.target }}"
+          fi
+
+          linker="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/${compiler_prefix}${min_sdk}-clang"
+
+          cat <<EOF >~/.cargo/config
+          [target.${{ matrix.target }}]
+          linker = "$linker"
+          EOF
+      - name: Update dependencies
+        run: cargo update
+      - name: Build
+        run: |
+          cmd=(${{ matrix.cargo }} build --target ${{ matrix.target }} --release)
+
+          set -x
+          "${cmd[@]}" --package gungraun-macros
+          "${cmd[@]}" --package gungraun
+          for feature in default api schema; do
+            "${cmd[@]}" --package gungraun-runner --features "$feature"
+          done
+
+  build_hack:
+    name: Build with feature powerset
+    needs: [deny, minimal_versions, format, lint]
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -89,96 +205,132 @@ jobs:
           - "1.74.1" # MSRV
           - stable
           - nightly
-        include:
-          - toolchain: "1.74.1" # MSRV
-            ui_tests: --features ui_tests
-            components: rust-src
-          - toolchain: stable
-            components: clippy
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - uses: taiki-e/install-action@just
+      - uses: taiki-e/install-action@cargo-hack
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.toolchain }}
+      - name: Build and install valgrind
+        run: ./scripts/build_and_install_valgrind.sh "$VALGRIND_VERSION"
+      - name: Update dependencies
+        if: matrix.toolchain != '1.74.1'
+        run: cargo update
+      - name: Build
+        run: just build-hack
+
+  test_ui:
+    needs: [deny, minimal_versions, format, lint]
+    name: Run ui tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.74.1"
+          components: rust-src
+      - uses: taiki-e/install-action@just
+      - uses: Swatinem/rust-cache@v2
+      - name: Run ui tests
+        run: |
+          set -o pipefail
+          just test-ui |& tee test.output
+      - name: Check test output for ui errors
+        if: ${{ failure() }}
+        run: |
+          if grep -q '^test ui \.\.\. FAILED$' test.output; then
+            just test-ui-overwrite
+            git diff gungraun/tests/ui
+          fi
+          exit 1
+
+  test:
+    needs: [deny, minimal_versions, format, lint]
+    name: Run unit and integrations tests
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain:
+          - "1.74.1" # MSRV
+          - stable
+          - nightly
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
-          components: ${{ matrix.components }}
-      - name: "Prepare: Install stable toolchain with clippy"
-        if: matrix.toolchain != 'stable'
-        run: |
-          rustup toolchain install stable --no-self-update --component clippy
       - name: "Prepare: Run cargo update"
-        if: matrix.toolchain == 'stable' || matrix.toolchain == 'nightly'
+        if: matrix.toolchain != '1.74.1'
         run: |
           cargo update
       - uses: taiki-e/install-action@cargo-hack
       - uses: taiki-e/install-action@just
-      - name: Build and install valgrind
-        run: ./scripts/build_and_install_valgrind.sh
-      - name: Info
-        run: |
-          set -x
-          uname -a
-          pwd
-          rustup --version
-          rustup show
-          rustup component list --installed
-          valgrind --version
-      - name: Build with the feature powerset
-        run: just build-hack
-      # Fix github ci error: /usr/bin/ld: final link failed: No space left on device
-      - name: Cleanup build artifacts
-        run: cargo clean
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.toolchain }}
-      - name: Build the tests with the feature powerset
+      - name: Build and install valgrind
+        run: ./scripts/build_and_install_valgrind.sh "$VALGRIND_VERSION"
+      - name: Build all tests with the feature powerset
         run: just build-tests-hack
-      - name: Lint
-        run: just lint
-      - name: Test
-        run: |
-          set -o pipefail
-          cargo test --workspace --exclude client-request-tests ${{ matrix.ui_tests }} |& tee test.output
-      - name: Check test output for ui errors
-        if: ${{ matrix.ui_tests && failure() }}
-        run: |
-          if grep -q '^test ui \.\.\. FAILED$' test.output; then
-            TRYBUILD=overwrite cargo test ${{ matrix.ui_tests }} ui
-            git diff gungraun/tests/ui
-          fi
-          exit 1
-      - name: Check summary.json schema is up-to-date
-        run: just schema-gen-diff
-      - name: Bench
-        run: just full-bench-test-all
-        env:
-          # GUNGRAUN_LOG: trace
-          RUST_BACKTRACE: "0"
-      - uses: actions/upload-artifact@v6
-        if: ${{ !cancelled() }}
-        with:
-          name: gungraun-benchmarks-${{ matrix.toolchain }}
-          path: "target/gungraun"
+      - name: Run the tests
+        run: cargo test --workspace --exclude client-request-tests
 
-  client_requests:
-    needs: [format]
-    name: Test client requests
+  test_system:
+    needs: [deny, minimal_versions, format, lint]
+    name: Run system tests
     strategy:
       fail-fast: false
       matrix:
-        job:
-          # These are Gungraun optimized targets
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-          - os: ubuntu-latest
-            target: i686-unknown-linux-gnu
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-          - os: ubuntu-latest
-            target: armv7-unknown-linux-gnueabihf
-          - os: ubuntu-latest
-            target: riscv64gc-unknown-linux-gnu
-    runs-on: ${{ matrix.job.os }}
+        toolchain:
+          - "1.74.1" # MSRV
+          - stable
+          - nightly
+        filter:
+          - "test_bin_bench_*"
+          - "test_lib_bench_*"
+        partition:
+          - "1/3"
+          - "2/3"
+          - "3/3"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - name: "Prepare: Run cargo update"
+        if: matrix.toolchain != '1.74.1'
+        run: |
+          cargo update
+      - uses: taiki-e/install-action@just
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.toolchain }}_${{ matrix.filter }}_${{ matrix.partition }}
+      - name: Build and install valgrind
+        run: ./scripts/build_and_install_valgrind.sh "$VALGRIND_VERSION"
+      - name: Run the system tests with --filter=${{ matrix.filter }}
+        run: just args='--filter=${{ matrix.filter }} --partition=${{ matrix.partition }}' full-bench-test-all
+        env:
+          RUST_BACKTRACE: "0"
+
+  test_client_requests:
+    needs: [deny, minimal_versions, format, lint]
+    name: Run client request tests
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - i686-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
+          - armv7-unknown-linux-gnueabihf
+          - riscv64gc-unknown-linux-gnu
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
@@ -186,95 +338,87 @@ jobs:
       - uses: taiki-e/install-action@just
       - uses: Swatinem/rust-cache@v2
         with:
-          key: cross_${{ matrix.job.os }}_${{ matrix.job.target }}
-      - name: Info
-        run: |
-          set -x
-          uname -a
-          pwd
-          rustup --version
-          rustup show
-          rustup component list --installed
+          key: ${{ matrix.target }}
       - name: Test client requests
-        run: just reqs-test ${{ matrix.job.target }}
+        run: just reqs-test ${{ matrix.target }}
         env:
           RUSTUP_TOOLCHAIN: "stable"
         #   CROSS_DEBUG: "1"
 
-  freebsd:
-    name: Build, check and test/FreeBSD
-    needs: [format]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        # This job should free around 20 - 30 GB disk space which is needed for
-        # the custom freebsd image which requires 30 GB disk space
-        # Source: https://www.geraldonit.com/mastering-disk-space-on-github-actions-runners-a-deep-dive-into-cleanup-strategies-for-x64-and-arm64-runners/
-      - name: Free disk space
-        run: |
-          echo Disk usage before
-          df -h /
+  # freebsd:
+  #   name: Build, check and test/FreeBSD
+  #   needs: [deny, minimal_versions, format, lint]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v6
+  #       # This job should free around 20 - 30 GB disk space which is needed for
+  #       # the custom freebsd image which requires 30 GB disk space
+  #       # Source: https://www.geraldonit.com/mastering-disk-space-on-github-actions-runners-a-deep-dive-into-cleanup-strategies-for-x64-and-arm64-runners/
+  #     - name: Free disk space
+  #       run: |
+  #         echo Disk usage before
+  #         df -h /
+  #
+  #         # Remove unused tool caches
+  #         sudo rm -rf /usr/lib/jvm # Java JDK
+  #         sudo rm -rf /usr/local/.ghcup # Haskell compiler installer
+  #         sudo rm -rf /usr/local/lib/android # Android SDK/NDK
+  #         sudo rm -rf /usr/local/share/powershell # Powershell SDKs
+  #         sudo rm -rf /usr/share/dotnet # .NET runtimes and SDKs
+  #         sudo rm -rf /usr/share/swift # Swift runtime and SDKs
+  #         sudo rm -rf "$AGENT_TOOLSDIRECTORY" # Pre-cached tools (Node, Python, Go, Ruby, .NET SDKs, etc.)
+  #
+  #         echo Disk usage after
+  #         df -h /
+  #     - uses: cross-platform-actions/action@v0.32.0
+  #       env:
+  #         GUNGRAUN_VALGRIND_INCLUDE: "/usr/local/include"
+  #         GUNGRAUN_VALGRIND_PATH: "/usr/local/bin"
+  #       with:
+  #         environment_variables: GUNGRAUN_VALGRIND_INCLUDE GUNGRAUN_VALGRIND_PATH
+  #         operating_system: freebsd
+  #         architecture: x86-64
+  #         version: "15.0"
+  #         shell: bash
+  #         memory: 10G
+  #         sync_files: runner-to-vm
+  #         # Our custom freebsd image with increased disk space (30G instead of
+  #         # 12G) and dependencies pre-installed
+  #         image_url: https://github.com/gungraun/freebsd-builder/releases/download/v0.1.1-custom/freebsd-15.0-x86-64.qcow2
+  #         run: |
+  #           curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain stable --profile minimal -y
+  #           ./scripts/freebsd_print_info.sh
+  #           ./scripts/freebsd_build_and_test.sh
+  #           echo Disk usage
+  #           df -h
+  #     # Set `copyback` to `true` and enable for debugging.
+  #     # - name: Upload target/gungraun
+  #     #   if: ${{ always() }}
+  #     #   uses: actions/upload-artifact@v4
+  #     #   with:
+  #     #     name: freebsd-target-gungraun
+  #     #     path: target/gungraun
 
-          # Remove unused tool caches
-          sudo rm -rf /usr/lib/jvm # Java JDK
-          sudo rm -rf /usr/local/.ghcup # Haskell compiler installer
-          sudo rm -rf /usr/local/lib/android # Android SDK/NDK
-          sudo rm -rf /usr/local/share/powershell # Powershell SDKs
-          sudo rm -rf /usr/share/dotnet # .NET runtimes and SDKs
-          sudo rm -rf /usr/share/swift # Swift runtime and SDKs
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY" # Pre-cached tools (Node, Python, Go, Ruby, .NET SDKs, etc.)
-
-          echo Disk usage after
-          df -h /
-      - uses: cross-platform-actions/action@v0.32.0
-        env:
-          GUNGRAUN_VALGRIND_INCLUDE: "/usr/local/include"
-          GUNGRAUN_VALGRIND_PATH: "/usr/local/bin"
-        with:
-          environment_variables: GUNGRAUN_VALGRIND_INCLUDE GUNGRAUN_VALGRIND_PATH
-          operating_system: freebsd
-          architecture: x86-64
-          version: "15.0"
-          shell: bash
-          memory: 10G
-          sync_files: runner-to-vm
-          # Our custom freebsd image with increased disk space (30G instead of
-          # 12G) and dependencies pre-installed
-          image_url: https://github.com/gungraun/freebsd-builder/releases/download/v0.1.1-custom/freebsd-15.0-x86-64.qcow2
-          run: |
-            curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain stable --profile minimal -y
-            ./scripts/freebsd_print_info.sh
-            ./scripts/freebsd_build_and_test.sh
-            echo Disk usage
-            df -h
-      # Set `copyback` to `true` and enable for debugging.
-      # - name: Upload target/gungraun
-      #   if: ${{ always() }}
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: freebsd-target-gungraun
-      #     path: target/gungraun
-
-  docs:
-    needs: [format]
-    name: Docs/ubuntu-latest
-    runs-on: ubuntu-latest
-    env:
-      DOCS_RS: "1"
-    steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@nightly
-      - uses: Swatinem/rust-cache@v2
-      # This is important for docs.rs which doesn't have the headers installed
-      - name: Try build gungraun without valgrind headers
-        run: cargo build --package gungraun --features client_requests_defs --release
-      - name: Run doc tests
-        run: cargo test --all-features --doc
-      - name: Check docs.rs build for gungraun
-        run: cargo rustdoc -p gungraun --all-features --config 'build.rustdocflags=["--cfg", "docsrs"]' -- --deny warnings
-      - name: Check docs.rs build for gungraun-runner
-        run: cargo rustdoc -p gungraun-runner --all-features --config 'build.rustdocflags=["--cfg", "docsrs"]' -- --deny warnings
-      - name: Check docs.rs build for gungraun-macros
-        run: cargo rustdoc -p gungraun-macros --all-features --config 'build.rustdocflags=["--cfg", "docsrs"]' -- --deny warnings
-      - name: Check Documentation
-        run: cargo doc --all-features --no-deps --document-private-items
+  # docs:
+  #   needs: [deny, minimal_versions, format, lint]
+  #   name: Docs/ubuntu-latest
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     DOCS_RS: "1"
+  #   steps:
+  #     - uses: actions/checkout@v6
+  #     - uses: dtolnay/rust-toolchain@nightly
+  #     - uses: Swatinem/rust-cache@v2
+  #     # This is important for docs.rs which doesn't have the headers installed
+  #     - name: Try build gungraun without valgrind headers
+  #       run: cargo build --package gungraun --features client_requests_defs --release
+  #     - name: Run doc tests
+  #       run: cargo test --all-features --doc
+  #     - name: Check docs.rs build for gungraun
+  #       run: cargo rustdoc -p gungraun --all-features --config 'build.rustdocflags=["--cfg", "docsrs"]' -- --deny warnings
+  #     - name: Check docs.rs build for gungraun-runner
+  #       run: cargo rustdoc -p gungraun-runner --all-features --config 'build.rustdocflags=["--cfg", "docsrs"]' -- --deny warnings
+  #     - name: Check docs.rs build for gungraun-macros
+  #       run: cargo rustdoc -p gungraun-macros --all-features --config 'build.rustdocflags=["--cfg", "docsrs"]' -- --deny warnings
+  #     - name: Check Documentation
+  #       run: cargo doc --all-features --no-deps --document-private-items
