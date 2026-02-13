@@ -1,0 +1,52 @@
+# spell-checker:ignore ghcup toolsdirectory tlsv connrefused copyback
+name: Build and Check/FreeBSD
+
+on:
+  workflow_call:
+
+jobs:
+  build_hack:
+    name: Build with feature powerset
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      # - uses: cross-platform-actions/action@v0.32.0
+      #   env:
+      #     GUNGRAUN_VALGRIND_INCLUDE: "/usr/local/include"
+      #     GUNGRAUN_VALGRIND_PATH: "/usr/local/bin"
+      #   with:
+      #     environment_variables: GUNGRAUN_VALGRIND_INCLUDE GUNGRAUN_VALGRIND_PATH
+      #     operating_system: freebsd
+      #     architecture: x86-64
+      #     version: "15.0"
+      #     shell: bash
+      #     memory: 8G
+      #     sync_files: runner-to-vm
+      #     # Our custom freebsd image with increased disk space (30G instead of
+      #     # 12G) and dependencies pre-installed
+      #     image_url: https://github.com/gungraun/freebsd-builder/releases/download/v0.1.2-custom/freebsd-15.0-x86-64.qcow2
+      #     run: |
+      #       curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain stable --profile minimal -y
+      #
+      #       ./scripts/freebsd_print_info.sh
+      #
+      #       . ~/.cargo/env
+      #
+      #       curl --proto '=https' --tlsv1.2 -fsSL "https://github.com/taiki-e/cargo-hack/releases/latest/download/cargo-hack-x86_64-unknown-freebsd.tar.gz" | tar xzf - -C "$HOME/.cargo/bin"
+      #
+      #       cargo update
+      #
+      #       just build-hack
+      #
+      #       echo Disk usage
+      #       df -h
+      # # Set `copyback` to `true` and enable for debugging.
+      # # - name: Upload target/gungraun
+      # #   if: ${{ always() }}
+      # #   uses: actions/upload-artifact@v4
+      # #   with:
+      # #     name: freebsd-target-gungraun
+      # #     path: target/gungraun
