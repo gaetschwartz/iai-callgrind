@@ -1,4 +1,6 @@
-#!/bin/bash -ex
+#!/bin/bash -eux
+
+# This script is intended to be run on an ubuntu runner in the github ci
 
 set -o pipefail
 
@@ -13,7 +15,7 @@ while [[ "$latest" == "null" ]]; do
     echo "Maximum retries reached"
     exit 1
   else
-    latest=$(curl --retry 3 -s https://api.github.com/repos/gungraun/valgrind-builder/releases/latest | jq -r .tag_name)
+    latest=$(gh release view --repo gungraun/valgrind-builder --json tagName | jq -r '.tagName')
     retries=$((retries - 1))
   fi
 done

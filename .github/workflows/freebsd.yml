@@ -1,8 +1,13 @@
 # spell-checker:ignore ghcup toolsdirectory tlsv connrefused copyback
-name: Build and Check/FreeBSD
+name: FreeBSD checks
 
 on:
   workflow_call:
+
+env:
+  GUNGRAUN_VALGRIND_INCLUDE: "/usr/local/include"
+  GUNGRAUN_VALGRIND_PATH: "/usr/local/bin"
+  CARGO_TERM_COLOR: always
 
 jobs:
   build_hack:
@@ -10,43 +15,121 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@master
+      - uses: cross-platform-actions/action@v0.32.0
         with:
-          toolchain: ${{ matrix.toolchain }}
-      # - uses: cross-platform-actions/action@v0.32.0
-      #   env:
-      #     GUNGRAUN_VALGRIND_INCLUDE: "/usr/local/include"
-      #     GUNGRAUN_VALGRIND_PATH: "/usr/local/bin"
-      #   with:
-      #     environment_variables: GUNGRAUN_VALGRIND_INCLUDE GUNGRAUN_VALGRIND_PATH
-      #     operating_system: freebsd
-      #     architecture: x86-64
-      #     version: "15.0"
-      #     shell: bash
-      #     memory: 8G
-      #     sync_files: runner-to-vm
-      #     # Our custom freebsd image with increased disk space (30G instead of
-      #     # 12G) and dependencies pre-installed
-      #     image_url: https://github.com/gungraun/freebsd-builder/releases/download/v0.1.2-custom/freebsd-15.0-x86-64.qcow2
-      #     run: |
-      #       curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain stable --profile minimal -y
-      #
-      #       ./scripts/freebsd_print_info.sh
-      #
-      #       . ~/.cargo/env
-      #
-      #       curl --proto '=https' --tlsv1.2 -fsSL "https://github.com/taiki-e/cargo-hack/releases/latest/download/cargo-hack-x86_64-unknown-freebsd.tar.gz" | tar xzf - -C "$HOME/.cargo/bin"
-      #
-      #       cargo update
-      #
-      #       just build-hack
-      #
-      #       echo Disk usage
-      #       df -h
-      # # Set `copyback` to `true` and enable for debugging.
-      # # - name: Upload target/gungraun
-      # #   if: ${{ always() }}
-      # #   uses: actions/upload-artifact@v4
-      # #   with:
-      # #     name: freebsd-target-gungraun
-      # #     path: target/gungraun
+          environment_variables: GUNGRAUN_VALGRIND_INCLUDE GUNGRAUN_VALGRIND_PATH CARGO_TERM_COLOR
+          operating_system: freebsd
+          architecture: x86-64
+          version: "15.0"
+          shell: bash
+          memory: 8G
+          sync_files: runner-to-vm
+          # Our custom freebsd image with increased disk space (15G instead of
+          # 12G) and all dependencies besides rust pre-installed
+          image_url: https://github.com/gungraun/freebsd-builder/releases/download/v0.1.2-custom/freebsd-15.0-x86-64.qcow2
+          run: |
+            curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain stable --profile minimal -y
+            curl --proto '=https' --tlsv1.2 -fsSL "https://github.com/taiki-e/cargo-hack/releases/latest/download/cargo-hack-x86_64-unknown-freebsd.tar.gz" | tar xzf - -C "$HOME/.cargo/bin"
+
+            ./scripts/freebsd_print_info.sh
+
+            . ~/.cargo/env
+            cargo update
+            just build-hack
+
+            echo Disk usage
+            df -h
+
+  test_client_requests:
+    name: Run client request tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: cross-platform-actions/action@v0.32.0
+        with:
+          environment_variables: GUNGRAUN_VALGRIND_INCLUDE GUNGRAUN_VALGRIND_PATH CARGO_TERM_COLOR
+          operating_system: freebsd
+          architecture: x86-64
+          version: "15.0"
+          shell: bash
+          memory: 8G
+          sync_files: runner-to-vm
+          # Our custom freebsd image with increased disk space (15G instead of
+          # 12G) and dependencies pre-installed
+          image_url: https://github.com/gungraun/freebsd-builder/releases/download/v0.1.2-custom/freebsd-15.0-x86-64.qcow2
+          run: |
+            curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain stable --profile minimal -y
+
+            ./scripts/freebsd_print_info.sh
+
+            . ~/.cargo/env
+            cargo update
+            cargo test -p client-request-tests --test tests --release -- --nocapture
+
+            echo Disk usage
+            df -h
+
+  test_system:
+    name: Run system tests
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - filter: "test_bin_bench_*"
+            partition: "1/2"
+          - filter: "test_bin_bench_*"
+            partition: "2/2"
+          - filter: "test_lib_bench_*"
+            partition: "1/6"
+          - filter: "test_lib_bench_*"
+            partition: "2/6"
+          - filter: "test_lib_bench_*"
+            partition: "3/6"
+          - filter: "test_lib_bench_*"
+            partition: "4/6"
+          - filter: "test_lib_bench_*"
+            partition: "5/6"
+          - filter: "test_lib_bench_*"
+            partition: "6/6"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: cross-platform-actions/action@v0.32.0
+        env:
+          RUST_BACKTRACE: "0"
+        with:
+          environment_variables: GUNGRAUN_VALGRIND_INCLUDE GUNGRAUN_VALGRIND_PATH CARGO_TERM_COLOR RUST_BACKTRACE
+          operating_system: freebsd
+          architecture: x86-64
+          version: "15.0"
+          shell: bash
+          memory: 8G
+          sync_files: "true"
+          # Our custom freebsd image with increased disk space (15G instead of
+          # 12G) and dependencies pre-installed
+          image_url: https://github.com/gungraun/freebsd-builder/releases/download/v0.1.2-custom/freebsd-15.0-x86-64.qcow2
+          run: |
+            curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain stable --profile minimal -y
+
+            ./scripts/freebsd_print_info.sh
+
+            . ~/.cargo/env
+            cargo update
+            just args='--filter=${{ matrix.filter }} --partition=${{ matrix.partition }}' full-bench-test-all
+
+            echo Disk usage
+            df -h
+
+            cd target
+            find . -maxdepth 1 -mindepth 1 ! -name gungraun -exec rm -rf '{}' \;
+      - name: Generate sanitized artifact name
+        if: ${{ always() }}
+        run: |
+          sanitized=$(echo '${{ matrix.filter }}-${{ matrix.partition }}' | tr '*/' '_')
+          echo "ARTIFACT_NAME=freebsd-system-tests-${sanitized}" >> "$GITHUB_ENV"
+      - name: Upload gungraun artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: target/gungraun
