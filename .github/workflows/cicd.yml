@@ -150,13 +150,11 @@ jobs:
       - uses: taiki-e/install-action@just
       - uses: taiki-e/install-action@cross
       - uses: taiki-e/install-action@cargo-hack
-      - name: Install valgrind
-        uses: taiki-e/install-action@v2
-        with:
-          tool: valgrind@3.26.0
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.target }}
+      - name: Install valgrind
+        run: ./scripts/install_valgrind.sh "$VALGRIND_VERSION"
       - name: Cleanup Cross.toml
         run: |
           [[ -e Cross.toml ]] && mv Cross.toml Cross.toml.old || true
@@ -215,8 +213,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.toolchain }}
-      - name: Build and install valgrind
-        run: ./scripts/build_and_install_valgrind.sh "$VALGRIND_VERSION"
+      - name: Install valgrind
+        run: ./scripts/install_valgrind.sh "$VALGRIND_VERSION"
+      - name: Test valgrind
+        run: /usr/bin/valgrind --tool=memcheck ls -la
       - name: Update dependencies
         if: matrix.toolchain != '1.74.1'
         run: cargo update
@@ -274,7 +274,7 @@ jobs:
         with:
           key: ${{ matrix.toolchain }}
       - name: Build and install valgrind
-        run: ./scripts/build_and_install_valgrind.sh "$VALGRIND_VERSION"
+        run: ./scripts/install_valgrind.sh "$VALGRIND_VERSION"
       - name: Build all tests with the feature powerset
         run: just build-tests-hack
       - name: Run the tests
@@ -311,8 +311,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.toolchain }}_${{ matrix.filter }}_${{ matrix.partition }}
-      - name: Build and install valgrind
-        run: ./scripts/build_and_install_valgrind.sh "$VALGRIND_VERSION"
+      - name: Install valgrind
+        run: ./scripts/install_valgrind.sh "$VALGRIND_VERSION"
       - name: Run the system tests with --filter=${{ matrix.filter }}
         run: just args='--filter=${{ matrix.filter }} --partition=${{ matrix.partition }}' full-bench-test-all
         env:
@@ -344,6 +344,30 @@ jobs:
         env:
           RUSTUP_TOOLCHAIN: "stable"
         #   CROSS_DEBUG: "1"
+
+  docs:
+    needs: [deny, minimal_versions, format, lint]
+    name: Docs/ubuntu-latest
+    runs-on: ubuntu-latest
+    env:
+      DOCS_RS: "1"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
+      # This is important for docs.rs which doesn't have the headers installed
+      - name: Try build gungraun without valgrind headers
+        run: cargo build --package gungraun --features client_requests_defs --release
+      - name: Run doc tests
+        run: cargo test --all-features --doc
+      - name: Check docs.rs build for gungraun
+        run: cargo rustdoc -p gungraun --all-features --config 'build.rustdocflags=["--cfg", "docsrs"]' -- --deny warnings
+      - name: Check docs.rs build for gungraun-runner
+        run: cargo rustdoc -p gungraun-runner --all-features --config 'build.rustdocflags=["--cfg", "docsrs"]' -- --deny warnings
+      - name: Check docs.rs build for gungraun-macros
+        run: cargo rustdoc -p gungraun-macros --all-features --config 'build.rustdocflags=["--cfg", "docsrs"]' -- --deny warnings
+      - name: Check Documentation
+        run: cargo doc --all-features --no-deps --document-private-items
 
   # freebsd:
   #   name: Build, check and test/FreeBSD
@@ -398,27 +422,3 @@ jobs:
   #     #   with:
   #     #     name: freebsd-target-gungraun
   #     #     path: target/gungraun
-
-  # docs:
-  #   needs: [deny, minimal_versions, format, lint]
-  #   name: Docs/ubuntu-latest
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     DOCS_RS: "1"
-  #   steps:
-  #     - uses: actions/checkout@v6
-  #     - uses: dtolnay/rust-toolchain@nightly
-  #     - uses: Swatinem/rust-cache@v2
-  #     # This is important for docs.rs which doesn't have the headers installed
-  #     - name: Try build gungraun without valgrind headers
-  #       run: cargo build --package gungraun --features client_requests_defs --release
-  #     - name: Run doc tests
-  #       run: cargo test --all-features --doc
-  #     - name: Check docs.rs build for gungraun
-  #       run: cargo rustdoc -p gungraun --all-features --config 'build.rustdocflags=["--cfg", "docsrs"]' -- --deny warnings
-  #     - name: Check docs.rs build for gungraun-runner
-  #       run: cargo rustdoc -p gungraun-runner --all-features --config 'build.rustdocflags=["--cfg", "docsrs"]' -- --deny warnings
-  #     - name: Check docs.rs build for gungraun-macros
-  #       run: cargo rustdoc -p gungraun-macros --all-features --config 'build.rustdocflags=["--cfg", "docsrs"]' -- --deny warnings
-  #     - name: Check Documentation
-  #       run: cargo doc --all-features --no-deps --document-private-items
