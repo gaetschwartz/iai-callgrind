@@ -1,0 +1,208 @@
+data:
+  - group: bench_group
+    function: bench_thread_in_thread
+    expected:
+      files:
+        - callgrind.bench_thread_in_thread.log
+        - callgrind.bench_thread_in_thread.log.base@default
+        - callgrind.bench_thread_in_thread.log.base@foo
+        - callgrind.bench_thread_in_thread.log.old
+        - callgrind.bench_thread_in_thread.t1.p1.out
+        - callgrind.bench_thread_in_thread.t1.p1.out.base@default
+        - callgrind.bench_thread_in_thread.t1.p1.out.base@foo
+        - callgrind.bench_thread_in_thread.t1.p1.out.old
+        - callgrind.bench_thread_in_thread.t2.p1.out
+        - callgrind.bench_thread_in_thread.t2.p1.out.base@default
+        - callgrind.bench_thread_in_thread.t2.p1.out.base@foo
+        - callgrind.bench_thread_in_thread.t2.p1.out.old
+        - callgrind.bench_thread_in_thread.t3.p1.out
+        - callgrind.bench_thread_in_thread.t3.p1.out.base@default
+        - callgrind.bench_thread_in_thread.t3.p1.out.base@foo
+        - callgrind.bench_thread_in_thread.t3.p1.out.old
+        - dhat.bench_thread_in_thread.log
+        - dhat.bench_thread_in_thread.log.base@default
+        - dhat.bench_thread_in_thread.log.base@foo
+        - dhat.bench_thread_in_thread.log.old
+        - dhat.bench_thread_in_thread.out
+        - dhat.bench_thread_in_thread.out.base@default
+        - dhat.bench_thread_in_thread.out.base@foo
+        - dhat.bench_thread_in_thread.out.old
+        - drd.bench_thread_in_thread.log
+        - drd.bench_thread_in_thread.log.base@default
+        - drd.bench_thread_in_thread.log.base@foo
+        - drd.bench_thread_in_thread.log.old
+        - exp-bbv.bench_thread_in_thread.log
+        - exp-bbv.bench_thread_in_thread.log.base@default
+        - exp-bbv.bench_thread_in_thread.log.base@foo
+        - exp-bbv.bench_thread_in_thread.log.old
+        - exp-bbv.bench_thread_in_thread.pc.out
+        - exp-bbv.bench_thread_in_thread.pc.out.base@default
+        - exp-bbv.bench_thread_in_thread.pc.out.base@foo
+        - exp-bbv.bench_thread_in_thread.pc.out.old
+        - exp-bbv.bench_thread_in_thread.t1.bb.out
+        - exp-bbv.bench_thread_in_thread.t1.bb.out.base@default
+        - exp-bbv.bench_thread_in_thread.t1.bb.out.base@foo
+        - exp-bbv.bench_thread_in_thread.t1.bb.out.old
+        - exp-bbv.bench_thread_in_thread.t2.bb.out
+        - exp-bbv.bench_thread_in_thread.t2.bb.out.base@default
+        - exp-bbv.bench_thread_in_thread.t2.bb.out.base@foo
+        - exp-bbv.bench_thread_in_thread.t2.bb.out.old
+        - exp-bbv.bench_thread_in_thread.t3.bb.out
+        - exp-bbv.bench_thread_in_thread.t3.bb.out.base@default
+        - exp-bbv.bench_thread_in_thread.t3.bb.out.base@foo
+        - exp-bbv.bench_thread_in_thread.t3.bb.out.old
+        - massif.bench_thread_in_thread.log
+        - massif.bench_thread_in_thread.log.base@default
+        - massif.bench_thread_in_thread.log.base@foo
+        - massif.bench_thread_in_thread.log.old
+        - massif.bench_thread_in_thread.out
+        - massif.bench_thread_in_thread.out.base@default
+        - massif.bench_thread_in_thread.out.base@foo
+        - massif.bench_thread_in_thread.out.old
+        - memcheck.bench_thread_in_thread.log
+        - memcheck.bench_thread_in_thread.log.base@default
+        - memcheck.bench_thread_in_thread.log.base@foo
+        - memcheck.bench_thread_in_thread.log.old
+        - summary.json
+  - group: bench_group
+    function: bench_thread_in_thread_in_subprocess
+    expected:
+      globs:
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.log
+          count: 2
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.log.base@default
+          count: 2
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.log.base@foo
+          count: 2
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.log.old
+          count: 2
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.out
+          count: 4
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.out.base@default
+          count: 4
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.out.base@foo
+          count: 4
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.out.old
+          count: 4
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.t1.p1.out
+          count: 1
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.t1.p1.out.base@default
+          count: 1
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.t1.p1.out.base@foo
+          count: 1
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.t1.p1.out.old
+          count: 1
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.t2.p1.out
+          count: 1
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.t2.p1.out.base@default
+          count: 1
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.t2.p1.out.base@foo
+          count: 1
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.t2.p1.out.old
+          count: 1
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.t3.p1.out
+          count: 1
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.t3.p1.out.base@default
+          count: 1
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.t3.p1.out.base@foo
+          count: 1
+        - pattern: callgrind.bench_thread_in_thread_in_subprocess.*.t3.p1.out.old
+          count: 1
+        - pattern: dhat.bench_thread_in_thread_in_subprocess.*.log
+          count: 2
+        - pattern: dhat.bench_thread_in_thread_in_subprocess.*.log.base@default
+          count: 2
+        - pattern: dhat.bench_thread_in_thread_in_subprocess.*.log.base@foo
+          count: 2
+        - pattern: dhat.bench_thread_in_thread_in_subprocess.*.log.old
+          count: 2
+        - pattern: dhat.bench_thread_in_thread_in_subprocess.*.out
+          count: 2
+        - pattern: dhat.bench_thread_in_thread_in_subprocess.*.out.base@default
+          count: 2
+        - pattern: dhat.bench_thread_in_thread_in_subprocess.*.out.base@foo
+          count: 2
+        - pattern: dhat.bench_thread_in_thread_in_subprocess.*.out.old
+          count: 2
+        - pattern: drd.bench_thread_in_thread_in_subprocess.*.log
+          count: 2
+        - pattern: drd.bench_thread_in_thread_in_subprocess.*.log.base@default
+          count: 2
+        - pattern: drd.bench_thread_in_thread_in_subprocess.*.log.base@foo
+          count: 2
+        - pattern: drd.bench_thread_in_thread_in_subprocess.*.log.old
+          count: 2
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.bb.out
+          count: 4
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.bb.out.base@default
+          count: 4
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.bb.out.base@foo
+          count: 4
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.bb.out.old
+          count: 4
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.t1.bb.out
+          count: 1
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.t1.bb.out.base@default
+          count: 1
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.t1.bb.out.base@foo
+          count: 1
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.t1.bb.out.old
+          count: 1
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.t2.bb.out
+          count: 1
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.t2.bb.out.base@default
+          count: 1
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.t2.bb.out.base@foo
+          count: 1
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.t2.bb.out.old
+          count: 1
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.t3.bb.out
+          count: 1
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.t3.bb.out.base@default
+          count: 1
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.t3.bb.out.base@foo
+          count: 1
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.t3.bb.out.old
+          count: 1
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.log
+          count: 2
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.log.base@default
+          count: 2
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.log.base@foo
+          count: 2
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.log.old
+          count: 2
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.pc.out
+          count: 2
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.pc.out.base@default
+          count: 2
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.pc.out.base@foo
+          count: 2
+        - pattern: exp-bbv.bench_thread_in_thread_in_subprocess.*.pc.out.old
+          count: 2
+        - pattern: massif.bench_thread_in_thread_in_subprocess.*.log
+          count: 2
+        - pattern: massif.bench_thread_in_thread_in_subprocess.*.log.base@default
+          count: 2
+        - pattern: massif.bench_thread_in_thread_in_subprocess.*.log.base@foo
+          count: 2
+        - pattern: massif.bench_thread_in_thread_in_subprocess.*.log.old
+          count: 2
+        - pattern: massif.bench_thread_in_thread_in_subprocess.*.out
+          count: 2
+        - pattern: massif.bench_thread_in_thread_in_subprocess.*.out.base@default
+          count: 2
+        - pattern: massif.bench_thread_in_thread_in_subprocess.*.out.base@foo
+          count: 2
+        - pattern: massif.bench_thread_in_thread_in_subprocess.*.out.old
+          count: 2
+        - pattern: memcheck.bench_thread_in_thread_in_subprocess.*.log
+          count: 2
+        - pattern: memcheck.bench_thread_in_thread_in_subprocess.*.log.base@default
+          count: 2
+        - pattern: memcheck.bench_thread_in_thread_in_subprocess.*.log.base@foo
+          count: 2
+        - pattern: memcheck.bench_thread_in_thread_in_subprocess.*.log.old
+          count: 2
+      files:
+        - summary.json

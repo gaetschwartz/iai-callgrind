@@ -1,41 +1,40 @@
 # TODO: Run these tests on nightly toolchain when rust upstream bug in nightly
 # is fixed
+
+# In contrast to the unnested `test_lib_bench_threads` the numbers either
+# deviate by up to 0.1% between two runs in the ci or they don't on my home pc.
+# The output is therefore tested in `test_lib_bench_threads` but not here. The
+# rest stays the same.
 groups:
   - runs_on: "!x86_64-unknown-freebsd"
     rust_version: "!=nightly"
     runs:
       - args: ["--nocapture"]
         expected:
-          files: expected_files.1a.yml
-          stdout: expected_stdout.1a
+          files: expected_files_nested.1a.yml
+          stdout: expected_stdout_nested.1a
       - args: ["--nocapture"]
         expected:
-          files: expected_files.1b.yml
-          stdout: expected_stdout.1b
+          files: expected_files_nested.1b.yml
       # The third run should produce the exact same files, stdout as the second
       # run
       - args: ["--nocapture"]
         expected:
-          files: expected_files.1b.yml
-          stdout: expected_stdout.1b
+          files: expected_files_nested.1b.yml
       # Test all baseline options and verify the multiple files due to the
       # subprocesses and threads
       - args: ["--nocapture", "--save-baseline"]
         expected:
-          files: expected_files.1d.yml
-          stdout: expected_stdout.1d
+          files: expected_files_nested.1d.yml
       - args: ["--nocapture", "--save-baseline=foo"]
         expected:
-          files: expected_files.1e.yml
-          stdout: expected_stdout.1e
+          files: expected_files_nested.1e.yml
       - args: ["--nocapture", "--load-baseline=foo", "--baseline"]
         expected:
-          files: expected_files.1e.yml
-          stdout: expected_stdout.1f
+          files: expected_files_nested.1e.yml
       - args: ["--nocapture", "--save-baseline=foo"]
         expected:
-          files: expected_files.1e.yml
-          stdout: expected_stdout.1g
+          files: expected_files_nested.1e.yml
   # The tests on freebsd don't verify the stdout since freebsd does not support
   # `--fair-sched=yes` and the differences between two benchmark runs are random
   - runs_on: "x86_64-unknown-freebsd"
@@ -46,27 +45,27 @@ groups:
       # first time
       - args: ["--nocapture"]
         expected:
-          files: expected_files.1a.yml
-          stdout: expected_stdout.freebsd.1a
+          files: expected_files_nested.1a.yml
+          stdout: expected_stdout_nested.freebsd.1a
       - args: ["--nocapture"]
         expected:
-          files: expected_files.1b.yml
+          files: expected_files_nested.1b.yml
       # The third run should produce the exact same files, stdout as the second
       # run
       - args: ["--nocapture"]
         expected:
-          files: expected_files.1b.yml
+          files: expected_files_nested.1b.yml
       # Test all baseline options and verify the creation of multiple files due
       # to the subprocesses and threads
       - args: ["--nocapture", "--save-baseline"]
         expected:
-          files: expected_files.1d.yml
+          files: expected_files_nested.1d.yml
       - args: ["--nocapture", "--save-baseline=foo"]
         expected:
-          files: expected_files.1e.yml
+          files: expected_files_nested.1e.yml
       - args: ["--nocapture", "--load-baseline=foo", "--baseline"]
         expected:
-          files: expected_files.1e.yml
+          files: expected_files_nested.1e.yml
       - args: ["--nocapture", "--save-baseline=foo"]
         expected:
-          files: expected_files.1e.yml
+          files: expected_files_nested.1e.yml
