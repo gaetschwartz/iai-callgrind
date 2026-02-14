@@ -73,6 +73,8 @@ feature-depth = 1
 ignore = [
   # warning that bincode is unmaintained
   "RUSTSEC-2025-0141",
+  # warning that paste (transitive from polonius) is unmaintained
+  "RUSTSEC-2024-0436",
   # https://rustsec.org/advisories/RUSTSEC-2024-0421
   #"RUSTSEC-0000-0000",
   #"a-crate-that-is-yanked@0.1.1", # you can also ignore yanked crate versions if you wish
