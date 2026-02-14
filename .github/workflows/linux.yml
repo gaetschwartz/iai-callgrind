@@ -1,0 +1,173 @@
+# spell-checker:ignore taiki rustfmt binstall clippy taplo rustup nocapture
+# spell-checker:ignore nofile gnuabi armv gnueabi mipsel vmactions usesh proto
+# spell-checker:ignore tlsv connrefused copyback toolsdirectory ghcup rustdocflags
+# spell-checker:ignore androideabi binutils argjson
+
+name: Linux checks
+
+on:
+  workflow_call:
+
+jobs:
+  build_hack:
+    name: Build with feature powerset
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain:
+          - "1.74.1" # MSRV
+          - stable
+          - nightly
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - uses: taiki-e/install-action@just
+      - uses: taiki-e/install-action@cargo-hack
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.toolchain }}
+      - name: Install valgrind
+        run: ./scripts/install_valgrind.sh "$VALGRIND_VERSION"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Update dependencies
+        if: matrix.toolchain != '1.74.1'
+        run: cargo update
+      - name: Build
+        run: just build-hack
+
+  test:
+    name: Run unit and integrations tests
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain:
+          - "1.74.1" # MSRV
+          - stable
+          - nightly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - name: "Prepare: Run cargo update"
+        if: matrix.toolchain != '1.74.1'
+        run: |
+          cargo update
+      - uses: taiki-e/install-action@cargo-hack
+      - uses: taiki-e/install-action@just
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.toolchain }}
+      - name: Build and install valgrind
+        run: ./scripts/install_valgrind.sh "$VALGRIND_VERSION"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Build all tests with the feature powerset
+        run: just build-tests-hack
+      - name: Run the tests
+        run: cargo test --workspace --exclude client-request-tests
+
+  test_ui:
+    name: Run ui tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.74.1"
+          components: rust-src
+      - uses: taiki-e/install-action@just
+      - uses: Swatinem/rust-cache@v2
+      - name: Run ui tests
+        run: |
+          set -o pipefail
+          just test-ui |& tee test.output
+      - name: Check test output for ui errors
+        if: ${{ failure() }}
+        run: |
+          if grep -q '^test ui \.\.\. FAILED$' test.output; then
+            just test-ui-overwrite
+            git diff gungraun/tests/ui
+          fi
+          exit 1
+
+  test_client_requests:
+    name: Run client request tests
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - i686-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
+          - armv7-unknown-linux-gnueabihf
+          - riscv64gc-unknown-linux-gnu
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@cross
+      - uses: taiki-e/install-action@just
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - name: Test client requests
+        run: just reqs-test ${{ matrix.target }}
+        env:
+          RUSTUP_TOOLCHAIN: "stable"
+        #   CROSS_DEBUG: "1"
+
+  test_system:
+    name: Run system tests
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - filter: "test_bin_bench_*"
+            partition: "1/2"
+          - filter: "test_bin_bench_*"
+            partition: "2/2"
+          - filter: "test_lib_bench_*"
+            partition: "1/6"
+          - filter: "test_lib_bench_*"
+            partition: "2/6"
+          - filter: "test_lib_bench_*"
+            partition: "3/6"
+          - filter: "test_lib_bench_*"
+            partition: "4/6"
+          - filter: "test_lib_bench_*"
+            partition: "5/6"
+          - filter: "test_lib_bench_*"
+            partition: "6/6"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@just
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.filter }}_${{ matrix.partition }}
+      - name: Install valgrind
+        run: ./scripts/install_valgrind.sh "$VALGRIND_VERSION"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Run the system tests
+        run: just args='--filter=${{ matrix.filter }} --partition=${{ matrix.partition }}' full-bench-test-all
+        env:
+          RUST_BACKTRACE: "0"
+      - name: Generate sanitized artifact name
+        if: ${{ always() }}
+        run: |
+          sanitized=$(echo '${{ matrix.filter }}-${{ matrix.partition }}' | tr '*/' '_')
+          echo "ARTIFACT_NAME=linux-system-tests-${sanitized}" >> "$GITHUB_ENV"
+      - name: Upload gungraun artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: target/gungraun

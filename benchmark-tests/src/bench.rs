@@ -19,6 +19,7 @@ use once_cell::sync::OnceCell;
 use regex::{Captures, Regex};
 use rustc_version::{Channel, VersionMeta};
 use serde::{Deserialize, Serialize};
+use simplematch::DoWild;
 use tempfile::{tempdir, TempDir};
 use valico::json_schema;
 use valico::json_schema::schema::ScopedSchema;
@@ -173,6 +174,12 @@ struct Metadata {
     benchmarks: Vec<Benchmark>,
     benches_dir: PathBuf,
     rust_version: VersionMeta,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Partition {
+    part: usize,
+    total: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -798,9 +805,9 @@ impl BenchmarkOutput {
 }
 
 impl BenchmarkRunner {
-    pub fn new(benches: &[String]) -> Self {
+    pub fn new(benches: &[String], filter: Option<String>, partition: Option<Partition>) -> Self {
         Self {
-            metadata: Metadata::new(benches),
+            metadata: Metadata::new(benches, filter, partition),
         }
     }
 
@@ -946,7 +953,7 @@ impl ExpectedRun {
 }
 
 impl Metadata {
-    pub fn new(benches: &[String]) -> Self {
+    pub fn new(benches: &[String], filter: Option<String>, partition: Option<Partition>) -> Self {
         let meta = cargo_metadata::MetadataCommand::new()
             .no_deps()
             .exec()
@@ -956,19 +963,37 @@ impl Metadata {
         let benches_dir = package_dir.join("benches");
         let workspace_root = meta.workspace_root.clone().into_std_path_buf();
         let target_directory = meta.target_directory.clone().into_std_path_buf();
-        let benchmarks = glob(&format!("{}/**/*.conf.yml", benches_dir.display()))
+
+        let mut benchmarks = glob(&format!("{}/**/*.conf.yml", benches_dir.display()))
             .unwrap()
             .map(Result::unwrap)
             .filter(|path| {
-                if benches.is_empty() {
+                let file_name = path.file_name().unwrap().to_string_lossy();
+                let name = &file_name.strip_suffix(".conf.yml").unwrap().to_string();
+                if let Some(filter) = filter.as_ref() {
+                    filter.as_str().dowild(name) && (benches.is_empty() || benches.contains(name))
+                } else if benches.is_empty() {
                     true
                 } else {
-                    let name = path.file_name().unwrap().to_string_lossy();
-                    benches.contains(&name.strip_suffix(".conf.yml").unwrap().to_string())
+                    benches.contains(name)
                 }
             })
             .map(|path| Benchmark::new(&path, &package_dir, &target_directory))
             .collect::<Vec<Benchmark>>();
+
+        benchmarks.sort_by_key(|b| b.name.clone());
+        if let Some(partition) = partition {
+            let chunk_size = benchmarks.len().div_ceil(partition.total);
+            let chunk = benchmarks
+                .chunks(chunk_size)
+                .nth(partition.part - 1)
+                .map(|c| c.to_vec());
+            benchmarks = chunk.expect("The partition should map to a chunk of all benchmarks");
+        }
+
+        print_info("Benchmarks to run:");
+        benchmarks.iter().for_each(|b| println!("  {}", b.name));
+
         let rust_version = get_rust_version().expect("Rust version should be present");
 
         Self {
@@ -1094,9 +1119,39 @@ fn get_rust_version() -> Option<VersionMeta> {
 }
 
 fn main() {
-    let benches = std::env::args().skip(1).collect::<Vec<String>>();
+    let mut benches = Vec::default();
+    let mut filter = Option::default();
+    let mut partition = Option::default();
+    for arg in std::env::args().skip(1) {
+        match arg.split_once("=") {
+            Some(("--filter", value)) => filter = Some(value.to_owned()),
+            Some(("--partition", value)) => {
+                if let Some((part_str, total_str)) = value.split_once("/") {
+                    let part = part_str
+                        .parse::<usize>()
+                        .expect("The partition nominator should be a valid number");
+                    let total = total_str
+                        .parse::<usize>()
+                        .expect("The partition nominator should be a valid number");
+                    assert!(
+                        total > 0,
+                        "The total or a partition should be greater than zero"
+                    );
+                    assert!(
+                        part > 0 && part <= total,
+                        "The part of a partition should be within bounds: 0 < x <= total"
+                    );
+                    partition = Some(Partition { part, total })
+                } else {
+                    panic!("Invalid partition: {value}");
+                }
+            }
+            Some(_) => panic!("Invalid argument: {arg}"),
+            None => benches.push(arg),
+        }
+    }
 
-    let runner = BenchmarkRunner::new(&benches);
+    let runner = BenchmarkRunner::new(&benches, filter, partition);
 
     let mut map = HashMap::new();
     map.insert(

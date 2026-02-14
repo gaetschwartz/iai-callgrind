@@ -1,5 +1,7 @@
 # spell-checker: ignore nofile nocapture
 
+# TODO: change or add usages of args to build_args or similar where appropriate
+
 prettier_bin := ```
     if command -V prettier 2>&1 | grep -q 'not found'; then
         echo -n npx prettier
@@ -205,13 +207,13 @@ build-docs:
 
 # A thorough build of all packages with `cargo hack` and the feature powerset (Uses: 'cargo-hack')
 [group('build')]
-build-hack: build-hack-runner
-    cargo hack --workspace --feature-powerset --exclude gungraun-runner {{ if args != '' { args } else { '' } }} build
+build-hack build_args='': (build-hack-runner build_args)
+    cargo hack --workspace --feature-powerset --exclude gungraun-runner {{ if args != '' { args } else { '' } }} build {{ build_args }}
 
 # A thorough build of the gungraun-runner package (Uses: 'cargo-hack')
 [group('build')]
-build-hack-runner:
-    cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features --exclude-features api {{ if args != '' { args } else { '' } }} build
+build-hack-runner build_args='':
+    cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features --exclude-features api {{ if args != '' { args } else { '' } }} build {{ build_args }}
 
 # A build of the tests in all packages with `cargo hack` and the feature powerset (Uses: 'cargo-hack')
 [group('build')]
@@ -299,22 +301,22 @@ bench-test-all: build-runner
 # Run a single benchmark test with the `cargo bench` wrapper verifying the output (Uses: 'cargo')
 [group('test')]
 full-bench-test bench:
-    cargo run --package benchmark-tests --profile=bench --bin bench -- {{ bench }}
+    cargo run --package benchmark-tests --profile=bench --bin bench -- {{ if args != '' { args } else { '' } }} {{ bench }}
 
 # Run a single benchmark test with the `cargo bench` wrapper overwriting the output (Uses: 'cargo')
 [group('test')]
 full-bench-test-overwrite bench:
-    BENCH_OVERWRITE=yes cargo run --package benchmark-tests --profile=bench --bin bench -- {{ bench }}
+    BENCH_OVERWRITE=yes cargo run --package benchmark-tests --profile=bench --bin bench -- {{ if args != '' { args } else { '' } }} {{ bench }}
 
 # Run all benchmark tests with the `cargo bench` wrapper verifying the output (Uses: 'cargo')
 [group('test')]
 full-bench-test-all:
-    cargo run --package benchmark-tests --profile=bench --bin bench
+    cargo run --package benchmark-tests --profile=bench --bin bench {{ if args != '' { '-- ' + args } else { '' } }}
 
 # Run all benchmark tests with the `cargo bench` wrapper overwriting the output (Uses: 'cargo')
 [group('test')]
 full-bench-test-all-overwrite:
-    BENCH_OVERWRITE=yes cargo run --package benchmark-tests --profile=bench --bin bench
+    BENCH_OVERWRITE=yes cargo run --package benchmark-tests --profile=bench --bin bench {{ if args != '' { '-- ' + args } else { '' } }}
 
 # Check minimal version requirements of dependencies. (Uses: 'cargo-minimal-versions')
 [group('dependencies')]

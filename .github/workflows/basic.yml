@@ -1,0 +1,75 @@
+# spell-checker:ignore rustdocflags binutils androideabi
+name: Basic checks
+
+on:
+  workflow_call:
+
+jobs:
+  deny:
+    name: Check dependencies
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        checks:
+          - "--deny warnings advisories"
+          - bans licenses sources
+    steps:
+      - uses: actions/checkout@v6
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check ${{ matrix.checks }}
+
+  minimal_versions:
+    name: Check minimal version requirements of dependencies
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain:
+          - stable
+          - nightly
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@master
+        if: ${{ startsWith(matrix.toolchain, 'nightly') }}
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - uses: dtolnay/rust-toolchain@master
+        if: ${{ ! startsWith(matrix.toolchain, 'nightly') }}
+        with:
+          toolchain: nightly
+      - uses: dtolnay/rust-toolchain@master
+        if: ${{ ! startsWith(matrix.toolchain, 'nightly') }}
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.toolchain }}
+      - uses: taiki-e/install-action@cargo-hack
+      - uses: taiki-e/install-action@cargo-minimal-versions
+      - uses: taiki-e/install-action@just
+      - name: Check build with minimal versions
+        run: just minimal-versions
+
+  format:
+    name: Check format and spelling
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+      - uses: taiki-e/install-action@just
+      - uses: taiki-e/install-action@taplo
+      - run: just check-fmt-all
+
+  lint:
+    name: Run lints
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: taiki-e/install-action@just
+      - run: just lint
