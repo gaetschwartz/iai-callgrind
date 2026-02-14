@@ -3,18 +3,44 @@
 # Overview
 
 This is the package for system tests of the interaction of `gungraun`,
-`gungraun-runner` and `gungraun-macros`. Most of the benchmarks in
-this package can be run as usual with `cargo bench` or `just bench-test
-$BENCH_NAME`. But, to be able to intercept and validate the output (and others)
-of the `cargo bench` run of a benchmark test there is a wrapper around `cargo
-bench` in `benchmark-test/src/bench.rs` with which the benchmarks tests should
-be run. For example, you can use `just full-bench-test $BENCH_NAME`.
+`gungraun-runner` and `gungraun-macros`. Most of the benchmarks in this package
+can be run as usual with `cargo bench` or `just bench-test $BENCH_NAME`. But, to
+be able to intercept and validate the output (and other validations) of the
+`cargo bench` run of a benchmark test there is a wrapper around `cargo bench` in
+`benchmark-test/src/bench.rs` with which the benchmarks tests should be run. For
+example, you can use `just full-bench-test $BENCH_NAME`.
 
-## Developer Notes
+## Notes
 
 This wrapper was extended by need from pr to pr and hasn't experienced much
 refactoring, so it is not in the best shape. There is still room for
 improvements in the testing practice.
+
+## Usage
+
+`$ cargo run -p benchmark-tests --profile=bench bench [-- [FLAGS] [BENCH]]`
+
+or
+
+`$ just full-bench-test`, `$ just full-bench-test-all`.
+
+See the output of `just --show full-bench-test`, ... for the command description
+and arguments.
+
+The positional `BENCH` can be a single benchmark. If no positional argument is
+given all benchmarks are run.
+
+Other `FLAGS`:
+
+* `--filter=FILTER`: `FILTER` can be a glob expression matching the full
+  benchmark name. For example `--filter=test_lib_bench_*` will run all library
+  benchmarks.
+
+* `--partition=PARTITION`: `PARTITION` is expected to be in the format
+  `part/total` where `total` is the total number of parts in which the matched
+  benchmarks should be split. `part` is the selected part to be run. For example
+  `--partition=1/2` splits the benchmarks in half and then runs the first half
+  of it.
 
 ## Adding a new benchmark test
 
