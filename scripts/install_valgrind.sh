@@ -20,7 +20,7 @@ while [[ "$latest" == "null" ]]; do
   fi
 done
 
-archive_name="valgrind-${latest}-${ubuntu_version}-${valgrind_version}.tar.gz"
+archive_name="valgrind-${valgrind_version}-x86_64-${ubuntu_version}.tar.gz"
 archive_url="https://github.com/gungraun/valgrind-builder/releases/download/${latest}/${archive_name}"
 sha_url="${archive_url}.sha256"
 
