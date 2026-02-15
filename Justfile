@@ -79,7 +79,7 @@ fmt-toml:
 # Check and fix format of json and yaml files (Uses: 'prettier' or 'npx prettier')
 [group('formatting')]
 fmt-prettier:
-   {{ prettier_bin }} --write '**/*.json' '**/*.yml' --ignore-path '.gitignore' --ignore-path '.prettierignore' --ignore-path 'docs/.gitignore'
+   {{ prettier_bin }} --write '**/*.json' '**/*.yml' '**/*.md' --ignore-path '.gitignore' --ignore-path '.prettierignore' --ignore-path 'docs/.gitignore'
 
 # Run all fmt rules (Depends on: fmt, fmt-toml, fmt-prettier)
 [group('formatting')]
@@ -98,7 +98,7 @@ check-fmt-toml:
 # Check format of json and yaml files (Uses: 'prettier' or 'npx prettier')
 [group('formatting')]
 check-fmt-prettier:
-    {{ prettier_bin }} --check --log-level warn '**/*.json' '**/*.yml' --ignore-path '.gitignore' --ignore-path '.prettierignore' --ignore-path 'docs/.gitignore'
+    {{ prettier_bin }} --check --log-level warn '**/*.json' '**/*.yml' '**/*.md' --ignore-path '.gitignore' --ignore-path '.prettierignore' --ignore-path 'docs/.gitignore'
 
 # Check spelling with cspell (Uses: 'cspell' or 'npx cspell')
 [group('formatting')]
