@@ -173,21 +173,21 @@ main!(library_benchmark_groups = bubble_sort_group);
 The `library_benchmark_group` macro accepts the following parameters (in this
 order and separated by a comma):
 
-- __`name`__ (mandatory): A unique name used to identify the group for the
+- **`name`** (mandatory): A unique name used to identify the group for the
   `main!` macro
-- __`config`__ (optional): A
+- **`config`** (optional): A
   [`LibraryBenchmarkConfig`](https://docs.rs/gungraun/0.17.2/gungraun/struct.LibraryBenchmarkConfig.html)
   which is applied to all benchmarks within the same group.
-- __`compare_by_id`__ (optional): The default is false. If true, all benches in
+- **`compare_by_id`** (optional): The default is false. If true, all benches in
   the benchmark functions specified in the `benchmarks` parameter are compared
   with each other as long as the ids (the part after the `::` in
   `#[bench::id(...)]`) match. See also [Comparing benchmark
   functions](./compare_by_id.md)
-- __`setup`__ (optional): A setup function or any valid expression which is run
+- **`setup`** (optional): A setup function or any valid expression which is run
   before all benchmarks of this group
-- __`teardown`__ (optional): A teardown function or any valid expression which
+- **`teardown`** (optional): A teardown function or any valid expression which
   is run after all benchmarks of this group
-- __`benchmarks`__ (mandatory): An array of names of benchmark functions
+- **`benchmarks`** (mandatory): An array of names of benchmark functions
   annotated with `#[library_benchmark]`. Multiple names use the array-syntax
   (`benchmarks = [bench_1, bench_2]`). For convenience a single function name
   can be specified without brackets (`benchmarks = bench_1`).
@@ -204,13 +204,13 @@ This macro is the entry point for Gungraun and creates the benchmark
 harness. It accepts the following top-level arguments in this order (separated
 by a comma):
 
-- __`config`__ (optional): Optionally specify a
+- **`config`** (optional): Optionally specify a
   [`LibraryBenchmarkConfig`](https://docs.rs/gungraun/0.17.2/gungraun/struct.LibraryBenchmarkConfig.html)
-- __`setup`__ (optional): A setup function or any valid expression which is run
+- **`setup`** (optional): A setup function or any valid expression which is run
   before all benchmarks
-- __`teardown`__ (optional): A setup function or any valid expression which is
+- **`teardown`** (optional): A setup function or any valid expression which is
   run after all benchmarks
-- __`library_benchmark_groups`__ (mandatory): The names of one or more library
+- **`library_benchmark_groups`** (mandatory): The names of one or more library
   benchmark groups. Multiple names use the array-syntax
   (`library_benchmark_groups = [group_1, group_2]`). A single group can be
   specified without brackets (`library_benchmark_groups = group_1`).

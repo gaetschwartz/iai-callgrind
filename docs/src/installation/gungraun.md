@@ -65,11 +65,11 @@ actions CI could look like this
 ```yaml
 - name: Install gungraun-runner
   run: |
-    version=$(cargo metadata --format-version=1 |\
-      jq '.packages[] | select(.name == "gungraun").version' |\
-      tr -d '"'
-    )
-    cargo install gungraun-runner --version $version
+      version=$(cargo metadata --format-version=1 |\
+        jq '.packages[] | select(.name == "gungraun").version' |\
+        tr -d '"'
+      )
+      cargo install gungraun-runner --version $version
 ```
 
 Or, speed up the overall installation time with `binstall` using the
@@ -79,9 +79,9 @@ Or, speed up the overall installation time with `binstall` using the
 - uses: taiki-e/install-action@cargo-binstall
 - name: Install gungraun-runner
   run: |
-    version=$(cargo metadata --format-version=1 |\
-      jq '.packages[] | select(.name == "gungraun").version' |\
-      tr -d '"'
-    )
-    cargo binstall --no-confirm gungraun-runner --version $version
+      version=$(cargo metadata --format-version=1 |\
+        jq '.packages[] | select(.name == "gungraun").version' |\
+        tr -d '"'
+      )
+      cargo binstall --no-confirm gungraun-runner --version $version
 ```

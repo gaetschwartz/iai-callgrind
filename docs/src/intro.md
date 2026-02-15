@@ -13,23 +13,23 @@ requests](./client_requests.md) effortlessly.
 
 Gungraun is:
 
-- __Precise__: High-precision measurements of `Instruction` counts and many
+- **Precise**: High-precision measurements of `Instruction` counts and many
   other metrics allow you to reliably detect very small optimizations and
   regressions of your code.
-- __Consistent__: Gungraun can take accurate measurements even in
+- **Consistent**: Gungraun can take accurate measurements even in
   virtualized CI environments and make them comparable between different systems
   completely negating the noise of the environment.
-- __Fast__: Each benchmark is only run once, which is usually much faster than
+- **Fast**: Each benchmark is only run once, which is usually much faster than
   benchmarks which measure execution and wall-clock time. Benchmarks measuring
   the wall-clock time have to be run many times to increase their accuracy,
   detect outliers, filter out noise, etc.
-- __Visualizable__: Gungraun generates a Callgrind (DHAT, ...) profile of
+- **Visualizable**: Gungraun generates a Callgrind (DHAT, ...) profile of
   the benchmarked code and can be configured to create flamegraph-like charts
   from Callgrind metrics. In general, all Valgrind-compatible tools like
   [callgrind_annotate](https://valgrind.org/docs/manual/cl-manual.html#cl-manual.callgrind_annotate-options),
   [kcachegrind](https://kcachegrind.github.io/html/Home.html) or `dh_view.html`
   and others to analyze the results in detail are fully supported.
-- __Easy__: The API for setting up benchmarks is easy to use and allows you to
+- **Easy**: The API for setting up benchmarks is easy to use and allows you to
   quickly create concise and clear benchmarks. Focus more on profiling and your
   code than on the framework.
 

@@ -12,7 +12,7 @@ of the respective functions in [`LibraryBenchmarkConfig`] for more details.
 
 The different levels where a `LibraryBenchmarkConfig` can be specified.
 
-* At top-level with the `main!` macro
+- At top-level with the `main!` macro
 
 ```rust
 # extern crate gungraun;
@@ -29,7 +29,7 @@ main!(
 # }
 ```
 
-* At group-level in the `library_benchmark_group!` macro
+- At group-level in the `library_benchmark_group!` macro
 
 ```rust
 # extern crate gungraun;
@@ -48,7 +48,7 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-* At `#[library_benchmark]` level
+- At `#[library_benchmark]` level
 
 ```rust
 # extern crate gungraun;
@@ -74,7 +74,7 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-* and at `#[bench]`, `#[benches]` level
+- and at `#[bench]`, `#[benches]` level
 
 ```rust
 # extern crate gungraun;

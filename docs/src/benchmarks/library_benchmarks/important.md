@@ -7,12 +7,12 @@ look into the [Configuration](./configuration.md) section if you need to change
 that behavior. Gungraun sometimes deviates from the valgrind defaults which
 are:
 
-| Gungraun | Valgrind (v3.23) |
-| ------------- | ---------------- |
-| `--trace-children=yes` | `--trace-children=no` |
-| `--fair-sched=try` | `--fair-sched=no` |
+| Gungraun                 | Valgrind (v3.23)        |
+| ------------------------ | ----------------------- |
+| `--trace-children=yes`   | `--trace-children=no`   |
+| `--fair-sched=try`       | `--fair-sched=no`       |
 | `--separate-threads=yes` | `--separate-threads=no` |
-| `--cache-sim=yes` | `--cache-sim=no` |
+| `--cache-sim=yes`        | `--cache-sim=no`        |
 
 The thread and subprocess specific valgrind options enable tracing threads and
 subprocesses basically but there's usually some additional configuration

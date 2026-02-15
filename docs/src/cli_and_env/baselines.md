@@ -1,4 +1,5 @@
 <!-- markdownlint-disable MD041 MD033 -->
+
 # Comparing with baselines
 
 Usually, two consecutive benchmark runs let Gungraun compare these two

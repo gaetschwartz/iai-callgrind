@@ -18,13 +18,13 @@ changes to `binary_benchmark_group!`, the config arguments take a
 
 A quick reference of available macros in binary benchmarks:
 
-* `#[binary_benchmark]` and its inner attributes `#[bench]` and `#[benches]`:
+- `#[binary_benchmark]` and its inner attributes `#[bench]` and `#[benches]`:
   The exact pendant to the `#[library_benchmark]` attribute macro.
-* `binary_benchmark_group!`: Just the name of the macro has changed.
-* `binary_benchmark_attribute!`: An additional macro if you intend to
+- `binary_benchmark_group!`: Just the name of the macro has changed.
+- `binary_benchmark_attribute!`: An additional macro if you intend to
   [migrate](./low_level.md#intermixing-high-level-and-low-level-api) from the high-level to the low-level
   api
-* `main!`: The same macro as in library benchmarks but the name of the
+- `main!`: The same macro as in library benchmarks but the name of the
   `library_benchmark_groups` parameter changed to `binary_benchmark_groups`.
 
 To see all macros in action have a look at the example below.
@@ -104,11 +104,11 @@ main!(binary_benchmark_groups = my_group);
 `setup`, which is here the expression `create_file()`, is not evaluated right
 away and the return value of `setup` is not used as input for the `function`!
 Instead, the expression in `setup` is getting evaluated and executed just before
-the benchmarked `Command` is __executed__. Similarly, `teardown` is executed
-after the `Command` is __executed__.
+the benchmarked `Command` is **executed**. Similarly, `teardown` is executed
+after the `Command` is **executed**.
 
 In the example above, `setup` creates always the same file and is pretty static.
-It's possible to use the same arguments for `setup` (`teardown`) __and__ the
+It's possible to use the same arguments for `setup` (`teardown`) **and** the
 `function` using the path (or file pointer) to a function as you're used to from
 library benchmarks:
 

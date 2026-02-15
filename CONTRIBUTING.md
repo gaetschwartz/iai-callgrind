@@ -79,22 +79,22 @@ file:
 {
     "settings": {
         "rust-analyzer.check.overrideCommand": [
-          "cargo",
-          "+stable",
-          "clippy",
-          "--message-format=json",
-          "--all-features",
-          "--all-targets",
-          "--workspace"
+            "cargo",
+            "+stable",
+            "clippy",
+            "--message-format=json",
+            "--all-features",
+            "--all-targets",
+            "--workspace"
         ],
         "rust-analyzer.rustfmt.overrideCommand": [
-          "rustfmt",
-          "+nightly",
-          "--edition",
-          "2021",
-          "--emit",
-          "stdout"
-        ],
+            "rustfmt",
+            "+nightly",
+            "--edition",
+            "2021",
+            "--emit",
+            "stdout"
+        ]
     }
 }
 ```
@@ -169,7 +169,7 @@ The benches in the `benchmark-tests` package are system tests and run the whole
 pipeline. We use a wrapper around `cargo bench` (`benchmark-tests/src/bench`) to
 run the `benchmark-tests`. In order to run a single benchmark-tests use `just
 full-bench-test $BENCHMARK_NAME` or all with `just full-bench-test-all` (This
-might take a while). See the [`README`](./benchmark-tests/README.md) of the
+might take a while). See the [`README`](./benchmark-tests/DEVELOPERS.md) of the
 benchmark-tests package for more details.
 
 The user interface is tested in `gungraun/tests/ui`. The ui tests error

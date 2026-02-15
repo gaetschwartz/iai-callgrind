@@ -1,4 +1,5 @@
 <!-- markdownlint-disable MD041 MD033 -->
+
 # Quickstart
 
 Suppose the crate's binary is called `my-foo` and this binary takes a file path

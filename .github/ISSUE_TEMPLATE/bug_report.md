@@ -1,9 +1,9 @@
 ---
 name: Bug report
 about: Create a bug report
-title: ''
-labels: ''
-assignees: ''
+title: ""
+labels: ""
+assignees: ""
 ---
 
 **Describe the bug**
@@ -18,9 +18,10 @@ Steps to reproduce the behavior:
 1. ...
 2. ...
 3. ...
-...
+   ...
 
 <!-- markdownlint-disable MD036 -->
+
 **Minimal example**
 
 ```rust

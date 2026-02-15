@@ -29,7 +29,7 @@ occur, and Gungraun will exit with error code `3`.
 
 Limits can be defined on the command-line for the following tools with
 `--callgrind-limits` (`GUNGRAUN_CALLGRIND_LIMITS`), `--cachegrind-limits`
-(`GUNGRAUN_CACHEGRIND_LIMITS`)  and `--dhat-limits`
+(`GUNGRAUN_CACHEGRIND_LIMITS`) and `--dhat-limits`
 (`GUNGRAUN_DHAT_LIMITS`). Command-line limits overwrite the limits
 specified in the benchmark file (see below).
 
@@ -89,10 +89,10 @@ hard_limit ::= (integer | float)     ; float is only allowed for EventKinds whic
 
 with:
 
-* Groups with a long name have their allowed abbreviations placed in the same
+- Groups with a long name have their allowed abbreviations placed in the same
   parentheses.
-* [`EventKind`] is the exact name of the enum variant (case insensitive)
-* `integer` is a `u64` and `float` is a `f64`
+- [`EventKind`] is the exact name of the enum variant (case insensitive)
+- `integer` is a `u64` and `float` is a `f64`
 
 For `--cachegrind-limits` replace the `group` and `event` from above with:
 
@@ -205,9 +205,9 @@ Caused by:
 ## Which event to choose to measure performance regressions?
 
 For callgrind/cachegrind and if in doubt, the answer is `Ir` (instructions
-executed). If `Ir` event counts decrease *noticeable* the function (binary) runs
+executed). If `Ir` event counts decrease _noticeable_ the function (binary) runs
 faster. The inverse statement is also true: If the `Ir` counts increase
-*noticeable*, there's a slowdown of the function (binary).
+_noticeable_, there's a slowdown of the function (binary).
 
 These statements are not so easy to transfer to `Estimated Cycles`, cache
 metrics and most of the other event counts. But, depending on the scenario and
@@ -218,14 +218,14 @@ checks.
 
 The ones known to the author of this humble guide are
 
-* [SQLite](https://sqlite.org/cpu.html#performance_measurement): They use mainly
+- [SQLite](https://sqlite.org/cpu.html#performance_measurement): They use mainly
   cpu instructions to measure performance improvements (and regressions).
-* Also in benchmarks of the [rustc](https://github.com/rust-lang/rustc-perf)
+- Also in benchmarks of the [rustc](https://github.com/rust-lang/rustc-perf)
   compiler and
   [compiler-builtins](https://github.com/rust-lang/compiler-builtins),
   instruction counts play a great role. But, they also use cache metrics and
   cycles.
-* [SpacetimeDB](https://github.com/clockworklabs/SpacetimeDB)
+- [SpacetimeDB](https://github.com/clockworklabs/SpacetimeDB)
 
 If you know of others, please feel free to
 [add](https://github.com/gungraun/gungraun/blob/5bec95ee37330954916ea29e7a7dc40ca62bc454/docs/src/regressions.md)
