@@ -26,8 +26,7 @@
 </div>
 <br>
 
-Gungraun leverages Valgrind's profiling tools like [Callgrind][Callgrind
-Manual], [Cachegrind][Cachegrind Manual] and [DHAT][DHAT Manual] to provide
+Gungraun leverages Valgrind's profiling tools like [Callgrind][Callgrind Manual], [Cachegrind][Cachegrind Manual] and [DHAT][DHAT Manual] to provide
 extremely accurate and consistent measurements of Rust code, making it perfectly
 suited to run in environments like a CI. Gungraun aids in analyzing and
 optimizing code paths from the source code level down to the assembly
@@ -36,7 +35,7 @@ instruction level.
 Gungraun is:
 
 - **Precise**: High-precision measurements of `Instruction` counts, `Estimated
-  Cycles` and many other metrics allow you to reliably detect very small
+Cycles` and many other metrics allow you to reliably detect very small
   optimizations and regressions of your code.
 - **Consistent**: Gungraun can take accurate measurements even in virtualized CI
   environments and make them comparable between different systems completely
@@ -124,7 +123,6 @@ The second word is `raun` which simply means test.
 The first syllable is pronounced like the english word `gun`. The second `g` is
 silent. The last syllable `raun` can be pronounced like the english word `rain`.
 
-
 ## Links
 
 - Gungraun/Iai-Callgrind is [mentioned](https://youtu.be/qfknfCsICUM?t=1228) in
@@ -168,25 +166,14 @@ We have included the original license where we made use of the original header
 files.
 
 [Api Docs]: https://docs.rs/gungraun/latest/gungraun/
-
 [Bencher]: https://bencher.dev/learn/benchmarking/rust/iai/
-
 [Guide]: https://gungraun.github.io/gungraun/
-
 [Migration checklist]: https://gungraun.github.io/gungraun/latest/html/migration/iai-callgrind-to-gungraun.html
-
 [kcachegrind]: https://kcachegrind.github.io/html/Home.html
-
 [Valgrind]: https://valgrind.org/
-
 [Valgrind Client Request Mechanism]: https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
-
 [Callgrind Manual]: https://valgrind.org/docs/manual/cl-manual.html
-
 [Cachegrind Manual]: https://valgrind.org/docs/manual/cg-manual.html
-
 [DHAT Manual]: https://valgrind.org/docs/manual/dh-manual.html
-
 [Callgrind Annotate]: https://valgrind.org/docs/manual/cl-manual.html#cl-manual.callgrind_annotate-options
-
 [open an issue]: https://github.com/gungraun/gungraun/issues

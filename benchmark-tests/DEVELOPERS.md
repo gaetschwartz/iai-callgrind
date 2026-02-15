@@ -32,11 +32,11 @@ given all benchmarks are run.
 
 Other `FLAGS`:
 
-* `--filter=FILTER`: `FILTER` can be a glob expression matching the full
+- `--filter=FILTER`: `FILTER` can be a glob expression matching the full
   benchmark name. For example `--filter=test_lib_bench_*` will run all library
   benchmarks.
 
-* `--partition=PARTITION`: `PARTITION` is expected to be in the format
+- `--partition=PARTITION`: `PARTITION` is expected to be in the format
   `part/total` where `total` is the total number of parts in which the matched
   benchmarks should be split. `part` is the selected part to be run. For example
   `--partition=1/2` splits the benchmarks in half and then runs the first half
@@ -78,29 +78,29 @@ The basic structure of this configuration file:
 ```yaml
 # Top-level (Mandatory)
 groups:
-  # An array of benchmark suites.
-  #
-  # Each suite creates a new pristine state and the benchmark output files are
-  # deleted.
-  - runs:
-    # An array of benchmark runs. The output files are not deleted after a
-    # benchmark run here.
+    # An array of benchmark suites.
     #
-    # `args` (Mandatory): The arguments for `cargo bench -- ARGS`. ARGS are
-    # passed to gungraun
-    - args: []
-      # `expected` (Optional): Define the expectation values for this benchmark
-      # run.
-      #
-      # TODO: Add missing `expected` values
-      expected:
-        # `files` (Optional): Takes a path to a file in the same folder as the
-        # conf file containing the expected output files of this benchmark
-        # run.
-        files: expected_files.1.yml
-        # `stdout` (Optional): A path to a file in the same folder as the
-        # conf file containing the expected stdout of this benchmark run.
-        stdout: expected_stdout.1
+    # Each suite creates a new pristine state and the benchmark output files are
+    # deleted.
+    - runs:
+          # An array of benchmark runs. The output files are not deleted after a
+          # benchmark run here.
+          #
+          # `args` (Mandatory): The arguments for `cargo bench -- ARGS`. ARGS are
+          # passed to gungraun
+          - args: []
+            # `expected` (Optional): Define the expectation values for this benchmark
+            # run.
+            #
+            # TODO: Add missing `expected` values
+            expected:
+                # `files` (Optional): Takes a path to a file in the same folder as the
+                # conf file containing the expected output files of this benchmark
+                # run.
+                files: expected_files.1.yml
+                # `stdout` (Optional): A path to a file in the same folder as the
+                # conf file containing the expected stdout of this benchmark run.
+                stdout: expected_stdout.1
 ```
 
 An example of a configuration file which runs two benchmark suites for the
@@ -112,10 +112,10 @@ runs, check that all expected files are present etc.
 ```yaml
 groups:
     - runs:
-        - args: ["--nocapture"]
+          - args: ["--nocapture"]
     # The output files of the previous benchmark suite are deleted
     - runs:
-        - args: ["--callgrind-args='--toggle-collect=main'"]
+          - args: ["--callgrind-args='--toggle-collect=main'"]
 ```
 
 An example of a configuration file which runs the benchmark in the same folder
@@ -124,9 +124,9 @@ twice without deleting the output files.
 ```yaml
 groups:
     - runs:
-        - args: ["--nocapture"]
-        # The output files of the previous benchmark run are NOT deleted
-        - args: ["--callgrind-args='--toggle-collect=main'"]
+          - args: ["--nocapture"]
+          # The output files of the previous benchmark run are NOT deleted
+          - args: ["--callgrind-args='--toggle-collect=main'"]
 ```
 
 #### Expected values
@@ -144,12 +144,12 @@ define an expected `stdout/stderr` but also depends on the test.
 ```yaml
 groups:
     - runs:
-        - args: ["--nocapture"]
-          expected:
-            stdout: expected_stdout
-        - args: ["--nocapture"]
-          expected:
-            stdout: expected_stdout
+          - args: ["--nocapture"]
+            expected:
+                stdout: expected_stdout
+          - args: ["--nocapture"]
+            expected:
+                stdout: expected_stdout
 ```
 
 The expected `stdout` is sanitized from numbers:
@@ -205,9 +205,9 @@ test_bin_bench_foo::group::function id:() -> target/release/echo
 ```yaml
 groups:
     - runs:
-        - args: []
-          expected:
-            files: expected_files
+          - args: []
+            expected:
+                files: expected_files
 ```
 
 TODO
@@ -219,9 +219,9 @@ See for other examples in the `benches` folder.
 ```yaml
 groups:
     - runs:
-        - args: []
-          expected:
-            exit_code: 0
+          - args: []
+            expected:
+                exit_code: 0
 ```
 
 TODO
@@ -234,9 +234,9 @@ See for example `benches/test_bin_bench/exit_with`
 template: test_bin_bench_foo.rs.j2
 groups:
     - runs:
-        - args: []
-          template_data:
-            foo: "1234"
+          - args: []
+            template_data:
+                foo: "1234"
 ```
 
 TODO:
@@ -251,20 +251,20 @@ Arguments passed to the `cargo bench` invocation
 
 ```yaml
 groups:
-  - runs:
-      - args: []
-        cargo_args: ["--features", "cachegrind"]
+    - runs:
+          - args: []
+            cargo_args: ["--features", "cachegrind"]
 ```
 
 ##### rust version
 
 ```yaml
 groups:
-  - runs:
-      - args: []
-        rust_version: ">=1.73"
-      - args: ["--nocapture"]
-        rust_version: "<1.73"
+    - runs:
+          - args: []
+            rust_version: ">=1.73"
+          - args: ["--nocapture"]
+            rust_version: "<1.73"
 ```
 
 The first benchmark will only run if the rust version is `>= 1.73`. The second
@@ -275,9 +275,9 @@ expected values depending on the rust version.
 
 ```yaml
 groups:
-  - runs:
-      - args: []
-        runs_on: "x86_64-unknown-linux-gnu"
+    - runs:
+          - args: []
+            runs_on: "x86_64-unknown-linux-gnu"
 ```
 
 The above benchmark run will only run on the `x86_64-unknown-linux-gnu` target.
@@ -285,30 +285,30 @@ Or, for all benchmarks in a run group:
 
 ```yaml
 groups:
-  - runs_on: "x86_64-unknown-linux-gnu"
-    runs:
-      - args: []
+    - runs_on: "x86_64-unknown-linux-gnu"
+      runs:
+          - args: []
 ```
 
 The target can be prefixed with a `!` to indicate to not run on this target.
 
 ```yaml
 groups:
-  - runs_on: "x86_64-unknown-linux-gnu"
-    runs:
-      - args: ["--nocapture"]
-  - runs_on: "!x86_64-unknown-linux-gnu"
-    runs:
-      - args: []
+    - runs_on: "x86_64-unknown-linux-gnu"
+      runs:
+          - args: ["--nocapture"]
+    - runs_on: "!x86_64-unknown-linux-gnu"
+      runs:
+          - args: []
 ```
 
 ##### rmdirs
 
 ```yaml
 groups:
-  - runs:
-      - args: []
-        rmdirs: ["/tmp/gungraun_test_dir"]
+    - runs:
+          - args: []
+            rmdirs: ["/tmp/gungraun_test_dir"]
 ```
 
 This instruction is used to remove directories before a benchmark run.
@@ -319,7 +319,7 @@ If tests are flaky, they can be tried multiple times:
 
 ```yaml
 groups:
-  - runs:
-      - args: []
-        flaky: 3
+    - runs:
+          - args: []
+            flaky: 3
 ```

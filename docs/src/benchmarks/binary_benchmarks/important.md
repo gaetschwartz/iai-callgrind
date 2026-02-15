@@ -7,12 +7,12 @@ binary benchmark. Have a look at the [Configuration](./configuration.md) section
 if you want to change this behavior. Gungraun sometimes deviates from the
 valgrind defaults which are:
 
-| Gungraun | Valgrind (v3.23) |
-| ------------- | -------- |
-| `--trace-children=yes` | `--trace-children=no` |
-| `--fair-sched=try` | `--fair-sched=no` |
+| Gungraun                 | Valgrind (v3.23)        |
+| ------------------------ | ----------------------- |
+| `--trace-children=yes`   | `--trace-children=no`   |
+| `--fair-sched=try`       | `--fair-sched=no`       |
 | `--separate-threads=yes` | `--separate-threads=no` |
-| `--cache-sim=yes` | `--cache-sim=no` |
+| `--cache-sim=yes`        | `--cache-sim=no`        |
 
 As show in the table above, the benchmarks run with cache simulation switched
 on. This adds run time for each benchmark. If you don't need the cache metrics

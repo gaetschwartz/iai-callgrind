@@ -119,8 +119,7 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-The default [`EntryPoint`][EntryPoint] sets the [`--toggle-collect`][Callgrind
-Arguments] to the benchmark function (here `bench_function`) and
+The default [`EntryPoint`][EntryPoint] sets the [`--toggle-collect`][Callgrind Arguments] to the benchmark function (here `bench_function`) and
 `--collect-atstart=no`. So, `Callgrind` starts collecting the events when
 entering the benchmark function, not the moment `start_instrumentation` is
 called. This behaviour can be remedied with `EntryPoint::None`:
@@ -179,5 +178,4 @@ Please see the
 more details!
 
 [Callgrind Arguments]: https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options
-
 [EntryPoint]: https://docs.rs/gungraun/0.17.2/gungraun/enum.EntryPoint.html

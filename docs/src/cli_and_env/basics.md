@@ -23,7 +23,7 @@ command-line argument are:
 
 For an update-to-date list run `cargo bench` with `--help` as described above.
 
-```text
+````text
 High-precision and consistent benchmarking framework/harness for Rust
 
 Boolish command line arguments take also one of `y`, `yes`, `t`, `true`, `on`, `1`
@@ -673,4 +673,4 @@ Options:
       1: All other errors
       2: Parsing command-line arguments failed
       3: One or more regressions occurred
-```
+````

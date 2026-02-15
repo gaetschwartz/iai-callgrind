@@ -70,5 +70,4 @@ Please see the library documentation for all possible [`DelayKind`]s and more
 details on the [`Delay`].
 
 [`DelayKind`]: https://docs.rs/gungraun/0.17.2/gungraun/enum.DelayKind.html
-
 [`Delay`]: https://docs.rs/gungraun/0.17.2/gungraun/struct.Delay.html

@@ -119,7 +119,5 @@ grep '^fn=.*::bubble_sort$' target/gungraun/the_package/benchmark_file_name/my_g
 Having found the pattern, you can eventually use `EntryPoint::Custom`.
 
 [Callgrind]: https://valgrind.org/docs/manual/cl-manual.html
-
 [Callgrind Arguments]: https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options
-
 [`EntryPoint`]: https://docs.rs/gungraun/0.17.2/gungraun/enum.EntryPoint.html
