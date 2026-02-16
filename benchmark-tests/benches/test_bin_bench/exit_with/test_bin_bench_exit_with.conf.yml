@@ -2,20 +2,28 @@ template: test_bin_bench_exit_with.rs.j2
 groups:
   - runs:
       - args: []
+        env:
+          RUSTFLAGS: "-C target-feature=-avx2"
         expected:
           stdout: expected_stdout.1
           exit_code: 0
         template_data:
           exit_code: "0"
           exit_with: ExitWith::Code(0)
+
       - args: []
+        env:
+          RUSTFLAGS: "-C target-feature=-avx2"
         expected:
           stdout: expected_stdout.2
           exit_code: 0
         template_data:
           exit_code: "0"
           exit_with: ExitWith::Success
+
       - args: []
+        env:
+          RUSTFLAGS: "-C target-feature=-avx2"
         expected:
           stdout: expected_stdout.3
           exit_code: 0
@@ -23,6 +31,8 @@ groups:
           exit_code: "1"
           exit_with: ExitWith::Code(1)
       - args: []
+        env:
+          RUSTFLAGS: "-C target-feature=-avx2"
         expected:
           stdout: expected_stdout.4
           exit_code: 0
@@ -30,18 +40,24 @@ groups:
           exit_code: "1"
           exit_with: ExitWith::Failure
       - args: []
+        env:
+          RUSTFLAGS: "-C target-feature=-avx2"
         expected:
           exit_code: 1
         template_data:
           exit_code: "1"
           exit_with: ExitWith::Success
       - args: []
+        env:
+          RUSTFLAGS: "-C target-feature=-avx2"
         expected:
           exit_code: 1
         template_data:
           exit_code: "0"
           exit_with: ExitWith::Failure
       - args: []
+        env:
+          RUSTFLAGS: "-C target-feature=-avx2"
         expected:
           exit_code: 1
         template_data:
