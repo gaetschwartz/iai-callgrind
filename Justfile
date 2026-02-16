@@ -34,7 +34,7 @@ cspell|check spelling
 mdbook|build and develop the guide
 npx|to be able to run some recipes in this Justfile
 taplo|formatting of *.toml files
-prettier|formatting of *.json and *.yml files'
+prettier|formatting of json, yml, md, ... files'
 ide_recommends := 'Depending on your IDE you can use rust-analyzer overrides to
 adjust clippy execution to `cargo +stable clippy` and rustfmt execution to
 `cargo +nightly rustfmt`. If possible, it is recommended to run the respective
@@ -61,7 +61,7 @@ run `just schema-gen`. You need
 
 * prettier
 
-installed to be able to format the schema file. All `json` and `yaml` files in
+installed to be able to format the schema file. All `json`, `yaml`, `md` files in
 this project are formatted with `prettier`. The pre-push hook runs
 `just schema-gen-diff` to check if there are changes. Run `just schema-gen-move`
 to replace the old schema file with the new one.'
@@ -79,7 +79,7 @@ fmt-toml:
 # Check and fix format of json and yaml files (Uses: 'prettier' or 'npx prettier')
 [group('formatting')]
 fmt-prettier:
-   {{ prettier_bin }} --write '**/*.json' '**/*.yml' '**/*.md' --ignore-path '.gitignore' --ignore-path '.prettierignore' --ignore-path 'docs/.gitignore'
+   {{ prettier_bin }} --write .
 
 # Run all fmt rules (Depends on: fmt, fmt-toml, fmt-prettier)
 [group('formatting')]
@@ -98,7 +98,7 @@ check-fmt-toml:
 # Check format of json and yaml files (Uses: 'prettier' or 'npx prettier')
 [group('formatting')]
 check-fmt-prettier:
-    {{ prettier_bin }} --check --log-level warn '**/*.json' '**/*.yml' '**/*.md' --ignore-path '.gitignore' --ignore-path '.prettierignore' --ignore-path 'docs/.gitignore'
+    {{ prettier_bin }} --check --log-level warn
 
 # Check spelling with cspell (Uses: 'cspell' or 'npx cspell')
 [group('formatting')]
