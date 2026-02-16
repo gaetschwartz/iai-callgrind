@@ -1,5 +1,6 @@
 use gungraun::{
-  binary_benchmark, binary_benchmark_group, main, ExitWith, BinaryBenchmarkConfig, OutputFormat
+  binary_benchmark, binary_benchmark_group, main, ExitWith,
+  BinaryBenchmarkConfig, OutputFormat, Memcheck
 };
 
 #[binary_benchmark]
@@ -18,6 +19,7 @@ binary_benchmark_group!(
 
 main!(
      config = BinaryBenchmarkConfig::default()
+         .tool(Memcheck::default())
          .output_format(OutputFormat::default()
              .truncate_description(None)
          ),
