@@ -200,6 +200,8 @@ struct RunConfig {
     rust_version: Option<benchmark_tests::serde::rust_version::VersionComparator>,
     #[serde(default)]
     flaky: Option<usize>,
+    #[serde(default)]
+    env: HashMap<String, String>,
 }
 
 impl Benchmark {
@@ -270,6 +272,7 @@ impl Benchmark {
         &self,
         cargo_args: &[String],
         args: &[String],
+        envs: &HashMap<String, String>,
         capture: bool,
     ) -> BenchmarkOutput {
         let stdio = if capture {
@@ -283,6 +286,16 @@ impl Benchmark {
         let mut command = std::process::Command::new(env!("CARGO"));
         command.args(["bench", "--package", PACKAGE, "--bench", &self.bench_name]);
         command.args(cargo_args);
+
+        if !envs.is_empty() {
+            command.envs(envs);
+            let envs = envs
+                .iter()
+                .map(|(key, value)| format!("  {key}={value}"))
+                .collect::<Vec<String>>()
+                .join("\n");
+            print_info(format!("Environment variables:\n{envs}"));
+        }
         if capture {
             command.args(["--color", "never"]);
         }
@@ -290,6 +303,7 @@ impl Benchmark {
             command.arg("--");
             command.args(args);
         }
+
         let output = command
             .stderr(stdio())
             .stdout(stdio())
@@ -299,11 +313,13 @@ impl Benchmark {
         BenchmarkOutput(output)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn run_template(
         &self,
         template_path: &Path,
         cargo_args: &[String],
         args: &[String],
+        envs: &HashMap<String, String>,
         template_data: &HashMap<String, minijinja::Value>,
         meta: &Metadata,
         capture: bool,
@@ -322,7 +338,7 @@ impl Benchmark {
         let dest = File::create(meta.get_template()).unwrap();
         template.render_to_write(template_data, dest).unwrap();
 
-        self.run_bench(cargo_args, args, capture)
+        self.run_bench(cargo_args, args, envs, capture)
     }
 
     pub fn run(
@@ -399,6 +415,7 @@ impl Benchmark {
                         template,
                         &run.cargo_args,
                         &run.args,
+                        &run.env,
                         &run.template_data,
                         meta,
                         capture,
@@ -406,7 +423,7 @@ impl Benchmark {
                     self.reset_template(meta);
                     output
                 } else {
-                    self.run_bench(&run.cargo_args, &run.args, capture)
+                    self.run_bench(&run.cargo_args, &run.args, &run.env, capture)
                 };
 
                 if tries < max_tries {
