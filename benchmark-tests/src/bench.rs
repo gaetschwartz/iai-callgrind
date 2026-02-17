@@ -1,4 +1,4 @@
-// spell-checker:ignore rmdirs
+// spell-checker:ignore rmdirs sysdeps multiarch memchr
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 use std::fs::File;
@@ -287,14 +287,23 @@ impl Benchmark {
         command.args(["bench", "--package", PACKAGE, "--bench", &self.bench_name]);
         command.args(cargo_args);
 
+        // FIX: A temporary measure due to intermittent errors in the ci when comparing two
+        // consecutive runs and there is no difference expected but there is a difference of 5
+        // instructions and a single data cache read in
+        // ./string/../sysdeps/x86_64/multiarch/memchr-avx2.S. Remove this fix if the glibc version
+        // has been updated including the ubuntu specific version which had recently been patched
+        // which might caused this issue.
+        let mut envs = envs.clone();
+        envs.insert("RUSTFLAGS".to_owned(), "-C target-feature=-avx2".to_owned());
+
         if !envs.is_empty() {
-            command.envs(envs);
-            let envs = envs
+            let envs_string = envs
                 .iter()
                 .map(|(key, value)| format!("  {key}={value}"))
                 .collect::<Vec<String>>()
                 .join("\n");
-            print_info(format!("Environment variables:\n{envs}"));
+            command.envs(envs);
+            print_info(format!("Environment variables:\n{envs_string}"));
         }
         if capture {
             command.args(["--color", "never"]);
