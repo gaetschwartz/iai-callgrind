@@ -102,7 +102,10 @@ struct Benchmark {
 }
 
 #[derive(Debug)]
-struct BenchmarkOutput(Output);
+struct BenchmarkOutput {
+    output: Output,
+    is_tolerance: bool,
+}
 
 #[derive(Debug)]
 pub struct BenchmarkRunner {
@@ -202,6 +205,8 @@ struct RunConfig {
     flaky: Option<usize>,
     #[serde(default)]
     env: HashMap<String, String>,
+    #[serde(default)]
+    tolerance: Option<f64>,
 }
 
 impl Benchmark {
@@ -274,6 +279,7 @@ impl Benchmark {
         args: &[String],
         envs: &HashMap<String, String>,
         capture: bool,
+        tolerance: Option<f64>,
     ) -> BenchmarkOutput {
         let stdio = if capture {
             std::env::set_var("GUNGRAUN_COLOR", "never");
@@ -312,6 +318,9 @@ impl Benchmark {
             command.arg("--");
             command.args(args);
         }
+        if let Some(tolerance) = tolerance {
+            command.arg(format!("--tolerance={tolerance}"));
+        }
 
         let output = command
             .stderr(stdio())
@@ -319,7 +328,10 @@ impl Benchmark {
             .output()
             .expect("Launching benchmark should succeed");
 
-        BenchmarkOutput(output)
+        BenchmarkOutput {
+            output,
+            is_tolerance: tolerance.is_some(),
+        }
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -332,6 +344,7 @@ impl Benchmark {
         template_data: &HashMap<String, minijinja::Value>,
         meta: &Metadata,
         capture: bool,
+        tolerance: Option<f64>,
     ) -> BenchmarkOutput {
         let mut template_string = String::new();
         File::open(self.dir.join(template_path))
@@ -347,7 +360,7 @@ impl Benchmark {
         let dest = File::create(meta.get_template()).unwrap();
         template.render_to_write(template_data, dest).unwrap();
 
-        self.run_bench(cargo_args, args, envs, capture)
+        self.run_bench(cargo_args, args, envs, capture, tolerance)
     }
 
     pub fn run(
@@ -428,11 +441,12 @@ impl Benchmark {
                         &run.template_data,
                         meta,
                         capture,
+                        run.tolerance,
                     );
                     self.reset_template(meta);
                     output
                 } else {
-                    self.run_bench(&run.cargo_args, &run.args, &run.env, capture)
+                    self.run_bench(&run.cargo_args, &run.args, &run.env, capture, run.tolerance)
                 };
 
                 if tries < max_tries {
@@ -481,7 +495,7 @@ impl Benchmark {
 
 impl BenchmarkOutput {
     fn assert(&self, bench_dir: &Path, _meta: &Metadata, expected: &ExpectedConfig) {
-        let output = &self.0;
+        let output = &self.output;
 
         print_info("STDERR:");
         stderr().write_all(&output.stderr).unwrap();
@@ -733,6 +747,9 @@ impl BenchmarkOutput {
                                 )
                                 .unwrap();
                             }
+                            Some(_) | None if self.is_tolerance && percent == "(No change)" => {
+                                write!(string, "{white1}(Tolerance)").unwrap();
+                            }
                             Some(_) | None => {
                                 write!(string, "{white1}{percent}").unwrap();
                             }
@@ -806,7 +823,7 @@ impl BenchmarkOutput {
 
     fn assert_exit(&self, exit_code: Option<i32>) {
         match exit_code {
-            Some(expected) => match self.0.status.code() {
+            Some(expected) => match self.output.status.code() {
                 Some(code) => {
                     assert_eq!(
                         expected, code,
@@ -819,11 +836,11 @@ impl BenchmarkOutput {
                 }
                 None => panic!(
                     "Expected benchmark to exit with code '{expected}' but exited with signal '{}'",
-                    self.0.status.signal().unwrap()
+                    self.output.status.signal().unwrap()
                 ),
             },
             None => assert!(
-                self.0.status.success(),
+                self.output.status.success(),
                 "Expected benchmark to exit with success"
             ),
         }

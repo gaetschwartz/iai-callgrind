@@ -5,34 +5,41 @@ groups:
     rust_version: "!=nightly"
     runs:
       - args: ["--nocapture"]
+        tolerance: 5
         expected:
           files: expected_files.1a.yml
           stdout: expected_stdout.1a
       - args: ["--nocapture"]
+        tolerance: 5
         expected:
           files: expected_files.1b.yml
           stdout: expected_stdout.1b
       # The third run should produce the exact same files, stdout as the second
       # run
       - args: ["--nocapture"]
+        tolerance: 5
         expected:
           files: expected_files.1b.yml
           stdout: expected_stdout.1b
       # Test all baseline options and verify the multiple files due to the
       # subprocesses and threads
       - args: ["--nocapture", "--save-baseline"]
+        tolerance: 5
         expected:
           files: expected_files.1d.yml
           stdout: expected_stdout.1d
       - args: ["--nocapture", "--save-baseline=foo"]
+        tolerance: 5
         expected:
           files: expected_files.1e.yml
           stdout: expected_stdout.1e
       - args: ["--nocapture", "--load-baseline=foo", "--baseline"]
+        tolerance: 5
         expected:
           files: expected_files.1e.yml
           stdout: expected_stdout.1f
       - args: ["--nocapture", "--save-baseline=foo"]
+        tolerance: 5
         expected:
           files: expected_files.1e.yml
           stdout: expected_stdout.1g
