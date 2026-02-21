@@ -5,39 +5,52 @@ groups:
     rust_version: "!=nightly"
     runs:
       - args: ["--nocapture"]
+        tolerance: 5
         expected:
           files: expected_files.1a.yml
           stdout: expected_stdout.1a
       - args: ["--nocapture"]
+        tolerance: 5
         expected:
           files: expected_files.1b.yml
           stdout: expected_stdout.1b
       # The third run should produce the exact same files, stdout as the second
       # run
       - args: ["--nocapture"]
+        tolerance: 5
         expected:
           files: expected_files.1b.yml
           stdout: expected_stdout.1b
       # Test all baseline options and verify the multiple files due to the
       # subprocesses and threads
       - args: ["--nocapture", "--save-baseline"]
+        tolerance: 5
         expected:
           files: expected_files.1d.yml
           stdout: expected_stdout.1d
       - args: ["--nocapture", "--save-baseline=foo"]
+        tolerance: 5
         expected:
           files: expected_files.1e.yml
           stdout: expected_stdout.1e
       - args: ["--nocapture", "--load-baseline=foo", "--baseline"]
+        tolerance: 5
         expected:
           files: expected_files.1e.yml
           stdout: expected_stdout.1f
       - args: ["--nocapture", "--save-baseline=foo"]
+        tolerance: 5
         expected:
           files: expected_files.1e.yml
           stdout: expected_stdout.1g
   # The tests on freebsd don't verify the stdout since freebsd does not support
-  # `--fair-sched=yes` and the differences between two benchmark runs are random
+  # `--fair-sched=yes` and the differences between two benchmark runs are
+  # random.
+  #
+  # In the ci (valgrind 3.26.0,
+  # https://github.com/gungraun/gungraun/actions/runs/22237414343/job/64335298465),
+  # the tests can sometimes produce less files (a file for a thread was missing)
+  # than expected therefore they are marked as flaky.
   - runs_on: "x86_64-unknown-freebsd"
     rust_version: "!=nightly"
     runs:
@@ -45,28 +58,35 @@ groups:
       # benchmark run to compare to, so the stdout can be verified at least this
       # first time
       - args: ["--nocapture"]
+        flaky: 3
         expected:
           files: expected_files.1a.yml
           stdout: expected_stdout.freebsd.1a
       - args: ["--nocapture"]
+        flaky: 3
         expected:
           files: expected_files.1b.yml
       # The third run should produce the exact same files, stdout as the second
       # run
       - args: ["--nocapture"]
+        flaky: 3
         expected:
           files: expected_files.1b.yml
       # Test all baseline options and verify the creation of multiple files due
       # to the subprocesses and threads
       - args: ["--nocapture", "--save-baseline"]
+        flaky: 3
         expected:
           files: expected_files.1d.yml
       - args: ["--nocapture", "--save-baseline=foo"]
+        flaky: 3
         expected:
           files: expected_files.1e.yml
       - args: ["--nocapture", "--load-baseline=foo", "--baseline"]
+        flaky: 3
         expected:
           files: expected_files.1e.yml
       - args: ["--nocapture", "--save-baseline=foo"]
+        flaky: 3
         expected:
           files: expected_files.1e.yml
