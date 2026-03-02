@@ -4,8 +4,8 @@ use std::hint::black_box;
 use benchmark_tests::{bubble_sort, setup_worst_case_array};
 use gungraun::{
     library_benchmark, library_benchmark_group, main, Cachegrind, CachegrindMetric,
-    CachegrindMetrics, Callgrind, CallgrindMetrics, Dhat, DhatMetric, Drd, EntryPoint, ErrorMetric,
-    EventKind, Helgrind, LibraryBenchmarkConfig, Memcheck, OutputFormat, ValgrindTool,
+    CachegrindMetrics, Callgrind, CallgrindMetrics, Dhat, DhatMetric, Drd, ErrorMetric, EventKind,
+    Helgrind, LibraryBenchmarkConfig, Memcheck, OutputFormat, ValgrindTool,
 };
 
 fn make_hashmap(num: usize) -> HashMap<String, usize> {
@@ -43,31 +43,6 @@ pub fn base_config() -> LibraryBenchmarkConfig {
             "branch-sim=yes",
         ]))
         .clone()
-}
-
-#[library_benchmark(
-    config = LibraryBenchmarkConfig::default()
-        .output_format(OutputFormat::default()
-            .truncate_description(None)
-            .show_intermediate(true)
-            .show_grid(true)
-        )
-)]
-#[bench::for_comparison(
-    "Another very long string to see if the truncation is disabled with the formatting option"
-)]
-fn bench_with_format(a: &str) -> Vec<u64> {
-    println!("{a}");
-    black_box(benchmark_tests::find_primes_multi_thread(3))
-}
-
-#[library_benchmark]
-#[bench::for_comparison(
-    "A very long string to see if the truncation of the description is really working"
-)]
-fn bench_without_format(a: &str) -> Vec<u64> {
-    println!("{a}");
-    black_box(benchmark_tests::find_primes_multi_thread(2))
 }
 
 #[library_benchmark]
@@ -285,21 +260,6 @@ fn bench_with_tolerance(map: HashMap<String, usize>) -> Option<usize> {
 }
 
 library_benchmark_group!(
-    name = my_group,
-    config = LibraryBenchmarkConfig::default()
-        .tool(
-            Callgrind::with_args([
-                "--toggle-collect=benchmark_tests::find_primes_multi_thread",
-                "--toggle-collect=benchmark_tests::find_primes"
-            ])
-            .entry_point(EntryPoint::None)
-        )
-        .tool(Dhat::default()),
-    compare_by_id = true,
-    benchmarks = [bench_without_format, bench_with_format]
-);
-
-library_benchmark_group!(
     name = custom_format,
     benchmarks = [
         bench_with_custom_callgrind_format,
@@ -308,4 +268,4 @@ library_benchmark_group!(
     ]
 );
 
-main!(library_benchmark_groups = [my_group, custom_format]);
+main!(library_benchmark_groups = custom_format);

@@ -1,31 +1,3 @@
-test_lib_bench_output_format::my_group::bench_without_format for_comparison:"A very long string to see if the truncation of th...
-  ======= CALLGRIND ====================================================================
-  Instructions:                            |N/A                  (*********)
-  ======= DHAT =========================================================================
-  Total bytes:                             |N/A                  (*********)
-test_lib_bench_output_format::my_group::bench_with_format for_comparison:"Another very long string to see if the truncation is disabled with the formatting option"
-|======== CALLGRIND ====================================================================
-|-## pid: <__PID__> thread: 1 part: 1      |N/A
-| Command: <__COMMAND__>
-| Instructions:                            |N/A                  (*********)
-|-## pid: <__PID__> thread: 2 part: 1      |N/A
-| Command: <__COMMAND__>
-| Instructions:                            |N/A                  (*********)
-|-## pid: <__PID__> thread: 3 part: 1      |N/A
-| Command: <__COMMAND__>
-| Instructions:                            |N/A                  (*********)
-|-## pid: <__PID__> thread: 4 part: 1      |N/A
-| Command: <__COMMAND__>
-| Instructions:                            |N/A                  (*********)
-|-## Total
-| Instructions:                            |N/A                  (*********)
-|======== DHAT =========================================================================
-| Total bytes:                             |N/A                  (*********)
-|-Comparison with bench_without_format for_comparison:"A very long string to see if the truncation of th...
-|-------- CALLGRIND
-| Instructions:                            |                     (-       %) [-       x]
-|-------- DHAT
-| Total bytes:                             |                     (-       %) [-       x]
 test_lib_bench_output_format::custom_format::bench_with_custom_callgrind_format implicit_default_with_wb
   Instructions:                            |N/A                  (*********)
 test_lib_bench_output_format::custom_format::bench_with_custom_callgrind_format implicit_default_with_cacheuse
@@ -91,4 +63,4 @@ test_lib_bench_output_format::custom_format::bench_with_custom_format drd
 test_lib_bench_output_format::custom_format::bench_with_tolerance hashmap:make_hashmap(100_000)
   Instructions:                            |N/A                  (*********)
 
-Gungraun result: Ok. 29 without regressions; 0 regressed; 0 filtered; 29 benchmarks finished in <__SECONDS__>s
+Gungraun result: Ok. 27 without regressions; 0 regressed; 0 filtered; 27 benchmarks finished in <__SECONDS__>s
