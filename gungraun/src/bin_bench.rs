@@ -9,7 +9,7 @@ use std::time::Duration;
 use derive_more::AsRef;
 use gungraun_macros::IntoInner;
 
-use crate::{DelayKind, ExitWith, Stdin, Stdio, ValgrindTool, __internal};
+use crate::{__internal, DelayKind, ExitWith, Stdin, Stdio, ValgrindTool};
 
 /// [low level api](`crate::binary_benchmark_group`) only: Create a new benchmark id
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

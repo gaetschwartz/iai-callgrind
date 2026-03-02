@@ -6,8 +6,8 @@ use derive_more::AsRef;
 use gungraun_macros::IntoInner;
 
 use super::{
-    CachegrindMetric, CachegrindMetrics, CallgrindMetrics, DhatMetric, DhatMetrics, Direction,
-    ErrorMetric, EventKind, FlamegraphKind, Limit, ValgrindTool, __internal,
+    __internal, CachegrindMetric, CachegrindMetrics, CallgrindMetrics, DhatMetric, DhatMetrics,
+    Direction, ErrorMetric, EventKind, FlamegraphKind, Limit, ValgrindTool,
 };
 use crate::EntryPoint;
 
