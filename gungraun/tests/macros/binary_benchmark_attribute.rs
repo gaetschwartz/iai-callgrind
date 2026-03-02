@@ -1,8 +1,8 @@
 use std::sync::Mutex;
 
 use gungraun::{
-    binary_benchmark, binary_benchmark_attribute, Bench, BenchmarkId, BinaryBenchmarkConfig,
-    __internal,
+    __internal, binary_benchmark, binary_benchmark_attribute, Bench, BenchmarkId,
+    BinaryBenchmarkConfig,
 };
 
 static CURRENT: Mutex<String> = Mutex::new(String::new());
