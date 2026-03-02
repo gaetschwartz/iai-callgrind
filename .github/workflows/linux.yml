@@ -167,7 +167,7 @@ jobs:
           echo "ARTIFACT_NAME=linux-system-tests-${sanitized}" >> "$GITHUB_ENV"
       - name: Upload gungraun artifacts
         if: ${{ always() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: target/gungraun
