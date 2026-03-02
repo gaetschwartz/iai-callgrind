@@ -34,7 +34,14 @@ sha_url="${archive_url}.sha256"
 sudo apt-mark hold libc6
 libc_version="$(dpkg-query -W -f='${Version}' libc6)"
 sudo apt-get update
-sudo apt-get install --update --assume-yes --no-install-recommends --no-upgrade --snapshot 20260128T000000Z libc6-dbg="${libc_version}"
+
+# Use a snapshot if the github runner libc version falls behind the latest
+# ubuntu libc
+if apt list --upgradable | grep libc6; then
+  sudo apt-get install --update --assume-yes --no-install-recommends --no-upgrade --snapshot 20260302T000000Z libc6-dbg="${libc_version}"
+else
+  sudo apt-get install --update --assume-yes --no-install-recommends --no-upgrade libc6-dbg="${libc_version}"
+fi
 
 "${wget[@]}" "$archive_url"
 "${wget[@]}" "$sha_url"

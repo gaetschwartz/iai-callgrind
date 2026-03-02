@@ -98,7 +98,7 @@ check-fmt-toml:
 # Check format of json and yaml files (Uses: 'prettier' or 'npx prettier')
 [group('formatting')]
 check-fmt-prettier:
-    {{ prettier_bin }} --check --log-level warn
+    {{ prettier_bin }} --check --log-level warn .
 
 # Check spelling with cspell (Uses: 'cspell' or 'npx cspell')
 [group('formatting')]
