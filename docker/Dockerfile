@@ -17,7 +17,7 @@ COPY cleanup_valgrind.sh /
 RUN /cleanup_valgrind.sh
 
 ARG GUNGRAUN_CROSS_TARGET
-COPY build_custom_image.sh /
+COPY build_custom_image.sh linux-image.sh /
 RUN /build_custom_image.sh
 
 ARG GUNGRAUN_CROSS_TARGET
