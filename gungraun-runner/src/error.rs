@@ -51,7 +51,12 @@ pub enum Error {
     ///     ToolOutputPath
     /// )
     /// ```
-    ProcessError(String, Option<Output>, ExitStatus, Option<ToolOutputPath>),
+    ProcessError(
+        Box<String>,
+        Option<Box<Output>>,
+        ExitStatus,
+        Option<Box<ToolOutputPath>>,
+    ),
     /// If a regression check fails a `RegressionError` is issued
     ///
     /// `RegressionError(is_fatal)`, `is_fatal` needs to be true if the error should lead to an

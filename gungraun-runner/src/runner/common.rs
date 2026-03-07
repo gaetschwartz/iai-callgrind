@@ -215,8 +215,8 @@ impl Assistant {
                         } else {
                             let status = output.status;
                             Err(Error::ProcessError(
-                                module_path.join(&id).to_string(),
-                                Some(output),
+                                Box::new(module_path.join(&id).to_string()),
+                                Some(Box::new(output)),
                                 status,
                                 None,
                             ))
@@ -244,7 +244,7 @@ impl Assistant {
                             Ok(())
                         } else {
                             Err(Error::ProcessError(
-                                format!("{module_path}::{id}"),
+                                Box::new(format!("{module_path}::{id}")),
                                 None,
                                 status,
                                 None,
