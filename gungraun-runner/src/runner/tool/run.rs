@@ -227,7 +227,7 @@ impl ToolCommand {
             let status = child.wait().expect("Setup child process should have run");
             if !status.success() {
                 return Err(Error::ProcessError(
-                    module_path.join("setup").to_string(),
+                    Box::new(module_path.join("setup").to_string()),
                     None,
                     status,
                     None,
@@ -274,9 +274,13 @@ pub fn check_exit(
     exit_with: Option<&ExitWith>,
 ) -> Result<Option<Output>> {
     let Some(status_code) = status.code() else {
-        return Err(
-            Error::ProcessError(tool.id(), output, status, Some(output_path.clone())).into(),
-        );
+        return Err(Error::ProcessError(
+            Box::new(tool.id()),
+            output.map(Box::new),
+            status,
+            Some(Box::new(output_path.clone())),
+        )
+        .into());
     };
 
     match (status_code, exit_with) {
@@ -288,7 +292,13 @@ pub fn check_exit(
                 executable.display(),
                 code
             );
-            Err(Error::ProcessError(tool.id(), output, status, Some(output_path.clone())).into())
+            Err(Error::ProcessError(
+                Box::new(tool.id()),
+                output.map(Box::new),
+                status,
+                Some(Box::new(output_path.clone())),
+            )
+            .into())
         }
         (0i32, Some(ExitWith::Failure)) => {
             error!(
@@ -296,7 +306,13 @@ pub fn check_exit(
                 tool.id(),
                 executable.display(),
             );
-            Err(Error::ProcessError(tool.id(), output, status, Some(output_path.clone())).into())
+            Err(Error::ProcessError(
+                Box::new(tool.id()),
+                output.map(Box::new),
+                status,
+                Some(Box::new(output_path.clone())),
+            )
+            .into())
         }
         (_, Some(ExitWith::Failure)) => Ok(output),
         (code, Some(ExitWith::Success)) => {
@@ -306,7 +322,13 @@ pub fn check_exit(
                 executable.display(),
                 code
             );
-            Err(Error::ProcessError(tool.id(), output, status, Some(output_path.clone())).into())
+            Err(Error::ProcessError(
+                Box::new(tool.id()),
+                output.map(Box::new),
+                status,
+                Some(Box::new(output_path.clone())),
+            )
+            .into())
         }
         (actual_code, Some(ExitWith::Code(expected_code))) if actual_code == *expected_code => {
             Ok(output)
@@ -319,8 +341,20 @@ pub fn check_exit(
                 expected_code,
                 actual_code
             );
-            Err(Error::ProcessError(tool.id(), output, status, Some(output_path.clone())).into())
+            Err(Error::ProcessError(
+                Box::new(tool.id()),
+                output.map(Box::new),
+                status,
+                Some(Box::new(output_path.clone())),
+            )
+            .into())
         }
-        _ => Err(Error::ProcessError(tool.id(), output, status, Some(output_path.clone())).into()),
+        _ => Err(Error::ProcessError(
+            Box::new(tool.id()),
+            output.map(Box::new),
+            status,
+            Some(Box::new(output_path.clone())),
+        )
+        .into()),
     }
 }

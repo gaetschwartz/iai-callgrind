@@ -139,8 +139,8 @@ pub fn copy_directory(source: &Path, dest: &Path, follow_symlinks: bool) -> Resu
             } else {
                 let status = output.status;
                 Err(Error::ProcessError(
-                    cp.to_string_lossy().to_string(),
-                    Some(output),
+                    Box::new(cp.to_string_lossy().to_string()),
+                    Some(Box::new(output)),
                     status,
                     None,
                 ))
