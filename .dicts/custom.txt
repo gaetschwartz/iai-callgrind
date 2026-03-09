@@ -79,9 +79,11 @@ callgrind
 cicd
 clippy
 condi
+condvar
 consts
 coregrind
 coreutils
+cpus
 crabgrind
 cstring
 deallocations
@@ -275,6 +277,7 @@ totalunits
 trybuild
 trycmd
 unaddressable
+unistd
 unmark
 unparse
 usize

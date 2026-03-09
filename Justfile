@@ -310,12 +310,12 @@ full-bench-test-overwrite bench:
 
 # Run all benchmark tests with the `cargo bench` wrapper verifying the output (Uses: 'cargo')
 [group('test')]
-full-bench-test-all:
+full-bench-test-all *args='':
     cargo run --package benchmark-tests --profile=bench --bin bench {{ if args != '' { '-- ' + args } else { '' } }}
 
 # Run all benchmark tests with the `cargo bench` wrapper overwriting the output (Uses: 'cargo')
 [group('test')]
-full-bench-test-all-overwrite:
+full-bench-test-all-overwrite *args='':
     BENCH_OVERWRITE=yes cargo run --package benchmark-tests --profile=bench --bin bench {{ if args != '' { '-- ' + args } else { '' } }}
 
 # Check minimal version requirements of dependencies. (Uses: 'cargo-minimal-versions')
@@ -410,3 +410,37 @@ bump config part:
     # We also need the changed version in Cargo.lock. Building gungraun
     # should be enough to also update the runner
     just args="--all-features --lib" build gungraun
+
+# Generate the base for the expected files of a system test (Uses: bash, coreutils)
+[group('util')]
+generate-expected-files benchmark path:
+    #!/usr/bin/env -S bash -eu
+
+    yaml="data:\n"
+    groups="$(find target/gungraun/benchmark-tests/{{ benchmark }} -mindepth 1 -maxdepth 1 -type d)"
+    IFS=$'\n'
+    for group in $groups; do
+      pushd "$(pwd)/$group" >/dev/null
+      function_ids="$(find -mindepth 1 -maxdepth 1 -type d)"
+      for function_id in $function_ids; do
+          function_id="${function_id/\.\//}"
+          IFS='.' read function id <<<"${function_id}"
+          yaml+="  - group: $(basename ${group})\n    function: ${function}\n"
+          if [[ -n "$id" ]]; then
+            yaml+="    id: ${id}\n"
+          fi
+          yaml+="    expected:\n      files:\n"
+          pushd "$function_id" >/dev/null
+          files="$(find -mindepth 1 -maxdepth 1 -type f | sort)"
+          for file in $files; do
+            file="${file/\.\//}"
+            yaml+="        - ${file}\n"
+          done
+
+          popd >/dev/null
+      done
+      popd >/dev/null
+    done
+
+    echo "Writing yaml to {{ path }}"
+    echo -e "$yaml" > {{ path }}
