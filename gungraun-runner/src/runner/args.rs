@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 
+use anyhow::Result;
 use clap::builder::BoolishValueParser;
 use clap::{ArgAction, Parser};
 use indexmap::{indexset, IndexMap, IndexSet};
@@ -24,6 +25,7 @@ use crate::api::{
     CachegrindMetric, CachegrindMetrics, CallgrindMetrics, DhatMetric, DhatMetrics, ErrorMetric,
     EventKind, RawArgs, ValgrindTool,
 };
+use crate::runner::common::Streams;
 
 const DOWILD_OPTIONS: Options<u8> = Options::new().enable_escape(true).enable_classes(true);
 
@@ -831,6 +833,21 @@ pub struct CommandLineArgs {
     pub output_format: OutputFormatKind,
 
     #[rustfmt::skip]
+    /// TODO: DOCS
+    #[arg(
+        long = "parallel",
+        required = false,
+        default_missing_value = "auto",
+        default_value = "1",
+        num_args = 0..=1,
+        require_equals = true,
+        value_parser = parse_parallel,
+        env = "GUNGRAUN_PARALLEL",
+        display_order = 300
+    )]
+    pub parallel: usize,
+
+    #[rustfmt::skip]
     /// If true, the first failed performance regression check fails the whole benchmark run
     ///
     /// Note that if --regression-fail-fast is set to true, no summary is printed.
@@ -1075,16 +1092,44 @@ impl FromStr for BenchmarkFilter {
 
 impl NoCapture {
     /// Apply the `NoCapture` option to the [`Command`]
-    pub fn apply(self, command: &mut Command) {
-        match self {
-            Self::True | Self::False => {}
-            Self::Stderr => {
+    pub fn apply(self, command: &mut Command, streams: Option<&Streams>) -> Result<()> {
+        match (self, streams) {
+            (Self::True, Some(streams)) => {
+                // Both go to the same file, here chosen to be stdout
+                command
+                    .stdout(streams.stdout.try_clone()?)
+                    .stderr(streams.stdout.try_clone()?);
+            }
+            (Self::False, Some(streams)) => {
+                command
+                    .stdout(streams.stdout.try_clone()?)
+                    .stderr(streams.stderr.try_clone()?);
+            }
+            (Self::Stderr, Some(streams)) => {
+                command
+                    .stdout(Stdio::null())
+                    .stderr(streams.stderr.try_clone()?);
+            }
+            (Self::Stdout, Some(streams)) => {
+                command
+                    .stdout(streams.stdout.try_clone()?)
+                    .stderr(Stdio::null());
+            }
+            (Self::True, None) => {
+                command.stdout(Stdio::inherit()).stderr(Stdio::inherit());
+            }
+            (Self::False, None) => {
+                command.stdout(Stdio::piped()).stderr(Stdio::piped());
+            }
+            (Self::Stderr, None) => {
                 command.stdout(Stdio::null()).stderr(Stdio::inherit());
             }
-            Self::Stdout => {
+            (Self::Stdout, None) => {
                 command.stdout(Stdio::inherit()).stderr(Stdio::null());
             }
         }
+
+        Ok(())
     }
 }
 
@@ -1322,6 +1367,23 @@ fn parse_nocapture(value: &str) -> Result<NoCapture, String> {
         Ok(NoCapture::Stdout)
     } else if lowercase == "stderr" {
         Ok(NoCapture::Stderr)
+    } else {
+        Err(format!("Invalid value: {value}"))
+    }
+}
+
+/// Parse --parallel
+fn parse_parallel(value: &str) -> Result<usize, String> {
+    let lowercase = value.to_lowercase();
+
+    if lowercase == "auto" {
+        Ok(num_cpus::get())
+    } else if let Ok(num) = lowercase.parse::<usize>() {
+        if num > 0 {
+            Ok(num)
+        } else {
+            Err(format!("Value must be greater than 0 but was '{value}'"))
+        }
     } else {
         Err(format!("Invalid value: {value}"))
     }

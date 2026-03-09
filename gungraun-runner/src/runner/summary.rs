@@ -14,6 +14,7 @@ use itertools::Itertools;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use super::common::{Baselines, ModulePath};
 use super::format::{Formatter, OutputFormat, OutputFormatKind, VerticalFormatter};
@@ -22,6 +23,9 @@ use super::tool::parser::ParserOutput;
 use super::tool::regression::RegressionMetrics;
 use crate::api::{CachegrindMetric, DhatMetric, ErrorMetric, EventKind, ValgrindTool};
 use crate::error::Error;
+use crate::runner::args::NoCapture;
+use crate::runner::common::{Config, Streams};
+use crate::runner::format::{print_no_capture_footer, print_regressions, Header};
 use crate::util::{factor_diff, make_absolute, percentage_diff};
 
 /// The version of the summary json schema
@@ -373,49 +377,120 @@ impl BenchmarkSummary {
         }
     }
 
-    /// If the summary is json output, print it and eventually safe it, if configured to do so
-    pub fn print_and_save(&self, output_format: &OutputFormatKind) -> Result<()> {
-        let value = match (output_format, &self.summary_output) {
-            (OutputFormatKind::Default, None) => return Ok(()),
-            _ => {
-                serde_json::to_value(self).with_context(|| "Failed to serialize summary to json")?
+    fn print_default(
+        &self,
+        config: &Config,
+        header: &Header,
+        output_format: &OutputFormat,
+        mut streams: Streams,
+    ) -> Result<()> {
+        header.print();
+
+        if config.meta.args.load_baseline.is_none() {
+            match config.meta.args.nocapture {
+                NoCapture::True => {
+                    streams.dump()?;
+                }
+                NoCapture::False => {}
+                NoCapture::Stderr => {
+                    streams.dump_stderr()?;
+                }
+                NoCapture::Stdout => {
+                    streams.dump_stdout()?;
+                }
             }
-        };
 
-        let result = match output_format {
-            OutputFormatKind::Default => Ok(()),
-            OutputFormatKind::Json => {
-                let output = stdout();
-                let writer = output.lock();
-                let result = serde_json::to_writer(writer, &value);
-                println!();
-                result
-            }
-            OutputFormatKind::PrettyJson => {
-                let output = stdout();
-                let writer = output.lock();
-                let result = serde_json::to_writer_pretty(writer, &value);
-                println!();
-                result
-            }
-        };
-        result.with_context(|| "Failed to print json to stdout")?;
-
-        if let Some(output) = &self.summary_output {
-            let file = output.create()?;
-
-            let result = if matches!(output.format, SummaryFormat::PrettyJson) {
-                serde_json::to_writer_pretty(file, &value)
-            } else {
-                serde_json::to_writer(file, &value)
-            };
-
-            result.with_context(|| {
-                format!("Failed to write summary to file: {}", output.path.display())
-            })?;
+            print_no_capture_footer(config.meta.args.nocapture);
         }
 
+        // TODO: if log level is info print the log file of the new run to stderr
+
+        let has_multiple = self.profiles.has_multiple();
+        let baselines = &self.baselines;
+        for (index, profile) in self.profiles.iter().enumerate() {
+            let is_default = index == 0;
+            let mut formatter = VerticalFormatter::new(output_format.clone());
+            if !output_format.show_only_comparison
+                && (has_multiple || profile.tool != ValgrindTool::Callgrind)
+            {
+                formatter.format_tool_headline(profile.tool);
+                formatter.print_buffer();
+            }
+
+            formatter.print(
+                profile.tool,
+                config,
+                baselines,
+                &profile.summaries,
+                is_default,
+            )?;
+            print_regressions(&profile.summaries.total.regressions);
+        }
         Ok(())
+    }
+
+    // TODO: DOCS
+    fn print_json(value: &Value, pretty: bool) -> Result<()> {
+        let stdout = stdout().lock();
+        if pretty {
+            serde_json::to_writer_pretty(stdout, &value)
+                .with_context(|| "Failed to print json to stdout")
+                .map(|()| println!())
+        } else {
+            serde_json::to_writer(stdout, &value)
+                .with_context(|| "Failed to print json to stdout")
+                .map(|()| println!())
+        }
+    }
+
+    /// TODO: DOCS
+    fn save_summary(value: &Value, output: &SummaryOutput) -> Result<()> {
+        let file = output.create()?;
+
+        let pretty = matches!(output.format, SummaryFormat::PrettyJson);
+        let result = if pretty {
+            serde_json::to_writer_pretty(file, &value)
+        } else {
+            serde_json::to_writer(file, &value)
+        };
+
+        result
+            .with_context(|| format!("Failed to write summary to file: {}", output.path.display()))
+    }
+
+    /// If the summary is json output, print it and eventually safe it, if configured to do so
+    pub fn print_and_save(
+        &self,
+        config: &Config,
+        header: &Header,
+        output_format: &OutputFormat,
+        streams: Streams,
+    ) -> Result<()> {
+        match output_format.kind {
+            OutputFormatKind::Default => self
+                .print_default(config, header, output_format, streams)
+                .and_then(|()| {
+                    if let Some(output) = &self.summary_output {
+                        serde_json::to_value(self)
+                            .with_context(|| "Failed to serialize summary to json")
+                            .and_then(|value| Self::save_summary(&value, output))
+                    } else {
+                        Ok(())
+                    }
+                }),
+            OutputFormatKind::Json | OutputFormatKind::PrettyJson => serde_json::to_value(self)
+                .with_context(|| "Failed to serialize summary to json")
+                .and_then(|value| {
+                    let pretty = matches!(output_format.kind, OutputFormatKind::PrettyJson);
+                    Self::print_json(&value, pretty).and_then(|()| {
+                        if let Some(output) = &self.summary_output {
+                            Self::save_summary(&value, output)
+                        } else {
+                            Ok(())
+                        }
+                    })
+                }),
+        }
     }
 
     /// Check if this `BenchmarkSummary` has recorded any performance regressions
@@ -770,6 +845,11 @@ impl Profiles {
     /// Return true if any [`Profile`] has regressed
     pub fn is_regressed(&self) -> bool {
         self.iter().any(Profile::is_regressed)
+    }
+
+    /// TODO: DOCS
+    pub fn has_multiple(&self) -> bool {
+        self.0.len() > 1
     }
 }
 

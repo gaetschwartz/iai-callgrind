@@ -9,13 +9,13 @@ use std::process::{ExitStatus, Output};
 use version_compare::Cmp;
 
 use crate::api::ValgrindTool;
-use crate::runner::common::ModulePath;
+use crate::runner::common::{ModulePath, Streams};
 use crate::runner::format::Header;
 use crate::runner::tool::path::ToolOutputPath;
 use crate::util::write_all_to_stderr;
 
 /// The main Gungraun error type
-#[derive(Debug, PartialEq, Clone, Eq)]
+#[derive(Debug)]
 pub enum Error {
     /// A error during setup of a benchmark.
     ///
@@ -33,6 +33,8 @@ pub enum Error {
     ///
     /// `InvalidBoolArgument(option_name, value)`
     InvalidBoolArgument(String, String),
+    /// TODO: DOCS
+    JobError(Box<anyhow::Error>, Header, Streams),
     /// The error when trying to start an external [`std::process::Command`] fails
     ///
     /// `LaunchError(executable_path, message)`
@@ -70,11 +72,29 @@ pub enum Error {
     ///
     /// `VersionMismatch(Cmp, runner_version, library_version)`
     VersionMismatch(version_compare::Cmp, String, String),
+    /// TODO: DOCS
+    TaskInterrupt,
+}
+
+impl Error {
+    /// TODO: DOCS
+    pub fn new_process_error(
+        name: String,
+        output: Option<Output>,
+        exit_status: ExitStatus,
+        output_path: Option<ToolOutputPath>,
+    ) -> Self {
+        Self::ProcessError(
+            Box::new(name),
+            output.map(Box::new),
+            exit_status,
+            output_path.map(Box::new),
+        )
+    }
 }
 
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // TODO: MIGRATION: Double check these error messages
         match self {
             Self::InitError(message) => {
                 let runner_version = env!("CARGO_PKG_VERSION").to_owned();
@@ -158,6 +178,14 @@ impl Display for Error {
             Self::ConfigurationError(module_path, id, message) => {
                 let header = Header::without_description(module_path, id.clone());
                 write!(f, "Misconfiguration in: {header}\nCaused by:\n  {message}",)
+            }
+            Self::JobError(error, header, streams) => {
+                header.print();
+                let _ = streams.dump_cloned();
+                write!(f, "Error in task: {error}")
+            }
+            Self::TaskInterrupt => {
+                write!(f, "Task was interrupted by a shutdown signal")
             }
         }
     }

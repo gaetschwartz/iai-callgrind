@@ -181,7 +181,6 @@ impl GroupsBuilder {
     /// In contrast to the high-level api, we need to check for duplicate ids, missing commands ...
     /// The errors are collected and then printed instead of returning on first error and printing
     /// errors one by one.
-    #[allow(clippy::too_many_lines)]
     fn low_level(
         &mut self,
         internal_group: &mut InternalBinaryBenchmarkGroup,

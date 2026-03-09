@@ -4,6 +4,7 @@
 //! similar statement in any other module of the runner.
 use std::borrow::Cow;
 use std::fmt::{Display, Write};
+use std::io::{stdout, Write as IOWrite};
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -51,6 +52,7 @@ pub const UNKNOWN: &str = "*********";
 /// The string used to signal that the difference is in the tolerance margin
 pub const WITHIN_TOLERANCE: &str = "Tolerance";
 
+#[derive(Debug)]
 enum IndentKind {
     Normal,
     ToolHeadline,
@@ -72,12 +74,11 @@ pub enum OutputFormatKind {
 /// The first line and header of a binary benchmark run
 ///
 /// For example `module::path id: some args`
-pub struct BinaryBenchmarkHeader {
-    inner: Header,
-    output_format: OutputFormat,
-}
+#[derive(Debug)]
+pub struct BinaryBenchmarkHeader(Header);
 
 /// The header of the comparison between two different benchmarks
+#[derive(Debug)]
 pub struct ComparisonHeader {
     /// The details to print in addition or instead of the metrics
     pub details: Option<String>,
@@ -90,18 +91,18 @@ pub struct ComparisonHeader {
 }
 
 /// The first line and header of a benchmark run
+#[derive(Debug, PartialEq, Clone, Eq)]
 pub struct Header {
     description: Option<String>,
     id: Option<String>,
     module_path: String,
 }
+
 /// The first line and header of a library benchmark run
 ///
 /// For example `module::path id: some args`
-pub struct LibraryBenchmarkHeader {
-    inner: Header,
-    output_format: OutputFormat,
-}
+#[derive(Debug)]
+pub struct LibraryBenchmarkHeader(Header);
 
 /// The `OutputFormat` of the Gungraun terminal output
 #[derive(Debug, Clone, PartialEq)]
@@ -177,10 +178,7 @@ pub trait Formatter {
         is_default_tool: bool,
     ) -> Result<()>;
 
-    /// Return the [`OutputFormat`] of this formatter
-    fn get_output_format(&self) -> &OutputFormat;
-
-    /// Print the formatted output of the whole [`ProfileData`] if the output format is not json
+    /// Print the formatted output of the whole [`ProfileData`]
     fn print(
         &mut self,
         tool: ValgrindTool,
@@ -192,11 +190,12 @@ pub trait Formatter {
     where
         Self: std::fmt::Display,
     {
-        if self.get_output_format().is_default() {
-            self.format(tool, config, baselines, data, is_default_tool)?;
-            print!("{self}");
-            self.clear();
-        }
+        self.format(tool, config, baselines, data, is_default_tool)?;
+
+        let mut stdout = stdout().lock();
+        write!(stdout, "{self}")?;
+
+        self.clear();
         Ok(())
     }
 
@@ -238,32 +237,28 @@ impl BinaryBenchmarkHeader {
             )
         };
 
-        Self {
-            inner: Header::new(
-                &bin_bench.module_path,
-                bin_bench.id.clone(),
-                Some(description),
-                &bin_bench.output_format,
-            ),
-            output_format: bin_bench.output_format.clone(),
-        }
-    }
-
-    /// Print the header
-    pub fn print(&self) {
-        if self.output_format.kind == OutputFormatKind::Default {
-            self.inner.print();
-        }
+        Self(Header::new(
+            &bin_bench.module_path,
+            bin_bench.id.clone(),
+            Some(description),
+            &bin_bench.output_format,
+        ))
     }
 
     /// Convert the header to a flamegraph title
     pub fn to_title(&self) -> String {
-        self.inner.to_title()
+        self.0.to_title()
     }
 
     /// Return the description part of the header
     pub fn description(&self) -> Option<String> {
-        self.inner.description.clone()
+        self.0.description.clone()
+    }
+}
+
+impl Display for BinaryBenchmarkHeader {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }
 
@@ -404,6 +399,18 @@ impl Display for Header {
     }
 }
 
+impl From<BinaryBenchmarkHeader> for Header {
+    fn from(value: BinaryBenchmarkHeader) -> Self {
+        value.0
+    }
+}
+
+impl From<LibraryBenchmarkHeader> for Header {
+    fn from(value: LibraryBenchmarkHeader) -> Self {
+        value.0
+    }
+}
+
 impl LibraryBenchmarkHeader {
     /// Create a new `LibraryBenchmarkHeader`
     pub fn new(lib_bench: &LibBench) -> Self {
@@ -414,27 +421,23 @@ impl LibraryBenchmarkHeader {
             &lib_bench.output_format,
         );
 
-        Self {
-            inner: header,
-            output_format: lib_bench.output_format.clone(),
-        }
-    }
-
-    /// Print the header
-    pub fn print(&self) {
-        if self.output_format.is_default() {
-            self.inner.print();
-        }
+        Self(header)
     }
 
     /// Convert the header into a flamegraph title
     pub fn to_title(&self) -> String {
-        self.inner.to_title()
+        self.0.to_title()
     }
 
     /// Return the description part of the header if present
     pub fn description(&self) -> Option<String> {
-        self.inner.description.clone()
+        self.0.description.clone()
+    }
+}
+
+impl Display for LibraryBenchmarkHeader {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }
 
@@ -1209,10 +1212,6 @@ impl Formatter for VerticalFormatter {
         self.buffer.clear();
     }
 
-    fn get_output_format(&self) -> &OutputFormat {
-        &self.output_format
-    }
-
     fn format_line(&mut self, line: &str) -> Result<()> {
         self.buffer.push_str(line);
         Ok(())
@@ -1283,35 +1282,18 @@ pub fn print_list_benchmark(module_path: &ModulePath, id: Option<&String>) {
 }
 
 /// Print the appropriate footer for the [`NoCapture`] option
-pub fn print_no_capture_footer(
-    nocapture: NoCapture,
-    stdout: Option<&api::Stdio>,
-    stderr: Option<&api::Stdio>,
-) {
-    let stdout_is_pipe = stdout.map_or(
-        nocapture == NoCapture::False || nocapture == NoCapture::Stderr,
-        api::Stdio::is_pipe,
-    );
-
-    let stderr_is_pipe = stderr.map_or(
-        nocapture == NoCapture::False || nocapture == NoCapture::Stdout,
-        api::Stdio::is_pipe,
-    );
-
-    // These unwraps are safe because `no_capture_footer` returns None only if `NoCapture` is
-    // `False`
-    match (stdout_is_pipe, stderr_is_pipe) {
-        (true, true) => {}
-        (true, false) => {
-            println!("{}", no_capture_footer(NoCapture::Stderr).unwrap());
-        }
-        (false, true) => {
-            println!("{}", no_capture_footer(NoCapture::Stdout).unwrap());
-        }
-        (false, false) => {
-            println!("{}", no_capture_footer(NoCapture::True).unwrap());
-        }
+pub fn print_no_capture_footer(nocapture: NoCapture) {
+    if let Some(footer) = no_capture_footer(nocapture) {
+        println!("{footer}");
     }
+}
+
+/// TODO: DOCS
+pub fn print_on_error_footer(stdio_tag: Option<&str>) {
+    let tag = stdio_tag.unwrap_or("stdout/stderr");
+    let tag_line = format!("gungraun: on error {tag} (may contain duplicate output)");
+
+    println!("{} {}", "-".yellow(), tag_line.yellow());
 }
 
 /// Print detected regressions to `stderr`

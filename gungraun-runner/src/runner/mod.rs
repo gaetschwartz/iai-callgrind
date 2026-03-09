@@ -6,6 +6,7 @@ pub mod cachegrind;
 pub mod callgrind;
 pub mod common;
 pub mod dhat;
+pub mod tasks;
 
 /// Names of environment variables which are used in different places
 ///

@@ -2,30 +2,33 @@
 
 use std::collections::HashMap;
 use std::ffi::OsString;
-use std::io::stderr;
 use std::path::Path;
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::{anyhow, Result};
 
+use super::super::common::Assistant;
 use super::args::ToolArgs;
 use super::parser::{parser_factory, ParserOutput};
 use super::path::ToolOutputPath;
 use super::regression::{RegressionConfig, ToolRegressionConfig};
 use super::run::{RunOptions, ToolCommand};
 use crate::api::{self, EntryPoint, RawArgs, Tool, Tools, ValgrindTool};
-use crate::runner::args::NoCapture;
 use crate::runner::callgrind::flamegraph::{
     BaselineFlamegraphGenerator, Config as FlamegraphConfig, Flamegraph, FlamegraphGenerator,
     LoadBaselineFlamegraphGenerator, SaveBaselineFlamegraphGenerator,
 };
 use crate::runner::callgrind::parser::Sentinel;
-use crate::runner::common::{Baselines, Config, ModulePath, Sandbox};
-use crate::runner::format::{print_no_capture_footer, Formatter, OutputFormat, VerticalFormatter};
+use crate::runner::common::{Config, ModulePath, Sandbox, Streams};
+use crate::runner::format::OutputFormat;
 use crate::runner::meta::Metadata;
 use crate::runner::summary::{
     BaselineKind, BaselineName, BenchmarkSummary, Profile, ProfileData, ProfileTotal,
     ToolMetricSummary, ToolRegression,
 };
+use crate::runner::tasks::ProcessHandler;
 use crate::runner::{cachegrind, callgrind, DEFAULT_TOGGLE};
 
 /// The tool specific flamegraph configuration
@@ -128,22 +131,6 @@ impl ToolConfig {
             summaries: data,
             flamegraphs: vec![],
         })
-    }
-
-    fn print(
-        &self,
-        config: &Config,
-        output_format: &OutputFormat,
-        data: &ProfileData,
-        baselines: &Baselines,
-    ) -> Result<()> {
-        VerticalFormatter::new(output_format.clone()).print(
-            self.tool,
-            config,
-            baselines,
-            data,
-            self.is_default,
-        )
     }
 }
 
@@ -477,17 +464,6 @@ impl ToolConfigs {
         Ok(())
     }
 
-    fn print_headline(&self, tool_config: &ToolConfig, output_format: &OutputFormat) {
-        if output_format.is_default()
-            && !output_format.show_only_comparison
-            && (self.has_multiple() || tool_config.tool != ValgrindTool::Callgrind)
-        {
-            let mut formatter = VerticalFormatter::new(output_format.clone());
-            formatter.format_tool_headline(tool_config.tool);
-            formatter.print_buffer();
-        }
-    }
-
     /// Check for regressions as defined in [`RegressionConfig`] and print an error if a regression
     /// occurred
     ///
@@ -495,7 +471,7 @@ impl ToolConfigs {
     ///
     /// Checking performance regressions for other tools than callgrind and cachegrind is not
     /// implemented and panics
-    fn check_and_print_regressions(
+    fn check_regressions(
         tool_regression_config: &ToolRegressionConfig,
         tool_total: &ProfileTotal,
     ) -> Vec<ToolRegression> {
@@ -503,15 +479,15 @@ impl ToolConfigs {
             (
                 ToolRegressionConfig::Callgrind(callgrind_regression_config),
                 ToolMetricSummary::Callgrind(metrics_summary),
-            ) => callgrind_regression_config.check_and_print(metrics_summary),
+            ) => callgrind_regression_config.check(metrics_summary),
             (
                 ToolRegressionConfig::Cachegrind(cachegrind_regression_config),
                 ToolMetricSummary::Cachegrind(metrics_summary),
-            ) => cachegrind_regression_config.check_and_print(metrics_summary),
+            ) => cachegrind_regression_config.check(metrics_summary),
             (
                 ToolRegressionConfig::Dhat(dhat_regression_config),
                 ToolMetricSummary::Dhat(metrics_summary),
-            ) => dhat_regression_config.check_and_print(metrics_summary),
+            ) => dhat_regression_config.check(metrics_summary),
             (ToolRegressionConfig::None, _) => vec![],
             _ => {
                 panic!("The summary type should match the regression config")
@@ -526,24 +502,17 @@ impl ToolConfigs {
         baseline: &BaselineName,
         loaded_baseline: &BaselineName,
         mut benchmark_summary: BenchmarkSummary,
-        baselines: &Baselines,
         config: &Config,
         output_path: &ToolOutputPath,
-        output_format: &OutputFormat,
     ) -> Result<BenchmarkSummary> {
         for tool_config in self.0.iter().filter(|t| t.is_enabled) {
-            self.print_headline(tool_config, output_format);
-
             let tool = tool_config.tool;
             let output_path = output_path.to_tool_output(tool);
 
             let mut profile = tool_config.parse(&config.meta, &output_path, None)?;
 
-            tool_config.print(config, output_format, &profile.summaries, baselines)?;
-            profile.summaries.total.regressions = Self::check_and_print_regressions(
-                &tool_config.regression_config,
-                &profile.summaries.total,
-            );
+            profile.summaries.total.regressions =
+                Self::check_regressions(&tool_config.regression_config, &profile.summaries.total);
 
             if ValgrindTool::Callgrind == tool {
                 if let ToolFlamegraphConfig::Callgrind(flamegraph_config) =
@@ -565,9 +534,6 @@ impl ToolConfigs {
             }
 
             benchmark_summary.profiles.push(profile);
-
-            let log_path = output_path.to_log_output();
-            log_path.dump_log(log::Level::Info, &mut stderr())?;
         }
 
         Ok(benchmark_summary)
@@ -579,7 +545,6 @@ impl ToolConfigs {
         &self,
         title: &str,
         mut benchmark_summary: BenchmarkSummary,
-        baselines: &Baselines,
         baseline_kind: &BaselineKind,
         config: &Config,
         executable: &Path,
@@ -588,21 +553,11 @@ impl ToolConfigs {
         output_path: &ToolOutputPath,
         save_baseline: bool,
         module_path: &ModulePath,
-        output_format: &OutputFormat,
+        streams: Option<&Streams>,
+        force_shutdown: &Arc<AtomicBool>,
     ) -> Result<BenchmarkSummary> {
         for tool_config in self.0.iter().filter(|t| t.is_enabled) {
-            // Print the headline as soon as possible, so if there are any errors, the errors shown
-            // in the terminal output can be associated with the tool
-            self.print_headline(tool_config, output_format);
-
             let tool = tool_config.tool;
-
-            let nocapture = if tool_config.is_default {
-                config.meta.args.nocapture
-            } else {
-                NoCapture::False
-            };
-            let command = ToolCommand::new(tool, &config.meta, nocapture);
 
             let output_path = output_path.to_tool_output(tool);
 
@@ -624,51 +579,66 @@ impl ToolConfigs {
             }
 
             // We're implicitly applying the default here: In the absence of a user provided sandbox
-            // we don't run the benchmarks in a sandbox. Everything from here on runs
-            // with the current directory set to the sandbox directory until the sandbox
-            // is reset.
+            // we don't run the benchmarks in a sandbox.
             let sandbox = run_options
                 .sandbox
                 .as_ref()
                 .map(|sandbox| Sandbox::setup(sandbox, &config.meta))
                 .transpose()?;
 
-            let mut child = run_options
-                .setup
-                .as_ref()
-                .map_or(Ok(None), |setup| setup.run(config, module_path))?;
+            let mut process_handler = ProcessHandler::new(
+                force_shutdown.clone(),
+                module_path.clone(),
+                run_options
+                    .setup
+                    .as_ref()
+                    .is_some_and(Assistant::is_parallel),
+                Duration::from_millis(50),
+                sandbox.as_ref().and_then(Sandbox::path),
+            );
+
+            let is_default = tool_config.is_default;
+            let command = ToolCommand::new(tool, &config.meta, is_default);
+            let nocapture = command.nocapture;
+            let streams = if is_default { streams } else { None };
+            run_options.setup.as_ref().map_or(Ok(()), |setup| {
+                process_handler.start_assistant(
+                    true,
+                    setup,
+                    config,
+                    module_path,
+                    streams,
+                    nocapture,
+                )
+            })?;
 
             if let Some(delay) = run_options.delay.as_ref() {
-                if let Err(error) = delay.run() {
-                    if let Some(mut child) = child.take() {
-                        // To avoid zombies
-                        child.kill()?;
-                        return Err(error);
+                if let Err(delay_error) = delay.apply(sandbox.as_ref().and_then(Sandbox::path)) {
+                    if let Some(Err(_)) = process_handler.wait_for_setup() {
+                        return Err(delay_error);
                     }
                 }
             }
 
-            let output = command.run(
-                tool_config.clone(),
-                executable,
-                executable_args,
-                run_options.clone(),
-                &output_path,
-                module_path,
-                child,
-            )?;
+            process_handler
+                .start_bench(
+                    command,
+                    tool_config.clone(),
+                    executable,
+                    executable_args,
+                    run_options.clone(),
+                    &output_path,
+                    module_path,
+                    streams,
+                )
+                .and_then(|()| process_handler.wait_or_shutdown())
+                .and_then(|_| output_path.sanitize())?;
 
             if let Some(teardown) = run_options.teardown.as_ref() {
-                teardown.run(config, module_path)?;
+                process_handler
+                    .start_assistant(true, teardown, config, module_path, streams, nocapture)
+                    .and_then(|()| process_handler.wait_for_teardown().transpose())?;
             }
-
-            // We print the no capture footer after the teardown to keep the output consistent with
-            // library benchmarks.
-            print_no_capture_footer(
-                nocapture,
-                run_options.stdout.as_ref(),
-                run_options.stderr.as_ref(),
-            );
 
             if let Some(sandbox) = sandbox {
                 sandbox.reset()?;
@@ -676,11 +646,8 @@ impl ToolConfigs {
 
             let mut profile = tool_config.parse(&config.meta, &output_path, Some(parsed_old))?;
 
-            tool_config.print(config, output_format, &profile.summaries, baselines)?;
-            profile.summaries.total.regressions = Self::check_and_print_regressions(
-                &tool_config.regression_config,
-                &profile.summaries.total,
-            );
+            profile.summaries.total.regressions =
+                Self::check_regressions(&tool_config.regression_config, &profile.summaries.total);
 
             if tool_config.tool == ValgrindTool::Callgrind {
                 if save_baseline {
@@ -719,9 +686,6 @@ impl ToolConfigs {
             }
 
             benchmark_summary.profiles.push(profile);
-
-            output.dump_log(log::Level::Info);
-            log_path.dump_log(log::Level::Info, &mut stderr())?;
         }
 
         Ok(benchmark_summary)

@@ -1,5 +1,7 @@
 //! The api contains all elements which the `runner` can understand
 
+#[cfg(feature = "runner")]
+use std::borrow::Cow;
 use std::ffi::OsString;
 use std::fmt::Display;
 #[cfg(feature = "runner")]
@@ -870,9 +872,12 @@ pub enum Stdio {
 /// We use this enum only internally in the benchmark runner
 #[cfg(feature = "runner")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Stream {
+pub enum Stream {
+    /// TODO: DOCS
     Stdin,
+    /// TODO: DOCS
     Stderr,
+    /// TODO: DOCS
     Stdout,
 }
 
@@ -2180,12 +2185,14 @@ where
 }
 
 impl Stdin {
+    /// TODO: DOCS
     #[cfg(feature = "runner")]
-    pub(crate) fn apply(
+    pub fn apply(
         &self,
         command: &mut StdCommand,
         stream: Stream,
         child: Option<&mut Child>,
+        current_dir: Option<&Path>,
     ) -> Result<(), String> {
         match (self, child) {
             (Self::Setup(Pipe::Stdout), Some(child)) => {
@@ -2206,10 +2213,10 @@ impl Stdin {
                 );
                 Ok(())
             }
-            (Self::Setup(_) | Self::Pipe, _) => Stdio::Pipe.apply(command, stream),
-            (Self::Inherit, _) => Stdio::Inherit.apply(command, stream),
-            (Self::Null, _) => Stdio::Null.apply(command, stream),
-            (Self::File(path), _) => Stdio::File(path.clone()).apply(command, stream),
+            (Self::Setup(_) | Self::Pipe, _) => Stdio::Pipe.apply(command, stream, current_dir),
+            (Self::Inherit, _) => Stdio::Inherit.apply(command, stream, current_dir),
+            (Self::Null, _) => Stdio::Null.apply(command, stream, current_dir),
+            (Self::File(path), _) => Stdio::File(path.clone()).apply(command, stream, current_dir),
         }
     }
 }
@@ -2244,28 +2251,43 @@ impl From<&Path> for Stdin {
 }
 
 impl Stdio {
+    /// TODO: DOCS
     #[cfg(feature = "runner")]
-    pub(crate) fn apply(&self, command: &mut StdCommand, stream: Stream) -> Result<(), String> {
+    pub fn apply(
+        &self,
+        command: &mut StdCommand,
+        stream: Stream,
+        current_dir: Option<&Path>,
+    ) -> Result<(), String> {
         let stdio = match self {
             Self::Pipe => StdStdio::piped(),
             Self::Inherit => StdStdio::inherit(),
             Self::Null => StdStdio::null(),
-            Self::File(path) => match stream {
-                Stream::Stdin => StdStdio::from(File::open(path).map_err(|error| {
-                    format!(
-                        "Failed to open file '{}' in read mode for {stream}: {error}",
-                        path.display()
-                    )
-                })?),
-                Stream::Stdout | Stream::Stderr => {
-                    StdStdio::from(File::create(path).map_err(|error| {
-                        format!(
-                            "Failed to create file '{}' for {stream}: {error}",
-                            path.display()
-                        )
-                    })?)
+            Self::File(path) => {
+                let path = if let Some(current_dir) = current_dir {
+                    Cow::Owned(current_dir.join(path))
+                } else {
+                    Cow::Borrowed(path)
+                };
+                match stream {
+                    Stream::Stdin => {
+                        StdStdio::from(File::open(path.as_path()).map_err(|error| {
+                            format!(
+                                "Failed to open file '{}' in read mode for {stream}: {error}",
+                                path.display()
+                            )
+                        })?)
+                    }
+                    Stream::Stdout | Stream::Stderr => {
+                        StdStdio::from(File::create(path.as_path()).map_err(|error| {
+                            format!(
+                                "Failed to create file '{}' for {stream}: {error}",
+                                path.display()
+                            )
+                        })?)
+                    }
                 }
-            },
+            }
         };
 
         match stream {
@@ -2277,8 +2299,9 @@ impl Stdio {
         Ok(())
     }
 
+    /// TODO: DOCS
     #[cfg(feature = "runner")]
-    pub(crate) fn is_pipe(&self) -> bool {
+    pub fn is_pipe(&self) -> bool {
         match self {
             Self::Inherit => false,
             Self::Null | Self::File(_) | Self::Pipe => true,

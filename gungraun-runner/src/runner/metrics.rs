@@ -621,7 +621,7 @@ impl Mul<Metric> for u64 {
 #[cfg(test)]
 mod tests {
     use std::cmp::Ordering;
-    use std::{f64, iter};
+    use std::iter;
 
     use either_or_both::EitherOrBoth;
     use pretty_assertions::assert_eq;

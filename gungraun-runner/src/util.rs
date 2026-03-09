@@ -12,7 +12,7 @@ use either_or_both::EitherOrBoth;
 use indexmap::IndexMap;
 use log::{debug, log_enabled, trace, Level};
 use regex::Regex;
-use which::which;
+use which::{which, which_in};
 
 use crate::error::Error;
 use crate::runner::metrics::Metric;
@@ -114,7 +114,7 @@ pub fn bool_to_yesno(value: bool) -> String {
 ///
 /// If `follow_symlinks` is true copy the symlinked file or directory instead of the symlink itself
 pub fn copy_directory(source: &Path, dest: &Path, follow_symlinks: bool) -> Result<()> {
-    let cp = resolve_binary_path("cp")?;
+    let cp = resolve_binary_path("cp", None)?;
     let mut command = Command::new(&cp);
 
     // Using short options ensures compatibility with FreeBSD and Linux
@@ -138,9 +138,9 @@ pub fn copy_directory(source: &Path, dest: &Path, follow_symlinks: bool) -> Resu
                 Ok((output.stdout, output.stderr))
             } else {
                 let status = output.status;
-                Err(Error::ProcessError(
-                    Box::new(cp.to_string_lossy().to_string()),
-                    Some(Box::new(output)),
+                Err(Error::new_process_error(
+                    cp.to_string_lossy().to_string(),
+                    Some(output),
                     status,
                     None,
                 ))
@@ -248,12 +248,17 @@ pub fn percentage_diff(new: Metric, old: Metric) -> f64 {
 ///
 /// If the binary is a name without path separators the PATH is tried, otherwise if not absolute
 /// a relative path is tried. If the path is already absolute checks if it is executable.
-pub fn resolve_binary_path<T>(binary: T) -> Result<PathBuf>
+pub fn resolve_binary_path<T>(binary: T, current_dir: Option<&Path>) -> Result<PathBuf>
 where
     T: AsRef<OsStr>,
 {
     let binary = binary.as_ref();
-    match which(binary) {
+    let result = if let Some(current_dir) = current_dir {
+        which_in(binary, option_env!("PATH"), current_dir)
+    } else {
+        which(binary)
+    };
+    match result {
         Ok(path) => {
             debug!("Found '{}': '{}'", binary.to_string_lossy(), path.display());
             Ok(path)
