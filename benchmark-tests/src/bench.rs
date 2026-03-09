@@ -520,11 +520,11 @@ impl BenchmarkOutput {
                     );
 
                     File::create(bench_dir.join(stderr))
-                        .expect("Opening expected stdout for writing should succeed")
+                        .expect("Opening expected stderr for writing should succeed")
                         .write_all(filtered.as_bytes())
-                        .expect("Writing to expected stdout should succeed");
+                        .expect("Writing to expected stderr should succeed");
 
-                    print_info("Overwriting stdout successful");
+                    print_info("Overwriting stderr successful");
                 } else {
                     print_info("Skip overwrite since verifying stderr was successful");
                 }
@@ -629,6 +629,22 @@ impl BenchmarkOutput {
             } else {
                 (&line[0..0], line.as_str())
             };
+
+            let line = if let Some(caps) = THREAD_PANICKED.captures(line) {
+                let mut new = String::with_capacity(line.len());
+                new.push_str(caps.name("start").unwrap().as_str());
+                if caps.name("pid").is_some() {
+                    new.push_str("(<__PID__>)");
+                }
+
+                new.push_str(caps.name("end").unwrap().as_str());
+
+                new
+            } else {
+                line.to_owned()
+            };
+
+            let line = line.as_str();
 
             // The `  Details: ...` can contain platform, toolchain specific information about a
             // tool run and make the benchmark tests flaky. So, we filter the details. The

@@ -9,6 +9,4 @@ mod test_dhat;
 #[cfg(feature = "default")]
 mod test_runner_binary;
 #[cfg(feature = "default")]
-mod test_tasks;
-#[cfg(feature = "default")]
 mod test_tool;

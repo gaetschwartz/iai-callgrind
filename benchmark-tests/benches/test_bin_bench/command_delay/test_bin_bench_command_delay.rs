@@ -9,11 +9,15 @@ use gungraun::{
     DelayKind, Sandbox,
 };
 
+const ECHO: &str = env!("CARGO_BIN_EXE_echo");
+
+// TODO: Improve this test and show that the delay really works. for example with a parallel setup
+// output
 #[binary_benchmark]
 #[bench::delay()]
 fn delay_duration() -> Command {
-    let path = env!("CARGO_BIN_EXE_echo");
-    Command::new(path)
+    Command::new(ECHO)
+        .arg("I'm ECHO")
         .setup_parallel(true)
         .delay(Duration::from_millis(500))
         .build()
@@ -30,12 +34,12 @@ fn setup_path() {
     println!("File created...");
 }
 
+// TODO: test without sandbox, too
 #[binary_benchmark]
 #[bench::delay(setup = setup_path())]
 fn delay_path() -> Command {
-    let cmd_path = env!("CARGO_BIN_EXE_echo");
-
-    Command::new(cmd_path)
+    Command::new(ECHO)
+        .arg("I'm ECHO")
         .setup_parallel(true)
         .delay(
             Delay::new(DelayKind::PathExists("some.pid".into()))
@@ -60,9 +64,8 @@ fn setup_tcp_server() {
 #[binary_benchmark]
 #[bench::delay(setup = setup_tcp_server())]
 fn delay_tcp() -> Command {
-    let path = env!("CARGO_BIN_EXE_echo");
-
-    Command::new(path)
+    Command::new(ECHO)
+        .arg("I'm ECHO")
         .setup_parallel(true)
         .delay(
             Delay::new(DelayKind::TcpConnect(
@@ -102,12 +105,12 @@ fn setup_udp_server() {
     println!("Stopped server...");
 }
 
+// FIX: Why is Stopped server printed before the echo output?
 #[binary_benchmark]
 #[bench::delay(setup = setup_udp_server())]
 fn delay_udp() -> Command {
-    let path = env!("CARGO_BIN_EXE_echo");
-
-    Command::new(path)
+    Command::new(ECHO)
+        .arg("I'm ECHO")
         .setup_parallel(true)
         .delay(
             Delay::new(DelayKind::UdpResponse(

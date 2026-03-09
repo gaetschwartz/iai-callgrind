@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use gungraun::{
     binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Callgrind, Command,
-    OutputFormat, Sandbox, Stdio,
+    OutputFormat, Sandbox,
 };
 
 fn create_script(path: &str) {
@@ -39,10 +39,7 @@ fn create_file() {
 #[bench::crate_binary(env!("CARGO_BIN_EXE_cat"))]
 #[bench::use_path("cat")]
 fn bench_paths(path: &str) -> Command {
-    Command::new(path)
-        .arg("some.txt")
-        .stdout(Stdio::Inherit)
-        .build()
+    Command::new(path).arg("some.txt").build()
 }
 
 binary_benchmark_group!(name = my_group, benchmarks = bench_paths);

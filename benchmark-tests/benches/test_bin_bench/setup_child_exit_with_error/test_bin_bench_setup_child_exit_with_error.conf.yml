@@ -4,9 +4,11 @@ groups:
         rust_version: "<=1.74.1"
         expected:
           exit_code: 1
+          stdout: expected_stdout
           stderr: expected_stderr.msrv
       - args: ["--nocapture"]
         rust_version: ">1.74.1"
         expected:
           exit_code: 1
           stderr: expected_stderr.not-msrv
+          stdout: expected_stdout

@@ -194,6 +194,7 @@ peekable
 pids
 pipefail
 polonius
+popd
 posix
 postconditions
 powerset
@@ -206,6 +207,7 @@ proccontrol
 profraw
 pthread
 punct
+pushd
 quickstart
 ramhitrate
 ramhits

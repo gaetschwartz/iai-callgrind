@@ -1,5 +1,6 @@
 groups:
   - runs:
-      - args: []
+      # FIX: run this with overwrite
+      - args: ["--nocapture"]
         expected:
           stdout: expected_stdout.1

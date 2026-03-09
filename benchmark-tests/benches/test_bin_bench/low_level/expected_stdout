@@ -134,7 +134,7 @@ test_bin_bench_low_level::setup_override::second_override third_bench_1:(N/A) ->
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
 test_bin_bench_low_level::teardown_override::first_override with_teardown_override_two_commands_0:(N/A) -> target/release/echo aaa
-- end of stderr
+- end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
   LL Hits:                                 |N/A                  (*********)
@@ -142,7 +142,7 @@ test_bin_bench_low_level::teardown_override::first_override with_teardown_overri
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
 test_bin_bench_low_level::teardown_override::first_override with_teardown_override_two_commands_1:(N/A) -> target/release/echo aaa
-- end of stderr
+- end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
   LL Hits:                                 |N/A                  (*********)
@@ -150,7 +150,7 @@ test_bin_bench_low_level::teardown_override::first_override with_teardown_overri
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
 test_bin_bench_low_level::teardown_override::first_override without_teardown_override:() -> target/release/echo foo
-- end of stderr
+- end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
   LL Hits:                                 |N/A                  (*********)
@@ -158,7 +158,7 @@ test_bin_bench_low_level::teardown_override::first_override without_teardown_ove
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
 test_bin_bench_low_level::teardown_override::first_override with_teardown_override_single_command:() -> target/release/echo bbb
-- end of stderr
+- end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
   LL Hits:                                 |N/A                  (*********)
@@ -166,7 +166,7 @@ test_bin_bench_low_level::teardown_override::first_override with_teardown_overri
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
 test_bin_bench_low_level::teardown_override::second_override with_teardown_override:() -> target/release/echo bbb
-- end of stderr
+- end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
   LL Hits:                                 |N/A                  (*********)
@@ -174,7 +174,7 @@ test_bin_bench_low_level::teardown_override::second_override with_teardown_overr
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
 test_bin_bench_low_level::teardown_override::second_override without_teardown_override:() -> target/release/echo bar
-- end of stderr
+- end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
   LL Hits:                                 |N/A                  (*********)

@@ -10,11 +10,16 @@ fn benchmark_without_id() -> gungraun::Command {
     gungraun::Command::new(ECHO)
 }
 
+#[binary_benchmark]
+fn benchmark_without_id_other() -> gungraun::Command {
+    gungraun::Command::new(ECHO)
+}
+
 // The comparison should not happen since there is no id
 binary_benchmark_group!(
     name = compare_without_id,
     compare_by_id = true,
-    benchmarks = [benchmark_without_id, benchmark_without_id]
+    benchmarks = [benchmark_without_id, benchmark_without_id_other]
 );
 
 #[binary_benchmark]
@@ -22,13 +27,6 @@ binary_benchmark_group!(
 fn benchmark_with_id() -> gungraun::Command {
     gungraun::Command::new(ECHO)
 }
-
-// Compare with the same binary benchmark
-binary_benchmark_group!(
-    name = same_benchmarks,
-    compare_by_id = true,
-    benchmarks = [benchmark_with_id, benchmark_with_id]
-);
 
 #[binary_benchmark]
 #[bench::foo()]
@@ -117,7 +115,6 @@ binary_benchmark_group!(
 main!(
     binary_benchmark_groups = [
         compare_without_id,
-        same_benchmarks,
         different_benchmarks,
         not_all_ids_present_in_first,
         not_all_ids_present_in_second,

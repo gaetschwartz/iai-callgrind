@@ -1,7 +1,7 @@
 test_lib_bench_threads::bench_group::bench_find_primes_multi_thread two:2
-  ======= CALLGRIND ====================================================================
 Number of primes found in the range 0 to 20000: 2262
 - end of stdout/stderr
+  ======= CALLGRIND ====================================================================
   ## pid: <__PID__> thread: 1 part: 1      |N/A
   Command: <__COMMAND__>
   Baselines:                        default|default (old)
@@ -59,9 +59,9 @@ Number of primes found in the range 0 to 20000: 2262
   Command: <__COMMAND__>
   Details: <__DETAILS__>
 test_lib_bench_threads::bench_group::bench_find_primes_multi_thread three:3
-  ======= CALLGRIND ====================================================================
 Number of primes found in the range 0 to 30000: 3245
 - end of stdout/stderr
+  ======= CALLGRIND ====================================================================
   ## pid: <__PID__> thread: 1 part: 1      |N/A
   Command: <__COMMAND__>
   Baselines:                        default|default (old)
@@ -127,9 +127,9 @@ Number of primes found in the range 0 to 30000: 3245
   Command: <__COMMAND__>
   Details: <__DETAILS__>
 test_lib_bench_threads::bench_group::bench_thread_in_subprocess two:2
-  ======= CALLGRIND ====================================================================
 Number of primes found in the range 0 to 20000: 2262
 - end of stdout/stderr
+  ======= CALLGRIND ====================================================================
   ## pid: <__PID__> thread: 1 part: 1      |N/A
   Command: <__COMMAND__>
   Baselines:                        default|default (old)
@@ -276,9 +276,9 @@ Number of primes found in the range 0 to 20000: 2262
   Suppressed Errors:                       |                     (         )
   Suppressed Contexts:                     |                     (         )
 test_lib_bench_threads::bench_group::bench_thread_in_subprocess three:3
-  ======= CALLGRIND ====================================================================
 Number of primes found in the range 0 to 30000: 3245
 - end of stdout/stderr
+  ======= CALLGRIND ====================================================================
   ## pid: <__PID__> thread: 1 part: 1      |N/A
   Command: <__COMMAND__>
   Baselines:                        default|default (old)
