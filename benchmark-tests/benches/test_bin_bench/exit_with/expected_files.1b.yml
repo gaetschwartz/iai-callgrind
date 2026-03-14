@@ -1,0 +1,13 @@
+data:
+  - group: my_group
+    function: bench_exit_with
+    id: exit_with
+    expected:
+      files:
+        - callgrind.bench_exit_with.exit_with.log
+        - callgrind.bench_exit_with.exit_with.log.old
+        - callgrind.bench_exit_with.exit_with.out
+        - callgrind.bench_exit_with.exit_with.out.old
+        - memcheck.bench_exit_with.exit_with.log
+        - memcheck.bench_exit_with.exit_with.log.old
+        - summary.json

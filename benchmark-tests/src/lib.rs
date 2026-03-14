@@ -33,12 +33,12 @@ pub fn find_primes(low: u64, high: u64) -> Vec<u64> {
 
 pub fn find_primes_multi_thread(num_threads: usize) -> Vec<u64> {
     let mut handles = vec![];
-    let mut low = 0;
-    for _ in 0..num_threads {
-        let handle = std::thread::spawn(move || find_primes(low, low + 10000));
+    for (from, to) in (0..num_threads).map(|num| {
+        let num = num as u64 * 10000;
+        (num, num + 10000)
+    }) {
+        let handle = std::thread::spawn(move || find_primes(from, to));
         handles.push(handle);
-
-        low += 10000;
     }
 
     let mut primes = vec![];
@@ -48,7 +48,8 @@ pub fn find_primes_multi_thread(num_threads: usize) -> Vec<u64> {
     }
 
     println!(
-        "Number of primes found in the range 0 to {low}: {}",
+        "Number of primes found in the range 0 to {}: {}",
+        num_threads * 10000,
         primes.len()
     );
 
@@ -57,19 +58,17 @@ pub fn find_primes_multi_thread(num_threads: usize) -> Vec<u64> {
 
 pub fn find_primes_multi_thread_with_instrumentation(num_threads: usize) -> Vec<u64> {
     let mut handles = vec![];
-    let mut low = 0;
-    for _ in 0..num_threads {
+    for (from, to) in (0..num_threads).map(|num| {
+        let num = num as u64 * 10000;
+        (num, num + 10000)
+    }) {
         let handle = std::thread::spawn(move || {
             gungraun::client_requests::callgrind::start_instrumentation();
-            gungraun::client_requests::callgrind::toggle_collect();
-            let result = find_primes(low, low + 10000);
-            gungraun::client_requests::callgrind::toggle_collect();
+            let result = find_primes(from, to);
             gungraun::client_requests::callgrind::stop_instrumentation();
             result
         });
         handles.push(handle);
-
-        low += 10000;
     }
 
     let mut primes = vec![];
@@ -79,7 +78,8 @@ pub fn find_primes_multi_thread_with_instrumentation(num_threads: usize) -> Vec<
     }
 
     println!(
-        "Number of primes found in the range 0 to {low}: {}",
+        "Number of primes found in the range 0 to {}: {}",
+        num_threads * 10000,
         primes.len()
     );
 

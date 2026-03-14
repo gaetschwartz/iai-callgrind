@@ -1,8 +1,12 @@
 use gungraun::{binary_benchmark, binary_benchmark_group, main, Command};
 
 #[binary_benchmark]
-fn threads() -> Command {
-    Command::new(env!("CARGO_BIN_EXE_thread")).arg("3").build()
+#[bench::one("1")]
+#[bench::two("2")]
+fn threads(num_threads: &str) -> Command {
+    Command::new(env!("CARGO_BIN_EXE_thread"))
+        .arg(num_threads)
+        .build()
 }
 
 binary_benchmark_group!(name = my_group, benchmarks = threads);

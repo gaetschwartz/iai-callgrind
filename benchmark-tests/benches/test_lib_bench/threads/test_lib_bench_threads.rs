@@ -14,8 +14,8 @@ use gungraun::{
         ]))
         .tool(Dhat::default().frames(["*::find_primes"]))
 )]
+#[bench::one(1)]
 #[bench::two(2)]
-#[bench::three(3)]
 fn bench_find_primes_multi_thread(num_threads: usize) -> Vec<u64> {
     black_box(find_primes_multi_thread(num_threads))
 }
@@ -32,8 +32,8 @@ fn bench_find_primes_multi_thread(num_threads: usize) -> Vec<u64> {
                 "*::find_primes"
         ]))
 )]
+#[bench::one(1)]
 #[bench::two(2)]
-#[bench::three(3)]
 fn bench_thread_in_subprocess(num_threads: usize) {
     Command::new(env!("CARGO_BIN_EXE_thread"))
         .arg(num_threads.to_string())

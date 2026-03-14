@@ -54,21 +54,6 @@ data:
         - callgrind.bench_multiple_threads.dump_before.t3.p3.out
         - summary.json
   - group: my_group
-    function: bench_multiple_threads
-    id: dump_every_bb
-    expected:
-      files:
-        - callgrind.bench_multiple_threads.dump_every_bb.log
-        - callgrind.bench_multiple_threads.dump_every_bb.t1.p1.out
-        - callgrind.bench_multiple_threads.dump_every_bb.t1.p2.out
-        - callgrind.bench_multiple_threads.dump_every_bb.t1.p3.out
-        - callgrind.bench_multiple_threads.dump_every_bb.t2.p1.out
-        - callgrind.bench_multiple_threads.dump_every_bb.t2.p2.out
-        - callgrind.bench_multiple_threads.dump_every_bb.t2.p3.out
-        - callgrind.bench_multiple_threads.dump_every_bb.t3.p2.out
-        - callgrind.bench_multiple_threads.dump_every_bb.t3.p3.out
-        - summary.json
-  - group: my_group
     function: bench_multiple_threads_in_subprocess
     id: dump_after
     expected:

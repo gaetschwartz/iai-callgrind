@@ -13,7 +13,7 @@ use gungraun_runner::runner::summary::BaselineKind;
 use gungraun_runner::runner::tasks::ProcessHandler;
 use gungraun_runner::runner::tool::args::ToolArgs;
 use gungraun_runner::runner::tool::config::{ToolConfig, ToolFlamegraphConfig};
-use gungraun_runner::runner::tool::path::ToolOutputPath;
+use gungraun_runner::runner::tool::path::{ToolOutputPath, ToolOutputPathKind};
 use gungraun_runner::runner::tool::regression::ToolRegressionConfig;
 use gungraun_runner::runner::tool::run::{ToolCommand, ToolCommandChild};
 
@@ -230,19 +230,29 @@ pub fn tool_output_path(
     name: Option<&str>,
     module_path_string: Option<&str>,
     init: Option<bool>,
+    #[builder(default = vec![], with = FromIterator::from_iter)] files: Vec<(&str, &str)>,
 ) -> ToolOutputPath {
     let path = ToolOutputPath::new(
-        gungraun_runner::runner::tool::path::ToolOutputPathKind::Out,
+        ToolOutputPathKind::Out,
         tool.unwrap_or(ValgrindTool::Callgrind),
         &BaselineKind::Old,
         target_dir,
         &module_path_string.map_or_else(|| module_path().fixture(), ModulePath::new),
         name.unwrap_or("foo"),
-    );
+        false,
+    )
+    .unwrap();
 
     if init.unwrap_or(false) {
         path.init()
             .expect("Initializing the output path should succeed");
+    }
+
+    if !files.is_empty() {
+        let dir = path.dest_dir();
+        for (path, content) in files {
+            std::fs::write(dir.join(path), content).unwrap()
+        }
     }
 
     path

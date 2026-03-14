@@ -1,0 +1,1 @@
+test_bench_template::my_group::bench_exit_with exit_with:(ExitWith :: Code(1)) -> target/release/exit-with 0

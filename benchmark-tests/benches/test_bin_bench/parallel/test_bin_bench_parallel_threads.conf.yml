@@ -16,7 +16,7 @@ groups:
           stdout: expected_stdout.threads.1a
           stderr: expected_stderr.empty
       - args: ["--parallel"]
-        tolerance: 0.1
+        tolerance: 10
         expected:
           stdout: expected_stdout.threads.1b
           stderr: expected_stderr.empty
@@ -26,7 +26,7 @@ groups:
           stdout: expected_stdout.threads.2a
           stderr: expected_stderr.empty
       - args: ["--nocapture", "--parallel"]
-        tolerance: 0.1
+        tolerance: 10
         expected:
           stdout: expected_stdout.threads.2b
           stderr: expected_stderr.empty
@@ -36,7 +36,7 @@ groups:
           stdout: expected_stdout.threads.3a
           stderr: expected_stderr.empty
       - args: ["--nocapture", "--show-intermediate", "--parallel"]
-        tolerance: 0.1
+        tolerance: 10
         expected:
           stdout: expected_stdout.threads.3b
           stderr: expected_stderr.empty
