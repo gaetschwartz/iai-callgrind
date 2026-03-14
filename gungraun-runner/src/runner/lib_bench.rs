@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fmt::Debug;
 use std::marker::{Send, Sync};
+use std::path::Path;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 
@@ -22,7 +23,8 @@ use crate::api::{
 };
 use crate::error::Error;
 use crate::runner::common::{
-    Baselines, BenchmarkSummaries, Config, Groups, ModulePath, Runner, Streams,
+    BaselineDataProcessor, Baselines, BenchmarkDataProcessor, BenchmarkSummaries, Config, Groups,
+    LoadBaselineDataProcessor, ModulePath, Runner, SaveBaselineDataProcessor, Streams,
 };
 
 /// Implements [`Benchmark`] to run a [`LibBench`] and compare against an earlier [`BenchmarkKind`]
@@ -87,45 +89,64 @@ pub struct SaveBaselineBenchmark {
 pub trait Benchmark: Debug + Send + Sync {
     /// TODO: DOCS
     fn baselines(&self) -> Baselines;
+
+    /// TODO:DOCS
+    fn data_processor(
+        &self,
+        tools: &ToolConfigs,
+        project_root: &Path,
+        output_path: &ToolOutputPath,
+    ) -> Box<dyn BenchmarkDataProcessor>;
+
     /// TODO: DOCS
-    fn output_path(
+    fn default_output_path(
         &self,
         lib_bench: &LibBench,
         config: &Config,
         group_module_path: &ModulePath,
-    ) -> ToolOutputPath;
+        use_temp_dir: bool,
+    ) -> Result<ToolOutputPath>;
+
     /// TODO: DOCS
     fn run(
         &self,
         lib_bench: LibBench,
         config: &Config,
-        group_module_path: &ModulePath,
         main_index: usize,
         streams: Option<Streams>,
         force_shutdown: &Arc<AtomicBool>,
+        output_path: ToolOutputPath,
     ) -> Result<BenchmarkSummary>;
 }
 
 impl Benchmark for BaselineBenchmark {
-    fn output_path(
+    fn default_output_path(
         &self,
         lib_bench: &LibBench,
         config: &Config,
         group_module_path: &ModulePath,
-    ) -> ToolOutputPath {
+        use_temp_dir: bool,
+    ) -> Result<ToolOutputPath> {
         let kind = if lib_bench.default_tool.has_output_file() {
             ToolOutputPathKind::Out
         } else {
             ToolOutputPathKind::Log
         };
-        ToolOutputPath::new(
+        let output_path = ToolOutputPath::new(
             kind,
             lib_bench.default_tool,
             &self.baseline_kind,
             &config.meta.target_dir,
             group_module_path,
             &lib_bench.name(),
-        )
+            use_temp_dir,
+        )?;
+
+        if !use_temp_dir {
+            output_path.init()?;
+        }
+
+        Ok(output_path)
     }
 
     fn baselines(&self) -> Baselines {
@@ -139,50 +160,42 @@ impl Benchmark for BaselineBenchmark {
         &self,
         lib_bench: LibBench,
         config: &Config,
-        group_module_path: &ModulePath,
         main_index: usize,
         streams: Option<Streams>,
         force_shutdown: &Arc<AtomicBool>,
+        output_path: ToolOutputPath,
     ) -> Result<BenchmarkSummary> {
-        let out_path = self.output_path(&lib_bench, config, group_module_path);
-        out_path.init()?;
-
-        for path in lib_bench.tools.output_paths(&out_path) {
-            path.shift()?;
-            if path.kind == ToolOutputPathKind::Out {
-                path.to_log_output().shift()?;
-            }
-            if let Some(path) = path.to_xtree_output() {
-                path.shift()?;
-            }
-            if let Some(path) = path.to_xleak_output() {
-                path.shift()?;
-            }
-        }
-
         let header = LibraryBenchmarkHeader::new(&lib_bench);
         let benchmark_summary = lib_bench.create_benchmark_summary(
             config,
-            &out_path,
+            &output_path,
             &lib_bench.function_name,
             header.description(),
             self.baselines(),
-        )?;
+        );
 
         lib_bench.tools.run(
-            &header.to_title(),
             benchmark_summary,
-            &self.baseline_kind,
             config,
             &config.bench_bin,
             &lib_bench.bench_args(main_index),
             &lib_bench.run_options,
-            &out_path,
-            false,
+            &output_path,
             &lib_bench.module_path,
             streams.as_ref(),
             force_shutdown,
         )
+    }
+
+    fn data_processor(
+        &self,
+        tools: &ToolConfigs,
+        project_root: &Path,
+        output_path: &ToolOutputPath,
+    ) -> Box<dyn BenchmarkDataProcessor> {
+        Box::new(BaselineDataProcessor {
+            analyzers: tools.analyzers(project_root, output_path),
+        })
     }
 }
 
@@ -298,6 +311,8 @@ impl LibBench {
 
     /// The arguments for the `bench_bin` to actually run the benchmark function
     fn bench_args(&self, main_index: usize) -> Vec<OsString> {
+        // The string has a fixed length to have an equal argument parser in the benchmark binary
+        // for all benchmarks.
         let index_to_string = |index| format!("{index:05}");
 
         let mut args = vec![
@@ -322,16 +337,14 @@ impl LibBench {
         function_name: &str,
         description: Option<String>,
         baselines: Baselines,
-    ) -> Result<BenchmarkSummary> {
-        let summary_output = if let Some(format) = config.meta.args.save_summary {
-            let output = SummaryOutput::new(format, &output_path.dir);
-            output.init()?;
-            Some(output)
-        } else {
-            None
-        };
+    ) -> BenchmarkSummary {
+        let summary_output = config
+            .meta
+            .args
+            .save_summary
+            .map(|format| SummaryOutput::new(format, &output_path.dir));
 
-        Ok(BenchmarkSummary::new(
+        BenchmarkSummary::new(
             BenchmarkKind::LibraryBenchmark,
             config.meta.project_root.clone(),
             config.package_dir.clone(),
@@ -343,17 +356,18 @@ impl LibBench {
             description,
             summary_output,
             baselines,
-        ))
+        )
     }
 }
 
 impl Benchmark for LoadBaselineBenchmark {
-    fn output_path(
+    fn default_output_path(
         &self,
         lib_bench: &LibBench,
         config: &Config,
         group_module_path: &ModulePath,
-    ) -> ToolOutputPath {
+        _use_temp_dir: bool,
+    ) -> Result<ToolOutputPath> {
         let kind = if lib_bench.default_tool.has_output_file() {
             ToolOutputPathKind::BaseOut(self.loaded_baseline.to_string())
         } else {
@@ -366,6 +380,7 @@ impl Benchmark for LoadBaselineBenchmark {
             &config.meta.target_dir,
             group_module_path,
             &lib_bench.name(),
+            false,
         )
     }
 
@@ -380,53 +395,62 @@ impl Benchmark for LoadBaselineBenchmark {
         &self,
         lib_bench: LibBench,
         config: &Config,
-        group_module_path: &ModulePath,
         _main_index: usize,
         _streams: Option<Streams>,
         _force_shutdown: &Arc<AtomicBool>,
+        output_path: ToolOutputPath,
     ) -> Result<BenchmarkSummary> {
-        let out_path = self.output_path(&lib_bench, config, group_module_path);
-
         let header = LibraryBenchmarkHeader::new(&lib_bench);
-        let benchmark_summary = lib_bench.create_benchmark_summary(
+        Ok(lib_bench.create_benchmark_summary(
             config,
-            &out_path,
+            &output_path,
             &lib_bench.function_name,
             header.description(),
             self.baselines(),
-        )?;
+        ))
+    }
 
-        lib_bench.tools.run_loaded_vs_base(
-            &header.to_title(),
-            &self.baseline,
-            &self.loaded_baseline,
-            benchmark_summary,
-            config,
-            &out_path,
-        )
+    fn data_processor(
+        &self,
+        tools: &ToolConfigs,
+        project_root: &Path,
+        output_path: &ToolOutputPath,
+    ) -> Box<dyn BenchmarkDataProcessor> {
+        Box::new(LoadBaselineDataProcessor {
+            analyzers: tools.analyzers(project_root, output_path),
+        })
     }
 }
 
 impl Benchmark for SaveBaselineBenchmark {
-    fn output_path(
+    fn default_output_path(
         &self,
         lib_bench: &LibBench,
         config: &Config,
         group_module_path: &ModulePath,
-    ) -> ToolOutputPath {
+        use_temp_dir: bool,
+    ) -> Result<ToolOutputPath> {
         let kind = if lib_bench.default_tool.has_output_file() {
             ToolOutputPathKind::BaseOut(self.baseline.to_string())
         } else {
             ToolOutputPathKind::BaseLog(self.baseline.to_string())
         };
-        ToolOutputPath::new(
+
+        let output_path = ToolOutputPath::new(
             kind,
             lib_bench.default_tool,
             &BaselineKind::Name(self.baseline.clone()),
             &config.meta.target_dir,
             group_module_path,
             &lib_bench.name(),
-        )
+            use_temp_dir,
+        )?;
+
+        if !use_temp_dir {
+            output_path.init()?;
+        }
+
+        Ok(output_path)
     }
 
     fn baselines(&self) -> Baselines {
@@ -440,37 +464,42 @@ impl Benchmark for SaveBaselineBenchmark {
         &self,
         lib_bench: LibBench,
         config: &Config,
-        group_module_path: &ModulePath,
         main_index: usize,
         streams: Option<Streams>,
         force_shutdown: &Arc<AtomicBool>,
+        output_path: ToolOutputPath,
     ) -> Result<BenchmarkSummary> {
-        let out_path = self.output_path(&lib_bench, config, group_module_path);
-        out_path.init()?;
-
         let header = LibraryBenchmarkHeader::new(&lib_bench);
         let benchmark_summary = lib_bench.create_benchmark_summary(
             config,
-            &out_path,
+            &output_path,
             &lib_bench.function_name,
             header.description(),
             self.baselines(),
-        )?;
+        );
 
         lib_bench.tools.run(
-            &header.to_title(),
             benchmark_summary,
-            &BaselineKind::Name(self.baseline.clone()),
             config,
             &config.bench_bin,
             &lib_bench.bench_args(main_index),
             &lib_bench.run_options,
-            &out_path,
-            true,
+            &output_path,
             &lib_bench.module_path,
             streams.as_ref(),
             force_shutdown,
         )
+    }
+
+    fn data_processor(
+        &self,
+        tools: &ToolConfigs,
+        project_root: &Path,
+        output_path: &ToolOutputPath,
+    ) -> Box<dyn BenchmarkDataProcessor> {
+        Box::new(SaveBaselineDataProcessor {
+            analyzers: tools.analyzers(project_root, output_path),
+        })
     }
 }
 

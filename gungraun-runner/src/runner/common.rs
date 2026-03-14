@@ -16,23 +16,391 @@ use std::process::{Child, Command, Stdio as StdStdio};
 use std::sync::{atomic, Arc};
 use std::time::{Duration, Instant};
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use log::{debug, log_enabled, warn, Level};
 use tempfile::{tempfile, TempDir};
 
 use super::format::{OutputFormatKind, SummaryFormatter};
 use super::meta::Metadata;
-use super::summary::BenchmarkSummary;
-use crate::api::{self, BinaryBenchmarkGroups, LibraryBenchmarkGroups, Pipe};
+use super::summary::{BenchmarkSummary, SummaryOutput};
+use crate::api::{
+    self, BinaryBenchmarkGroups, EntryPoint, LibraryBenchmarkGroups, Pipe, ValgrindTool,
+};
 use crate::error::Error;
 use crate::runner::args::NoCapture;
 use crate::runner::bin_bench::{self, BinBench};
+use crate::runner::callgrind::flamegraph::{
+    BaselineFlamegraphGenerator, Flamegraph, FlamegraphGenerator, LoadBaselineFlamegraphGenerator,
+    SaveBaselineFlamegraphGenerator,
+};
+use crate::runner::callgrind::parser::Sentinel;
 use crate::runner::format::{
     self, BinaryBenchmarkHeader, Header, LibraryBenchmarkHeader, OutputFormat,
 };
 use crate::runner::lib_bench::{self, LibBench};
+use crate::runner::summary::{FlamegraphSummary, Profile, ProfileData};
 use crate::runner::tasks::ThreadPool;
+use crate::runner::tool::config::ToolFlamegraphConfig;
+use crate::runner::tool::parser::{Parser, ParserOutput};
+use crate::runner::tool::path::{ToolOutputPath, ToolOutputPathKind};
+use crate::runner::tool::regression::ToolRegressionConfig;
 use crate::util::{copy_directory, make_absolute};
+
+/// TODO: DOCS
+pub trait BenchmarkDataProcessor: std::fmt::Debug + Send {
+    /// TODO: DOCS
+    fn analyzers(&self) -> &[Analyzer];
+
+    /// TODO: DOCS
+    fn copy_temp(&self) -> Result<()> {
+        self.analyzers()
+            .first()
+            .map_or(Ok(()), |(_, o, _, _, _)| o.copy_temp())
+    }
+
+    /// TODO: DOCS
+    fn create_benchmark_directory(&self) -> Result<()> {
+        self.analyzers()
+            .first()
+            .map_or(Ok(()), |(_, o, _, _, _)| o.init())
+    }
+
+    /// TODO: DOCS
+    fn finalize(
+        &mut self,
+        benchmark_summary: &mut BenchmarkSummary,
+        config: &Config,
+        header: &Header,
+    ) -> Result<()>;
+
+    /// TODO: DOCS
+    fn generate_flamegraphs(
+        &self,
+        config: &Config,
+        header: &Header,
+        output_path: &ToolOutputPath,
+        flamegraph_config: &ToolFlamegraphConfig,
+        entry_point: &EntryPoint,
+    ) -> Result<Vec<FlamegraphSummary>>;
+
+    /// TODO: DOCS
+    fn has_benchmarks(&self) -> bool;
+
+    /// TODO: DOCS
+    fn move_temp(&self) -> Result<()> {
+        self.analyzers()
+            .first()
+            .map_or(Ok(()), |(_, o, _, _, _)| o.move_temp())
+    }
+
+    /// TODO: DOCS, does self need to be mut?
+    fn parse(
+        &self,
+        benchmark_summary: &mut BenchmarkSummary,
+        config: &Config,
+        header: &Header,
+        parsed_old: Option<Vec<Vec<ParserOutput>>>,
+    ) -> Result<()> {
+        let iter: Box<dyn Iterator<Item = Option<Vec<ParserOutput>>>> =
+            if let Some(old) = parsed_old {
+                Box::new(old.into_iter().map(Some))
+            } else {
+                Box::new(std::iter::repeat(None).take(self.analyzers().len()))
+            };
+
+        for (
+            (parser, output_path, regression_config, flamegraph_config, entry_point),
+            parsed_old,
+        ) in self.analyzers().iter().zip(iter)
+        {
+            let tool = output_path.tool;
+
+            let parsed_new = parser.parse().and_then(|parsed| {
+                if parsed.is_empty() {
+                    Err(anyhow!("A new dataset should always be present"))
+                } else {
+                    Ok(parsed)
+                }
+            })?;
+
+            let parsed_old = if let Some(old) = parsed_old {
+                old
+            } else {
+                parser.parse_base()?
+            };
+
+            let data = ProfileData::new(parsed_new, (!parsed_old.is_empty()).then_some(parsed_old));
+
+            let mut profile = Profile {
+                tool,
+                log_paths: output_path.to_log_output().real_paths()?,
+                out_paths: output_path.real_paths()?,
+                summaries: data,
+                flamegraphs: vec![],
+            };
+
+            profile.summaries.total.regressions = regression_config.check(&profile.summaries.total);
+            profile.flamegraphs = self.generate_flamegraphs(
+                config,
+                header,
+                output_path,
+                flamegraph_config,
+                entry_point,
+            )?;
+
+            benchmark_summary.profiles.push(profile);
+        }
+
+        Ok(())
+    }
+
+    /// Remove the summary json file
+    ///
+    /// It doesn't matter which output path we use for this method. We cleanup the summary file if
+    /// it exists no matter if we create a new one or not. It is confusing if there is an summary
+    /// file present for an old run and the costs don't match anymore.
+    fn remove_summary(&self) -> Result<()> {
+        self.analyzers().first().map_or(Ok(()), |(_, o, _, _, _)| {
+            let summary_file = SummaryOutput::path(&o.dir);
+            if summary_file.exists() {
+                std::fs::remove_file(summary_file).map_err(Into::into)
+            } else {
+                Ok(())
+            }
+        })
+    }
+
+    /// TODO: DOCS
+    fn sanitize(&self) -> Result<()> {
+        self.analyzers()
+            .iter()
+            .try_for_each(|(_, o, _, _, _)| o.sanitize())
+    }
+
+    /// TODO: DOCS
+    fn shift(&self) -> Result<()> {
+        for (_, output_path, _, _, _) in self.analyzers() {
+            output_path.shift()?;
+            if matches!(
+                output_path.kind,
+                ToolOutputPathKind::Out | ToolOutputPathKind::BaseOut(_)
+            ) {
+                output_path.to_log_output().shift()?;
+            }
+            if let Some(path) = output_path.to_xtree_output() {
+                path.shift()?;
+            }
+            if let Some(path) = output_path.to_xleak_output() {
+                path.shift()?;
+            }
+        }
+
+        Ok(())
+    }
+}
+
+/// TODO: DOCS
+#[derive(Debug)]
+pub struct LoadBaselineDataProcessor {
+    /// TODO: DOCS
+    pub analyzers: Vec<Analyzer>,
+}
+
+/// TODO: DOCS
+#[derive(Debug)]
+pub struct SaveBaselineDataProcessor {
+    /// TODO: DOCS
+    pub analyzers: Vec<Analyzer>,
+}
+
+/// TODO: DOCS
+#[derive(Debug)]
+pub struct BaselineDataProcessor {
+    /// TODO: DOCS
+    pub analyzers: Vec<Analyzer>,
+}
+
+/// TODO: DOCS
+pub type Analyzer = (
+    Box<dyn Parser>,
+    ToolOutputPath,
+    ToolRegressionConfig,
+    ToolFlamegraphConfig,
+    EntryPoint,
+);
+
+impl BenchmarkDataProcessor for LoadBaselineDataProcessor {
+    fn finalize(
+        &mut self,
+        benchmark_summary: &mut BenchmarkSummary,
+        config: &Config,
+        header: &Header,
+    ) -> Result<()> {
+        self.parse(benchmark_summary, config, header, None)
+    }
+
+    fn has_benchmarks(&self) -> bool {
+        !self.analyzers.is_empty()
+    }
+
+    fn analyzers(&self) -> &[Analyzer] {
+        &self.analyzers
+    }
+
+    fn generate_flamegraphs(
+        &self,
+        config: &Config,
+        header: &Header,
+        output_path: &ToolOutputPath,
+        flamegraph_config: &ToolFlamegraphConfig,
+        entry_point: &EntryPoint,
+    ) -> Result<Vec<FlamegraphSummary>> {
+        if output_path.tool == ValgrindTool::Callgrind {
+            if let ToolFlamegraphConfig::Callgrind(flamegraph_config) = &flamegraph_config {
+                let loaded_baseline = output_path.loaded_baseline_name().expect(
+                    "The loaded baseline of an output path of a loaded baseline should have a name",
+                );
+                let baseline = output_path.baseline_name().cloned().expect(
+                    "The baseline of an output path of a loaded baseline should have a name",
+                );
+
+                return LoadBaselineFlamegraphGenerator {
+                    baseline,
+                    loaded_baseline,
+                }
+                .create(
+                    &Flamegraph::new(header.to_title(), flamegraph_config.to_owned()),
+                    output_path,
+                    (*entry_point == EntryPoint::Default)
+                        .then(Sentinel::default)
+                        .as_ref(),
+                    &config.meta.project_root,
+                );
+            }
+        }
+
+        Ok(vec![])
+    }
+}
+
+impl BenchmarkDataProcessor for SaveBaselineDataProcessor {
+    fn finalize(
+        &mut self,
+        benchmark_summary: &mut BenchmarkSummary,
+        config: &Config,
+        header: &Header,
+    ) -> Result<()> {
+        if !self.has_benchmarks() {
+            return Ok(());
+        }
+
+        self.create_benchmark_directory()?;
+
+        let parsed_old = self
+            .analyzers()
+            .iter()
+            .map(|(parser, _, _, _, _)| parser.parse_base())
+            .collect::<Result<Vec<Vec<ParserOutput>>>>()?;
+
+        self.remove_summary()
+            .and_then(|()| self.shift())
+            .and_then(|()| self.move_temp())
+            .and_then(|()| self.sanitize())
+            .and_then(|()| self.parse(benchmark_summary, config, header, Some(parsed_old)))
+            .and_then(|()| self.copy_temp()) // for the flamegraphs which are created in the
+                                             // temporary directory
+    }
+
+    fn has_benchmarks(&self) -> bool {
+        !self.analyzers.is_empty()
+    }
+
+    fn analyzers(&self) -> &[Analyzer] {
+        &self.analyzers
+    }
+
+    fn generate_flamegraphs(
+        &self,
+        config: &Config,
+        header: &Header,
+        output_path: &ToolOutputPath,
+        flamegraph_config: &ToolFlamegraphConfig,
+        entry_point: &EntryPoint,
+    ) -> Result<Vec<FlamegraphSummary>> {
+        if output_path.tool == ValgrindTool::Callgrind {
+            if let ToolFlamegraphConfig::Callgrind(flamegraph_config) = &flamegraph_config {
+                let baseline = output_path.baseline_name().cloned().expect(
+                    "The baseline of an output path of a saved baseline should have a name",
+                );
+                return SaveBaselineFlamegraphGenerator { baseline }.create(
+                    &Flamegraph::new(header.to_title(), flamegraph_config.to_owned()),
+                    output_path,
+                    (*entry_point == EntryPoint::Default)
+                        .then(Sentinel::default)
+                        .as_ref(),
+                    &config.meta.project_root,
+                );
+            }
+        }
+
+        Ok(vec![])
+    }
+}
+
+impl BenchmarkDataProcessor for BaselineDataProcessor {
+    fn finalize(
+        &mut self,
+        benchmark_summary: &mut BenchmarkSummary,
+        config: &Config,
+        header: &Header,
+    ) -> Result<()> {
+        if !self.has_benchmarks() {
+            return Ok(());
+        }
+
+        self.create_benchmark_directory()
+            .and_then(|()| self.remove_summary())
+            .and_then(|()| self.shift())
+            .and_then(|()| self.sanitize())
+            .and_then(|()| self.parse(benchmark_summary, config, header, None))
+            .and_then(|()| self.copy_temp())
+    }
+
+    fn has_benchmarks(&self) -> bool {
+        !self.analyzers.is_empty()
+    }
+
+    fn generate_flamegraphs(
+        &self,
+        config: &Config,
+        header: &Header,
+        output_path: &ToolOutputPath,
+        flamegraph_config: &ToolFlamegraphConfig,
+        entry_point: &EntryPoint,
+    ) -> Result<Vec<FlamegraphSummary>> {
+        if output_path.tool == ValgrindTool::Callgrind {
+            if let ToolFlamegraphConfig::Callgrind(flamegraph_config) = &flamegraph_config {
+                return BaselineFlamegraphGenerator {
+                    baseline_kind: output_path.baseline_kind.clone(),
+                }
+                .create(
+                    &Flamegraph::new(header.to_title(), flamegraph_config.to_owned()),
+                    output_path,
+                    (*entry_point == EntryPoint::Default)
+                        .then(Sentinel::default)
+                        .as_ref(),
+                    &config.meta.project_root,
+                );
+            }
+        }
+
+        Ok(vec![])
+    }
+
+    fn analyzers(&self) -> &[Analyzer] {
+        &self.analyzers
+    }
+}
 
 /// The `Baselines` type
 pub type Baselines = (Option<String>, Option<String>);
@@ -123,6 +491,8 @@ pub struct Groups(pub Vec<Group>);
 pub struct JobResult {
     /// TODO: DOCS
     pub benchmark_summary: BenchmarkSummary,
+    /// TODO: DOCS
+    pub data_processor: Box<dyn BenchmarkDataProcessor>,
     /// TODO: DOCS
     pub fail_fast: bool,
     /// TODO: DOCS
@@ -449,13 +819,18 @@ impl Group {
 
             thread_pool.execute(move |force_shutdown| {
                 let streams = Streams::new()?;
+                let output_path =
+                    benchmark.default_output_path(&bench, &config, &module_path, true)?;
+
+                let data_processor =
+                    benchmark.data_processor(&bench.tools, &config.meta.project_root, &output_path);
 
                 match benchmark.run(
                     bench,
                     &config,
-                    &module_path,
                     Some(streams.try_clone()?),
                     &force_shutdown,
+                    output_path.clone(),
                 ) {
                     Ok(benchmark_summary) => Ok(JobResult {
                         benchmark_summary,
@@ -463,11 +838,13 @@ impl Group {
                         header: header.into(),
                         output_format,
                         streams,
+                        data_processor,
                     }),
                     Err(error) => Err(anyhow::Error::from(Error::JobError(
                         Box::new(error),
                         header.into(),
                         streams,
+                        Box::new(output_path),
                     ))),
                 }
             });
@@ -493,14 +870,19 @@ impl Group {
 
             thread_pool.execute(move |force_shutdown| {
                 let streams = Streams::new()?;
+                let output_path =
+                    benchmark.default_output_path(&bench, &config, &module_path, true)?;
+
+                let data_processor =
+                    benchmark.data_processor(&bench.tools, &config.meta.project_root, &output_path);
 
                 match benchmark.run(
                     bench,
                     &config,
-                    &module_path,
                     main_index,
                     Some(streams.try_clone()?),
                     &force_shutdown,
+                    output_path.clone(),
                 ) {
                     Ok(benchmark_summary) => Ok(JobResult {
                         benchmark_summary,
@@ -508,11 +890,13 @@ impl Group {
                         header: header.into(),
                         output_format,
                         streams,
+                        data_processor,
                     }),
                     Err(error) => Err(anyhow::Error::from(Error::JobError(
                         Box::new(error),
                         header.into(),
                         streams,
+                        Box::new(output_path),
                     ))),
                 }
             });
@@ -544,43 +928,67 @@ impl Group {
             }
         }
 
-        let mut lib_bench_summaries: HashMap<String, Vec<BenchmarkSummary>> =
+        let mut comparison_summaries: HashMap<String, Vec<BenchmarkSummary>> =
             HashMap::with_capacity(num_benches);
         let force_shutdown = thread_pool.get_force_shutdown();
         let mut error = None;
         for result in thread_pool {
             let JobResult {
-                benchmark_summary,
+                mut benchmark_summary,
                 fail_fast,
                 header,
                 output_format,
                 streams,
+                mut data_processor,
             } = match result {
                 // On error, wait for all threads to finish and/or shutdown their running processes
+                // and don't rely on the thread pool drop to finish before the runner exits.
                 _ if error.is_some() => {
                     continue;
                 }
                 Ok(result) => result,
                 Err(e) => {
                     force_shutdown.store(true, atomic::Ordering::Release);
+                    if let Some(Error::JobError(_, _, _, path)) = e.downcast_ref::<Error>() {
+                        // Avoid an error within the error situation. The worst that can happen is
+                        // that we silently fail here if the log files won't be available in the
+                        // benchmark directory.
+                        let _ = path
+                            .init()
+                            .and_then(|()| path.clear_temp_files(true))
+                            .and_then(|()| path.copy_temp());
+                    }
                     error = Some(e);
                     continue;
                 }
             };
 
-            benchmark_summary.print_and_save(config, &header, &output_format, streams)?;
-            benchmark_summary.check_regression(fail_fast)?;
+            if !data_processor.has_benchmarks() {
+                continue;
+            }
+
+            if let Err(e) = data_processor
+                .finalize(&mut benchmark_summary, config, &header)
+                .and_then(|()| {
+                    benchmark_summary.print_and_save(config, &header, &output_format, streams)
+                })
+                .and_then(|()| benchmark_summary.check_regression(fail_fast))
+            {
+                force_shutdown.store(true, atomic::Ordering::Release);
+                error = Some(e);
+                continue;
+            }
 
             benchmark_summaries.add_summary(benchmark_summary.clone());
             if compare_by_id && output_format.is_default() {
                 if let Some(id) = &benchmark_summary.id {
-                    if let Some(sums) = lib_bench_summaries.get_mut(id) {
+                    if let Some(sums) = comparison_summaries.get_mut(id) {
                         for sum in sums.iter() {
-                            sum.compare_and_print(id, &benchmark_summary, &output_format)?;
+                            sum.compare_and_print(id, &benchmark_summary, &output_format);
                         }
                         sums.push(benchmark_summary);
                     } else {
-                        lib_bench_summaries.insert(id.clone(), vec![benchmark_summary]);
+                        comparison_summaries.insert(id.clone(), vec![benchmark_summary]);
                     }
                 }
             }
@@ -588,7 +996,7 @@ impl Group {
 
         // At this point the thread pool iterator either processed all jobs or aborted them on
         // error, so the threads are idle. On return, whether successful or not, the thread pool
-        // will be dropped and all threads are properly closed.
+        // will be dropped and all threads are properly joined and closed.
         if let Some(error) = error {
             return Err(error);
         }

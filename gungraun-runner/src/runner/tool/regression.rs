@@ -8,9 +8,8 @@ use crate::api;
 use crate::runner::cachegrind::regression::CachegrindRegressionConfig;
 use crate::runner::callgrind::regression::CallgrindRegressionConfig;
 use crate::runner::dhat::regression::DhatRegressionConfig;
-use crate::runner::format::print_regressions;
 use crate::runner::metrics::{Metric, MetricsSummary, Summarize};
-use crate::runner::summary::ToolRegression;
+use crate::runner::summary::{ProfileTotal, ToolMetricSummary, ToolRegression};
 
 /// A short-lived utility enum used to hold the raw regressions until they can be transformed into a
 /// real [`ToolRegression`]
@@ -40,13 +39,6 @@ pub trait RegressionConfig<T: Hash + Eq + Summarize + Display + Clone> {
     ///
     /// The limits for event kinds which are not present in the `MetricsSummary` are ignored.
     fn check(&self, metrics_summary: &MetricsSummary<T>) -> Vec<ToolRegression>;
-
-    /// Check for regressions and print them if present
-    fn check_and_print(&self, metrics_summary: &MetricsSummary<T>) -> Vec<ToolRegression> {
-        let regressions = self.check(metrics_summary);
-        print_regressions(&regressions);
-        regressions
-    }
 
     /// Check for regressions and return the [`RegressionMetrics`]
     fn check_regressions(&self, metrics_summary: &MetricsSummary<T>) -> Vec<RegressionMetrics<T>> {
@@ -124,6 +116,27 @@ impl ToolRegressionConfig {
             Self::Cachegrind(regression_config) => regression_config.fail_fast,
             Self::Dhat(regression_config) => regression_config.fail_fast,
             Self::None => false,
+        }
+    }
+
+    /// TODO: DOCS
+    pub fn check(&self, tool_total: &ProfileTotal) -> Vec<ToolRegression> {
+        match (&self, &tool_total.summary) {
+            (
+                Self::Callgrind(callgrind_regression_config),
+                ToolMetricSummary::Callgrind(metrics_summary),
+            ) => callgrind_regression_config.check(metrics_summary),
+            (
+                Self::Cachegrind(cachegrind_regression_config),
+                ToolMetricSummary::Cachegrind(metrics_summary),
+            ) => cachegrind_regression_config.check(metrics_summary),
+            (Self::Dhat(dhat_regression_config), ToolMetricSummary::Dhat(metrics_summary)) => {
+                dhat_regression_config.check(metrics_summary)
+            }
+            (Self::None, _) => vec![],
+            _ => {
+                panic!("The summary type should match the regression config")
+            }
         }
     }
 }

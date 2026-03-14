@@ -163,8 +163,8 @@ impl ToolCommand {
         }
 
         let mut tool_args = config.args;
-        tool_args.set_output_arg(output_path, Option::<&str>::None);
-        tool_args.set_log_arg(output_path, Option::<&str>::None);
+        tool_args.set_output_arg(output_path);
+        tool_args.set_log_arg(output_path);
         tool_args.set_xtree_arg(output_path);
         tool_args.set_xleak_arg(output_path);
 
@@ -193,7 +193,6 @@ impl ToolCommand {
                 .map_err(|error| Error::BenchmarkError(self.tool, module_path.clone(), error))?;
         }
 
-        // TODO: apply streams??
         if let Some(stdout) = stdout {
             stdout
                 .apply(&mut self.command, Stream::Stdout, sandbox_dir)

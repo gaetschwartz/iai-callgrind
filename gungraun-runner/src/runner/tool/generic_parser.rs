@@ -18,6 +18,7 @@ enum State {
 }
 
 /// A generic logfile parser
+#[derive(Debug)]
 pub struct GenericLogfileParser {
     /// The [`ToolOutputPath`] of this logfile
     pub output_path: ToolOutputPath,

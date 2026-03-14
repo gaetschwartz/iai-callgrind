@@ -6,16 +6,18 @@ use std::fs::{DirEntry, File};
 use std::io::{BufRead, BufReader, Write};
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use lazy_static::lazy_static;
-use log::log_enabled;
+use log::{debug, log_enabled};
 use regex::Regex;
+use tempfile::{Builder, TempDir};
 
 use crate::api::ValgrindTool;
 use crate::runner::callgrind::parser::parse_header;
 use crate::runner::common::ModulePath;
-use crate::runner::summary::BaselineKind;
+use crate::runner::summary::{BaselineKind, BaselineName};
 use crate::util::truncate_str_utf8;
 
 lazy_static! {
@@ -80,7 +82,13 @@ pub enum ToolOutputPathKind {
 }
 
 /// The tool specific output path(s)
-#[derive(Debug, Clone, PartialEq, Eq)]
+///
+/// TODO: DOCS:
+///
+/// If a temporary dir for the new files exists, try to use it as long as possible for example for
+/// parsing since nowadays the temporary directory is most likely stored an in-memory filesystem
+/// (i.e. tmpfs) which avoids real disk io.
+#[derive(Debug, Clone)]
 pub struct ToolOutputPath {
     /// The [`BaselineKind`]
     pub baseline_kind: BaselineKind,
@@ -92,6 +100,8 @@ pub struct ToolOutputPath {
     pub modifiers: Vec<String>,
     /// The name of this output path
     pub name: String,
+    /// The temporary directory for the new valgrind output
+    pub temp: Option<Arc<TempDir>>,
     /// The tool
     pub tool: ValgrindTool,
 }
@@ -109,7 +119,8 @@ impl ToolOutputPath {
         base_dir: &Path,
         module: &ModulePath,
         name: &str,
-    ) -> Self {
+        use_temp_dir: bool,
+    ) -> Result<Self> {
         let current = base_dir;
         let module_path: PathBuf = module.to_string().split("::").collect();
         let sanitized_name = sanitize_filename::sanitize_with_options(
@@ -121,7 +132,18 @@ impl ToolOutputPath {
             },
         );
         let sanitized_name = truncate_str_utf8(&sanitized_name, 200);
-        Self {
+        let temp = use_temp_dir
+            .then(|| {
+                Builder::new()
+                    .prefix("gungraun.tmp")
+                    .suffix(sanitized_name)
+                    .rand_bytes(10)
+                    .tempdir()
+                    .map(Arc::new)
+            })
+            .transpose()?;
+
+        Ok(Self {
             kind,
             tool,
             baseline_kind: baseline_kind.clone(),
@@ -131,7 +153,8 @@ impl ToolOutputPath {
                 .join(sanitized_name),
             name: sanitized_name.to_owned(),
             modifiers: vec![],
-        }
+            temp,
+        })
     }
 
     /// Initialize and create the output directory and organize files
@@ -144,21 +167,23 @@ impl ToolOutputPath {
         base_dir: &Path,
         module: &str,
         name: &str,
+        use_temp_dir: bool,
     ) -> Result<Self> {
-        let output = Self::new(
+        Self::new(
             kind,
             tool,
             baseline_kind,
             base_dir,
             &ModulePath::new(module),
             name,
-        );
-        output.init()?;
-        Ok(output)
+            use_temp_dir,
+        )
+        .and_then(|o| o.init().map(|()| o))
     }
 
-    /// Initialize the directory in which the files are stored
+    /// Initialize the directory in which the final files are stored
     pub fn init(&self) -> Result<()> {
+        debug!("Initializing benchmark directory: '{}'", self.dir.display());
         std::fs::create_dir_all(&self.dir).with_context(|| {
             format!(
                 "Failed to create benchmark directory: '{}'",
@@ -169,11 +194,31 @@ impl ToolOutputPath {
 
     /// Remove the files of this output path
     pub fn clear(&self) -> Result<()> {
-        for entry in self.real_paths()? {
+        for entry in self.real_paths_in(&self.dir)? {
+            debug!("Clearing '{}'", entry.display());
             std::fs::remove_file(&entry).with_context(|| {
                 format!("Failed to remove benchmark file: '{}'", entry.display())
             })?;
         }
+
+        self.clear_temp_files(false)
+    }
+
+    /// TODO: DOCS
+    pub fn clear_temp_files(&self, ignore_tool: bool) -> Result<()> {
+        let pattern = if ignore_tool {
+            format!("{}/*.{}.*.#*", self.dir.display(), self.name)
+        } else {
+            format!("{}/{}.{}.*.#*", self.dir.display(), self.tool, self.name)
+        };
+        for entry in glob::glob(&pattern).expect("The glob pattern should be valid") {
+            let entry = entry?;
+            debug!("Clearing temporary file '{}'", entry.display());
+            std::fs::remove_file(&entry).with_context(|| {
+                format!("Failed to remove temporary file: '{}'", entry.display())
+            })?;
+        }
+
         Ok(())
     }
 
@@ -182,11 +227,17 @@ impl ToolOutputPath {
         match self.baseline_kind {
             BaselineKind::Old => {
                 self.to_base_path().clear()?;
-                for entry in self.real_paths()? {
+                for entry in self.real_paths_in(&self.dir)? {
                     let extension = entry.extension().expect("An extension should be present");
                     let mut extension = extension.to_owned();
                     extension.push(".old");
                     let new_path = entry.with_extension(extension);
+
+                    debug!(
+                        "Moving file from '{}' to '{}'",
+                        entry.display(),
+                        new_path.display()
+                    );
                     std::fs::rename(&entry, &new_path).with_context(|| {
                         format!(
                             "Failed to move benchmark file from '{}' to '{}'",
@@ -209,6 +260,24 @@ impl ToolOutputPath {
     /// Return true if there are multiple real files of this output path
     pub fn is_multiple(&self) -> bool {
         self.real_paths().is_ok_and(|p| p.len() > 1)
+    }
+
+    /// TODO: DOCS
+    pub fn is_base_path(&self) -> bool {
+        match self.kind {
+            ToolOutputPathKind::Out
+            | ToolOutputPathKind::Log
+            | ToolOutputPathKind::Xtree
+            | ToolOutputPathKind::Xleak => false,
+            ToolOutputPathKind::OldOut
+            | ToolOutputPathKind::BaseOut(_)
+            | ToolOutputPathKind::OldLog
+            | ToolOutputPathKind::BaseLog(_)
+            | ToolOutputPathKind::OldXtree
+            | ToolOutputPathKind::BaseXtree(_)
+            | ToolOutputPathKind::OldXleak
+            | ToolOutputPathKind::BaseXleak(_) => true,
+        }
     }
 
     /// Convert this output path to a base output path
@@ -243,6 +312,7 @@ impl ToolOutputPath {
             name: self.name.clone(),
             dir: self.dir.clone(),
             modifiers: self.modifiers.clone(),
+            temp: self.temp.clone(),
         }
     }
 
@@ -288,6 +358,7 @@ impl ToolOutputPath {
             name: self.name.clone(),
             dir: self.dir.clone(),
             modifiers: self.modifiers.clone(),
+            temp: self.temp.clone(),
         }
     }
 
@@ -314,6 +385,7 @@ impl ToolOutputPath {
             name: self.name.clone(),
             dir: self.dir.clone(),
             modifiers: self.modifiers.clone(),
+            temp: self.temp.clone(),
         }
     }
 
@@ -342,6 +414,7 @@ impl ToolOutputPath {
             name: self.name.clone(),
             dir: self.dir.clone(),
             modifiers: self.modifiers.clone(),
+            temp: self.temp.clone(),
         })
     }
 
@@ -370,6 +443,7 @@ impl ToolOutputPath {
             name: self.name.clone(),
             dir: self.dir.clone(),
             modifiers: self.modifiers.clone(),
+            temp: self.temp.clone(),
         })
     }
 
@@ -377,7 +451,18 @@ impl ToolOutputPath {
     ///
     /// `path` is supposed to be a path to a valid file in the directory of this [`ToolOutputPath`].
     pub fn log_path_of(&self, path: &Path) -> Option<PathBuf> {
-        let file_name = path.strip_prefix(&self.dir).ok()?;
+        let (file_name, temp_path) = if let Some(temp) = &self.temp {
+            let temp_path = temp.path();
+            if let Ok(file_name) = path.strip_prefix(temp_path) {
+                Ok((file_name, Some(temp_path)))
+            } else {
+                path.strip_prefix(&self.dir).map(|f| (f, None))
+            }
+        } else {
+            path.strip_prefix(&self.dir).map(|f| (f, None))
+        }
+        .ok()?;
+
         if let Some(suffix) = self.strip_prefix(&file_name.to_string_lossy()) {
             let caps = REAL_FILENAME_RE.captures(suffix)?;
             if let Some(kind) = caps.name("type") {
@@ -395,7 +480,8 @@ impl ToolOutputPath {
                             string.push_str(s);
                         }
 
-                        return Some(self.dir.join(string));
+                        let dir = temp_path.unwrap_or(&self.dir);
+                        return Some(dir.join(string));
                     }
                     _ => return Some(path.to_owned()),
                 }
@@ -494,6 +580,7 @@ impl ToolOutputPath {
             dir: self.dir.clone(),
             name: self.name.clone(),
             modifiers: modifiers.into_iter().map(Into::into).collect(),
+            temp: self.temp.clone(),
         }
     }
 
@@ -503,7 +590,7 @@ impl ToolOutputPath {
     /// modifiers like `%p`. Use [`Self::real_paths`] to get the real and existing (possibly
     /// multiple) paths to the output files of the respective tool.
     pub fn to_path(&self) -> PathBuf {
-        self.dir.join(format!(
+        self.dest_dir().join(format!(
             "{}.{}.{}",
             self.tool.id(),
             self.name,
@@ -511,15 +598,89 @@ impl ToolOutputPath {
         ))
     }
 
+    /// TODO: DOCS and SORT
+    /// The destination directory for new files
+    pub fn dest_dir(&self) -> &Path {
+        if let Some(temp) = self.temp.as_ref() {
+            temp.path()
+        } else {
+            &self.dir
+        }
+    }
+
+    /// TODO: DOCS AND SORT
+    pub fn copy_temp(&self) -> Result<()> {
+        if let Some(temp) = &self.temp {
+            for entry in std::fs::read_dir(temp.path())? {
+                let entry = entry?;
+                let file_name = entry.file_name();
+                let dest_path = self.dir.join(&file_name);
+                let src_path = entry.path();
+
+                debug!(
+                    "Copying from temporary directory '{}' to '{}'",
+                    src_path.display(),
+                    dest_path.display()
+                );
+                std::fs::copy(src_path, dest_path)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// TODO: DOCS and SORT
+    pub fn move_temp(&self) -> Result<()> {
+        if let Some(temp) = &self.temp {
+            for entry in std::fs::read_dir(temp.path())? {
+                let entry = entry?;
+                let file_name = entry.file_name();
+                let dest_path = self.dir.join(&file_name);
+                let src_path = entry.path();
+
+                debug!(
+                    "Moving from temporary directory '{}' to '{}'",
+                    src_path.display(),
+                    dest_path.display()
+                );
+                std::fs::copy(&src_path, dest_path)?;
+                std::fs::remove_file(src_path)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// TODO: DOCS and SORT
+    pub fn baseline_name(&self) -> Option<&BaselineName> {
+        match &self.baseline_kind {
+            BaselineKind::Old => None,
+            BaselineKind::Name(baseline_name) => Some(baseline_name),
+        }
+    }
+
+    /// TODO: DOCS and SORT
+    pub fn loaded_baseline_name(&self) -> Option<BaselineName> {
+        match &self.kind {
+            ToolOutputPathKind::BaseOut(name)
+            | ToolOutputPathKind::BaseLog(name)
+            | ToolOutputPathKind::BaseXtree(name)
+            | ToolOutputPathKind::BaseXleak(name) => Some(BaselineName(name.clone())),
+            _ => None,
+        }
+    }
+
     /// Walk the benchmark directory (non-recursive)
-    pub fn walk_dir(&self) -> Result<impl Iterator<Item = DirEntry>> {
-        std::fs::read_dir(&self.dir)
-            .with_context(|| {
-                format!(
-                    "Failed opening benchmark directory: '{}'",
-                    self.dir.display()
-                )
-            })
+    pub fn walk_dir(&self, dir: Option<&Path>) -> Result<impl Iterator<Item = DirEntry>> {
+        let dir = if let Some(dir) = dir {
+            dir
+        } else if self.is_base_path() {
+            &self.dir
+        } else {
+            self.dest_dir()
+        };
+        std::fs::read_dir(dir)
+            .with_context(|| format!("Failed opening benchmark directory: '{}'", dir.display()))
             .map(|i| i.into_iter().filter_map(Result::ok))
     }
 
@@ -538,15 +699,28 @@ impl ToolOutputPath {
     /// A tool can have many output files so [`Self::to_path`] is not enough
     #[allow(clippy::case_sensitive_file_extension_comparisons)]
     pub fn real_paths(&self) -> Result<Vec<PathBuf>> {
+        let dir = if self.is_base_path() {
+            &self.dir
+        } else {
+            self.dest_dir()
+        };
+        self.real_paths_in(dir)
+    }
+
+    /// Return the `real` paths of a tool's output files
+    ///
+    /// A tool can have many output files so [`Self::to_path`] is not enough
+    #[allow(clippy::case_sensitive_file_extension_comparisons)]
+    pub fn real_paths_in(&self, dir: &Path) -> Result<Vec<PathBuf>> {
         let mut paths = vec![];
-        for entry in self.walk_dir()? {
+        for entry in self.walk_dir(Some(dir))? {
             let file_name = entry.file_name();
             let file_name = file_name.to_string_lossy();
 
             // Silently ignore all paths which don't follow this scheme, for example
             // (`summary.json`)
             if let Some(suffix) = self.strip_prefix(&file_name) {
-                let is_match = match &self.kind {
+                let is_match = || match &self.kind {
                     ToolOutputPathKind::Out => suffix.ends_with(".out"),
                     ToolOutputPathKind::Log => suffix.ends_with(".log"),
                     ToolOutputPathKind::OldOut => suffix.ends_with(".out.old"),
@@ -569,7 +743,7 @@ impl ToolOutputPath {
                     }
                 };
 
-                if is_match {
+                if is_match() {
                     paths.push(entry.path());
                 }
             }
@@ -580,7 +754,7 @@ impl ToolOutputPath {
     /// Return the real paths with their respective modifiers if present
     pub fn real_paths_with_modifier(&self) -> Result<Vec<(PathBuf, Option<String>)>> {
         let mut paths = vec![];
-        for entry in self.walk_dir()? {
+        for entry in self.walk_dir(None)? {
             let file_name = entry.file_name().to_string_lossy().to_string();
 
             // Silently ignore all paths which don't follow this scheme, for example
@@ -645,7 +819,7 @@ impl ToolOutputPath {
         // hashmaps. The threads are grouped in a vector.
         let mut groups: HashMap<String, Group> = HashMap::new();
 
-        for entry in self.walk_dir()? {
+        for entry in self.walk_dir(None)? {
             let file_name = entry.file_name();
             let file_name = file_name.to_string_lossy();
 
@@ -834,6 +1008,11 @@ impl ToolOutputPath {
                             let from = orig_path;
                             let to = from.with_file_name(new_file_name);
 
+                            debug!(
+                                "Sanitizing callgrind file from '{}' to '{}'",
+                                from.display(),
+                                to.display()
+                            );
                             std::fs::rename(from, to)?;
                         }
                     }
@@ -869,7 +1048,7 @@ impl ToolOutputPath {
 
         // key: .(out|log)
         let mut groups: HashMap<String, Group> = HashMap::new();
-        for entry in self.walk_dir()? {
+        for entry in self.walk_dir(None)? {
             let file_name = entry.file_name();
             let file_name = file_name.to_string_lossy();
 
@@ -982,6 +1161,11 @@ impl ToolOutputPath {
                             let from = orig_path;
                             let to = from.with_file_name(new_file_name);
 
+                            debug!(
+                                "Sanitizing bbv file from '{}' to '{}'",
+                                from.display(),
+                                to.display()
+                            );
                             std::fs::rename(from, to)?;
                         }
                     }
@@ -1002,7 +1186,7 @@ impl ToolOutputPath {
 
         // key: .(out|log|xtree|xleak)
         let mut groups: HashMap<String, Group> = HashMap::new();
-        for entry in self.walk_dir()? {
+        for entry in self.walk_dir(None)? {
             let file_name = entry.file_name();
             let file_name = file_name.to_string_lossy();
 
@@ -1066,6 +1250,7 @@ impl ToolOutputPath {
                     let from = orig_path;
                     let to = from.with_file_name(new_file_name);
 
+                    debug!("Sanitizing from '{}' to '{}'", from.display(), to.display());
                     std::fs::rename(from, to)?;
                 }
             }
@@ -1164,6 +1349,7 @@ mod tests {
         }
     }
 
+    // TODO: Test with temp dir
     #[rstest]
     #[case::out(
         ValgrindTool::Callgrind,
@@ -1257,7 +1443,9 @@ mod tests {
             &PathBuf::from("/root"),
             &ModulePath::new("hello::world"),
             "bench_thread_in_subprocess.two",
-        );
+            false,
+        )
+        .unwrap();
         let expected = output_path.dir.join(expected);
         let actual = output_path
             .log_path_of(&output_path.dir.join(input))
@@ -1275,7 +1463,9 @@ mod tests {
             &PathBuf::from("/root"),
             &ModulePath::new("hello::world"),
             "bench_thread_in_subprocess.two",
-        );
+            false,
+        )
+        .unwrap();
         let path = PathBuf::from(
             "/root/hello/world/bench_thread_in_subprocess.two/callgrind.\
              bench_thread_in_subprocess.two.log",
@@ -1293,7 +1483,9 @@ mod tests {
             &PathBuf::from("/root"),
             &ModulePath::new("hello::world"),
             "bench_thread_in_subprocess.two",
-        );
+            false,
+        )
+        .unwrap();
 
         assert!(output_path
             .log_path_of(&PathBuf::from(

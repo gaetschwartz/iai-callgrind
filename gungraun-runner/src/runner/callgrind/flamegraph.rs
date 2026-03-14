@@ -1,12 +1,15 @@
 //! Module containing the callgrind flamegraph elements
+
 use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::fs::File;
 use std::io::{BufWriter, Cursor, Write as IoWrite};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use inferno::flamegraph::{Direction, Options};
+use tempfile::TempDir;
 
 use super::flamegraph_parser::{FlamegraphMap, FlamegraphParser};
 use super::parser::{CallgrindParser, CallgrindProperties, Sentinel};
@@ -79,6 +82,7 @@ struct OutputPath {
     pub kind: OutputPathKind,
     pub modifiers: Vec<String>,
     pub name: String,
+    pub temp: Option<Arc<TempDir>>,
 }
 
 /// The generator for flamegraphs when run with --save-baseline
@@ -407,6 +411,7 @@ impl OutputPath {
             dir: tool_output_path.dir.clone(),
             name: tool_output_path.name.clone(),
             modifiers: Vec::default(),
+            temp: tool_output_path.temp.clone(),
         }
     }
 
@@ -426,7 +431,7 @@ impl OutputPath {
     }
 
     pub fn clear(&self, ignore_event_kind: bool) -> Result<()> {
-        for path in self.real_paths(ignore_event_kind)? {
+        for path in self.real_paths_in(&self.dir, ignore_event_kind)? {
             std::fs::remove_file(path)?;
         }
 
@@ -487,7 +492,7 @@ impl OutputPath {
         match &self.baseline_kind {
             BaselineKind::Old => {
                 self.to_base_path().clear(ignore_event_kind)?;
-                for path in self.real_paths(ignore_event_kind)? {
+                for path in self.real_paths_in(&self.dir, ignore_event_kind)? {
                     let new_path = path.with_extension("old.svg");
                     std::fs::rename(&path, &new_path).with_context(|| {
                         format!(
@@ -567,7 +572,14 @@ impl OutputPath {
         self.event_kind = event_kind;
     }
 
-    pub fn real_paths(&self, ignore_event_kind: bool) -> Result<Vec<PathBuf>> {
+    pub fn dest_dir(&self) -> &Path {
+        if let Some(temp) = &self.temp {
+            temp.path()
+        } else {
+            &self.dir
+        }
+    }
+    pub fn real_paths_in(&self, dir: &Path, ignore_event_kind: bool) -> Result<Vec<PathBuf>> {
         let extension = self.extension();
         let to_match = if ignore_event_kind {
             extension
@@ -579,8 +591,8 @@ impl OutputPath {
         };
 
         let mut paths = vec![];
-        for entry in std::fs::read_dir(&self.dir)
-            .with_context(|| format!("Failed reading directory '{}'", self.dir.display()))?
+        for entry in std::fs::read_dir(dir)
+            .with_context(|| format!("Failed reading directory '{}'", dir.display()))?
         {
             let path = entry?;
             let file_name = path.file_name().to_string_lossy().to_string();
@@ -610,7 +622,7 @@ impl OutputPath {
     }
 
     pub fn to_path(&self) -> PathBuf {
-        self.dir.join(self.file_name())
+        self.dest_dir().join(self.file_name())
     }
 }
 

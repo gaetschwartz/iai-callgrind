@@ -85,7 +85,8 @@ pub struct ThreadPool<T> {
 impl ProcessChild {
     fn wait(self, force_shutdown: &Arc<AtomicBool>, poll_interval: Duration) -> Result<Output> {
         let mut run_state = ProcessState::Running;
-        let mut ticks = 20;
+        // This should be enough time for a proper shutdown of any benchmark process
+        let mut ticks = 100;
         let mut child = self.0;
         let mut interrupted = false;
 
@@ -234,7 +235,7 @@ impl ProcessHandler {
 
     /// TODO: DOCS
     pub fn wait_or_shutdown(&mut self) -> Result<Option<Output>> {
-        let bench_child = self
+        let mut bench_child = self
             .bench
             .take()
             .expect("A benchmark should be started before waiting");
@@ -242,6 +243,7 @@ impl ProcessHandler {
         let result = ProcessChild(
             bench_child
                 .child
+                .take()
                 .expect("A child process should be present"),
         )
         .wait(&self.force_shutdown, self.poll_interval)

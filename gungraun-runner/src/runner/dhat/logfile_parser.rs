@@ -37,6 +37,7 @@ enum State {
 }
 
 /// The dhat logfile parser
+#[derive(Debug)]
 pub struct DhatLogfileParser {
     /// The [`ToolOutputPath`]
     pub output_path: ToolOutputPath,

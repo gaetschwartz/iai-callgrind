@@ -47,7 +47,7 @@ pub struct ParserOutput {
 }
 
 /// Needs to be implemented by a parser to be able to be used in the [`parser_factory`]
-pub trait Parser {
+pub trait Parser: std::fmt::Debug + Send {
     /// Return the [`ToolOutputPath`]
     fn get_output_path(&self) -> &ToolOutputPath;
 

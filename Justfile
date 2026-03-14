@@ -1,7 +1,5 @@
 # spell-checker: ignore nofile nocapture
 
-# TODO: change or add usages of args to build_args or similar where appropriate
-
 prettier_bin := ```
     if command -V prettier 2>&1 | grep -q 'not found'; then
         echo -n npx prettier

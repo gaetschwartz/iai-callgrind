@@ -270,6 +270,7 @@ taplo
 tempdir
 tempfile
 threadid
+tmpfs
 totalblocks
 totalbytes
 totalevents

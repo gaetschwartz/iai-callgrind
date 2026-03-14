@@ -27,6 +27,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+- discarded printing of log file with info level
+- Implemented running benchmarks in parallel
+- Add a `--parallel` cli option and environment variable
+- Improved performance of serial benchmark execution:
+    - By using a temporary directory for the new data which most likely is a
+      in-memory file system like tmpfs
+    - Execute the benchmark and then process and print the data while already
+      executing the next benchmark.
+
 ## [0.17.2] - 2026-02-10
 
 ### Fixed

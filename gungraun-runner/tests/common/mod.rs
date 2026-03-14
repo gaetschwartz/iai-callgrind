@@ -66,6 +66,7 @@ impl Fixtures {
             dir: Self::get_path().join(dir),
             name: name.to_owned(),
             modifiers: vec![],
+            temp: None,
         }
     }
 

@@ -34,7 +34,7 @@ pub enum Error {
     /// `InvalidBoolArgument(option_name, value)`
     InvalidBoolArgument(String, String),
     /// TODO: DOCS
-    JobError(Box<anyhow::Error>, Header, Streams),
+    JobError(Box<anyhow::Error>, Header, Streams, Box<ToolOutputPath>),
     /// The error when trying to start an external [`std::process::Command`] fails
     ///
     /// `LaunchError(executable_path, message)`
@@ -179,7 +179,7 @@ impl Display for Error {
                 let header = Header::without_description(module_path, id.clone());
                 write!(f, "Misconfiguration in: {header}\nCaused by:\n  {message}",)
             }
-            Self::JobError(error, header, streams) => {
+            Self::JobError(error, header, streams, _) => {
                 header.print();
                 let _ = streams.dump_cloned();
                 write!(f, "Error in task: {error}")

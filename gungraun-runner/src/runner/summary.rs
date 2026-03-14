@@ -148,7 +148,7 @@ pub struct Baseline {
 /// The name of the baseline
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-pub struct BaselineName(String);
+pub struct BaselineName(pub String);
 
 /// The `BenchmarkSummary` containing all the information of a single benchmark run
 ///
@@ -403,8 +403,6 @@ impl BenchmarkSummary {
             print_no_capture_footer(config.meta.args.nocapture);
         }
 
-        // TODO: if log level is info print the log file of the new run to stderr
-
         let has_multiple = self.profiles.has_multiple();
         let baselines = &self.baselines;
         for (index, profile) in self.profiles.iter().enumerate() {
@@ -423,9 +421,10 @@ impl BenchmarkSummary {
                 baselines,
                 &profile.summaries,
                 is_default,
-            )?;
+            );
             print_regressions(&profile.summaries.total.regressions);
         }
+
         Ok(())
     }
 
@@ -512,12 +511,7 @@ impl BenchmarkSummary {
     }
 
     /// Compare this summary with another and print the result of the comparison
-    pub fn compare_and_print(
-        &self,
-        id: &str,
-        other: &Self,
-        output_format: &OutputFormat,
-    ) -> Result<()> {
+    pub fn compare_and_print(&self, id: &str, other: &Self, output_format: &OutputFormat) {
         let mut summaries = vec![];
 
         for profile in self.profiles.iter() {
@@ -533,15 +527,13 @@ impl BenchmarkSummary {
 
         // There really should always be at least one summary. Also, if the default tool is massif
         // or bbv which (currently) don't have an actual summary.
-        if summaries.is_empty() {
-            Ok(())
-        } else {
+        if !summaries.is_empty() {
             VerticalFormatter::new(output_format.clone()).print_comparison(
                 &self.function_name,
                 id,
                 self.details.as_deref(),
                 summaries,
-            )
+            );
         }
     }
 }
@@ -868,7 +860,7 @@ impl SummaryOutput {
     pub fn new(format: SummaryFormat, dir: &Path) -> Self {
         Self {
             format,
-            path: dir.join("summary.json"),
+            path: Self::path(dir),
         }
     }
 
@@ -892,6 +884,11 @@ impl SummaryOutput {
     /// Try to create an empty summary file returning the [`File`] object
     pub fn create(&self) -> Result<File> {
         File::create(&self.path).with_context(|| "Failed to create json summary file")
+    }
+
+    /// TODO: DOCS
+    pub fn path(dir: &Path) -> PathBuf {
+        dir.join("summary.json")
     }
 }
 

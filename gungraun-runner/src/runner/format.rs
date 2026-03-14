@@ -4,11 +4,9 @@
 //! similar statement in any other module of the runner.
 use std::borrow::Cow;
 use std::fmt::{Display, Write};
-use std::io::{stdout, Write as IOWrite};
 use std::path::PathBuf;
 use std::time::Duration;
 
-use anyhow::Result;
 use colored::{Color, ColoredString, Colorize};
 use either_or_both::EitherOrBoth;
 use indexmap::{indexset, IndexSet};
@@ -163,10 +161,10 @@ pub trait Formatter {
         baselines: &Baselines,
         data: &ProfileData,
         is_default_tool: bool,
-    ) -> Result<()>;
+    );
 
     /// Format a line in free form as is
-    fn format_line(&mut self, line: &str) -> Result<()>;
+    fn format_line(&mut self, line: &str);
 
     /// Format the output of a single [`ToolMetricSummary`] of a tool
     fn format_single(
@@ -176,7 +174,7 @@ pub trait Formatter {
         info: Option<&EitherOrBoth<ProfileInfo>>,
         metrics_summary: &ToolMetricSummary,
         is_default_tool: bool,
-    ) -> Result<()>;
+    );
 
     /// Print the formatted output of the whole [`ProfileData`]
     fn print(
@@ -186,17 +184,14 @@ pub trait Formatter {
         baselines: &Baselines,
         data: &ProfileData,
         is_default_tool: bool,
-    ) -> Result<()>
-    where
+    ) where
         Self: std::fmt::Display,
     {
-        self.format(tool, config, baselines, data, is_default_tool)?;
+        self.format(tool, config, baselines, data, is_default_tool);
 
-        let mut stdout = stdout().lock();
-        write!(stdout, "{self}")?;
+        print!("{self}");
 
         self.clear();
-        Ok(())
     }
 
     /// Print a comparison between two different benchmarks
@@ -206,7 +201,7 @@ pub trait Formatter {
         id: &str,
         details: Option<&str>,
         summaries: Vec<(ValgrindTool, ToolMetricSummary)>,
-    ) -> Result<()>;
+    );
 }
 
 impl BinaryBenchmarkHeader {
@@ -1032,7 +1027,7 @@ impl Formatter for VerticalFormatter {
         info: Option<&EitherOrBoth<ProfileInfo>>,
         metrics_summary: &ToolMetricSummary,
         is_default_tool: bool,
-    ) -> Result<()> {
+    ) {
         if is_default_tool {
             self.format_baseline(baselines);
         }
@@ -1106,7 +1101,6 @@ impl Formatter for VerticalFormatter {
                 );
             }
         }
-        Ok(())
     }
 
     fn format(
@@ -1116,7 +1110,7 @@ impl Formatter for VerticalFormatter {
         baselines: &Baselines,
         data: &ProfileData,
         is_default_tool: bool,
-    ) -> Result<()> {
+    ) {
         if self.output_format.show_only_comparison {
             // no usual data to show
         } else if data.has_multiple() && self.output_format.show_intermediate {
@@ -1132,7 +1126,7 @@ impl Formatter for VerticalFormatter {
                         Some(&part.details),
                         &part.metrics_summary,
                         is_default_tool,
-                    )?;
+                    );
                     first = false;
                 } else {
                     self.format_single(
@@ -1141,7 +1135,7 @@ impl Formatter for VerticalFormatter {
                         Some(&part.details),
                         &part.metrics_summary,
                         is_default_tool,
-                    )?;
+                    );
                 }
             }
 
@@ -1153,10 +1147,10 @@ impl Formatter for VerticalFormatter {
                     None,
                     &data.total.summary,
                     is_default_tool,
-                )?;
+                );
             }
         } else if data.total.is_some() {
-            self.format_single(tool, baselines, None, &data.total.summary, is_default_tool)?;
+            self.format_single(tool, baselines, None, &data.total.summary, is_default_tool);
         } else if data.total.is_none() && !data.parts.is_empty() {
             // Since there is no total, show_all is partly ignored, and we show all data in a little
             // bit more aggregated form without the multiple files headlines. This affects currently
@@ -1173,8 +1167,6 @@ impl Formatter for VerticalFormatter {
         } else {
             // no data to show
         }
-
-        Ok(())
     }
 
     fn print_comparison(
@@ -1183,7 +1175,7 @@ impl Formatter for VerticalFormatter {
         id: &str,
         details: Option<&str>,
         summaries: Vec<(ValgrindTool, ToolMetricSummary)>,
-    ) -> Result<()> {
+    ) {
         if self.output_format.is_default() {
             ComparisonHeader::new(function_name, id, details, &self.output_format).print();
 
@@ -1198,23 +1190,20 @@ impl Formatter for VerticalFormatter {
                         self.indent_sub_header,
                         "-------".bright_black(),
                         tool.to_string().to_uppercase()
-                    ))?;
+                    ));
                 }
-                self.format_single(*tool, &(None, None), None, summary, false)?;
+                self.format_single(*tool, &(None, None), None, summary, false);
             }
             self.print_buffer();
         }
-
-        Ok(())
     }
 
     fn clear(&mut self) {
         self.buffer.clear();
     }
 
-    fn format_line(&mut self, line: &str) -> Result<()> {
+    fn format_line(&mut self, line: &str) {
         self.buffer.push_str(line);
-        Ok(())
     }
 }
 

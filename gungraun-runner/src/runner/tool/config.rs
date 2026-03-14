@@ -11,23 +11,16 @@ use anyhow::{anyhow, Result};
 
 use super::super::common::Assistant;
 use super::args::ToolArgs;
-use super::parser::{parser_factory, ParserOutput};
+use super::parser::parser_factory;
 use super::path::ToolOutputPath;
-use super::regression::{RegressionConfig, ToolRegressionConfig};
+use super::regression::ToolRegressionConfig;
 use super::run::{RunOptions, ToolCommand};
 use crate::api::{self, EntryPoint, RawArgs, Tool, Tools, ValgrindTool};
-use crate::runner::callgrind::flamegraph::{
-    BaselineFlamegraphGenerator, Config as FlamegraphConfig, Flamegraph, FlamegraphGenerator,
-    LoadBaselineFlamegraphGenerator, SaveBaselineFlamegraphGenerator,
-};
-use crate::runner::callgrind::parser::Sentinel;
-use crate::runner::common::{Config, ModulePath, Sandbox, Streams};
+use crate::runner::callgrind::flamegraph::Config as FlamegraphConfig;
+use crate::runner::common::{Analyzer, Config, ModulePath, Sandbox, Streams};
 use crate::runner::format::OutputFormat;
 use crate::runner::meta::Metadata;
-use crate::runner::summary::{
-    BaselineKind, BaselineName, BenchmarkSummary, Profile, ProfileData, ProfileTotal,
-    ToolMetricSummary, ToolRegression,
-};
+use crate::runner::summary::BenchmarkSummary;
 use crate::runner::tasks::ProcessHandler;
 use crate::runner::{cachegrind, callgrind, DEFAULT_TOGGLE};
 
@@ -100,37 +93,6 @@ impl ToolConfig {
             regression_config,
             tool,
         }
-    }
-
-    /// Parse the [`Profile`] from profile data or log files
-    pub fn parse(
-        &self,
-        meta: &Metadata,
-        output_path: &ToolOutputPath,
-        parsed_old: Option<Vec<ParserOutput>>,
-    ) -> Result<Profile> {
-        let parser = parser_factory(self, meta.project_root.clone(), output_path);
-
-        let parsed_new = parser.parse()?;
-        let parsed_old = if let Some(parsed_old) = parsed_old {
-            parsed_old
-        } else {
-            parser.parse_base()?
-        };
-
-        let data = match (parsed_new.is_empty(), parsed_old.is_empty()) {
-            (true, false | true) => return Err(anyhow!("A new dataset should always be present")),
-            (false, true) => ProfileData::new(parsed_new, None),
-            (false, false) => ProfileData::new(parsed_new, Some(parsed_old)),
-        };
-
-        Ok(Profile {
-            tool: self.tool,
-            log_paths: output_path.to_log_output().real_paths()?,
-            out_paths: output_path.real_paths()?,
-            summaries: data,
-            flamegraphs: vec![],
-        })
     }
 }
 
@@ -452,6 +414,24 @@ impl ToolConfigs {
             .collect()
     }
 
+    /// TODO: DOCS AND SORT
+    pub fn analyzers(&self, root_dir: &Path, output_path: &ToolOutputPath) -> Vec<Analyzer> {
+        self.0
+            .iter()
+            .filter(|t| t.is_enabled)
+            .map(|t| {
+                let tool_path = output_path.to_tool_output(t.tool);
+                (
+                    parser_factory(t, root_dir.to_path_buf(), &tool_path),
+                    tool_path,
+                    t.regression_config.clone(),
+                    t.flamegraph_config.clone(),
+                    t.entry_point.clone(),
+                )
+            })
+            .collect()
+    }
+
     /// Extend this collection of tools with the contents of an iterator
     pub fn extend<I>(&mut self, iter: I) -> Result<()>
     where
@@ -464,94 +444,16 @@ impl ToolConfigs {
         Ok(())
     }
 
-    /// Check for regressions as defined in [`RegressionConfig`] and print an error if a regression
-    /// occurred
-    ///
-    /// # Panics
-    ///
-    /// Checking performance regressions for other tools than callgrind and cachegrind is not
-    /// implemented and panics
-    fn check_regressions(
-        tool_regression_config: &ToolRegressionConfig,
-        tool_total: &ProfileTotal,
-    ) -> Vec<ToolRegression> {
-        match (tool_regression_config, &tool_total.summary) {
-            (
-                ToolRegressionConfig::Callgrind(callgrind_regression_config),
-                ToolMetricSummary::Callgrind(metrics_summary),
-            ) => callgrind_regression_config.check(metrics_summary),
-            (
-                ToolRegressionConfig::Cachegrind(cachegrind_regression_config),
-                ToolMetricSummary::Cachegrind(metrics_summary),
-            ) => cachegrind_regression_config.check(metrics_summary),
-            (
-                ToolRegressionConfig::Dhat(dhat_regression_config),
-                ToolMetricSummary::Dhat(metrics_summary),
-            ) => dhat_regression_config.check(metrics_summary),
-            (ToolRegressionConfig::None, _) => vec![],
-            _ => {
-                panic!("The summary type should match the regression config")
-            }
-        }
-    }
-
-    /// Run a benchmark when --load-baseline was given
-    pub fn run_loaded_vs_base(
-        &self,
-        title: &str,
-        baseline: &BaselineName,
-        loaded_baseline: &BaselineName,
-        mut benchmark_summary: BenchmarkSummary,
-        config: &Config,
-        output_path: &ToolOutputPath,
-    ) -> Result<BenchmarkSummary> {
-        for tool_config in self.0.iter().filter(|t| t.is_enabled) {
-            let tool = tool_config.tool;
-            let output_path = output_path.to_tool_output(tool);
-
-            let mut profile = tool_config.parse(&config.meta, &output_path, None)?;
-
-            profile.summaries.total.regressions =
-                Self::check_regressions(&tool_config.regression_config, &profile.summaries.total);
-
-            if ValgrindTool::Callgrind == tool {
-                if let ToolFlamegraphConfig::Callgrind(flamegraph_config) =
-                    &tool_config.flamegraph_config
-                {
-                    profile.flamegraphs = LoadBaselineFlamegraphGenerator {
-                        loaded_baseline: loaded_baseline.clone(),
-                        baseline: baseline.clone(),
-                    }
-                    .create(
-                        &Flamegraph::new(title.to_owned(), flamegraph_config.to_owned()),
-                        &output_path,
-                        (tool_config.entry_point == EntryPoint::Default)
-                            .then(Sentinel::default)
-                            .as_ref(),
-                        &config.meta.project_root,
-                    )?;
-                }
-            }
-
-            benchmark_summary.profiles.push(profile);
-        }
-
-        Ok(benchmark_summary)
-    }
-
     /// Run a benchmark with this configuration if not --load-baseline was given
     #[allow(clippy::too_many_lines)]
     pub fn run(
         &self,
-        title: &str,
-        mut benchmark_summary: BenchmarkSummary,
-        baseline_kind: &BaselineKind,
+        benchmark_summary: BenchmarkSummary,
         config: &Config,
         executable: &Path,
         executable_args: &[OsString],
         run_options: &RunOptions,
         output_path: &ToolOutputPath,
-        save_baseline: bool,
         module_path: &ModulePath,
         streams: Option<&Streams>,
         force_shutdown: &Arc<AtomicBool>,
@@ -560,23 +462,6 @@ impl ToolConfigs {
             let tool = tool_config.tool;
 
             let output_path = output_path.to_tool_output(tool);
-
-            let parser =
-                parser_factory(tool_config, config.meta.project_root.clone(), &output_path);
-            let parsed_old = parser.parse_base()?;
-
-            let log_path = output_path.to_log_output();
-
-            if save_baseline {
-                output_path.clear()?;
-                log_path.clear()?;
-                if let Some(path) = output_path.to_xtree_output() {
-                    path.clear()?;
-                }
-                if let Some(path) = output_path.to_xleak_output() {
-                    path.clear()?;
-                }
-            }
 
             // We're implicitly applying the default here: In the absence of a user provided sandbox
             // we don't run the benchmarks in a sandbox.
@@ -631,8 +516,7 @@ impl ToolConfigs {
                     module_path,
                     streams,
                 )
-                .and_then(|()| process_handler.wait_or_shutdown())
-                .and_then(|_| output_path.sanitize())?;
+                .and_then(|()| process_handler.wait_or_shutdown())?;
 
             if let Some(teardown) = run_options.teardown.as_ref() {
                 process_handler
@@ -643,49 +527,6 @@ impl ToolConfigs {
             if let Some(sandbox) = sandbox {
                 sandbox.reset()?;
             }
-
-            let mut profile = tool_config.parse(&config.meta, &output_path, Some(parsed_old))?;
-
-            profile.summaries.total.regressions =
-                Self::check_regressions(&tool_config.regression_config, &profile.summaries.total);
-
-            if tool_config.tool == ValgrindTool::Callgrind {
-                if save_baseline {
-                    let BaselineKind::Name(baseline) = baseline_kind.clone() else {
-                        panic!("A baseline with name should be present");
-                    };
-                    if let ToolFlamegraphConfig::Callgrind(flamegraph_config) =
-                        &tool_config.flamegraph_config
-                    {
-                        profile.flamegraphs = SaveBaselineFlamegraphGenerator { baseline }.create(
-                            &Flamegraph::new(title.to_owned(), flamegraph_config.to_owned()),
-                            &output_path,
-                            (tool_config.entry_point == EntryPoint::Default)
-                                .then(Sentinel::default)
-                                .as_ref(),
-                            &config.meta.project_root,
-                        )?;
-                    }
-                } else if let ToolFlamegraphConfig::Callgrind(flamegraph_config) =
-                    &tool_config.flamegraph_config
-                {
-                    profile.flamegraphs = BaselineFlamegraphGenerator {
-                        baseline_kind: baseline_kind.clone(),
-                    }
-                    .create(
-                        &Flamegraph::new(title.to_owned(), flamegraph_config.to_owned()),
-                        &output_path,
-                        (tool_config.entry_point == EntryPoint::Default)
-                            .then(Sentinel::default)
-                            .as_ref(),
-                        &config.meta.project_root,
-                    )?;
-                } else {
-                    // do nothing
-                }
-            }
-
-            benchmark_summary.profiles.push(profile);
         }
 
         Ok(benchmark_summary)
