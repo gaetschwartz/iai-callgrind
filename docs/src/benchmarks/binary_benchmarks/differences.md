@@ -1,4 +1,4 @@
-# Differences to library benchmarks
+# Differences to Library Benchmarks
 
 In this section we're going through the differences to [library
 benchmarks](../library_benchmarks.md). This assumes that you already know how to
@@ -8,7 +8,7 @@ library benchmarks, starting with
 benchmark](../library_benchmarks/structure.md) and [The macros in more
 detail](../library_benchmarks/macros.md). Then come back to this section.
 
-## Name changes
+## Name Changes
 
 Coming from library benchmarks, the names with `library` in it change to the
 same name but `library` with `binary` replaced, so the `#[library_benchmark]`
@@ -29,7 +29,7 @@ A quick reference of available macros in binary benchmarks:
 
 To see all macros in action have a look at the example below.
 
-## The return value of the benchmark function
+## The Return Value of the Benchmark Function
 
 The maybe most important difference is, that the `#[binary_benchmark]` annotated
 function always needs to return an `gungraun::Command`. Note this function

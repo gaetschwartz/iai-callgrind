@@ -3,7 +3,7 @@
 Gungraun is divided into the library `gungraun` and the benchmark runner
 `gungraun-runner`.
 
-## Installation of the library
+## Installation of the Library
 
 To start with Gungraun, add the following to your `Cargo.toml` file:
 
@@ -18,7 +18,7 @@ or run
 cargo add --dev gungraun@0.17.2
 ```
 
-## Installation of the benchmark runner
+## Installation of the Benchmark Runner
 
 To be able to run the benchmarks you'll also need the `gungraun-runner`
 binary installed somewhere in your `$PATH`. Otherwise, there is no need to

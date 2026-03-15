@@ -60,7 +60,7 @@ which cause a bottleneck or a performance regressions etc.
 We simulated a small change in `bubble_sort` and in the differential flamegraph
 you can spot fairly easily where the increase of `Instructions` is happening.
 
-## (Experimental) Create flamegraphs for multi-threaded/multi-process benchmarks
+## (Experimental) Create Flamegraphs for Multi-Threaded/Multi-Process Benchmarks
 
 Note the following only affects flamegraphs of multi-threaded/multi-process
 benchmarks and benchmarks which produce multiple parts with a total over all

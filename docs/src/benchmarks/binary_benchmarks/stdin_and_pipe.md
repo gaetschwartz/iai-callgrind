@@ -1,4 +1,4 @@
-# The Command's stdin and simulating piped input
+# The Command's Stdin and Simulating Piped Input
 
 The behaviour of `Stdin` of the `Command` can be changed, almost the same way as
 the `Stdin` of a `std::process::Command` with the only difference, that we use

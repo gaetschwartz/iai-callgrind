@@ -1,4 +1,4 @@
-# Basic usage
+# Basic Usage
 
 It's possible to pass arguments to Gungraun separated by `--` (`cargo bench
 -- ARGS`). If you're running into the error `Unrecognized Option`, see
@@ -19,7 +19,7 @@ command-line argument are:
 - **2**: Parsing command-line arguments failed
 - **3**: One or more regressions occurred
 
-## The command-line arguments
+## The Command-Line Arguments
 
 For an update-to-date list run `cargo bench` with `--help` as described above.
 

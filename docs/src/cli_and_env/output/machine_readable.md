@@ -1,4 +1,4 @@
-# Machine-readable output
+# Machine-Readable Output
 
 With `--output-format=default|json|pretty-json` (env:
 `GUNGRAUN_OUTPUT_FORMAT`) you can change the terminal output format to the

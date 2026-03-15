@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 MD033 -->
 
-# Comparing with baselines
+# Comparing with Baselines
 
 Usually, two consecutive benchmark runs let Gungraun compare these two
 runs. It's sometimes desirable to compare the current benchmark run against a

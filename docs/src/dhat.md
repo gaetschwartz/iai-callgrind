@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 MD033 -->
 
-# DHAT: a dynamic heap analysis tool
+# DHAT: A Dynamic Heap Analysis Tool
 
 ## Intro to DHAT
 
@@ -27,7 +27,7 @@ recommended to turn off the `EntryPoint` with `EntryPoint::None` (See next
 section). However, DHAT is normally run in `heap` mode and it is assumed that
 this is the mode used in the next sections.
 
-## The default entry point
+## The Default Entry Point
 
 The DHAT default entry point `EntryPoint::Default` in library benchmarks behaves
 like [`Callgrind's
@@ -86,7 +86,7 @@ main!(
 # }
 ```
 
-## Usage on the command-line
+## Usage on the Command-Line
 
 Running DHAT instead of or in addition to Callgrind is pretty straight-forward
 and not different to any [other tool](./tools.md):
@@ -97,7 +97,7 @@ variables](./cli_and_env/basics.md): `--default-tool=dhat` or
 `--tools=dhat` or `GUNGRAUN_TOOLS=dhat` (runs DHAT in addition to the
 default tool).
 
-## Usage in a benchmark and a small example analysis
+## Usage in a Benchmark and a Small Example Analysis
 
 Running DHAT in addition to Callgrind can also be carried out in the benchmark
 itself with the `Dhat` struct in `LibraryBenchmarkConfig::tool`. We stick to the
@@ -130,7 +130,7 @@ to fill the vector with the values. That makes `24` bytes of reads and `24`
 bytes of writes in the `bubble_sort` function. Also, there are no
 (de-)allocations of heap memory in `bubble_sort` itself.
 
-## Soft limits and hard limits
+## Soft Limits and Hard Limits
 
 Based on that data, we could define for example hard limits (or soft limits or
 both whatever you think is appropriate) to ensure `bubble_sort` is not getting
@@ -175,7 +175,7 @@ Now, if `bubble_sort` would read more than `24` bytes or if there were more than
 `32` bytes of writes during the benchmark, the benchmark would fail and exit
 with error.
 
-## Frames and benchmarking multi-threaded functions
+## Frames and Benchmarking Multi-Threaded Functions
 
 It is possible to specify additional `Dhat::frames` for example when
 benchmarking multi-threaded functions. Like in callgrind, each thread/subprocess

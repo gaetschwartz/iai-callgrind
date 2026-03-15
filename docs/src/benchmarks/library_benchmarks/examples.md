@@ -1,4 +1,4 @@
-# Even more Examples
+# Even More Examples
 
 I'm referring here to the [github
 repository](https://github.com/gungraun/gungraun). We test the library

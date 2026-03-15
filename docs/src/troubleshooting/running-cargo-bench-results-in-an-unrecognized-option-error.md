@@ -1,4 +1,4 @@
-# Running cargo bench results in an "Unrecognized Option" error
+# Running Cargo Bench Results in an "Unrecognized Option" Error
 
 For
 

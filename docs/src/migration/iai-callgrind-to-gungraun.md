@@ -4,7 +4,7 @@ From version `0.17.0` onwards this project's name is `Gungraun`. The packages
 were renamed from `iai-callgrind` to `gungraun`, `iai-callgrind-runner` to
 `gungraun-runner` and `iai-callgrind-macros` to `gungraun-macros`.
 
-## Migration check-list
+## Migration Check-List
 
 - Update the library: Rename `iai-callgrind` to `gungraun` in your `Cargo.toml`
   and use a version `>=0.17.0`.

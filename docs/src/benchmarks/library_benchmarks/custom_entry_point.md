@@ -1,4 +1,4 @@
-# Custom entry points
+# Custom Entry Points
 
 The [`EntryPoint`] can be set to `EntryPoint::None` which disables
 the entry point, `EntryPoint::Default` which uses the benchmark function as
@@ -11,7 +11,7 @@ interpreted very similar there are differences which are fully described in the
 To understand custom entry points let's take a small detour into how
 [`Callgrind`][Callgrind] and Gungraun work under the hood.
 
-## Gungraun under the hood
+## Gungraun Under the Hood
 
 `Callgrind` collects metrics and associates them with a function. This happens
 based on the compiled code not the source code, so it is possible to hook into
@@ -42,7 +42,7 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-### Pitfall: Inlined functions
+### Pitfall: Inlined Functions
 
 The fact that `Callgrind` acts on the compiled code harbors a pitfall. The
 compiler with compile-time optimizations switched on (which is usually the case
@@ -54,7 +54,7 @@ its job just to be able to benchmark that function. So, be cautious with
 benchmarking private functions and only choose functions of which it is known
 that they are not being inlined.
 
-## Hook into private functions
+## Hook into Private Functions
 
 The basic idea is to choose a public function in your library acting as access
 point to the actual function you want to benchmark. As outlined before, this

@@ -62,7 +62,7 @@ source](https://sourceware.org/git/?p=valgrind.git;a=blob;f=README;h=eabcc6ad88c
 is usually a straight-forward process. Just make sure the `valgrind` binary is
 in your `$PATH` so that Gungraun can find it.
 
-### Installation of valgrind with your package manager
+### Installation of Valgrind with Your Package Manager
 
 #### Alpine Linux
 
@@ -94,6 +94,6 @@ dnf install valgrind
 pkg install valgrind
 ```
 
-#### Valgrind is available for the following distributions
+#### Valgrind is Available for the Following Distributions
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/valgrind.svg)](https://repology.org/project/valgrind/versions)

@@ -77,7 +77,7 @@ fn main() {
 # }
 ```
 
-### Library Benchmarks
+## Library Benchmarks
 
 In [library benchmarks](./benchmarks/library_benchmarks.md) you might need to
 use [`EntryPoint::None`][EntryPoint] to make the client requests work

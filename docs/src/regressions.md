@@ -25,7 +25,7 @@ cause a PR to fail when comparing to the main branch.
 Regressions are considered errors and will cause the benchmark to fail if they
 occur, and Gungraun will exit with error code `3`.
 
-## Defining limits on the command-line
+## Defining Limits on the Command-Line
 
 Limits can be defined on the command-line for the following tools with
 `--callgrind-limits` (`GUNGRAUN_CALLGRIND_LIMITS`), `--cachegrind-limits`
@@ -60,7 +60,7 @@ until the last one wins. This is useful for example to specify a limit for all
 event kinds and then overwrite the limit for a specific event kind:
 `--callgrind-limits='@all=10%,ir=5%'`
 
-### The format, short names and groups in full detail
+### The Format, Short Names and Groups in Full Detail
 
 For `--callgrind-limits`:
 
@@ -129,7 +129,7 @@ event ::= ( "totalunits" | "tun" )
           | ( "maximumblocks" | "mbk" )
 ```
 
-## Define a performance regression check in a benchmark
+## Define a Performance Regression Check in a Benchmark
 
 For example, in a [Library
 Benchmark](./benchmarks/library_benchmarks/configuration.md), define a soft
@@ -202,7 +202,7 @@ error: bench failed, to rerun pass `-p benchmark-tests --bench lib_bench_regress
 Caused by:
   process didn't exit successfully: `/home/lenny/workspace/programming/gungraun/target/release/deps/lib_bench_regression-98382b533bca8f56 --bench` (exit status: 3)</code></pre>
 
-## Which event to choose to measure performance regressions?
+## Which Event to Choose to Measure Performance Regressions?
 
 For callgrind/cachegrind and if in doubt, the answer is `Ir` (instructions
 executed). If `Ir` event counts decrease _noticeable_ the function (binary) runs
@@ -214,7 +214,7 @@ metrics and most of the other event counts. But, depending on the scenario and
 the function (binary) under test, it can be reasonable to define more regression
 checks.
 
-## Who actually uses instructions to measure performance?
+## Who Actually Uses Instructions to Measure Performance?
 
 The ones known to the author of this humble guide are
 

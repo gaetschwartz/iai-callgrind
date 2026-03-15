@@ -1,17 +1,17 @@
 <!-- markdownlint-disable MD041 MD033 -->
 
-# Showing terminal output of benchmarks
+# Showing Terminal Output of Benchmarks
 
 By default, all terminal output of the benchmark function, `setup` and
 `teardown` is captured and therefore not shown during a benchmark run.
 
-## Using the log level
+## Using the Log Level
 
 The most basic possibility to show any captured output, is to use
 [`GUNGRAUN_LOG=info`](./logging.md). This includes a lot of other output,
 too.
 
-## Tell Gungraun to not capture the output
+## Tell Gungraun to Not Capture the Output
 
 Another nicer possibility is, to tell Gungraun to not capture output with
 the `--nocapture` (env: `GUNGRAUN_NOCAPTURE`) option. This is currently

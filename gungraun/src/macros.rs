@@ -1285,6 +1285,8 @@ macro_rules! binary_benchmark_group {
     };
 }
 
+// TODO: also for binary_benchmark_group, add parallel option, parallel=false to suppress running
+// benchmarks in this group in parallel
 /// Macro used to define a group of library benchmarks
 ///
 /// A small introductory example which shows the basic setup. This macro only accepts benchmarks

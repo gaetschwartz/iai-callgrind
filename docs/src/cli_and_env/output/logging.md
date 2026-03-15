@@ -1,4 +1,4 @@
-# Changing the logging output
+# Changing the Logging Output
 
 Gungraun uses [env_logger](https://docs.rs/env_logger/latest/env_logger/) and the
 default logging level `WARN`. To set the logging level to something different,

@@ -13,7 +13,7 @@ In this section, I want to point out the possibility to show the cache misses,
 and in the same manner cache miss rates and cache hit rates in the Gungraun
 output.
 
-## Showing cache misses
+## Showing Cache Misses
 
 A default Gungraun benchmark run displays the following metrics:
 
@@ -91,7 +91,7 @@ respective format (`Dhat::format`, `DhatMetric`, `Cachegrind::format`,
 `CachegrindMetric`, ...) and for their respective command-line arguments with
 `--help`.
 
-## Setting a tolerance margin for metric changes
+## Setting a Tolerance Margin for Metric Changes
 
 Not every benchmark is deterministic, for example when hash maps or sets are
 involved or even just by using `std::env::var` in the benchmarked code.

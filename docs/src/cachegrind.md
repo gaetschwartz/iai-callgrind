@@ -1,4 +1,4 @@
-# Cachegrind: a high-precision tracing profiler
+# Cachegrind: A High-Precision Tracing Profiler
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ feature
 gungraun = { version = "0.17.2", features = ["client_requests"] }
 ```
 
-## The cachegrind feature
+## The Cachegrind Feature
 
 There are two ways to use cachegrind instead of callgrind. The first and easy
 way is to use the `cachegrind` feature, so your `gungraun` spec should
@@ -30,7 +30,7 @@ and there's no need to specify it again. Now, without having to do anything
 else, all benchmarks run with Cachegrind instead of Callgrind. However, this
 change has implications which are better understood by showing the second way.
 
-## The second way
+## The Second Way
 
 There are actually multiple second ways to run Cachegrind as default tool (see
 also command-line arguments) but they have the same principle in common. For
@@ -110,7 +110,7 @@ much but running other tools tools like `Callgrind` on the same benchmark
 function like `Cachegrind` would show small differences because the client
 requests add `10` - `20` instructions to the function body.
 
-## When to use Cachegrind
+## When to Use Cachegrind
 
 As shown above, running `Cachegrind` can have disadvantages but there are
 circumstances under which it is better to use `Cachegrind`. Here's a comparison

@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD025 MD042 MD033 -->
 
-# Comparing benchmark functions
+# Comparing Benchmark Functions
 
 Comparing benchmark functions is supported via the optional
 `library_benchmark_group!` argument `compare_by_id` (The default value for

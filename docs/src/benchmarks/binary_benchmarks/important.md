@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 MD033 -->
 
-# Important default behaviour
+# Important Default Behaviour
 
 As in library benchmarks, the environment variables are cleared before running a
 binary benchmark. Have a look at the [Configuration](./configuration.md) section

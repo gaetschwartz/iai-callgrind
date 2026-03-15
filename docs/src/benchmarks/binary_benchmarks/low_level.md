@@ -1,10 +1,10 @@
-# Low-level api
+# Low-Level API
 
 I'm not going into full detail of the low-level api here since it is fully
 documented in the [api
 Documentation](https://docs.rs/gungraun/0.17.2/gungraun/index.html).
 
-## The basic structure
+## The Basic Structure
 
 The entry point of the low-level api is the `binary_benchmark_group`
 
@@ -58,7 +58,7 @@ the `#[benches]` attribute. So, the `file` parameter of `#[benches]` is a part
 of `gungraun::Bench` and can be used with the `gungraun::Bench::file`
 function.
 
-## Intermixing high-level and low-level api
+## Intermixing High-Level and Low-Level API
 
 It is recommended to start with the high-level api using the
 `#[binary_benchmark]` attribute, since you can fall back to the low-level api in

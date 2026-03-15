@@ -1,4 +1,4 @@
-# Customize the output directory
+# Customize the Output Directory
 
 All output files of Gungraun are usually stored using the following scheme:
 
@@ -16,7 +16,7 @@ variable. For example to store all files under the `/tmp/gungraun`
 directory you can use `GUNGRAUN_HOME=/tmp/gungraun` or `cargo bench --
 --home=/tmp/gungraun`.
 
-## Separate targets
+## Separate Targets
 
 If you're running the benchmarks on different targets, it's necessary to
 separate the output files of the benchmark runs per target or else you could end
