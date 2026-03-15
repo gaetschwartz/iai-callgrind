@@ -269,6 +269,7 @@ taiki
 taplo
 tempdir
 tempfile
+thiserror
 threadid
 tmpfs
 totalblocks
