@@ -44,29 +44,35 @@ pub struct RunOptions {
     pub teardown: Option<Assistant>,
 }
 
-/// The final command to execute
+/// A configured valgrind command ready to be executed
+///
+/// This struct encapsulates a valgrind tool invocation with its command, output capture
+/// configuration, and the specific tool being used.
 #[derive(Debug)]
 pub struct ToolCommand {
-    /// TODO: DOCS
+    /// The `std::process` command to be spawned
     pub command: Command,
-    /// TODO: DOCS
+    /// Configuration for whether to capture or pass through the subprocess output
     pub nocapture: NoCapture,
-    /// TODO: DOCS
+    /// The [`ValgrindTool`] to run
     pub tool: ValgrindTool,
 }
 
-/// TODO: DOCS
+/// A running valgrind tool process and its metadata
+///
+/// This struct represents an actively spawned valgrind tool process and tracks information needed
+/// to monitor its execution and validate its exit status.
 #[derive(Debug)]
 pub struct ToolCommandChild {
-    /// TODO: DOCS
+    /// The spawned child process, or `None` if the process has already been consumed
     pub child: Option<Child>,
-    /// TODO: DOCS
+    /// The path to the executable being profiled by valgrind
     pub executable: PathBuf,
-    /// TODO: DOCS
+    /// The expected exit behavior (exit code or signal), or `None` if any exit is acceptable
     pub exit_with: Option<ExitWith>,
-    /// TODO: DOCS
+    /// The path where valgrind will write its output log files
     pub log_path: ToolOutputPath,
-    /// TODO: DOCS
+    /// The valgrind tool running this process (e.g., memcheck, callgrind, massif)
     pub tool: ValgrindTool,
 }
 
@@ -223,7 +229,13 @@ impl ToolCommand {
 }
 
 impl ToolCommandChild {
-    /// TODO: DOCS
+    /// Creates a new `ToolCommandChild` instance to manage a spawned tool process.
+    ///
+    /// This constructor wraps a spawned child process along with metadata needed to track and
+    /// manage its execution. The `tool` parameter specifies which [`ValgrindTool`] is being run,
+    /// `child` is the actual spawned process, `executable` is the path to the binary being
+    /// instrumented, `exit_with` defines the expected exit behavior, and `log_path` specifies
+    /// where the tool's output is written.
     pub fn new(
         tool: ValgrindTool,
         child: Child,
@@ -241,6 +253,9 @@ impl ToolCommandChild {
     }
 }
 
+// TODO: Refactor together with ProcessError and take output: Output instead of an option. Then
+// return Result<Output>
+///
 /// Check the exit code of the [`ToolCommand`] and verify it matches the expected [`ExitWith`]
 pub fn check_exit(
     tool: ValgrindTool,

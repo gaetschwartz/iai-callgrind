@@ -1277,14 +1277,6 @@ pub fn print_no_capture_footer(nocapture: NoCapture) {
     }
 }
 
-/// TODO: DOCS
-pub fn print_on_error_footer(stdio_tag: Option<&str>) {
-    let tag = stdio_tag.unwrap_or("stdout/stderr");
-    let tag_line = format!("gungraun: on error {tag} (may contain duplicate output)");
-
-    println!("{} {}", "-".yellow(), tag_line.yellow());
-}
-
 /// Print detected regressions to `stderr`
 pub fn print_regressions(regressions: &[ToolRegression]) {
     for regression in regressions {

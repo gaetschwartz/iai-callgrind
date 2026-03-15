@@ -11,6 +11,7 @@ Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
 - **Format Code (Rust):** `just fmt` (Requires nightly toolchain)
 - **Format TOML:** `just fmt-toml`
 - **Format Prettier (JSON/YAML/MD):** `just fmt-prettier`
+    - **Important:** Always run `just fmt-prettier` after making changes to `AGENTS.md`
 - **Lint (Clippy):** `just lint` (Uses stable toolchain)
 - **Check All Formatting:** `just check-fmt-all`
 
@@ -73,6 +74,34 @@ Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
     - Extensive doc comments (`///`) on public items.
     - Top-level crate documentation in `lib.rs`.
     - Examples in doc comments are encouraged.
+    - When documenting functions or methods, describe parameters in fluent text rather than using structured `# Arguments` sections with parameter lists. Parameters should be naturally integrated into the documentation prose.
+    - **Rustdoc Links:** Use reference-style links for long paths with multiple `::` accessors.
+        - Use short form inline: `[`ToolOutputPath`]`
+        - Define full path at bottom: `[`ToolOutputPath`]: crate::runner::tool::path::ToolOutputPath`
+        - Example:
+            ```rust
+            /// Generates flamegraph summaries using [`Config`] and [`ToolOutputPath`].
+            ///
+            /// [`Config`]: crate::runner::common::Config
+            /// [`ToolOutputPath`]: crate::runner::tool::path::ToolOutputPath
+            ```
+        - Short, simple types like `Config`, `Header`, `Streams` can use short form inline.
+        - Long paths like `crate::runner::tool::path::ToolOutputPath` should use reference-style.
+    - **Type References in Documentation:** Use rustdoc links for types, not parameter names.
+        - Use `[`Type`]` for types/structs/enums/variants (e.g., `[`Command`]`, `[`Child`]`, `[`Stdin::Setup`]`)
+        - Use backticks `` `parameter_name` `` only when referring to the parameter itself, not its type
+        - Example:
+            ```rust
+            /// Applies this [`Stdin`] configuration to a [`Command`] for the selected [`Stream`].
+            ///
+            /// This method configures the given [`Command`] according to this [`Stdin`], using the
+            /// [`Stream`] to select which process stream is being configured. When this is
+            /// [`Stdin::Setup`], it optionally pipes data from the provided [`Child`].
+            ///
+            /// [`Command`]: std::process::Command
+            /// [`Child`]: std::process::Child
+            /// [`Stdin::Setup`]: crate::api::Stdin::Setup
+            ```
 
 ### Testing Guidelines
 

@@ -119,7 +119,13 @@ impl ToolRegressionConfig {
         }
     }
 
-    /// TODO: DOCS
+    /// Checks the tool summary against this regression configuration.
+    ///
+    /// The provided `tool_total` must contain metrics of the same tool family as this config.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the metric summary type does not match the active regression configuration.
     pub fn check(&self, tool_total: &ProfileTotal) -> Vec<ToolRegression> {
         match (&self, &tool_total.summary) {
             (

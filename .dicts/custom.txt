@@ -237,6 +237,7 @@ rustversion
 rwlock
 rwlocks
 sandboxing
+sanitized
 sched
 schemars
 sctx
@@ -284,6 +285,7 @@ unaddressable
 unistd
 unmark
 unparse
+unsanitized
 usize
 valgrind
 valgrind's

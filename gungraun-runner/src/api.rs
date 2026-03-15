@@ -873,11 +873,11 @@ pub enum Stdio {
 #[cfg(feature = "runner")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Stream {
-    /// TODO: DOCS
+    /// The standard input stream of a spawned process.
     Stdin,
-    /// TODO: DOCS
+    /// The standard error stream of a spawned process.
     Stderr,
-    /// TODO: DOCS
+    /// The standard output stream of a spawned process.
     Stdout,
 }
 
@@ -2185,7 +2185,72 @@ where
 }
 
 impl Stdin {
-    /// TODO: DOCS
+    /// Applies this [`Stdin`] configuration to a [`Command`] for the selected [`Stream`].
+    ///
+    /// This method configures the given [`Command`] according to this [`Stdin`], using the
+    /// [`Stream`] to select which process stream is being configured. When this is
+    /// [`Stdin::Setup`], it optionally pipes data from the provided [`Child`] and falls back to
+    /// regular stdio handling for unsupported combinations. If `current_dir` is provided,
+    /// file-based paths are resolved relative to that directory.
+    ///
+    /// The behavior varies by variant:
+    /// - [`Stdin::Setup(Pipe::Stdout)`][`Stdin::Setup`] or
+    ///   [`Stdin::Setup(Pipe::Stderr)`][`Stdin::Setup`]: Pipes the setup process's stdout or stderr
+    ///   to this process's stdin
+    /// - [`Stdin::Pipe`]: Creates a piped stdin stream
+    /// - [`Stdin::Inherit`]: Inherits stdin from the parent process
+    /// - [`Stdin::Null`]: Connects stdin to `/dev/null` or equivalent
+    /// - [`Stdin::File(path)`][`Stdin::File`]: Reads stdin from the specified file
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - Setup stream piping is requested but the expected setup stream handle is not available
+    /// - Applying the underlying stdio configuration fails (e.g., file cannot be opened)
+    ///
+    /// # Examples
+    ///
+    /// Piping setup stdout to benchmark stdin:
+    ///
+    /// ```no_run
+    /// # let mut setup_child = std::process::Command::new("something").spawn().unwrap();
+    /// use std::process::Command;
+    ///
+    /// use gungraun_runner::api::{Pipe, Stdin, Stream};
+    ///
+    /// let mut command = Command::new("benchmark");
+    /// let stdin = Stdin::Setup(Pipe::Stdout);
+    /// stdin.apply(&mut command, Stream::Stdin, Some(&mut setup_child), None)?;
+    ///
+    /// # Ok::<(), String>(())
+    /// ```
+    ///
+    /// Reading stdin from a file:
+    ///
+    /// ```no_run
+    /// use std::path::Path;
+    /// use std::process::Command;
+    ///
+    /// use gungraun_runner::api::{Stdin, Stream};
+    ///
+    /// let mut command = Command::new("benchmark");
+    /// let stdin = Stdin::File("input.txt".into());
+    /// stdin.apply(
+    ///     &mut command,
+    ///     Stream::Stdin,
+    ///     None,
+    ///     Some(Path::new("/workspace")),
+    /// )?;
+    /// # Ok::<(), String>(())
+    /// ```
+    ///
+    /// [`Command`]: std::process::Command
+    /// [`Child`]: std::process::Child
+    /// [`Stdin::Setup`]: crate::api::Stdin::Setup
+    /// [`Stdin::Pipe`]: crate::api::Stdin::Pipe
+    /// [`Stdin::Inherit`]: crate::api::Stdin::Inherit
+    /// [`Stdin::Null`]: crate::api::Stdin::Null
+    /// [`Stdin::File`]: crate::api::Stdin::File
     #[cfg(feature = "runner")]
     pub fn apply(
         &self,
@@ -2251,7 +2316,58 @@ impl From<&Path> for Stdin {
 }
 
 impl Stdio {
-    /// TODO: DOCS
+    /// Applies this stdio configuration to the selected command stream.
+    ///
+    /// This method configures the given [`Command`] according to this [`Stdio`], using the
+    /// [`Stream`] to select which process stream is being configured. For [`Stdio::File`], the
+    /// file path is interpreted relative to `current_dir` when provided, otherwise it is used
+    /// as-is.
+    ///
+    /// The behavior varies by variant:
+    /// - [`Stdio::Pipe`]: Creates a piped stream for the selected process stream
+    /// - [`Stdio::Inherit`]: Inherits the stream from the parent process
+    /// - [`Stdio::Null`]: Connects the stream to `/dev/null` or equivalent
+    /// - [`Stdio::File(path)`][`Stdio::File`]: Opens or creates the specified file for the stream
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - A file cannot be opened for reading (when configuring stdin)
+    /// - A file cannot be created for writing (when configuring stdout or stderr)
+    ///
+    /// # Examples
+    ///
+    /// Piping stdout to a file:
+    ///
+    /// ```no_run
+    /// use std::path::Path;
+    /// use std::process::Command;
+    ///
+    /// use gungraun_runner::api::{Stdio, Stream};
+    ///
+    /// let mut command = Command::new("benchmark");
+    /// let stdout = Stdio::File("output.txt".into());
+    /// stdout.apply(&mut command, Stream::Stdout, Some(Path::new("/workspace")))?;
+    /// # Ok::<(), String>(())
+    /// ```
+    ///
+    /// Inheriting stderr from parent:
+    ///
+    /// ```no_run
+    /// use std::process::Command;
+    ///
+    /// use gungraun_runner::api::{Stdio, Stream};
+    ///
+    /// let mut command = Command::new("benchmark");
+    /// Stdio::Inherit.apply(&mut command, Stream::Stderr, None)?;
+    /// # Ok::<(), String>(())
+    /// ```
+    ///
+    /// [`Command`]: std::process::Command
+    /// [`Stdio::Pipe`]: crate::api::Stdio::Pipe
+    /// [`Stdio::Inherit`]: crate::api::Stdio::Inherit
+    /// [`Stdio::Null`]: crate::api::Stdio::Null
+    /// [`Stdio::File`]: crate::api::Stdio::File
     #[cfg(feature = "runner")]
     pub fn apply(
         &self,
@@ -2297,15 +2413,6 @@ impl Stdio {
         };
 
         Ok(())
-    }
-
-    /// TODO: DOCS
-    #[cfg(feature = "runner")]
-    pub fn is_pipe(&self) -> bool {
-        match self {
-            Self::Inherit => false,
-            Self::Null | Self::File(_) | Self::Pipe => true,
-        }
     }
 }
 

@@ -83,11 +83,15 @@ pub enum ToolOutputPathKind {
 
 /// The tool specific output path(s)
 ///
-/// TODO: DOCS:
+/// In the presence of a temporary directory, the temporary directory is assumed to be the output
+/// path for any new files from the valgrind tools and files in it are returned by methods like
+/// [`ToolOutputPath::real_paths`]. Otherwise the benchmark directory contains the new and "old"
+/// files of previous benchmark runs. The temporary files need to be transferred to the benchmark
+/// directory manually for example with [`ToolOutputPath::copy_temp`] and doesn't happen on drop.
 ///
-/// If a temporary dir for the new files exists, try to use it as long as possible for example for
-/// parsing since nowadays the temporary directory is most likely stored an in-memory filesystem
-/// (i.e. tmpfs) which avoids real disk io.
+/// If a temporary directory for the new files exists, it's best to use it as long as possible for
+/// example for parsing since nowadays the temporary directory is most likely stored an in-memory
+/// filesystem (i.e. tmpfs) which avoids the more expensive real disk IO.
 #[derive(Debug, Clone)]
 pub struct ToolOutputPath {
     /// The [`BaselineKind`]
@@ -204,7 +208,19 @@ impl ToolOutputPath {
         self.clear_temp_files(false)
     }
 
-    /// TODO: DOCS
+    /// Delete temporary/unsanitized files in the benchmark directory
+    ///
+    /// This method does not operate in the temporary directory of this output path if it is present
+    /// and always uses the benchmark directory for the cleanup.
+    ///
+    /// As long as files are not sanitized they are suffixed with `.#PID` where PID can be `0` (this
+    /// is intentionally set by us to show its artificial nature and to not collide with real pids)
+    /// or any other number and optional other suffixes added by valgrind tools.
+    ///
+    /// # Errors
+    ///
+    /// If the benchmark directory does not exist or if there are IO errors during the deletion and
+    /// when reading the directory content.
     pub fn clear_temp_files(&self, ignore_tool: bool) -> Result<()> {
         let pattern = if ignore_tool {
             format!("{}/*.{}.*.#*", self.dir.display(), self.name)
@@ -252,6 +268,95 @@ impl ToolOutputPath {
         }
     }
 
+    /// Copies the files in the temporary directory to the benchmark directory
+    ///
+    /// If there is no temporary directory then this method does nothing.
+    ///
+    /// # Errors
+    ///
+    /// If reading the content of the temporary directory fails or there are IO errors during the
+    /// copy call.
+    pub fn copy_temp(&self) -> Result<()> {
+        if let Some(temp) = &self.temp {
+            for entry in std::fs::read_dir(temp.path())? {
+                let entry = entry?;
+                let file_name = entry.file_name();
+                let dest_path = self.dir.join(&file_name);
+                let src_path = entry.path();
+
+                debug!(
+                    "Copying '{}' from temporary directory to '{}' in the benchmark directory",
+                    src_path.display(),
+                    dest_path.display()
+                );
+                std::fs::copy(src_path, dest_path)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Moves the files of the temporary directory to the benchmark directory
+    ///
+    /// Like [`Self::copy_temp`] this method does nothing if there is no temporary directory. This
+    /// method does not delete the temporary directory itself and is still usable if required.
+    ///
+    /// # Errors
+    ///
+    /// If reading the content of the temporary directory fails or there are IO errors during the
+    /// copy call.
+    pub fn move_temp(&self) -> Result<()> {
+        if let Some(temp) = &self.temp {
+            for entry in std::fs::read_dir(temp.path())? {
+                let entry = entry?;
+                let file_name = entry.file_name();
+                let dest_path = self.dir.join(&file_name);
+                let src_path = entry.path();
+
+                debug!(
+                    "Moving '{}' from temporary directory to '{}' in the benchmark directory",
+                    src_path.display(),
+                    dest_path.display()
+                );
+                std::fs::copy(&src_path, dest_path)?;
+                std::fs::remove_file(src_path)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Return the destination directory for new files
+    ///
+    /// In the presence of a temporary directory this is the temporary directory, otherwise it is
+    /// the benchmark directory. Neither directory needs to exist for this method.
+    pub fn dest_dir(&self) -> &Path {
+        if let Some(temp) = self.temp.as_ref() {
+            temp.path()
+        } else {
+            &self.dir
+        }
+    }
+
+    /// Return the name of the baseline if present
+    pub fn baseline_name(&self) -> Option<&BaselineName> {
+        match &self.baseline_kind {
+            BaselineKind::Old => None,
+            BaselineKind::Name(baseline_name) => Some(baseline_name),
+        }
+    }
+
+    /// Return the name of the loaded baseline (as set by --load-baseline) if present
+    pub fn loaded_baseline_name(&self) -> Option<BaselineName> {
+        match &self.kind {
+            ToolOutputPathKind::BaseOut(name)
+            | ToolOutputPathKind::BaseLog(name)
+            | ToolOutputPathKind::BaseXtree(name)
+            | ToolOutputPathKind::BaseXleak(name) => Some(BaselineName(name.clone())),
+            _ => None,
+        }
+    }
+
     /// Return true if a real file of this output path exists
     pub fn exists(&self) -> bool {
         self.real_paths().is_ok_and(|p| !p.is_empty())
@@ -262,7 +367,7 @@ impl ToolOutputPath {
         self.real_paths().is_ok_and(|p| p.len() > 1)
     }
 
-    /// TODO: DOCS
+    /// Return `true` if this output path is an old or baseline path
     pub fn is_base_path(&self) -> bool {
         match self.kind {
             ToolOutputPathKind::Out
@@ -596,78 +701,6 @@ impl ToolOutputPath {
             self.name,
             self.extension()
         ))
-    }
-
-    /// TODO: DOCS and SORT
-    /// The destination directory for new files
-    pub fn dest_dir(&self) -> &Path {
-        if let Some(temp) = self.temp.as_ref() {
-            temp.path()
-        } else {
-            &self.dir
-        }
-    }
-
-    /// TODO: DOCS AND SORT
-    pub fn copy_temp(&self) -> Result<()> {
-        if let Some(temp) = &self.temp {
-            for entry in std::fs::read_dir(temp.path())? {
-                let entry = entry?;
-                let file_name = entry.file_name();
-                let dest_path = self.dir.join(&file_name);
-                let src_path = entry.path();
-
-                debug!(
-                    "Copying from temporary directory '{}' to '{}'",
-                    src_path.display(),
-                    dest_path.display()
-                );
-                std::fs::copy(src_path, dest_path)?;
-            }
-        }
-
-        Ok(())
-    }
-
-    /// TODO: DOCS and SORT
-    pub fn move_temp(&self) -> Result<()> {
-        if let Some(temp) = &self.temp {
-            for entry in std::fs::read_dir(temp.path())? {
-                let entry = entry?;
-                let file_name = entry.file_name();
-                let dest_path = self.dir.join(&file_name);
-                let src_path = entry.path();
-
-                debug!(
-                    "Moving from temporary directory '{}' to '{}'",
-                    src_path.display(),
-                    dest_path.display()
-                );
-                std::fs::copy(&src_path, dest_path)?;
-                std::fs::remove_file(src_path)?;
-            }
-        }
-
-        Ok(())
-    }
-
-    /// TODO: DOCS and SORT
-    pub fn baseline_name(&self) -> Option<&BaselineName> {
-        match &self.baseline_kind {
-            BaselineKind::Old => None,
-            BaselineKind::Name(baseline_name) => Some(baseline_name),
-        }
-    }
-
-    /// TODO: DOCS and SORT
-    pub fn loaded_baseline_name(&self) -> Option<BaselineName> {
-        match &self.kind {
-            ToolOutputPathKind::BaseOut(name)
-            | ToolOutputPathKind::BaseLog(name)
-            | ToolOutputPathKind::BaseXtree(name)
-            | ToolOutputPathKind::BaseXleak(name) => Some(BaselineName(name.clone())),
-            _ => None,
-        }
     }
 
     /// Walk the benchmark directory (non-recursive)

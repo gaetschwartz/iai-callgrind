@@ -428,7 +428,7 @@ impl BenchmarkSummary {
         Ok(())
     }
 
-    // TODO: DOCS
+    // Print the json `value` to stdout
     fn print_json(value: &Value, pretty: bool) -> Result<()> {
         let stdout = stdout().lock();
         if pretty {
@@ -442,7 +442,7 @@ impl BenchmarkSummary {
         }
     }
 
-    /// TODO: DOCS
+    /// Save the summary json `value` as a file into the benchmark directory
     fn save_summary(value: &Value, output: &SummaryOutput) -> Result<()> {
         let file = output.create()?;
 
@@ -839,7 +839,7 @@ impl Profiles {
         self.iter().any(Profile::is_regressed)
     }
 
-    /// TODO: DOCS
+    /// Return true if there are multiple [`Profile`]s
     pub fn has_multiple(&self) -> bool {
         self.0.len() > 1
     }
@@ -886,7 +886,7 @@ impl SummaryOutput {
         File::create(&self.path).with_context(|| "Failed to create json summary file")
     }
 
-    /// TODO: DOCS
+    /// Return the path to this summary file
     pub fn path(dir: &Path) -> PathBuf {
         dir.join("summary.json")
     }

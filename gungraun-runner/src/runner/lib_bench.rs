@@ -82,15 +82,19 @@ pub struct SaveBaselineBenchmark {
     baseline: BaselineName,
 }
 
-/// This trait needs to be implemented to actually run a [`LibBench`]
+/// Strategy interface for executing library benchmarks in different baseline modes.
 ///
 /// Despite having the same name, this trait differs from `bin_bench::Benchmark` and is
 /// designed to run a `LibBench` only.
 pub trait Benchmark: Debug + Send + Sync {
-    /// TODO: DOCS
+    /// Returns the pair of loaded and active baseline names used for this run.
     fn baselines(&self) -> Baselines;
 
-    /// TODO:DOCS
+    /// Creates the post-run data processor for the selected tools.
+    ///
+    /// The processor uses [`ToolConfigs`], the benchmark `project_root`, and the computed
+    /// [`ToolOutputPath`] to parse metrics, evaluate regressions, and produce additional
+    /// artifacts.
     fn data_processor(
         &self,
         tools: &ToolConfigs,
@@ -98,7 +102,14 @@ pub trait Benchmark: Debug + Send + Sync {
         output_path: &ToolOutputPath,
     ) -> Box<dyn BenchmarkDataProcessor>;
 
-    /// TODO: DOCS
+    /// Computes the output location for this benchmark run.
+    ///
+    /// The path is derived from [`LibBench`], the global [`Config`], the enclosing
+    /// `group_module_path`, and whether temporary directories should be used.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the output path cannot be created or initialized.
     fn default_output_path(
         &self,
         lib_bench: &LibBench,
@@ -107,7 +118,15 @@ pub trait Benchmark: Debug + Send + Sync {
         use_temp_dir: bool,
     ) -> Result<ToolOutputPath>;
 
-    /// TODO: DOCS
+    /// Executes a benchmark and returns its populated summary.
+    ///
+    /// The method consumes [`LibBench`], uses `main_index` to address the benchmark harness entry,
+    /// optionally captures output into [`Streams`], reacts to `force_shutdown`, and writes
+    /// artifacts under [`ToolOutputPath`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if launching, running, or post-processing the benchmark fails.
     fn run(
         &self,
         lib_bench: LibBench,
@@ -200,7 +219,7 @@ impl Benchmark for BaselineBenchmark {
 }
 
 impl LibBench {
-    /// TODO: DOCS
+    /// Returns whether any configured tool enables fail-fast regression handling.
     pub fn is_fail_fast(&self) -> bool {
         self.tools
             .0
@@ -503,7 +522,11 @@ impl Benchmark for SaveBaselineBenchmark {
     }
 }
 
-/// TODO: docs
+/// Creates the library benchmark executor [`Benchmark`] matching the current baseline mode.
+///
+/// # Panics
+///
+/// Panics when `--load-baseline` is active but no comparison baseline is configured.
 pub fn benchmark_factory(config: &Config) -> Arc<dyn Benchmark> {
     if let Some(baseline_name) = &config.meta.args.save_baseline {
         Arc::new(SaveBaselineBenchmark {
@@ -535,7 +558,7 @@ pub fn benchmark_factory(config: &Config) -> Arc<dyn Benchmark> {
 /// Print a list of all benchmarks with a short summary
 pub fn list(benchmark_groups: LibraryBenchmarkGroups, config: &Config) -> Result<()> {
     Groups::from_library_benchmark(&config.module_path, benchmark_groups, &config.meta)
-        .and_then(Groups::list)
+        .map(Groups::list)
 }
 
 /// The top-level method which should be used to initiate running all benchmarks

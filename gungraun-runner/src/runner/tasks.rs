@@ -1,4 +1,4 @@
-//! TODO: DOCS
+//! Organize tasks within thread pools and processes
 
 use std::collections::{HashMap, VecDeque};
 use std::ffi::OsString;
@@ -31,27 +31,42 @@ type JobClosure<T> = Box<dyn FnOnce(Arc<AtomicBool>) -> T + Send + 'static>;
 type JobId = usize;
 type TaskHandle = JoinHandle<Result<()>>;
 
-/// TODO: DOCS
+/// The wrapper for a [`std::process::Child`] of the setup/teardown or benchmark process
 struct ProcessChild(Child);
 
-/// TODO: DOCS
+/// This struct is used to start and terminate processes related to the execution of a benchmark
+///
+/// It manages the setup, benchmark execution, and teardown of those processes, providing options
+/// for a forced shutdown and handling of parallel setup tasks. The main purpose however is to be
+/// able to shutdown processes in a given order and as nicely as possible.
+///
+/// # Forced Shutdown
+///
+/// A forced shutdown can be initiated by setting the `force_shutdown` variable. Once this variable
+/// is set to `true` it should not be changed back to `false`. This case is not handled properly!
+///
+/// In order to avoid process zombie processes and if there are processes running then in a first
+/// step the `SIGTERM` signal is sent to them. We rely on valgrind to pass this signal to the actual
+/// benchmark process. In the case the processes are not shutting down gracefully we call
+/// [`std::process::Child::kill`] and end the processes forcefully. In any case we return with a
+/// [`Error::TaskInterrupt`].
 #[derive(Debug)]
 pub struct ProcessHandler {
-    /// TODO: DOCS
+    /// An optional child process running a benchmark
     pub bench: Option<ToolCommandChild>,
-    /// TODO: DOCS
+    /// A flag indicating if a forced shutdown is requested.
     pub force_shutdown: Arc<AtomicBool>,
-    /// TODO: DOCS
+    /// The path to the module in the gungraun benchmark file that this handler is associated with.
     pub module_path: ModulePath,
-    /// TODO: DOCS
+    /// The time interval to poll for process status updates
     pub poll_interval: Duration,
-    /// TODO: DOCS
+    /// An optional directory that acts as a sandbox for process execution.
     pub sandbox_dir: Option<PathBuf>,
-    /// TODO: DOCS
+    /// An optional tuple that holds the setup process
     pub setup: Option<(String, Child)>,
-    /// TODO: DOCS
+    /// A boolean indicating whether the setup process should be run in parallel to benchmark
     pub setup_is_parallel: bool,
-    /// TODO: DOCS
+    /// An optional tuple that holds the teardown process
     pub teardown: Option<(String, Child)>,
 }
 
@@ -67,19 +82,108 @@ struct Task {
     thread: Option<TaskHandle>,
 }
 
-/// TODO: DOCS
-/// A thread pool that returns jobs in their insertion order. Efficient work-stealing
-/// implementation.
+/// A work-stealing thread pool that executes jobs and returns results in insertion order.
+///
+/// This thread pool uses a work-stealing deque implementation for efficient load balancing across
+/// worker threads. Jobs are submitted via [`ThreadPool::execute`] and results are retrieved by
+/// iterating over the pool, which yields results in the same order jobs were submitted (FIFO
+/// ordering).
+///
+/// The pool supports cooperative cancellation through a shared `force_shutdown` flag that is
+/// passed to each job. Long-running jobs can periodically check this flag and terminate early when
+/// shutdown is requested.
+///
+/// # Concurrency Model
+///
+/// - **Work stealing**: Idle workers steal tasks from busy workers' queues
+/// - **Insertion-order results**: Despite parallel execution, results arrive in submission order
+/// - **Graceful shutdown**: Workers finish current jobs before exiting
+/// - **Force shutdown**: Workers can be interrupted mid-job via the shared flag
+///
+/// # Thread Safety
+///
+/// The pool is `Send` and can be safely shared across threads when wrapped in `Arc<Mutex<>>`.
+/// All internal state is protected by atomic operations and message passing channels.
+///
+/// # Examples
+///
+/// Basic usage with successful and failing jobs:
+///
+/// ```
+/// use anyhow::anyhow;
+/// use gungraun_runner::runner::tasks::ThreadPool;
+///
+/// let mut pool: ThreadPool<Result<usize, anyhow::Error>> = ThreadPool::new(4)?;
+///
+/// for i in 0..10 {
+///     pool.execute(move |force_shutdown| {
+///         // Simulate work that checks for shutdown
+///         if force_shutdown.load(std::sync::atomic::Ordering::Acquire) {
+///             return Err(anyhow!("Interrupted"));
+///         }
+///         Ok(i * 2)
+///     });
+/// }
+///
+/// // Results arrive in insertion order
+/// for (i, result) in pool.enumerate() {
+///     assert_eq!(result?, i * 2);
+/// }
+/// # Ok::<(), anyhow::Error>(())
+/// ```
+///
+/// Using with benchmark execution:
+///
+/// ```
+/// # fn run_benchmark(a: usize, _force_shutdown: &Arc<AtomicBool>)
+/// # -> Result<usize, anyhow::Error> {
+/// #   Ok(a)
+/// # }
+/// # fn process_summary(_s: usize) {}
+/// # let benchmarks = [1, 2];
+/// use std::sync::atomic::{AtomicBool, Ordering};
+/// use std::sync::Arc;
+///
+/// use gungraun_runner::runner::tasks::ThreadPool;
+///
+/// let mut pool = ThreadPool::new(4)?;
+///
+/// for bench in benchmarks {
+///     pool.execute(move |force_shutdown| {
+///         // Run benchmark, checking force_shutdown periodically
+///         run_benchmark(bench, &force_shutdown)
+///     });
+/// }
+///
+/// let force_shutdown = pool.clone_force_shutdown();
+/// // Collect results in submission order
+/// for result in pool {
+///     match result {
+///         Ok(summary) => process_summary(summary),
+///         Err(e) => {
+///             // If one thread returns with error we initiate the shutdown process for all other
+///             // threads by setting the `force_shutdown` flag to `true`.
+///             force_shutdown.store(true, Ordering::Release);
+///             return Err(e);
+///         }
+///     }
+/// }
+/// # Ok::<(), anyhow::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// [`ThreadPool::new`] returns an error if `size` is less than 1.
 pub struct ThreadPool<T> {
     force_shutdown: Arc<AtomicBool>,
     graceful_shutdown: Arc<AtomicBool>,
     job_queue: Arc<Injector<Job<T>>>,
     next: Option<JobId>,
-    num_jobs: Option<usize>,
     num_received: usize,
     result_receiver: Receiver<(JobId, T)>,
     results: HashMap<usize, T>,
     tasks: Vec<Task>,
+    total_jobs: Option<usize>,
 }
 
 impl ProcessChild {
@@ -131,7 +235,15 @@ impl ProcessChild {
 }
 
 impl ProcessHandler {
-    /// TODO: DOCS
+    /// Creates a new instance of a [`ProcessHandler`]
+    ///
+    /// The `force_shutdown` flag can be used to indicate if a force shutdown is requested.
+    /// `setup_is_parallel` indicates whether the setup process should be executed in parallel to
+    /// the benchmarking processes or not. If the `sandbox_dir` is set, all processes are going to
+    /// be executed within this directory. Each process is waited for to shutdown properly and we
+    /// check every `poll_interval` duration if the processes have finished.
+    ///
+    /// More details are in the [`ProcessHandler`] documentation.
     pub fn new(
         force_shutdown: Arc<AtomicBool>,
         module_path: ModulePath,
@@ -151,7 +263,14 @@ impl ProcessHandler {
         }
     }
 
-    /// TODO: DOCS
+    /// Starts the [`Assistant`] process for either setup or teardown.
+    ///
+    /// `force_parallel` is a flag to indicate if the assistant should run in parallel to the
+    /// benchmark process even if not configured in the assistant itself. [`Streams`] are optional
+    /// file streams for the assistant terminal output and configure whether output should be
+    /// captured with [`NoCapture`]. Note that the the output is always captured if `streams` are
+    /// present. However, depending on the [`NoCapture`] value the captured streams are printed to
+    /// stdout in the post processing of the benchmark data.
     pub fn start_assistant(
         &mut self,
         force_parallel: bool,
@@ -194,7 +313,19 @@ impl ProcessHandler {
         Ok(())
     }
 
-    /// TODO: DOCS
+    /// Starts the benchmark process with the [`ToolCommand`] for the `executable`
+    ///
+    /// If the `setup`, started with [`Self::start_assistant`] is not configured to run in parallel,
+    /// then this method first waits for the setup to finish before it tries to start the benchmark.
+    ///
+    /// # Errors
+    ///
+    /// This method returns with an [`Error::TaskInterrupt`] if either the setup or benchmark
+    /// process were asked to shutdown by setting [`Self::force_shutdown`] to `true`.
+    ///
+    /// Other notable errors are [`Error::LaunchError`] and [`Error::ProcessError`]. These are
+    /// returned if either launching the benchmarked binary/library with the [`ToolCommand`] failed
+    /// due to an os error or valgrind, the binary/library itself returned with an error.
     pub fn start_bench(
         &mut self,
         command: ToolCommand,
@@ -233,7 +364,35 @@ impl ProcessHandler {
         Ok(())
     }
 
-    /// TODO: DOCS
+    /// Waits for the benchmark process to finish or stops waiting when shutdown is requested.
+    ///
+    /// The method consumes the currently running benchmark child process and waits for completion
+    /// while periodically checking the shared `force_shutdown` flag. If shutdown is requested, the
+    /// benchmark process is sent SIGTERM, followed by SIGKILL if it doesn't terminate gracefully.
+    ///
+    /// After the benchmark process exits, the exit status is validated against the configured
+    /// expectations in [`ExitWith`] if present. Finally, if a setup assistant is still running,
+    /// this method waits for it to complete and propagates any setup error.
+    ///
+    /// # Returns
+    ///
+    /// - `Ok(Some(Output))` when the benchmark process exits and the exit status matches the
+    ///   configured expectations
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - Waiting for the benchmark process fails
+    /// - The benchmark exits with a status that does not match the configured expectations
+    /// - Setup completion fails
+    /// - The process is interrupted by shutdown ([`Error::TaskInterrupt`])
+    ///
+    /// # Panics
+    ///
+    /// Panics if called before a benchmark child process has been started.
+    ///
+    /// [`ExitWith`]: crate::api::ExitWith
+    /// [`Error::TaskInterrupt`]: crate::error::Error::TaskInterrupt
     pub fn wait_or_shutdown(&mut self) -> Result<Option<Output>> {
         let mut bench_child = self
             .bench
@@ -287,24 +446,34 @@ impl ProcessHandler {
             })
     }
 
-    /// TODO: DOCS
+    /// Waits for the setup assistant process
+    ///
+    /// This consumes the stored setup child process and returns `None` when no setup process is
+    /// active.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when waiting for setup fails or setup exits unsuccessfully.
     pub fn wait_for_setup(&mut self) -> Option<Result<()>> {
-        if let Some((id, child)) = self.setup.take() {
+        self.setup.take().map(|(id, child)| {
             debug!("Waiting for setup to complete");
-            return Some(self.wait_for_assistant(child, &id));
-        }
-
-        None
+            self.wait_for_assistant(child, &id)
+        })
     }
 
-    /// TODO: DOCS
+    /// Waits for the teardown assistant
+    ///
+    /// This consumes the stored teardown child process and returns `None` when no teardown process
+    /// is active.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when waiting for teardown fails or teardown exits unsuccessfully.
     pub fn wait_for_teardown(&mut self) -> Option<Result<()>> {
-        if let Some((id, child)) = self.teardown.take() {
+        self.teardown.take().map(|(id, child)| {
             debug!("Waiting for teardown to complete");
-            return Some(self.wait_for_assistant(child, &id));
-        }
-
-        None
+            self.wait_for_assistant(child, &id)
+        })
     }
 }
 
@@ -317,7 +486,14 @@ impl Task {
 }
 
 impl<T: Send + 'static> ThreadPool<T> {
-    /// TODO: DOCS
+    /// Creates a new work-stealing thread pool with insertion-order result delivery.
+    ///
+    /// The `size` parameter sets the number of worker threads. This thread pool results are
+    /// expected to be collected with an iterator [`Iterator::next`]
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when `size` is less than 1.
     pub fn new(size: usize) -> Result<Self> {
         if size < 1 {
             return Err(anyhow!(
@@ -396,27 +572,30 @@ impl<T: Send + 'static> ThreadPool<T> {
             job_queue: injector,
             results: HashMap::new(),
             next: None,
-            num_jobs: None,
+            total_jobs: None,
             num_received: 0,
         })
     }
 
-    /// TODO: DOCS
-    pub fn get_force_shutdown(&self) -> Arc<AtomicBool> {
+    /// Returns a clone of the shared force-shutdown flag.
+    pub fn clone_force_shutdown(&self) -> Arc<AtomicBool> {
         self.force_shutdown.clone()
     }
 
-    /// TODO: DOCS
+    /// Enqueues a job for execution in the thread pool.
+    ///
+    /// The job receives the shared force-shutdown flag so long-running tasks can cooperatively
+    /// terminate early.
     pub fn execute<F>(&mut self, job: F)
     where
         F: FnOnce(Arc<AtomicBool>) -> T + Send + 'static,
     {
-        let num_jobs = self.num_jobs.get_or_insert(0);
+        let num_jobs = self.total_jobs.get_or_insert(0);
         self.job_queue.push((*num_jobs, Box::new(job)));
         *num_jobs += 1;
     }
 
-    /// TODO: DOCS
+    /// Gracefully shuts down all worker threads and waits for them to finish.
     pub fn shutdown(&mut self) {
         self.graceful_shutdown
             .store(true, atomic::Ordering::Release);
@@ -433,9 +612,9 @@ impl<T> Iterator for ThreadPool<T> {
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            if self.next == self.num_jobs {
+            if self.next == self.total_jobs {
                 break None;
-            } else if self.num_jobs.is_some_and(|c| c == self.num_received) {
+            } else if self.total_jobs.is_some_and(|c| c == self.num_received) {
                 if let Some(next) = self.next.as_mut() {
                     let result = self.results.remove(next);
                     *next += 1;
@@ -477,6 +656,7 @@ mod tests {
     use crate::runner::lib_bench::{self, LibBench};
     use crate::runner::meta::Metadata;
 
+    // TODO: more tests?
     #[rstest]
     #[case::size_one_jobs_zero(1, 0)]
     #[case::equal_one(1, 1)]

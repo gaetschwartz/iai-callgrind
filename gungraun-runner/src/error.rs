@@ -33,7 +33,11 @@ pub enum Error {
     ///
     /// `InvalidBoolArgument(option_name, value)`
     InvalidBoolArgument(String, String),
-    /// TODO: DOCS
+    /// The error wrapper for errors which happened during a job in a thread pool
+    ///
+    /// Don't initialize this error manually but instead use [`Error::new_process_error`].
+    ///
+    /// `JobError(wrapped_error, benchmark_header, output_streams, tool_output_path)`
     JobError(Box<anyhow::Error>, Header, Streams, Box<ToolOutputPath>),
     /// The error when trying to start an external [`std::process::Command`] fails
     ///
@@ -72,12 +76,15 @@ pub enum Error {
     ///
     /// `VersionMismatch(Cmp, runner_version, library_version)`
     VersionMismatch(version_compare::Cmp, String, String),
-    /// TODO: DOCS
+    /// Used to indicate that a job in a thread of the thread pool was intentionally interrupted
     TaskInterrupt,
 }
 
 impl Error {
-    /// TODO: DOCS
+    /// Create a new [`Error::ProcessError`]
+    ///
+    /// This error type is especially large so the large values are stored on the heap to reduce the
+    /// overall size of the [`Error`] enum.
     pub fn new_process_error(
         name: String,
         output: Option<Output>,

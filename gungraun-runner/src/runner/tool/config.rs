@@ -405,16 +405,7 @@ impl ToolConfigs {
         self.0.len() > 1 && self.0.iter().filter(|f| f.is_enabled).count() > 1
     }
 
-    /// Return all [`ToolOutputPath`]s of all enabled tools
-    pub fn output_paths(&self, output_path: &ToolOutputPath) -> Vec<ToolOutputPath> {
-        self.0
-            .iter()
-            .filter(|t| t.is_enabled)
-            .map(|t| output_path.to_tool_output(t.tool))
-            .collect()
-    }
-
-    /// TODO: DOCS AND SORT
+    /// Return the parser and configurations for each tool to be able to analyze the outputs
     pub fn analyzers(&self, root_dir: &Path, output_path: &ToolOutputPath) -> Vec<Analyzer> {
         self.0
             .iter()
@@ -429,6 +420,15 @@ impl ToolConfigs {
                     t.entry_point.clone(),
                 )
             })
+            .collect()
+    }
+
+    /// Return all [`ToolOutputPath`]s of all enabled tools
+    pub fn output_paths(&self, output_path: &ToolOutputPath) -> Vec<ToolOutputPath> {
+        self.0
+            .iter()
+            .filter(|t| t.is_enabled)
+            .map(|t| output_path.to_tool_output(t.tool))
             .collect()
     }
 

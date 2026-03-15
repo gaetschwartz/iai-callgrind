@@ -103,12 +103,16 @@ struct SaveBaselineBenchmark {
     baseline: BaselineName,
 }
 
-/// TODO: DOCS
+/// Strategy interface for executing binary benchmarks in different baseline modes.
 pub trait Benchmark: Debug + Send + Sync {
-    /// TODO: DOCS
+    /// Returns the pair of baseline names used for this run.
     fn baselines(&self) -> Baselines;
 
-    /// TODO: DOCS
+    /// Creates the post-run data processor for the selected tools.
+    ///
+    /// The processor uses [`ToolConfigs`], the benchmark `project_root`, and the computed
+    /// [`ToolOutputPath`] to parse metrics, evaluate regressions, and produce additional
+    /// artifacts.
     fn data_processor(
         &self,
         tools: &ToolConfigs,
@@ -116,7 +120,15 @@ pub trait Benchmark: Debug + Send + Sync {
         output_path: &ToolOutputPath,
     ) -> Box<dyn BenchmarkDataProcessor>;
 
-    /// TODO: DOCS
+    /// Computes the output location for this benchmark run for the default tool
+    ///
+    /// The path is derived from [`BinBench`], the global `config`, the enclosing
+    /// `group_module_path`, and whether a temporary directory for the new valgrind output files
+    /// should be used.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the output path cannot be created or initialized.
     fn default_output_path(
         &self,
         bin_bench: &BinBench,
@@ -125,7 +137,15 @@ pub trait Benchmark: Debug + Send + Sync {
         use_temp_dir: bool,
     ) -> Result<ToolOutputPath>;
 
-    /// TODO: DOCS
+    /// Executes a benchmark and returns its [`BenchmarkSummary`].
+    ///
+    /// The method consumes [`BinBench`], runs according to `config`, optionally uses [`Streams`]
+    /// for captured output, reacts to the shared variable `force_shutdown`, and writes artifacts to
+    /// the [`ToolOutputPath`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if launching or running the benchmark fails
     fn run(
         &self,
         bin_bench: BinBench,
@@ -216,7 +236,7 @@ impl Benchmark for BaselineBenchmark {
 }
 
 impl BinBench {
-    /// TODO: DOCS
+    /// Returns whether any configured tool enables fail-fast regression handling.
     pub fn is_fail_fast(&self) -> bool {
         self.tools
             .0
@@ -224,7 +244,21 @@ impl BinBench {
             .any(|c| c.regression_config.is_fail_fast())
     }
 
-    /// TODO: DOCS, sort the order of the arguments
+    /// Creates a configured binary benchmark from API metadata.
+    ///
+    /// This constructor derives the final benchmark id by combining `id` with `iter_index` if
+    /// present joining them with an underscore (`ID_INDEX`). It resolves effective tool and output
+    /// configuration from `config` and `default_tool`, and builds setup/teardown assistants using
+    /// the provided index parameters and command details.
+    ///
+    /// The method returns `Ok(None)` if this benchmark is filtered by the CLI arguments
+    /// [`BenchmarkFilter`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if command or tool configuration is invalid.
+    ///
+    /// [`BenchmarkFilter`]: crate::runner::args::BenchmarkFilter
     pub fn new(
         id: Option<String>,
         display: Option<String>,
@@ -687,7 +721,11 @@ impl Benchmark for SaveBaselineBenchmark {
     }
 }
 
-/// TODO: docs
+/// Creates the binary benchmark executor [`Benchmark`] matching the current baseline mode.
+///
+/// # Panics
+///
+/// Panics when `--load-baseline` is active but no comparison baseline is configured.
 pub fn benchmark_factory(config: &Config) -> Arc<dyn Benchmark> {
     if let Some(baseline_name) = &config.meta.args.save_baseline {
         Arc::new(SaveBaselineBenchmark {
@@ -719,7 +757,7 @@ pub fn benchmark_factory(config: &Config) -> Arc<dyn Benchmark> {
 /// Print a list of all benchmarks with a short summary
 pub fn list(benchmark_groups: BinaryBenchmarkGroups, config: &Config) -> Result<()> {
     Groups::from_binary_benchmark(&config.module_path, benchmark_groups, &config.meta)
-        .and_then(Groups::list)
+        .map(Groups::list)
 }
 
 /// The top-level method which should be used to initiate running all benchmarks

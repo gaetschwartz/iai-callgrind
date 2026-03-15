@@ -16,7 +16,7 @@ use std::process::{Child, Command, Stdio as StdStdio};
 use std::sync::{atomic, Arc};
 use std::time::{Duration, Instant};
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use log::{debug, log_enabled, warn, Level};
 use tempfile::{tempfile, TempDir};
 
@@ -46,26 +46,199 @@ use crate::runner::tool::path::{ToolOutputPath, ToolOutputPathKind};
 use crate::runner::tool::regression::ToolRegressionConfig;
 use crate::util::{copy_directory, make_absolute};
 
-/// TODO: DOCS
+/// Analyzer tuple containing parser, output path, regression config, flamegraph config, and entry
+/// point.
+pub type Analyzer = (
+    Box<dyn Parser>,
+    ToolOutputPath,
+    ToolRegressionConfig,
+    ToolFlamegraphConfig,
+    EntryPoint,
+);
+
+/// The `Baselines` type
+pub type Baselines = (Option<String>, Option<String>);
+
+/// the [`Assistant`] kind
+#[derive(Debug, Clone, Copy)]
+pub enum AssistantKind {
+    /// The `setup` function
+    Setup,
+    /// The `teardown` function
+    Teardown,
+}
+
+/// Container for either library or binary benchmark entries within a group.
+#[derive(Debug, Clone)]
+pub enum Benches {
+    /// Collection of library benchmarks.
+    LibBenches(Vec<LibBench>),
+    /// Collection of binary benchmarks.
+    BinBenches(Vec<BinBench>),
+}
+
+/// Data processor used for regular benchmark runs without explicit baseline save/load mode.
+#[derive(Debug)]
+pub struct BaselineDataProcessor {
+    /// Analyzer pipeline used to parse and process benchmark outputs.
+    pub analyzers: Vec<Analyzer>,
+}
+
+/// An `Assistant` corresponds to the `setup` or `teardown` functions in the UI
+#[derive(Debug, Clone)]
+pub struct Assistant {
+    envs: Vec<(OsString, OsString)>,
+    group_index: Option<usize>,
+    indices: Option<(usize, usize, Option<usize>)>,
+    kind: AssistantKind,
+    pipe: Option<Pipe>,
+    run_parallel: bool,
+}
+/// Contains benchmark summaries of (binary, library) benchmark runs and their execution time
+///
+/// Used to print a final summary after all benchmarks.
+#[derive(Debug, Default)]
+pub struct BenchmarkSummaries {
+    /// The amount of filtered benchmarks
+    pub num_filtered: usize,
+    /// The benchmark summaries
+    pub summaries: Vec<BenchmarkSummary>,
+    /// The execution time of all benchmarks.
+    pub total_time: Option<Duration>,
+}
+
+/// The `Config` contains all the information extracted from the UI invocation of the runner
+#[derive(Debug, Clone)]
+pub struct Config {
+    /// The path to the compiled binary with the benchmark harness
+    pub bench_bin: PathBuf,
+    /// The path to the benchmark file which contains the benchmark harness
+    pub bench_file: PathBuf,
+    /// The [`Metadata`]
+    pub meta: Metadata,
+    /// The module path of the benchmark file
+    pub module_path: ModulePath,
+    /// The package directory of the package in which `gungraun` (not the runner) is used
+    pub package_dir: PathBuf,
+}
+
+/// A `Group` is the organizational unit and counterpart of the `library_benchmark_group!` macro
+#[derive(Debug, Clone)]
+pub struct Group {
+    /// The benchmarks belonging to this group.
+    pub benches: Benches,
+    /// Whether summaries with equal benchmark ids are compared and printed.
+    pub compare_by_id: bool,
+    /// The index of this group in the top-level benchmark list.
+    pub index: usize,
+    /// The module path prefix used for this group in output and diagnostics.
+    pub module_path: ModulePath,
+    /// Number of benchmarks filtered out before execution.
+    pub num_filtered: usize,
+    /// Optional setup assistant run before group benchmarks.
+    pub setup: Option<Assistant>,
+    /// Optional teardown assistant run after group benchmarks.
+    pub teardown: Option<Assistant>,
+}
+
+/// `Groups` is the top-level organizational unit of the `main!` macro for library benchmarks
+#[derive(Debug, Clone)]
+pub struct Groups(pub Vec<Group>);
+
+/// Result payload returned by worker jobs when running a benchmark group.
+#[derive(Debug)]
+pub struct JobResult {
+    /// Final benchmark summary produced by the executed job.
+    pub benchmark_summary: BenchmarkSummary,
+    /// Data processor used to parse and finalize tool outputs.
+    pub data_processor: Box<dyn BenchmarkDataProcessor>,
+    /// Whether regressions in this job should immediately fail the run.
+    pub fail_fast: bool,
+    /// Header metadata used for formatting benchmark output.
+    pub header: Header,
+    /// Output formatting configuration used when printing this job result.
+    pub output_format: OutputFormat,
+    /// Captured stdout/stderr streams associated with this job.
+    pub streams: Streams,
+}
+
+/// Data processor used when loading and comparing against an existing baseline.
+#[derive(Debug)]
+pub struct LoadBaselineDataProcessor {
+    /// Analyzer pipeline used to parse and process benchmark outputs.
+    pub analyzers: Vec<Analyzer>,
+}
+
+/// A helper struct similar to a file path but for module paths with the `::` delimiter
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct ModulePath(String);
+
+/// The `Sandbox` in which benchmarks should be runs
+///
+/// As soon as the `Sandbox` is dropped the temporary directory is deleted.
+#[derive(Debug)]
+pub struct Sandbox {
+    temp_dir: Option<TempDir>,
+}
+
+/// Data processor used when saving current outputs as a baseline.
+#[derive(Debug)]
+pub struct SaveBaselineDataProcessor {
+    /// Analyzer pipeline used to parse and process benchmark outputs.
+    pub analyzers: Vec<Analyzer>,
+}
+
+/// The main runner to run all library or binary benchmarks
+#[derive(Debug)]
+pub struct Runner {
+    config: Arc<Config>,
+    groups: Groups,
+    setup: Option<Assistant>,
+    teardown: Option<Assistant>,
+}
+
+// TODO: Rename to CapturedOutput
+/// Temporary output streams used to capture benchmark stdout and stderr.
+#[derive(Debug)]
+pub struct Streams {
+    /// Temporary file receiving captured stderr output.
+    pub stderr: File,
+    /// Temporary file receiving captured stdout output.
+    pub stdout: File,
+}
+
+/// Shared post-processing interface for library and binary benchmark runs.
 pub trait BenchmarkDataProcessor: std::fmt::Debug + Send {
-    /// TODO: DOCS
+    /// Returns the analyzer pipeline used for parsing and artifact generation.
     fn analyzers(&self) -> &[Analyzer];
 
-    /// TODO: DOCS
+    /// Copies temporary output files to their final benchmark output location.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if file copying fails.
     fn copy_temp(&self) -> Result<()> {
         self.analyzers()
             .first()
             .map_or(Ok(()), |(_, o, _, _, _)| o.copy_temp())
     }
 
-    /// TODO: DOCS
+    /// Creates and initializes the benchmark output directory for this processor.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if directory creation fails.
     fn create_benchmark_directory(&self) -> Result<()> {
         self.analyzers()
             .first()
             .map_or(Ok(()), |(_, o, _, _, _)| o.init())
     }
 
-    /// TODO: DOCS
+    /// Processes the benchmark data by parsing output and moving profiling data into place.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if parsing, regression checks, or artifact generation fails.
     fn finalize(
         &mut self,
         benchmark_summary: &mut BenchmarkSummary,
@@ -73,7 +246,14 @@ pub trait BenchmarkDataProcessor: std::fmt::Debug + Send {
         header: &Header,
     ) -> Result<()>;
 
-    /// TODO: DOCS
+    /// Generates flamegraph summaries for a parsed benchmark output.
+    ///
+    /// The provided [`Config`], [`Header`], [`ToolOutputPath`], [`ToolFlamegraphConfig`], and
+    /// [`EntryPoint`] determine the flamegraph generator behavior and output paths.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if flamegraph generation fails.
     fn generate_flamegraphs(
         &self,
         config: &Config,
@@ -83,17 +263,30 @@ pub trait BenchmarkDataProcessor: std::fmt::Debug + Send {
         entry_point: &EntryPoint,
     ) -> Result<Vec<FlamegraphSummary>>;
 
-    /// TODO: DOCS
+    /// Returns whether there are [`Analyzer`] and therefore benchmarks to process.
     fn has_benchmarks(&self) -> bool;
 
-    /// TODO: DOCS
+    /// Moves new benchmark outputs from the temporary location to the final benchmark directory.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if moving files fails.
     fn move_temp(&self) -> Result<()> {
         self.analyzers()
             .first()
             .map_or(Ok(()), |(_, o, _, _, _)| o.move_temp())
     }
 
-    /// TODO: DOCS, does self need to be mut?
+    /// Parses tool outputs and appends processed profiles to the [`BenchmarkSummary`].
+    ///
+    /// The method compares newly parsed data with `parsed_old` when provided, otherwise it loads
+    /// baseline data from analyzer backends. Parsed data is enriched with regression and
+    /// flamegraph information before being added to the summary.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if parsing fails, no new dataset is available, output paths cannot be
+    /// resolved, or flamegraph generation fails.
     fn parse(
         &self,
         benchmark_summary: &mut BenchmarkSummary,
@@ -154,7 +347,7 @@ pub trait BenchmarkDataProcessor: std::fmt::Debug + Send {
         Ok(())
     }
 
-    /// Remove the summary json file
+    /// Remove the summary json file.
     ///
     /// It doesn't matter which output path we use for this method. We cleanup the summary file if
     /// it exists no matter if we create a new one or not. It is confusing if there is an summary
@@ -170,14 +363,24 @@ pub trait BenchmarkDataProcessor: std::fmt::Debug + Send {
         })
     }
 
-    /// TODO: DOCS
+    /// Sanitizes valgrind output files for all tools.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if any sanitization step fails.
     fn sanitize(&self) -> Result<()> {
         self.analyzers()
             .iter()
             .try_for_each(|(_, o, _, _, _)| o.sanitize())
     }
 
-    /// TODO: DOCS
+    /// Rotates existing output files.
+    ///
+    /// This includes all tool-specific files such as log, xtree, and xleak outputs when present.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if shifting any output path fails.
     fn shift(&self) -> Result<()> {
         for (_, output_path, _, _, _) in self.analyzers() {
             output_path.shift()?;
@@ -199,347 +402,16 @@ pub trait BenchmarkDataProcessor: std::fmt::Debug + Send {
     }
 }
 
-/// TODO: DOCS
-#[derive(Debug)]
-pub struct LoadBaselineDataProcessor {
-    /// TODO: DOCS
-    pub analyzers: Vec<Analyzer>,
-}
-
-/// TODO: DOCS
-#[derive(Debug)]
-pub struct SaveBaselineDataProcessor {
-    /// TODO: DOCS
-    pub analyzers: Vec<Analyzer>,
-}
-
-/// TODO: DOCS
-#[derive(Debug)]
-pub struct BaselineDataProcessor {
-    /// TODO: DOCS
-    pub analyzers: Vec<Analyzer>,
-}
-
-/// TODO: DOCS
-pub type Analyzer = (
-    Box<dyn Parser>,
-    ToolOutputPath,
-    ToolRegressionConfig,
-    ToolFlamegraphConfig,
-    EntryPoint,
-);
-
-impl BenchmarkDataProcessor for LoadBaselineDataProcessor {
-    fn finalize(
-        &mut self,
-        benchmark_summary: &mut BenchmarkSummary,
-        config: &Config,
-        header: &Header,
-    ) -> Result<()> {
-        self.parse(benchmark_summary, config, header, None)
-    }
-
-    fn has_benchmarks(&self) -> bool {
-        !self.analyzers.is_empty()
-    }
-
-    fn analyzers(&self) -> &[Analyzer] {
-        &self.analyzers
-    }
-
-    fn generate_flamegraphs(
-        &self,
-        config: &Config,
-        header: &Header,
-        output_path: &ToolOutputPath,
-        flamegraph_config: &ToolFlamegraphConfig,
-        entry_point: &EntryPoint,
-    ) -> Result<Vec<FlamegraphSummary>> {
-        if output_path.tool == ValgrindTool::Callgrind {
-            if let ToolFlamegraphConfig::Callgrind(flamegraph_config) = &flamegraph_config {
-                let loaded_baseline = output_path.loaded_baseline_name().expect(
-                    "The loaded baseline of an output path of a loaded baseline should have a name",
-                );
-                let baseline = output_path.baseline_name().cloned().expect(
-                    "The baseline of an output path of a loaded baseline should have a name",
-                );
-
-                return LoadBaselineFlamegraphGenerator {
-                    baseline,
-                    loaded_baseline,
-                }
-                .create(
-                    &Flamegraph::new(header.to_title(), flamegraph_config.to_owned()),
-                    output_path,
-                    (*entry_point == EntryPoint::Default)
-                        .then(Sentinel::default)
-                        .as_ref(),
-                    &config.meta.project_root,
-                );
-            }
-        }
-
-        Ok(vec![])
-    }
-}
-
-impl BenchmarkDataProcessor for SaveBaselineDataProcessor {
-    fn finalize(
-        &mut self,
-        benchmark_summary: &mut BenchmarkSummary,
-        config: &Config,
-        header: &Header,
-    ) -> Result<()> {
-        if !self.has_benchmarks() {
-            return Ok(());
-        }
-
-        self.create_benchmark_directory()?;
-
-        let parsed_old = self
-            .analyzers()
-            .iter()
-            .map(|(parser, _, _, _, _)| parser.parse_base())
-            .collect::<Result<Vec<Vec<ParserOutput>>>>()?;
-
-        self.remove_summary()
-            .and_then(|()| self.shift())
-            .and_then(|()| self.move_temp())
-            .and_then(|()| self.sanitize())
-            .and_then(|()| self.parse(benchmark_summary, config, header, Some(parsed_old)))
-            .and_then(|()| self.copy_temp()) // for the flamegraphs which are created in the
-                                             // temporary directory
-    }
-
-    fn has_benchmarks(&self) -> bool {
-        !self.analyzers.is_empty()
-    }
-
-    fn analyzers(&self) -> &[Analyzer] {
-        &self.analyzers
-    }
-
-    fn generate_flamegraphs(
-        &self,
-        config: &Config,
-        header: &Header,
-        output_path: &ToolOutputPath,
-        flamegraph_config: &ToolFlamegraphConfig,
-        entry_point: &EntryPoint,
-    ) -> Result<Vec<FlamegraphSummary>> {
-        if output_path.tool == ValgrindTool::Callgrind {
-            if let ToolFlamegraphConfig::Callgrind(flamegraph_config) = &flamegraph_config {
-                let baseline = output_path.baseline_name().cloned().expect(
-                    "The baseline of an output path of a saved baseline should have a name",
-                );
-                return SaveBaselineFlamegraphGenerator { baseline }.create(
-                    &Flamegraph::new(header.to_title(), flamegraph_config.to_owned()),
-                    output_path,
-                    (*entry_point == EntryPoint::Default)
-                        .then(Sentinel::default)
-                        .as_ref(),
-                    &config.meta.project_root,
-                );
-            }
-        }
-
-        Ok(vec![])
-    }
-}
-
-impl BenchmarkDataProcessor for BaselineDataProcessor {
-    fn finalize(
-        &mut self,
-        benchmark_summary: &mut BenchmarkSummary,
-        config: &Config,
-        header: &Header,
-    ) -> Result<()> {
-        if !self.has_benchmarks() {
-            return Ok(());
-        }
-
-        self.create_benchmark_directory()
-            .and_then(|()| self.remove_summary())
-            .and_then(|()| self.shift())
-            .and_then(|()| self.sanitize())
-            .and_then(|()| self.parse(benchmark_summary, config, header, None))
-            .and_then(|()| self.copy_temp())
-    }
-
-    fn has_benchmarks(&self) -> bool {
-        !self.analyzers.is_empty()
-    }
-
-    fn generate_flamegraphs(
-        &self,
-        config: &Config,
-        header: &Header,
-        output_path: &ToolOutputPath,
-        flamegraph_config: &ToolFlamegraphConfig,
-        entry_point: &EntryPoint,
-    ) -> Result<Vec<FlamegraphSummary>> {
-        if output_path.tool == ValgrindTool::Callgrind {
-            if let ToolFlamegraphConfig::Callgrind(flamegraph_config) = &flamegraph_config {
-                return BaselineFlamegraphGenerator {
-                    baseline_kind: output_path.baseline_kind.clone(),
-                }
-                .create(
-                    &Flamegraph::new(header.to_title(), flamegraph_config.to_owned()),
-                    output_path,
-                    (*entry_point == EntryPoint::Default)
-                        .then(Sentinel::default)
-                        .as_ref(),
-                    &config.meta.project_root,
-                );
-            }
-        }
-
-        Ok(vec![])
-    }
-
-    fn analyzers(&self) -> &[Analyzer] {
-        &self.analyzers
-    }
-}
-
-/// The `Baselines` type
-pub type Baselines = (Option<String>, Option<String>);
-
-/// TODO: DOCS
-#[derive(Debug, Clone)]
-pub enum Benches {
-    /// TODO: DOCS
-    LibBenches(Vec<LibBench>),
-    /// TODO: DOCS
-    BinBenches(Vec<BinBench>),
-}
-
-/// the [`Assistant`] kind
-#[derive(Debug, Clone, Copy)]
-pub enum AssistantKind {
-    /// The `setup` function
-    Setup,
-    /// The `teardown` function
-    Teardown,
-}
-
-/// An `Assistant` corresponds to the `setup` or `teardown` functions in the UI
-#[derive(Debug, Clone)]
-pub struct Assistant {
-    envs: Vec<(OsString, OsString)>,
-    group_index: Option<usize>,
-    indices: Option<(usize, usize, Option<usize>)>,
-    kind: AssistantKind,
-    pipe: Option<Pipe>,
-    run_parallel: bool,
-}
-/// Contains benchmark summaries of (binary, library) benchmark runs and their execution time
-///
-/// Used to print a final summary after all benchmarks.
-#[derive(Debug, Default)]
-pub struct BenchmarkSummaries {
-    /// The amount of filtered benchmarks
-    pub num_filtered: usize,
-    /// The benchmark summaries
-    pub summaries: Vec<BenchmarkSummary>,
-    /// The execution time of all benchmarks.
-    pub total_time: Option<Duration>,
-}
-
-/// The `Config` contains all the information extracted from the UI invocation of the runner
-#[derive(Debug, Clone)]
-pub struct Config {
-    /// The path to the compiled binary with the benchmark harness
-    pub bench_bin: PathBuf,
-    /// The path to the benchmark file which contains the benchmark harness
-    pub bench_file: PathBuf,
-    /// The [`Metadata`]
-    pub meta: Metadata,
-    /// The module path of the benchmark file
-    pub module_path: ModulePath,
-    /// The package directory of the package in which `gungraun` (not the runner) is used
-    pub package_dir: PathBuf,
-}
-
-// TODO: DOCS
-/// A `Group` is the organizational unit and counterpart of the `library_benchmark_group!` macro
-#[derive(Debug, Clone)]
-pub struct Group {
-    /// TODO: DOCS
-    pub benches: Benches,
-    /// TODO: DOCS
-    pub compare_by_id: bool,
-    /// TODO: DOCS
-    pub index: usize,
-    /// TODO: DOCS
-    pub module_path: ModulePath,
-    /// TODO: DOCS
-    pub num_filtered: usize,
-    /// TODO: DOCS
-    pub setup: Option<Assistant>,
-    /// TODO: DOCS
-    pub teardown: Option<Assistant>,
-}
-
-// TODO: DOCS
-/// `Groups` is the top-level organizational unit of the `main!` macro for library benchmarks
-#[derive(Debug, Clone)]
-pub struct Groups(pub Vec<Group>);
-
-/// TODO: DOCS
-#[derive(Debug)]
-pub struct JobResult {
-    /// TODO: DOCS
-    pub benchmark_summary: BenchmarkSummary,
-    /// TODO: DOCS
-    pub data_processor: Box<dyn BenchmarkDataProcessor>,
-    /// TODO: DOCS
-    pub fail_fast: bool,
-    /// TODO: DOCS
-    pub header: Header,
-    /// TODO: DOCS
-    pub output_format: OutputFormat,
-    /// TODO: DOCS
-    pub streams: Streams,
-}
-
-/// A helper struct similar to a file path but for module paths with the `::` delimiter
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct ModulePath(String);
-
-/// The `Sandbox` in which benchmarks should be runs
-///
-/// As soon as the `Sandbox` is dropped the temporary directory is deleted.
-#[derive(Debug)]
-pub struct Sandbox {
-    temp_dir: Option<TempDir>,
-}
-
-/// The main runner to run all library or binary benchmarks
-#[derive(Debug)]
-pub struct Runner {
-    config: Arc<Config>,
-    groups: Groups,
-    setup: Option<Assistant>,
-    teardown: Option<Assistant>,
-}
-
-/// TODO: DOCS
-#[derive(Debug)]
-pub struct Streams {
-    /// TODO: DOCS
-    pub stderr: File,
-    /// TODO: DOCS
-    pub stdout: File,
-}
-
 impl Assistant {
-    /// TODO: DOCS
+    /// Returns whether this assistant is a setup or teardown [`AssistantKind`]
     pub fn kind(&self) -> AssistantKind {
         self.kind
     }
 
-    /// TODO: DOCS
+    /// Returns whether this assistant is configured to run in parallel.
+    ///
+    /// Assistants that pipe setup output to benchmark input are treated as parallel even if
+    /// [`Self::is_parallel`] is not explicitly set.
     pub fn is_parallel(&self) -> bool {
         self.pipe.is_some() || self.run_parallel
     }
@@ -704,8 +576,63 @@ impl AssistantKind {
     }
 }
 
+impl BenchmarkDataProcessor for BaselineDataProcessor {
+    fn finalize(
+        &mut self,
+        benchmark_summary: &mut BenchmarkSummary,
+        config: &Config,
+        header: &Header,
+    ) -> Result<()> {
+        if !self.has_benchmarks() {
+            return Ok(());
+        }
+
+        self.create_benchmark_directory()
+            .and_then(|()| self.remove_summary())
+            .and_then(|()| self.shift())
+            .and_then(|()| self.sanitize())
+            .and_then(|()| self.parse(benchmark_summary, config, header, None))
+            .and_then(|()| self.copy_temp())
+    }
+
+    fn has_benchmarks(&self) -> bool {
+        !self.analyzers.is_empty()
+    }
+
+    fn generate_flamegraphs(
+        &self,
+        config: &Config,
+        header: &Header,
+        output_path: &ToolOutputPath,
+        flamegraph_config: &ToolFlamegraphConfig,
+        entry_point: &EntryPoint,
+    ) -> Result<Vec<FlamegraphSummary>> {
+        if output_path.tool == ValgrindTool::Callgrind {
+            if let ToolFlamegraphConfig::Callgrind(flamegraph_config) = &flamegraph_config {
+                return BaselineFlamegraphGenerator {
+                    baseline_kind: output_path.baseline_kind.clone(),
+                }
+                .create(
+                    &Flamegraph::new(header.to_title(), flamegraph_config.to_owned()),
+                    output_path,
+                    (*entry_point == EntryPoint::Default)
+                        .then(Sentinel::default)
+                        .as_ref(),
+                    &config.meta.project_root,
+                );
+            }
+        }
+
+        Ok(vec![])
+    }
+
+    fn analyzers(&self) -> &[Analyzer] {
+        &self.analyzers
+    }
+}
+
 impl Benches {
-    /// TODO: DOCS
+    /// Returns the number of benchmarks stored in this container.
     pub fn len(&self) -> usize {
         match self {
             Self::LibBenches(lib_benches) => lib_benches.len(),
@@ -713,7 +640,7 @@ impl Benches {
         }
     }
 
-    /// TODO: DOCS
+    /// Appends a library benchmark when this container holds library benchmarks.
     pub fn push_lib_bench(&mut self, lib_bench: LibBench) {
         match self {
             Self::LibBenches(lib_benches) => lib_benches.push(lib_bench),
@@ -721,7 +648,7 @@ impl Benches {
         }
     }
 
-    /// TODO: DOCS
+    /// Appends a binary benchmark when this container holds binary benchmarks.
     pub fn push_bin_bench(&mut self, bin_bench: BinBench) {
         match self {
             Self::LibBenches(_) => {}
@@ -729,7 +656,7 @@ impl Benches {
         }
     }
 
-    /// TODO: DOCS
+    /// Returns `true` if this container has no benchmarks.
     pub fn is_empty(&self) -> bool {
         match self {
             Self::LibBenches(lib_benches) => lib_benches.is_empty(),
@@ -780,7 +707,7 @@ impl BenchmarkSummaries {
 }
 
 impl Group {
-    /// TODO: DOCS
+    /// Prints all benchmarks in this group for `--list` and returns their count.
     pub fn list(self) -> u64 {
         let mut sum = 0u64;
         match self.benches {
@@ -903,7 +830,15 @@ impl Group {
         }
     }
 
-    /// TODO: DOCS
+    /// Runs all benchmarks in this group and returns the [`BenchmarkSummaries`].
+    ///
+    /// Benchmarks are executed in a thread pool, finalized through their data processors, and
+    /// optionally compared by id when configured.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if benchmark execution, output finalization, printing, or regression checks
+    /// fail.
     pub fn run(self, config: &Arc<Config>) -> Result<BenchmarkSummaries> {
         let mut benchmark_summaries = BenchmarkSummaries::default();
 
@@ -930,7 +865,7 @@ impl Group {
 
         let mut comparison_summaries: HashMap<String, Vec<BenchmarkSummary>> =
             HashMap::with_capacity(num_benches);
-        let force_shutdown = thread_pool.get_force_shutdown();
+        let force_shutdown = thread_pool.clone_force_shutdown();
         let mut error = None;
         for result in thread_pool {
             let JobResult {
@@ -1005,8 +940,69 @@ impl Group {
     }
 }
 
+impl BenchmarkDataProcessor for LoadBaselineDataProcessor {
+    fn finalize(
+        &mut self,
+        benchmark_summary: &mut BenchmarkSummary,
+        config: &Config,
+        header: &Header,
+    ) -> Result<()> {
+        self.parse(benchmark_summary, config, header, None)
+    }
+
+    fn has_benchmarks(&self) -> bool {
+        !self.analyzers.is_empty()
+    }
+
+    fn analyzers(&self) -> &[Analyzer] {
+        &self.analyzers
+    }
+
+    fn generate_flamegraphs(
+        &self,
+        config: &Config,
+        header: &Header,
+        output_path: &ToolOutputPath,
+        flamegraph_config: &ToolFlamegraphConfig,
+        entry_point: &EntryPoint,
+    ) -> Result<Vec<FlamegraphSummary>> {
+        if output_path.tool == ValgrindTool::Callgrind {
+            if let ToolFlamegraphConfig::Callgrind(flamegraph_config) = &flamegraph_config {
+                let loaded_baseline = output_path.loaded_baseline_name().expect(
+                    "The loaded baseline of an output path of a loaded baseline should have a name",
+                );
+                let baseline = output_path.baseline_name().cloned().expect(
+                    "The baseline of an output path of a loaded baseline should have a name",
+                );
+
+                return LoadBaselineFlamegraphGenerator {
+                    baseline,
+                    loaded_baseline,
+                }
+                .create(
+                    &Flamegraph::new(header.to_title(), flamegraph_config.to_owned()),
+                    output_path,
+                    (*entry_point == EntryPoint::Default)
+                        .then(Sentinel::default)
+                        .as_ref(),
+                    &config.meta.project_root,
+                );
+            }
+        }
+
+        Ok(vec![])
+    }
+}
+
 impl Groups {
-    /// TODO: DOCS
+    /// Builds benchmark groups from binary benchmark metadata.
+    ///
+    /// The resulting groups include expanded benchmark entries, setup/teardown assistants, and
+    /// applied configuration inheritance.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if any benchmark entry cannot be configured.
     #[allow(clippy::too_many_lines)]
     pub fn from_binary_benchmark(
         module_path: &ModulePath,
@@ -1148,7 +1144,14 @@ impl Groups {
         Ok(Self(groups))
     }
 
-    /// TODO: DOCS
+    /// Builds benchmark groups from library benchmark metadata.
+    ///
+    /// The resulting groups include expanded benchmark entries for iterator benchmarks,
+    /// setup/teardown assistants, and applied configuration inheritance.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if any benchmark entry cannot be configured.
     #[allow(clippy::too_many_lines)]
     pub fn from_library_benchmark(
         module_path: &ModulePath,
@@ -1272,29 +1275,31 @@ impl Groups {
         Ok(Self(groups))
     }
 
-    /// TODO: DOCS
+    /// Returns whether at least one group contains at least one benchmark.
     pub fn has_benchmarks(&self) -> bool {
         self.0.iter().any(|g| !g.benches.is_empty())
     }
 
-    /// TODO: DOCS
-    pub fn list(self) -> Result<()> {
+    /// Prints all groups in list format and a final benchmark summary.
+    pub fn list(self) {
         let mut sum = 0u64;
         for group in self.0 {
             sum += group.list();
         }
 
         format::print_benchmark_list_summary(sum);
-
-        Ok(())
     }
 
-    /// TODO: DOCS
+    /// Returns the total number of filtered benchmarks across all groups.
     pub fn num_filtered(&self) -> usize {
         self.0.iter().fold(0, |acc, group| acc + group.num_filtered)
     }
 
-    /// TODO: DOCS
+    /// Runs all groups in order, including per-group setup and teardown assistants.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if any assistant or group run fails.
     pub fn run(self, config: &Arc<Config>) -> Result<BenchmarkSummaries> {
         let mut benchmark_summaries = BenchmarkSummaries::default();
 
@@ -1387,17 +1392,23 @@ impl Display for ModulePath {
 }
 
 impl Runner {
-    /// TODO: DOCS
+    /// Returns whether this runner has at least one benchmark to execute.
     pub fn has_benchmarks(&self) -> bool {
         self.groups.has_benchmarks()
     }
 
-    /// TODO: DOCS
+    /// Returns the number of benchmarks filtered out before execution.
     pub fn num_filtered(&self) -> usize {
         self.groups.num_filtered()
     }
 
-    /// TODO: DOCS
+    /// Creates a runner from library benchmark metadata and runtime configuration.
+    ///
+    /// This wires top-level setup and teardown assistants and builds benchmark groups.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if group construction fails.
     pub fn from_library_benchmark(
         benchmark_groups: LibraryBenchmarkGroups,
         config: Config,
@@ -1428,7 +1439,13 @@ impl Runner {
         })
     }
 
-    /// TODO: DOCS
+    /// Creates a runner from binary benchmark metadata and runtime configuration.
+    ///
+    /// This wires top-level setup and teardown assistants and builds benchmark groups.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if group construction fails.
     pub fn from_binary_benchmark(
         benchmark_groups: BinaryBenchmarkGroups,
         config: Config,
@@ -1561,93 +1578,193 @@ impl Sandbox {
         Ok(())
     }
 
-    /// TODO: DOCS
+    /// Returns the sandbox path when sandboxing is enabled.
     pub fn path(&self) -> Option<&Path> {
         self.temp_dir.as_ref().map(tempfile::TempDir::path)
     }
 }
 
+impl BenchmarkDataProcessor for SaveBaselineDataProcessor {
+    fn finalize(
+        &mut self,
+        benchmark_summary: &mut BenchmarkSummary,
+        config: &Config,
+        header: &Header,
+    ) -> Result<()> {
+        if !self.has_benchmarks() {
+            return Ok(());
+        }
+
+        self.create_benchmark_directory()?;
+
+        let parsed_old = self
+            .analyzers()
+            .iter()
+            .map(|(parser, _, _, _, _)| parser.parse_base())
+            .collect::<Result<Vec<Vec<ParserOutput>>>>()?;
+
+        self.remove_summary()
+            .and_then(|()| self.shift())
+            .and_then(|()| self.move_temp())
+            .and_then(|()| self.sanitize())
+            .and_then(|()| self.parse(benchmark_summary, config, header, Some(parsed_old)))
+            .and_then(|()| self.copy_temp()) // for the flamegraphs which are created in the
+                                             // temporary directory
+    }
+
+    fn has_benchmarks(&self) -> bool {
+        !self.analyzers.is_empty()
+    }
+
+    fn analyzers(&self) -> &[Analyzer] {
+        &self.analyzers
+    }
+
+    fn generate_flamegraphs(
+        &self,
+        config: &Config,
+        header: &Header,
+        output_path: &ToolOutputPath,
+        flamegraph_config: &ToolFlamegraphConfig,
+        entry_point: &EntryPoint,
+    ) -> Result<Vec<FlamegraphSummary>> {
+        if output_path.tool == ValgrindTool::Callgrind {
+            if let ToolFlamegraphConfig::Callgrind(flamegraph_config) = &flamegraph_config {
+                let baseline = output_path.baseline_name().cloned().expect(
+                    "The baseline of an output path of a saved baseline should have a name",
+                );
+                return SaveBaselineFlamegraphGenerator { baseline }.create(
+                    &Flamegraph::new(header.to_title(), flamegraph_config.to_owned()),
+                    output_path,
+                    (*entry_point == EntryPoint::Default)
+                        .then(Sentinel::default)
+                        .as_ref(),
+                    &config.meta.project_root,
+                );
+            }
+        }
+
+        Ok(vec![])
+    }
+}
+
 impl Streams {
-    /// TODO: DOCS
+    /// Creates new temporary files for capturing stdout and stderr.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if creating temporary files fails.
     pub fn new() -> Result<Self> {
-        Ok(Self {
-            stdout: tempfile()?,
-            stderr: tempfile()?,
-        })
+        tempfile()
+            .and_then(|stdout| tempfile().map(|stderr| Self { stderr, stdout }))
+            .with_context(|| "Creating streams failed")
     }
 
-    /// TODO: DOCS
+    /// Creates a duplicate `Streams` handle backed by cloned file descriptors.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if cloning either stream handle fails.
     pub fn try_clone(&self) -> Result<Self> {
-        Ok(Self {
-            stdout: self.stdout.try_clone()?,
-            stderr: self.stderr.try_clone()?,
+        self.stdout
+            .try_clone()
+            .and_then(|stdout| {
+                self.stderr
+                    .try_clone()
+                    .map(|stderr| Self { stderr, stdout })
+            })
+            .with_context(|| "Cloning streams failed")
+    }
+
+    /// Flushes and rewinds both captured streams to the beginning.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if flushing or seeking either stream fails.
+    pub fn reset(&mut self) -> Result<()> {
+        self.stdout
+            .flush()
+            .and_then(|()| self.stdout.rewind())
+            .and_then(|()| self.stderr.flush())
+            .and_then(|()| self.stderr.rewind())
+            .with_context(|| "Resetting streams failed")
+    }
+
+    /// Returns cloned stdout and stderr file handles as [`std::process::Stdio`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if stream cloning fails.
+    pub fn into_stdio(&self) -> Result<(StdStdio, StdStdio)> {
+        self.try_clone()
+            .map(|cloned| (cloned.stdout.into(), cloned.stderr.into()))
+    }
+
+    /// Writes captured stdout and stderr to the standard stdout/stderr.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if stream reset or copying data to terminal streams fails.
+    pub fn dump(&mut self) -> Result<()> {
+        self.reset().and_then(|()| {
+            let mut stdout_lock = stdout().lock();
+            let mut stderr_lock = stderr().lock();
+
+            std::io::copy(&mut self.stdout, &mut stdout_lock)
+                .and_then(|_| std::io::copy(&mut self.stderr, &mut stderr_lock))
+                .map(|_| ())
+                .with_context(|| "Dumping streams failed")
         })
     }
 
-    /// TODO: DOCS
-    pub fn reset(&mut self) -> Result<()> {
-        self.stdout.flush()?;
-        self.stdout.rewind()?;
-        self.stderr.flush()?;
-        self.stderr.rewind()?;
-
-        Ok(())
-    }
-
-    /// TODO: DOCS
-    pub fn into_stdio(&self) -> Result<(StdStdio, StdStdio)> {
-        let cloned = self.try_clone()?;
-
-        Ok((cloned.stdout.into(), cloned.stderr.into()))
-    }
-
-    /// TODO: DOCS
-    pub fn dump(&mut self) -> Result<()> {
-        self.reset()?;
-
-        let mut stdout_lock = stdout().lock();
-        let mut stderr_lock = stderr().lock();
-
-        std::io::copy(&mut self.stdout, &mut stdout_lock)?;
-        std::io::copy(&mut self.stderr, &mut stderr_lock)?;
-
-        Ok(())
-    }
-
-    /// TODO: DOCS
+    /// Writes captured stdout and stderr to terminal streams without changing the `self` state.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if cloning, resetting, or copying stream data fails.
     pub fn dump_cloned(&self) -> Result<()> {
         let mut streams = self.try_clone()?;
+        streams.reset().and_then(|()| {
+            let mut stdout_lock = stdout().lock();
+            let mut stderr_lock = stderr().lock();
 
-        streams.reset()?;
-
-        let mut stdout_lock = stdout().lock();
-        let mut stderr_lock = stderr().lock();
-
-        std::io::copy(&mut streams.stdout, &mut stdout_lock)?;
-        std::io::copy(&mut streams.stderr, &mut stderr_lock)?;
-        Ok(())
+            std::io::copy(&mut streams.stdout, &mut stdout_lock)
+                .and_then(|_| std::io::copy(&mut streams.stderr, &mut stderr_lock))
+                .map(|_| ())
+                .with_context(|| "Dumping cloned streams failed")
+        })
     }
 
-    /// TODO: DOCS
+    /// Writes captured stdout to the standard stderr stream.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if flushing, seeking, or copying stderr data fails.
     pub fn dump_stderr(&mut self) -> Result<()> {
-        self.stderr.flush()?;
-        self.stderr.rewind()?;
-
-        let mut stderr_lock = stderr().lock();
-        std::io::copy(&mut self.stderr, &mut stderr_lock)?;
-
-        Ok(())
+        self.stderr
+            .flush()
+            .and_then(|()| self.stderr.rewind())
+            .and_then(|()| {
+                let mut stderr_lock = stderr().lock();
+                std::io::copy(&mut self.stderr, &mut stderr_lock).map(|_| ())
+            })
+            .with_context(|| "Dumping stderr failed")
     }
 
-    /// TODO: DOCS
+    /// Writes captured stdout to the standard stdout stream.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if flushing, seeking, or copying stdout data fails.
     pub fn dump_stdout(&mut self) -> Result<()> {
-        self.stdout.flush()?;
-        self.stdout.rewind()?;
-
-        let mut stdout_lock = stdout().lock();
-        std::io::copy(&mut self.stdout, &mut stdout_lock)?;
-
-        Ok(())
+        self.stdout
+            .flush()
+            .and_then(|()| self.stdout.rewind())
+            .and_then(|()| {
+                let mut stdout_lock = stdout().lock();
+                std::io::copy(&mut self.stdout, &mut stdout_lock).map(|_| ())
+            })
+            .with_context(|| "Dumping stdout failed")
     }
 }
 

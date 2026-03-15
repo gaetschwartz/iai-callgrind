@@ -50,7 +50,10 @@ impl<K, V> Union<K, V> {
         }
     }
 
-    /// TODO: DOCS
+    /// Consumes the union and returns all entries merged into a single map.
+    ///
+    /// Keys that appear in both maps are stored as `EitherOrBoth::Both`, while keys that appear in
+    /// only one map are stored as `EitherOrBoth::Left` or `EitherOrBoth::Right` respectively.
     pub fn collect(self) -> IndexMap<K, EitherOrBoth<V>>
     where
         K: core::hash::Hash + Eq,

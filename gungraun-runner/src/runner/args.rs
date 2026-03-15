@@ -833,7 +833,22 @@ pub struct CommandLineArgs {
     pub output_format: OutputFormatKind,
 
     #[rustfmt::skip]
-    /// TODO: DOCS
+    /// Number of benchmarks to run in parallel.
+    ///
+    /// A value of `1` runs benchmarks serially which is the default if this option is not
+    /// specified. Passing `auto` lets the runner choose the parallelism level based on available
+    /// hardware which is the number of available logical cores.
+    ///
+    /// Note that benchmark groups are used as synchronization points and only benchmarks within the
+    /// same group are executed in parallel.
+    ///
+    /// Valgrind and gungraun perform disk I/O even if your benchmarks don't. This is usually a
+    /// bottleneck, so running with parallelism of 10 may provide similar speedup as 5. Actual
+    /// results depend on the hardware and if your benchmarks are performing disk I/O, too.
+    ///
+    /// Examples:
+    /// * --parallel=4
+    /// * --parallel=auto
     #[arg(
         long = "parallel",
         required = false,
