@@ -130,7 +130,7 @@
 
 #![allow(clippy::inline_always)]
 
-/// Return true if a client request is defined and available in the used valgrind version
+/// Returns `true` if a client request is defined and available in the used valgrind version.
 ///
 /// For internal use only!
 ///

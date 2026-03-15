@@ -22,7 +22,7 @@ pub struct JsonParser {
 }
 
 impl JsonParser {
-    /// Create a new `JsonParser`
+    /// Creates a new `JsonParser`.
     pub fn new(output_path: ToolOutputPath, entry_point: EntryPoint, frames: Vec<String>) -> Self {
         Self {
             entry_point,

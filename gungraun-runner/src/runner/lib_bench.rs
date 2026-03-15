@@ -227,7 +227,7 @@ impl LibBench {
             .any(|c| c.regression_config.is_fail_fast())
     }
 
-    /// Create a new library benchmark
+    /// Creates a new library benchmark.
     pub fn new(
         id: Option<String>,
         display: Option<String>,

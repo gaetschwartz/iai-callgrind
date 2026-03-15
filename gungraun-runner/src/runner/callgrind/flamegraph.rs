@@ -94,7 +94,7 @@ pub struct SaveBaselineFlamegraphGenerator {
 
 /// The trait a flamegraph generator needs to implement
 pub trait FlamegraphGenerator {
-    /// Create a new flamegraph generator
+    /// Creates a new flamegraph generator.
     fn create(
         &self,
         flamegraph: &Flamegraph,
@@ -198,7 +198,7 @@ impl From<api::Direction> for Direction {
 }
 
 impl Flamegraph {
-    /// Create a new `Flamegraph`
+    /// Creates a new `Flamegraph`.
     pub fn new(heading: String, mut config: Config) -> Self {
         if config.title.is_none() {
             config.title = Some(heading);
@@ -207,7 +207,7 @@ impl Flamegraph {
         Self { config }
     }
 
-    /// Return true if this flamegraph is a differential flamegraph
+    /// Returns `true` if this flamegraph is a differential flamegraph.
     pub fn is_differential(&self) -> bool {
         matches!(
             self.config.kind,
@@ -215,7 +215,7 @@ impl Flamegraph {
         )
     }
 
-    /// Return true if this flamegraph is a regular flamegraph
+    /// Returns `true` if this flamegraph is a regular flamegraph.
     pub fn is_regular(&self) -> bool {
         matches!(
             self.config.kind,
@@ -223,7 +223,7 @@ impl Flamegraph {
         )
     }
 
-    /// Return the [`Options`] of this flamegraph
+    /// Returns the [`Options`] of this flamegraph.
     pub fn options(&self, event_kind: EventKind, subtitle: String) -> Options<'_> {
         let mut options = Options::default();
         options.negate_differentials = self.config.negate_differential;
@@ -246,7 +246,7 @@ impl Flamegraph {
         options
     }
 
-    /// Return the [`inferno::differential::Options`] for a differential flamegraph
+    /// Returns the [`inferno::differential::Options`] for a differential flamegraph.
     pub fn differential_options(&self) -> Option<inferno::differential::Options> {
         self.is_differential()
             .then(|| inferno::differential::Options {

@@ -42,7 +42,7 @@ metrics related to [`setup` and/or `teardown`
 code](./benchmarks/library_benchmarks/setup_and_teardown.md), as well as any
 elements specified in the `args` parameter of the `#[bench]` or `#[benches]`
 attributes. This behavior typically aligns with user expectations. However, DHAT
-has a unique characteristic: if the benchmarked function utilizes an array
+has a unique characteristic: if the benchmarked function uses an array
 created in the setup function, the metrics will not capture the reads and writes
 to that array. To accurately measure these reads and writes, it is necessary to
 set the entry point to the setup function (in this case, the

@@ -421,9 +421,9 @@ Options:
           (key=value) pairs. See the description of --callgrind-limits for the details and
           <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetrics.html>
           respectively <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetric.html>
-          for valid metrics and group members.
+           for valid metrics and group members.
 
-          See the the guide
+          See the guide
           (https://gungraun.github.io/gungraun/latest/html/regressions.html) for all
           details or replace the format spec in `--callgrind-limits` with the following:
 
@@ -493,9 +493,9 @@ Options:
           the description of --callgrind-limits for the details and
           <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetrics.html> respectively
           <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetric.html> for valid metrics
-          and group members.
+           and group members.
 
-          See the the guide
+          See the guide
           (https://gungraun.github.io/gungraun/latest/html/regressions.html) for all
           details or replace the format spec in `--callgrind-limits` with the following:
 

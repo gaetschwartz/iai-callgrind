@@ -17,7 +17,7 @@ To understand custom entry points let's take a small detour into how
 based on the compiled code not the source code, so it is possible to hook into
 any function not only public functions. `Callgrind` can be configured to switch
 instrumentation on and off based on a function name with
-[`--toggle-collect`][Callgrind Arguments]. Per default, Gungraun sets this
+[`--toggle-collect`][Callgrind Arguments]. By default, Gungraun sets this
 toggle (which we call [`EntryPoint`]) to the benchmarking function. Setting the
 toggle implies `--collect-atstart=no`. So, all events before (in the `setup`)
 and after the benchmark function (in the `teardown`) are not collected. Somewhat

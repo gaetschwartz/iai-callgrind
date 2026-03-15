@@ -8,7 +8,7 @@ This directory structure can partly be changed with the following options.
 
 ## Callgrind Home
 
-Per default, all benchmark output files are stored under the
+By default, all benchmark output files are stored under the
 `$WORKSPACE_ROOT/target/gungraun` directory tree. This home directory can be changed
 with the `GUNGRAUN_HOME` environment variable or the command-line argument
 `--home`. The command-line argument overwrites the value of the environment

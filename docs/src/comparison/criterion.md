@@ -11,7 +11,7 @@ Gungraun Pros:
   digits. In comparison, actual (wall-clock) run times are scarcely repeatable
   beyond one significant digit.
 
-    This allows to implement and measure "microoptimizations". Typical
+    This allows you to implement and measure "microoptimizations". Typical
     microoptimizations reduce the number of CPU cycles by `0.1%` or `0.05%` or
     even less. Such improvements are impossible to measure with real-world
     timings. But hundreds or thousands of microoptimizations add up, resulting in

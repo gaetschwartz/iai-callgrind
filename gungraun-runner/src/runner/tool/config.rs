@@ -72,7 +72,7 @@ struct ToolConfigBuilder {
 pub struct ToolConfigs(pub Vec<ToolConfig>);
 
 impl ToolConfig {
-    /// Create a new `ToolConfig`
+    /// Creates a new `ToolConfig`.
     pub fn new(
         tool: ValgrindTool,
         is_enabled: bool,
@@ -313,7 +313,7 @@ impl ToolConfigBuilder {
 }
 
 impl ToolConfigs {
-    /// Create new `ToolConfigs`
+    /// Creates new `ToolConfigs`.
     ///
     /// `default_entry_point` is callgrind specific and specified here because it is different for
     /// library and binary benchmarks.
@@ -395,17 +395,17 @@ impl ToolConfigs {
         Ok(tool_configs)
     }
 
-    /// Return true if there are any [`Tool`]s enabled
+    /// Returns `true` if there are any [`Tool`]s enabled.
     pub fn has_tools_enabled(&self) -> bool {
         self.0.iter().any(|t| t.is_enabled)
     }
 
-    /// Return true if there are multiple tools configured and are enabled
+    /// Returns `true` if there are multiple tools configured and are enabled.
     pub fn has_multiple(&self) -> bool {
         self.0.len() > 1 && self.0.iter().filter(|f| f.is_enabled).count() > 1
     }
 
-    /// Return the parser and configurations for each tool to be able to analyze the outputs
+    /// Returns the parser and configurations for each tool to be able to analyze the outputs.
     pub fn analyzers(&self, root_dir: &Path, output_path: &ToolOutputPath) -> Vec<Analyzer> {
         self.0
             .iter()
@@ -432,7 +432,7 @@ impl ToolConfigs {
             .collect()
     }
 
-    /// Extend this collection of tools with the contents of an iterator
+    /// Extends this collection of tools with the contents of an iterator.
     pub fn extend<I>(&mut self, iter: I) -> Result<()>
     where
         I: Iterator<Item = Result<ToolConfig>>,

@@ -46,7 +46,7 @@ pub struct DhatLogfileParser {
 }
 
 impl DhatLogfileParser {
-    /// Create a new `DhatLogfileParser`
+    /// Creates a new `DhatLogfileParser`.
     pub fn new(output_path: ToolOutputPath, root_dir: PathBuf) -> Self {
         Self {
             output_path,

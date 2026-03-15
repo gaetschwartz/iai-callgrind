@@ -121,7 +121,7 @@ impl From<ParserOutput> for CallgrindProperties {
 }
 
 impl Sentinel {
-    /// Create a new Sentinel
+    /// Creates a new Sentinel.
     ///
     /// # Examples
     ///
@@ -138,12 +138,12 @@ impl Sentinel {
         Self(value.into())
     }
 
-    /// Create a new `Sentinel` from this module path
+    /// Creates a new `Sentinel` from this module path.
     pub fn from_path(module: &str, function: &str) -> Self {
         Self::new(format!("{module}::{function}"))
     }
 
-    /// Create a new `Sentinel` from the segments of a module path
+    /// Creates a new `Sentinel` from the segments of a module path.
     pub fn from_segments<I, T>(segments: T) -> Self
     where
         I: AsRef<str>,
@@ -161,7 +161,7 @@ impl Sentinel {
         Self::new(joined)
     }
 
-    /// Return true if this `Sentinel` matches the function in the `haystack`
+    /// Returns `true` if this `Sentinel` matches the function in the `haystack`.
     pub fn matches(&self, haystack: &str) -> bool {
         self.0.as_str().dowild(haystack)
     }

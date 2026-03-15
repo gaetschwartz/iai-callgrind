@@ -2,7 +2,7 @@
 
 # Showing terminal output of benchmarks
 
-Per default, all terminal output of the benchmark function, `setup` and
+By default, all terminal output of the benchmark function, `setup` and
 `teardown` is captured and therefore not shown during a benchmark run.
 
 ## Using the log level

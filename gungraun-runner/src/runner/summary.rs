@@ -344,7 +344,7 @@ impl FromStr for BaselineName {
 }
 
 impl BenchmarkSummary {
-    /// Create a new `BenchmarkSummary`
+    /// Creates a new `BenchmarkSummary`.
     ///
     /// Relative paths are made absolute with the `project_root` as base directory.
     pub fn new(
@@ -505,7 +505,7 @@ impl BenchmarkSummary {
         Ok(())
     }
 
-    /// Return true if any [`Profile`] has regressed
+    /// Returns `true` if any [`Profile`] has regressed.
     pub fn is_regressed(&self) -> bool {
         self.profiles.is_regressed()
     }
@@ -539,7 +539,8 @@ impl BenchmarkSummary {
 }
 
 impl Diffs {
-    /// Create a new `Diffs` calculating the percentage and factor from the `new` and `old` metrics
+    /// Creates a new `Diffs` calculating the percentage and factor from the `new` and `old`
+    /// metrics.
     pub fn new(new: Metric, old: Metric) -> Self {
         Self {
             diff_pct: percentage_diff(new, old),
@@ -549,7 +550,7 @@ impl Diffs {
 }
 
 impl FlamegraphSummary {
-    /// Create a new `FlamegraphSummary`
+    /// Creates a new `FlamegraphSummary`.
     pub fn new(event_kind: EventKind) -> Self {
         Self {
             event_kind,
@@ -561,24 +562,24 @@ impl FlamegraphSummary {
 }
 
 impl Profile {
-    /// Return true if one of the summaries has regressed
+    /// Returns `true` if one of the summaries has regressed.
     pub fn is_regressed(&self) -> bool {
         self.summaries.is_regressed()
     }
 }
 
 impl ProfileData {
-    /// Return true if the profile data is empty
+    /// Returns `true` if the profile data is empty.
     pub fn is_empty(&self) -> bool {
         self.parts.is_empty()
     }
 
-    /// Return true if the total and only the total has regressed
+    /// Returns `true` if the total and only the total has regressed.
     pub fn is_regressed(&self) -> bool {
         self.total.is_regressed()
     }
 
-    /// Return true if there are multiple parts
+    /// Returns `true` if there are multiple parts.
     pub fn has_multiple(&self) -> bool {
         self.parts.len() > 1
     }
@@ -638,7 +639,7 @@ impl ProfileData {
         grouped
     }
 
-    /// Create a new `ToolRun` from the output(s) of the tool parsers
+    /// Creates a new `ToolRun` from the output(s) of the tool parsers.
     ///
     /// The summaries created from the new parser outputs and the old parser outputs are grouped by
     /// pid (subprocesses recorded with `--trace-children`), then by part (for example cause by a
@@ -753,7 +754,7 @@ impl From<ParserOutput> for ProfileInfo {
 }
 
 impl ProfilePart {
-    /// Return true if an error checking valgrind tool (like `Memcheck`) has errors detected
+    /// Returns `true` if an error checking valgrind tool (like `Memcheck`) has errors detected.
     pub fn new_has_errors(&self) -> bool {
         match &self.metrics_summary {
             ToolMetricSummary::None
@@ -766,7 +767,7 @@ impl ProfilePart {
         }
     }
 
-    /// Create a new part from `new` parser output
+    /// Creates a new part from `new` parser output.
     pub fn from_new(new: ParserOutput) -> Self {
         let metrics_summary = ToolMetricSummary::from_new_metrics(&new.metrics);
         Self {
@@ -775,7 +776,7 @@ impl ProfilePart {
         }
     }
 
-    /// Create a new part from `old` parser output
+    /// Creates a new part from `old` parser output.
     pub fn from_old(old: ParserOutput) -> Self {
         let metrics_summary = ToolMetricSummary::from_old_metrics(&old.metrics);
         Self {
@@ -784,7 +785,7 @@ impl ProfilePart {
         }
     }
 
-    /// Create a new `ProfilePart` from new and old [`ParserOutput`]
+    /// Creates a new `ProfilePart` from new and old [`ParserOutput`].
     ///
     /// # Panics
     ///
@@ -802,24 +803,24 @@ impl ProfilePart {
 }
 
 impl ProfileTotal {
-    /// Return true if there are any regressions
+    /// Returns `true` if there are any regressions.
     pub fn is_regressed(&self) -> bool {
         !self.regressions.is_empty()
     }
 
-    /// Return true if there is a summary
+    /// Returns `true` if there is a summary.
     pub fn is_some(&self) -> bool {
         self.summary.is_some()
     }
 
-    /// Return true if there is no summary
+    /// Returns `true` if there is no summary.
     pub fn is_none(&self) -> bool {
         self.summary.is_none()
     }
 }
 
 impl Profiles {
-    /// Create a new collection of [`Profile`]s
+    /// Creates a new collection of [`Profile`]s.
     pub fn new(values: Vec<Profile>) -> Self {
         Self(values)
     }
@@ -834,12 +835,12 @@ impl Profiles {
         self.0.push(summary);
     }
 
-    /// Return true if any [`Profile`] has regressed
+    /// Returns `true` if any [`Profile`] has regressed.
     pub fn is_regressed(&self) -> bool {
         self.iter().any(Profile::is_regressed)
     }
 
-    /// Return true if there are multiple [`Profile`]s
+    /// Returns `true` if there are multiple [`Profile`]s.
     pub fn has_multiple(&self) -> bool {
         self.0.len() > 1
     }
@@ -855,7 +856,7 @@ impl IntoIterator for Profiles {
 }
 
 impl SummaryOutput {
-    /// Create a new `SummaryOutput` with `dir` as base dir and an extension fitting the
+    /// Creates a new `SummaryOutput` with `dir` as base dir and an extension fitting the.
     /// [`SummaryFormat`]
     pub fn new(format: SummaryFormat, dir: &Path) -> Self {
         Self {
@@ -886,7 +887,7 @@ impl SummaryOutput {
         File::create(&self.path).with_context(|| "Failed to create json summary file")
     }
 
-    /// Return the path to this summary file
+    /// Returns the path to this summary file.
     pub fn path(dir: &Path) -> PathBuf {
         dir.join("summary.json")
     }
@@ -912,7 +913,7 @@ impl ToolMetricSummary {
         }
     }
 
-    /// Create a new summary from `new` [`ToolMetrics`]
+    /// Creates a new summary from `new` [`ToolMetrics`].
     pub fn from_new_metrics(metrics: &ToolMetrics) -> Self {
         match metrics {
             ToolMetrics::None => Self::None,
@@ -931,7 +932,7 @@ impl ToolMetricSummary {
         }
     }
 
-    /// Create a new summary from `old` [`ToolMetrics`]
+    /// Creates a new summary from `old` [`ToolMetrics`].
     pub fn from_old_metrics(metrics: &ToolMetrics) -> Self {
         match metrics {
             ToolMetrics::None => Self::None,
@@ -950,9 +951,9 @@ impl ToolMetricSummary {
         }
     }
 
-    /// Create a new summary from `new` and `old` [`ToolMetrics`]
+    /// Creates a new summary from `new` and `old` [`ToolMetrics`].
     ///
-    /// Return the `ToolMetricSummary` if the `MetricsKind` are the same kind, else return with
+    /// Returns the `ToolMetricSummary` if the `MetricsKind` are the same kind, else return with.
     /// error
     pub fn try_from_new_and_old_metrics(
         new_metrics: &ToolMetrics,
@@ -985,7 +986,7 @@ impl ToolMetricSummary {
         }
     }
 
-    /// Create a new summary from this summary and another [`ToolMetricSummary`]
+    /// Creates a new summary from this summary and another [`ToolMetricSummary`].
     pub fn from_self_and_other(this: &Self, other: &Self) -> Option<Self> {
         match (this, other) {
             (Self::None, Self::None) => Some(Self::None),
@@ -1057,19 +1058,19 @@ impl ToolMetricSummary {
         }
     }
 
-    /// Return true if this summary has metrics
+    /// Returns `true` if this summary has metrics.
     pub fn is_some(&self) -> bool {
         !self.is_none()
     }
 
-    /// Return true if this summary doesn't have metrics (currently massif, bbv)
+    /// Returns `true` if this summary doesn't have metrics (currently massif, bbv).
     pub fn is_none(&self) -> bool {
         matches!(self, Self::None)
     }
 }
 
 impl ToolRegression {
-    /// Create a new `ToolRegression`
+    /// Creates a new `ToolRegression`.
     pub fn with<T>(apply: fn(T) -> MetricKind, regressions: RegressionMetrics<T>) -> Self {
         match regressions {
             RegressionMetrics::Soft(metric, new, old, diff_pct, limit) => Self::Soft {

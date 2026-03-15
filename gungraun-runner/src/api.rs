@@ -763,7 +763,7 @@ pub enum EventKind {
 
 /// Set the expected exit status of a binary benchmark
 ///
-/// Per default, the benchmarked binary is expected to succeed, but if a benchmark is expected to
+/// By default, the benchmarked binary is expected to succeed, but if a benchmark is expected to
 /// fail, setting this option is required.
 ///
 /// # Examples
@@ -994,7 +994,7 @@ pub struct BinaryBenchmarkBench {
 /// only.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct BinaryBenchmarkConfig {
-    /// If some, set the the working directory of the benchmarked binary to this path
+    /// If some, set the working directory of the benchmarked binary to this path
     pub current_dir: Option<PathBuf>,
     /// The valgrind tool to run instead of the default callgrind
     pub default_tool: Option<ValgrindTool>,
@@ -1313,7 +1313,7 @@ impl BinaryBenchmarkConfig {
         self
     }
 
-    /// Resolve the environment variables and create key, value pairs out of them
+    /// Resolves the environment variables and create key, value pairs out of them.
     ///
     /// This is done especially for pass-through environment variables which have a `None` value at
     /// first.
@@ -1329,7 +1329,7 @@ impl BinaryBenchmarkConfig {
             .collect()
     }
 
-    /// Collect all environment variables which don't have a `None` value
+    /// Collects all environment variables which don't have a `None` value.
     ///
     /// Pass-through variables have a `None` value.
     pub fn collect_envs(&self) -> Vec<(OsString, OsString)> {
@@ -1341,7 +1341,7 @@ impl BinaryBenchmarkConfig {
 }
 
 impl CachegrindMetric {
-    /// Return true if this `EventKind` is a derived event
+    /// Returns `true` if this `EventKind` is a derived event.
     ///
     /// Derived events are calculated from Cachegrind's native event types the same ways as for
     /// callgrind's [`EventKind`]
@@ -1378,7 +1378,7 @@ impl CachegrindMetric {
         )
     }
 
-    /// Return the name of the metric which is the exact name of the enum variant
+    /// Returns the name of the metric which is the exact name of the enum variant.
     pub fn to_name(&self) -> String {
         format!("{:?}", *self)
     }
@@ -1681,7 +1681,7 @@ impl FromStr for ErrorMetric {
 impl Summarize for ErrorMetric {}
 
 impl EventKind {
-    /// Return true if this `EventKind` is a derived event
+    /// Returns `true` if this `EventKind` is a derived event.
     ///
     /// Derived events are calculated from Callgrind's native event types. See also
     /// [`crate::runner::callgrind::model::Metrics::make_summary`]. Currently all derived events
@@ -1719,7 +1719,7 @@ impl EventKind {
         )
     }
 
-    /// Return the name of the metric which is the exact name of the enum variant
+    /// Returns the name of the metric which is the exact name of the enum variant.
     pub fn to_name(&self) -> String {
         format!("{:?}", *self)
     }
@@ -2077,7 +2077,7 @@ impl LibraryBenchmarkConfig {
         self
     }
 
-    /// Resolve the environment variables and create key, value pairs out of them
+    /// Resolves the environment variables and create key, value pairs out of them.
     ///
     /// Same as [`BinaryBenchmarkConfig::resolve_envs`]
     pub fn resolve_envs(&self) -> Vec<(OsString, OsString)> {
@@ -2090,7 +2090,7 @@ impl LibraryBenchmarkConfig {
             .collect()
     }
 
-    /// Collect all environment variables which don't have a `None` value
+    /// Collects all environment variables which don't have a `None` value.
     ///
     /// Same as [`BinaryBenchmarkConfig::collect_envs`]
     pub fn collect_envs(&self) -> Vec<(OsString, OsString)> {
@@ -2124,7 +2124,7 @@ impl From<u64> for Limit {
 }
 
 impl RawArgs {
-    /// Create new arguments for a valgrind tool
+    /// Creates new arguments for a valgrind tool.
     pub fn new<I, T>(args: T) -> Self
     where
         I: Into<String>,
@@ -2133,7 +2133,7 @@ impl RawArgs {
         Self(args.into_iter().map(Into::into).collect())
     }
 
-    /// Extend the arguments with the contents of an iterator
+    /// Extends the arguments with the contents of an iterator.
     pub fn extend_ignore_flag<I, T>(&mut self, args: T)
     where
         I: AsRef<str>,
@@ -2153,17 +2153,17 @@ impl RawArgs {
         );
     }
 
-    /// Return true if there are no tool arguments
+    /// Returns `true` if there are no tool arguments.
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
 
-    /// Append the arguments of another `RawArgs`
+    /// Appends the arguments of another `RawArgs`.
     pub fn update(&mut self, other: &Self) {
         self.extend_ignore_flag(other.0.iter());
     }
 
-    /// Prepend the arguments of another `RawArgs`
+    /// Prepends the arguments of another `RawArgs`.
     pub fn prepend(&mut self, other: &Self) {
         if !other.is_empty() {
             let mut other = other.clone();
@@ -2442,7 +2442,7 @@ impl Display for Stream {
 }
 
 impl Tool {
-    /// Create a new `Tool` configuration
+    /// Creates a new `Tool` configuration.
     pub fn new(kind: ValgrindTool) -> Self {
         Self {
             kind,
@@ -2457,7 +2457,7 @@ impl Tool {
         }
     }
 
-    /// Create a new `Tool` configuration with the given command-line `args`
+    /// Creates a new `Tool` configuration with the given command-line `args`.
     pub fn with_args<I, T>(kind: ValgrindTool, args: T) -> Self
     where
         I: AsRef<str>,
@@ -2487,7 +2487,7 @@ impl Tool {
 }
 
 impl Tools {
-    /// Return true if `Tools` is empty
+    /// Returns `true` if `Tools` is empty.
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
@@ -2501,7 +2501,7 @@ impl Tools {
         }
     }
 
-    /// Update `Tools` with all [`Tool`]s from an iterator
+    /// Updates `Tools` with all [`Tool`]s from an iterator.
     pub fn update_all<T>(&mut self, tools: T)
     where
         T: IntoIterator<Item = Tool>,
@@ -2511,12 +2511,13 @@ impl Tools {
         }
     }
 
-    /// Update `Tools` with another `Tools`
+    /// Updates `Tools` with another `Tools`.
     pub fn update_from_other(&mut self, tools: &Self) {
         self.update_all(tools.0.iter().cloned());
     }
 
-    /// Search for the [`Tool`] with `kind` and if present remove it from this `Tools` and return it
+    /// Searches for the [`Tool`] with `kind` and if present remove it from this `Tools` and return
+    /// it.
     pub fn consume(&mut self, kind: ValgrindTool) -> Option<Tool> {
         self.0
             .iter()
@@ -2526,7 +2527,7 @@ impl Tools {
 }
 
 impl ValgrindTool {
-    /// Return the id used by the `valgrind --tool` option
+    /// Returns the id used by the `valgrind --tool` option.
     pub fn id(&self) -> String {
         match self {
             Self::DHAT => "dhat".to_owned(),
@@ -2540,7 +2541,7 @@ impl ValgrindTool {
         }
     }
 
-    /// Return true if this tool has output files in addition to log files
+    /// Returns `true` if this tool has output files in addition to log files.
     pub fn has_output_file(&self) -> bool {
         matches!(
             self,
@@ -2548,12 +2549,12 @@ impl ValgrindTool {
         )
     }
 
-    /// Return true if this tool supports xtree memory files
+    /// Returns `true` if this tool supports xtree memory files.
     pub fn has_xtree_file(&self) -> bool {
         matches!(self, Self::Memcheck | Self::Massif | Self::Helgrind)
     }
 
-    /// Return true if this tool supports xleak files
+    /// Returns `true` if this tool supports xleak files.
     pub fn has_xleak_file(&self) -> bool {
         *self == Self::Memcheck
     }
@@ -2593,7 +2594,7 @@ impl TryFrom<&str> for ValgrindTool {
     }
 }
 
-/// Update the value of an [`Option`]
+/// Updates the value of an [`Option`].
 pub fn update_option<T: Clone>(first: &Option<T>, other: &Option<T>) -> Option<T> {
     other.clone().or_else(|| first.clone())
 }

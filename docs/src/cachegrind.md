@@ -98,7 +98,7 @@ main!(library_benchmark_groups = my_group);
 ```
 
 Not only the body of the benchmark function changed but also the command-line
-argument `--instr-at-start=no` had to be specified in order to start the
+argument `--instr-at-start=no` had to be specified to start the
 instrumentation with the client request and not (what is the default) when
 starting the benchmark executable.
 

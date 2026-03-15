@@ -566,7 +566,7 @@ impl Assistant {
 }
 
 impl AssistantKind {
-    /// Return the assistant kind `id` as string
+    /// Returns the assistant kind `id` as string.
     pub fn id(&self) -> String {
         match self {
             Self::Setup => "setup",
@@ -680,7 +680,7 @@ impl BenchmarkSummaries {
         });
     }
 
-    /// Return true if any regressions were encountered
+    /// Returns `true` if any regressions were encountered.
     pub fn is_regressed(&self) -> bool {
         self.summaries.iter().any(BenchmarkSummary::is_regressed)
     }
@@ -690,7 +690,7 @@ impl BenchmarkSummaries {
         self.total_time = Some(start.elapsed());
     }
 
-    /// Return the number of total benchmarks
+    /// Returns the number of total benchmarks.
     pub fn num_benchmarks(&self) -> usize {
         self.summaries.len()
     }
@@ -1339,7 +1339,7 @@ impl Groups {
 }
 
 impl ModulePath {
-    /// Create a new `ModulePath`
+    /// Creates a new `ModulePath`.
     ///
     /// There is no validity check if the path contains valid characters or not and the path is
     /// created as is.
@@ -1354,12 +1354,12 @@ impl ModulePath {
         Self(new)
     }
 
-    /// Return the module path as string
+    /// Returns the module path as string.
     pub fn as_str(&self) -> &str {
         &self.0
     }
 
-    /// Return the first segment of the module path if any
+    /// Returns the first segment of the module path if any.
     pub fn first(&self) -> Option<Self> {
         self.0
             .split_once("::")
@@ -1367,19 +1367,19 @@ impl ModulePath {
             .or_else(|| (!self.0.is_empty()).then_some(self.clone()))
     }
 
-    /// Return the last segment of the module path if any
+    /// Returns the last segment of the module path if any.
     pub fn last(&self) -> Option<Self> {
         self.0.rsplit_once("::").map(|(_, last)| Self::new(last))
     }
 
-    /// Return the parent module path if present
+    /// Returns the parent module path if present.
     pub fn parent(&self) -> Option<Self> {
         self.0
             .rsplit_once("::")
             .map(|(prefix, _)| Self::new(prefix))
     }
 
-    /// Return a vector which contains all segments of the module path without the delimiter
+    /// Returns a vector which contains all segments of the module path without the delimiter.
     pub fn components(&self) -> Vec<&str> {
         self.0.split("::").collect()
     }

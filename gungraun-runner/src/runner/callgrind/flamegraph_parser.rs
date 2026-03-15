@@ -29,7 +29,7 @@ struct HeapElem {
 }
 
 impl FlamegraphMap {
-    /// Return true if this map is empty
+    /// Returns `true` if this map is empty.
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
@@ -172,7 +172,7 @@ impl FlamegraphMap {
 }
 
 impl FlamegraphParser {
-    /// Create a new `FlamegraphParser`
+    /// Creates a new `FlamegraphParser`.
     pub fn new<P>(sentinel: Option<&Sentinel>, project_root: P) -> Self
     where
         P: Into<PathBuf>,

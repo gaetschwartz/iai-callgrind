@@ -80,7 +80,7 @@ fn main() {
 ### Library Benchmarks
 
 In [library benchmarks](./benchmarks/library_benchmarks.md) you might need to
-use [`EntryPoint::None`][EntryPoint] in order to make the client requests work
+use [`EntryPoint::None`][EntryPoint] to make the client requests work
 as expected:
 
 ```rust

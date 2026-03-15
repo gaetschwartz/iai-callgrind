@@ -321,7 +321,7 @@ impl ToolArgs {
     }
 }
 
-/// Return true if this is an ignored argument related to output or logfiles
+/// Returns `true` if this is an ignored argument related to output or logfiles.
 pub fn is_ignored_outfile_argument(arg: &str) -> bool {
     matches!(
         arg,
@@ -344,7 +344,7 @@ pub fn is_ignored_outfile_argument(arg: &str) -> bool {
     )
 }
 
-/// Return true if this is a generic ignored argument
+/// Returns `true` if this is a generic ignored argument.
 pub fn is_ignored_argument(arg: &str) -> bool {
     matches!(
         arg,

@@ -97,7 +97,7 @@ impl Cli {
 }
 
 impl PostRun {
-    /// Create a new `PostRun`
+    /// Creates a new `PostRun`.
     fn new(
         nosummary: bool,
         output_format_kind: OutputFormatKind,

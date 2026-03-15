@@ -205,7 +205,7 @@ pub trait Formatter {
 }
 
 impl BinaryBenchmarkHeader {
-    /// Create a new `BinaryBenchmarkHeader`
+    /// Creates a new `BinaryBenchmarkHeader`.
     pub fn new(meta: &Metadata, bin_bench: &BinBench) -> Self {
         let path = make_relative(&meta.project_root, &bin_bench.command.path);
 
@@ -245,7 +245,7 @@ impl BinaryBenchmarkHeader {
         self.0.to_title()
     }
 
-    /// Return the description part of the header
+    /// Returns the description part of the header.
     pub fn description(&self) -> Option<String> {
         self.0.description.clone()
     }
@@ -258,7 +258,7 @@ impl Display for BinaryBenchmarkHeader {
 }
 
 impl ComparisonHeader {
-    /// Create a new `ComparisonHeader`
+    /// Creates a new `ComparisonHeader`.
     pub fn new<T, U, V>(
         function_name: T,
         id: U,
@@ -308,7 +308,7 @@ impl Display for ComparisonHeader {
 }
 
 impl Header {
-    /// Create a new `Header`
+    /// Creates a new `Header`.
     pub fn new<T>(
         module_path: &ModulePath,
         id: T,
@@ -328,7 +328,7 @@ impl Header {
         }
     }
 
-    /// Create a new `Header` with a description
+    /// Creates a new `Header` with a description.
     pub fn without_description<T>(module_path: &ModulePath, id: T) -> Self
     where
         T: Into<Option<String>>,
@@ -407,7 +407,7 @@ impl From<LibraryBenchmarkHeader> for Header {
 }
 
 impl LibraryBenchmarkHeader {
-    /// Create a new `LibraryBenchmarkHeader`
+    /// Creates a new `LibraryBenchmarkHeader`.
     pub fn new(lib_bench: &LibBench) -> Self {
         let header = Header::new(
             &lib_bench.module_path,
@@ -424,7 +424,7 @@ impl LibraryBenchmarkHeader {
         self.0.to_title()
     }
 
-    /// Return the description part of the header if present
+    /// Returns the description part of the header if present.
     pub fn description(&self) -> Option<String> {
         self.0.description.clone()
     }
@@ -437,17 +437,17 @@ impl Display for LibraryBenchmarkHeader {
 }
 
 impl OutputFormat {
-    /// Return true if the `OutputFormat` is the default format
+    /// Returns `true` if the `OutputFormat` is the default format.
     pub fn is_default(&self) -> bool {
         self.kind == OutputFormatKind::Default
     }
 
-    /// Return true if the `OutputFormat` is json
+    /// Returns `true` if the `OutputFormat` is json.
     pub fn is_json(&self) -> bool {
         self.kind == OutputFormatKind::Json || self.kind == OutputFormatKind::PrettyJson
     }
 
-    /// Update the output format from the [`Tool`] if present
+    /// Updates the output format from the [`Tool`] if present.
     pub fn update(&mut self, tool: Option<&Tool>) {
         if let Some(tool) = tool {
             if let Some(format) = &tool.output_format {
@@ -482,7 +482,7 @@ impl OutputFormat {
         }
     }
 
-    /// Update the output format with data from command-line arguments in [`Metadata`]
+    /// Updates the output format with data from command-line arguments in [`Metadata`].
     pub fn update_from_meta(&mut self, meta: &Metadata) {
         if let Some(metrics) = &meta.args.cachegrind_metrics {
             self.cachegrind.clone_from(metrics);
@@ -573,7 +573,7 @@ impl From<api::OutputFormat> for OutputFormat {
 }
 
 impl SummaryFormatter {
-    /// Create a new `SummaryFormatter`
+    /// Creates a new `SummaryFormatter`.
     pub fn new(output_format_kind: OutputFormatKind) -> Self {
         Self { output_format_kind }
     }
@@ -658,7 +658,7 @@ impl SummaryFormatter {
 }
 
 impl VerticalFormatter {
-    /// Create a new `VerticalFormatter` (the default format)
+    /// Creates a new `VerticalFormatter` (the default format).
     pub fn new(output_format: OutputFormat) -> Self {
         if output_format.show_grid {
             Self {
@@ -1236,7 +1236,7 @@ pub fn format_float(float: f64, unit: char) -> ColoredString {
     }
 }
 
-/// Return the formatted string if `NoCapture` is not `False`
+/// Returns the formatted string if `NoCapture` is not `False`.
 pub fn no_capture_footer(nocapture: NoCapture) -> Option<String> {
     match nocapture {
         NoCapture::True => Some(format!(

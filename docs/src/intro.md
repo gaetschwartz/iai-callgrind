@@ -8,7 +8,7 @@ cache, and memory profiling tools:
 [DHAT](https://valgrind.org/docs/manual/dh-manual.html). Gungraun delivers
 highly accurate and consistent measurements of Rust code, making it an ideal
 choice for continuous integration (CI) environments. Its flexibility allows you
-to access all Valgrind tools, even `Memcheck`, and utilize [Valgrind client
+to access all Valgrind tools, even `Memcheck`, and use [Valgrind client
 requests](./client_requests.md) effortlessly.
 
 Gungraun is:

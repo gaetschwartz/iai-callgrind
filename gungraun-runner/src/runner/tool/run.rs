@@ -77,7 +77,7 @@ pub struct ToolCommandChild {
 }
 
 impl ToolCommand {
-    /// Create new `ToolCommand`
+    /// Creates new `ToolCommand`.
     pub fn new(tool: ValgrindTool, meta: &Metadata, is_default: bool) -> Self {
         let nocapture = if is_default {
             meta.args.nocapture

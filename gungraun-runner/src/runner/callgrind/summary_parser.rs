@@ -37,7 +37,7 @@ pub struct SummaryParser {
 }
 
 impl SummaryParser {
-    /// Create a new `SummaryParser`
+    /// Creates a new `SummaryParser`.
     pub fn new(output_path: &ToolOutputPath) -> Self {
         Self {
             output_path: output_path.clone(),

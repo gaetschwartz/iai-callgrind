@@ -435,7 +435,7 @@ impl Command {
 }
 
 impl Delay {
-    /// Create a new `Delay`
+    /// Creates a new `Delay`.
     pub fn new(poll: Duration, timeout: Duration, kind: DelayKind) -> Self {
         Self {
             kind,

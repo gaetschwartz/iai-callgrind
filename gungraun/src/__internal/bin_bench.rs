@@ -144,7 +144,7 @@ impl GroupsBuilder {
         }
     }
 
-    /// Add a high-level api benchmark to the `group` parsing the `benches`
+    /// Adds a high-level api benchmark to the `group` parsing the `benches`.
     fn high_level(group: &mut InternalBinaryBenchmarkGroup, benches: InternalMacroBinBenches) {
         for (function_name, get_config, macro_bin_benches) in benches {
             let mut internal_binary_benchmark = InternalBinaryBenchmark {
@@ -176,7 +176,7 @@ impl GroupsBuilder {
         }
     }
 
-    /// Add a low-level api benchmark to the `internal_group` parsing the `group`
+    /// Adds a low-level api benchmark to the `internal_group` parsing the `group`.
     ///
     /// In contrast to the high-level api, we need to check for duplicate ids, missing commands ...
     /// The errors are collected and then printed instead of returning on first error and printing

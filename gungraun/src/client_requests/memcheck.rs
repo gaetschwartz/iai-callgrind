@@ -185,7 +185,7 @@ pub fn discard<T>(handle: BlockHandle) -> usize {
     )
 }
 
-/// Check that memory at `addr` is addressable for `len` bytes
+/// Checks that memory at `addr` is addressable for `len` bytes.
 ///
 /// If suitable addressibility is not established, Valgrind prints an error message and returns the
 /// address of the first offending byte. Otherwise, it returns zero.
@@ -415,7 +415,7 @@ pub fn set_vbits(addr: *const (), bits: &[u8], len: usize) -> usize {
     )
 }
 
-/// Disable reporting of addressing errors in the specified address range
+/// Disables reporting of addressing errors in the specified address range.
 #[inline(always)]
 pub fn disable_addr_error_reporting_in_range(addr: *const (), len: usize) -> usize {
     do_client_request!(
@@ -430,7 +430,7 @@ pub fn disable_addr_error_reporting_in_range(addr: *const (), len: usize) -> usi
     )
 }
 
-/// Enable reporting of addressing errors in the specified address range
+/// Enables reporting of addressing errors in the specified address range.
 #[inline(always)]
 pub fn enable_addr_error_reporting_in_range(addr: *const (), len: usize) -> usize {
     do_client_request!(

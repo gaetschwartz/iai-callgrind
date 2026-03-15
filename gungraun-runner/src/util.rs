@@ -31,7 +31,7 @@ pub struct UnionIterator<'a, K, V> {
 }
 
 impl<K, V> Union<K, V> {
-    /// Create a new `Union` over two [`IndexMaps`][IndexMap]
+    /// Creates a new `Union` over two [`IndexMaps`][IndexMap].
     pub fn new(primary: IndexMap<K, V>, secondary: IndexMap<K, V>) -> Self {
         Self { primary, secondary }
     }

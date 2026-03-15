@@ -81,7 +81,7 @@ pub enum Error {
 }
 
 impl Error {
-    /// Create a new [`Error::ProcessError`]
+    /// Creates a new [`Error::ProcessError`].
     ///
     /// This error type is especially large so the large values are stored on the heap to reduce the
     /// overall size of the [`Error`] enum.

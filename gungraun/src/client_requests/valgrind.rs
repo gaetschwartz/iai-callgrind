@@ -244,7 +244,7 @@ pub fn count_errors() -> usize {
 }
 
 /// Several Valgrind tools (Memcheck, Massif, Helgrind, DRD) rely on knowing when heap blocks are
-/// allocated in order to give accurate results.
+/// allocated to give accurate results.
 ///
 /// Ignored if addr == 0.
 ///
@@ -567,7 +567,7 @@ pub fn mempool_change(pool: *const (), addr_a: *const (), addr_b: *const (), siz
     );
 }
 
-/// Return true if a mempool exists, else false
+/// Returns `true` if a mempool exists, else false.
 ///
 /// This request informs the caller whether or not Memcheck is currently tracking a mempool at
 /// anchor address pool. It evaluates to `true` when there is a mempool associated with that
@@ -658,7 +658,7 @@ pub fn stack_change(stack_id: StackId, start: usize, end: usize) {
     );
 }
 
-/// Load PDB debug info for `Wine PE image_map`
+/// Loads PDB debug info for `Wine PE image_map`.
 ///
 /// # Panics
 ///

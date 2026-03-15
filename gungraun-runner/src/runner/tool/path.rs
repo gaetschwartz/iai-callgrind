@@ -326,7 +326,7 @@ impl ToolOutputPath {
         Ok(())
     }
 
-    /// Return the destination directory for new files
+    /// Returns the destination directory for new files.
     ///
     /// In the presence of a temporary directory this is the temporary directory, otherwise it is
     /// the benchmark directory. Neither directory needs to exist for this method.
@@ -338,7 +338,7 @@ impl ToolOutputPath {
         }
     }
 
-    /// Return the name of the baseline if present
+    /// Returns the name of the baseline if present.
     pub fn baseline_name(&self) -> Option<&BaselineName> {
         match &self.baseline_kind {
             BaselineKind::Old => None,
@@ -346,7 +346,7 @@ impl ToolOutputPath {
         }
     }
 
-    /// Return the name of the loaded baseline (as set by --load-baseline) if present
+    /// Returns the name of the loaded baseline (as set by --load-baseline) if present.
     pub fn loaded_baseline_name(&self) -> Option<BaselineName> {
         match &self.kind {
             ToolOutputPathKind::BaseOut(name)
@@ -357,12 +357,12 @@ impl ToolOutputPath {
         }
     }
 
-    /// Return true if a real file of this output path exists
+    /// Returns `true` if a real file of this output path exists.
     pub fn exists(&self) -> bool {
         self.real_paths().is_ok_and(|p| !p.is_empty())
     }
 
-    /// Return true if there are multiple real files of this output path
+    /// Returns `true` if there are multiple real files of this output path.
     pub fn is_multiple(&self) -> bool {
         self.real_paths().is_ok_and(|p| p.len() > 1)
     }
@@ -552,7 +552,7 @@ impl ToolOutputPath {
         })
     }
 
-    /// Return the path to the log file for the given `path`
+    /// Returns the path to the log file for the given `path`.
     ///
     /// `path` is supposed to be a path to a valid file in the directory of this [`ToolOutputPath`].
     pub fn log_path_of(&self, path: &Path) -> Option<PathBuf> {
@@ -671,7 +671,7 @@ impl ToolOutputPath {
         }
     }
 
-    /// Create new `ToolOutputPath` with `modifiers`
+    /// Creates new `ToolOutputPath` with `modifiers`.
     #[must_use]
     pub fn with_modifiers<I, T>(&self, modifiers: T) -> Self
     where
@@ -722,12 +722,12 @@ impl ToolOutputPath {
         file_name.strip_prefix(format!("{}.{}", self.tool.id(), self.name).as_str())
     }
 
-    /// Return the file name prefix as in `<tool>.<name>`
+    /// Returns the file name prefix as in `<tool>.<name>`.
     pub fn prefix(&self) -> String {
         format!("{}.{}", self.tool.id(), self.name)
     }
 
-    /// Return the `real` paths of a tool's output files
+    /// Returns the `real` paths of a tool's output files.
     ///
     /// A tool can have many output files so [`Self::to_path`] is not enough
     #[allow(clippy::case_sensitive_file_extension_comparisons)]
@@ -740,7 +740,7 @@ impl ToolOutputPath {
         self.real_paths_in(dir)
     }
 
-    /// Return the `real` paths of a tool's output files
+    /// Returns the `real` paths of a tool's output files.
     ///
     /// A tool can have many output files so [`Self::to_path`] is not enough
     #[allow(clippy::case_sensitive_file_extension_comparisons)]
@@ -784,7 +784,7 @@ impl ToolOutputPath {
         Ok(paths)
     }
 
-    /// Return the real paths with their respective modifiers if present
+    /// Returns the real paths with their respective modifiers if present.
     pub fn real_paths_with_modifier(&self) -> Result<Vec<(PathBuf, Option<String>)>> {
         let mut paths = vec![];
         for entry in self.walk_dir(None)? {

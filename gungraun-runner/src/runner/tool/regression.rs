@@ -101,15 +101,15 @@ pub trait RegressionConfig<T: Hash + Eq + Summarize + Display + Clone> {
         regressions
     }
 
-    /// Return the hard limits
+    /// Returns the hard limits.
     fn get_hard_limits(&self) -> &[(T, Metric)];
 
-    /// Return the soft limits
+    /// Returns the soft limits.
     fn get_soft_limits(&self) -> &[(T, f64)];
 }
 
 impl ToolRegressionConfig {
-    /// Return true if the configuration has fail fast set to true
+    /// Returns `true` if the configuration has fail fast set to true.
     pub fn is_fail_fast(&self) -> bool {
         match self {
             Self::Callgrind(regression_config) => regression_config.fail_fast,

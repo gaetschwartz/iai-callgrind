@@ -66,7 +66,8 @@ pub fn dump_stats() {
 
 /// Dump current state of cost centers, and zero them afterward stating a reason
 ///
-/// Same as [`dump_stats`], but allows to specify a string to be able to distinguish profile dumps.
+/// Same as [`dump_stats`], but allows you to specify a string to be able to distinguish profile
+/// dumps.
 ///
 /// The argument is appended to a string stating the reason which triggered the dump. This string is
 /// written as a description field into the profile data dump.
@@ -107,7 +108,7 @@ pub fn zero_stats() {
 /// The collection state specifies whether the happening of events should be noted or if they are to
 /// be ignored. Events are noted by increment of counters in a cost center
 ///
-/// This allows to ignore events with regard to profile counters. See also valgrind command line
+/// This allows you to ignore events with regard to profile counters. See also valgrind command line
 /// options `--collect-atstart` and `--toggle-collect`.
 #[inline(always)]
 pub fn toggle_collect() {

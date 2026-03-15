@@ -77,7 +77,6 @@ enum ProcessState {
     Kill,
 }
 
-// Worker struct
 struct Task {
     thread: Option<TaskHandle>,
 }
@@ -268,7 +267,7 @@ impl ProcessHandler {
     /// `force_parallel` is a flag to indicate if the assistant should run in parallel to the
     /// benchmark process even if not configured in the assistant itself. [`Streams`] are optional
     /// file streams for the assistant terminal output and configure whether output should be
-    /// captured with [`NoCapture`]. Note that the the output is always captured if `streams` are
+    /// captured with [`NoCapture`]. Note that the output is always captured if `streams` are
     /// present. However, depending on the [`NoCapture`] value the captured streams are printed to
     /// stdout in the post processing of the benchmark data.
     pub fn start_assistant(

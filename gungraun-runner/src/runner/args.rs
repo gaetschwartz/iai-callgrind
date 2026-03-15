@@ -237,7 +237,7 @@ pub struct CommandLineArgs {
     /// respectively <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetric.html>
     /// for valid metrics and group members.
     ///
-    /// See the the guide
+    /// See the guide
     /// (<https://gungraun.github.io/gungraun/latest/html/regressions.html>) for all
     /// details or replace the format spec in `--callgrind-limits` with the following:
     ///
@@ -459,7 +459,7 @@ pub struct CommandLineArgs {
     /// <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetric.html> for valid metrics
     /// and group members.
     ///
-    /// See the the guide
+    /// See the guide
     /// (<https://gungraun.github.io/gungraun/latest/html/regressions.html>) for all
     /// details or replace the format spec in `--callgrind-limits` with the following:
     ///

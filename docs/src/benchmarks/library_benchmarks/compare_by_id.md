@@ -5,7 +5,7 @@
 Comparing benchmark functions is supported via the optional
 `library_benchmark_group!` argument `compare_by_id` (The default value for
 `compare_by_id` is `false`). Only benches with the same `id` are compared, which
-allows to single out cases which don't need to be compared. In the following
+allows you to single out cases which don't need to be compared. In the following
 example, the `case_3` and `multiple` bench are compared with each other in
 addition to the usual comparison with the previous run:
 
