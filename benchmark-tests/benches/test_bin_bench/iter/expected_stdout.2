@@ -27,6 +27,7 @@ test_bin_bench_iter::high_level::bench_tuple two_1:(nth of vec! [(1, 2), (3, 4)]
   Estimated Cycles:                        |                     (         )
 test_bin_bench_iter::high_level::bench_assists with_setup_path_0:(create_file(nth of ["one.txt", "two.txt"])) -> target/release/file-exists one.txt true
 Creating file 'one.txt'
+Verifying that file exists succeeded
 - end of stdout/stderr
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )
@@ -36,6 +37,7 @@ Creating file 'one.txt'
   Estimated Cycles:                        |                     (         )
 test_bin_bench_iter::high_level::bench_assists with_setup_path_1:(create_file(nth of ["one.txt", "two.txt"])) -> target/release/file-exists two.txt true
 Creating file 'two.txt'
+Verifying that file exists succeeded
 - end of stdout/stderr
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )
@@ -47,6 +49,7 @@ test_bin_bench_iter::high_level::bench_assists with_setup_0:(nth of ["one.txt", 
 Creating files 'one.txt', 'two.txt'
 Creating file 'one.txt'
 Creating file 'two.txt'
+Verifying that file exists succeeded
 - end of stdout/stderr
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )
@@ -58,6 +61,7 @@ test_bin_bench_iter::high_level::bench_assists with_setup_1:(nth of ["one.txt", 
 Creating files 'one.txt', 'two.txt'
 Creating file 'one.txt'
 Creating file 'two.txt'
+Verifying that file exists succeeded
 - end of stdout/stderr
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )
@@ -67,6 +71,7 @@ Creating file 'two.txt'
   Estimated Cycles:                        |                     (         )
 test_bin_bench_iter::high_level::bench_assists with_setup_path_and_teardown_0:(create_file(nth of ["one.txt", "two.txt"])) -> target/release/file-exists one.txt true
 Creating file 'one.txt'
+Verifying that file exists succeeded
 ./one.txt
 - end of stdout/stderr
   Instructions:                            |                     (No change)
@@ -77,6 +82,7 @@ Creating file 'one.txt'
   Estimated Cycles:                        |                     (         )
 test_bin_bench_iter::high_level::bench_assists with_setup_path_and_teardown_1:(create_file(nth of ["one.txt", "two.txt"])) -> target/release/file-exists two.txt true
 Creating file 'two.txt'
+Verifying that file exists succeeded
 ./two.txt
 - end of stdout/stderr
   Instructions:                            |                     (No change)
@@ -87,6 +93,7 @@ Creating file 'two.txt'
   Estimated Cycles:                        |                     (         )
 test_bin_bench_iter::high_level::bench_assists with_setup_and_teardown_both_path_0:(create_file(nth of ["one.txt", "two.txt"])) -> target/release/file-exists one.txt true
 Creating file 'one.txt'
+Verifying that file exists succeeded
 Removing 'one.txt'
 - end of stdout/stderr
   Instructions:                            |                     (No change)
@@ -97,6 +104,7 @@ Removing 'one.txt'
   Estimated Cycles:                        |                     (         )
 test_bin_bench_iter::high_level::bench_assists with_setup_and_teardown_both_path_1:(create_file(nth of ["one.txt", "two.txt"])) -> target/release/file-exists two.txt true
 Creating file 'two.txt'
+Verifying that file exists succeeded
 Removing 'two.txt'
 - end of stdout/stderr
   Instructions:                            |                     (No change)
@@ -109,6 +117,7 @@ test_bin_bench_iter::high_level::bench_assists with_setup_and_teardown_path_0:(n
 Creating files 'one.txt', 'two.txt'
 Creating file 'one.txt'
 Creating file 'two.txt'
+Verifying that file exists succeeded
 Removing 'one.txt'
 - end of stdout/stderr
   Instructions:                            |                     (No change)
@@ -121,6 +130,7 @@ test_bin_bench_iter::high_level::bench_assists with_setup_and_teardown_path_1:(n
 Creating files 'one.txt', 'two.txt'
 Creating file 'one.txt'
 Creating file 'two.txt'
+Verifying that file exists succeeded
 Removing 'two.txt'
 - end of stdout/stderr
   Instructions:                            |                     (No change)
@@ -131,6 +141,7 @@ Removing 'two.txt'
   Estimated Cycles:                        |                     (         )
 test_bin_bench_iter::low_level::bench_assists with_setup_path_0:() -> target/release/file-exists one.txt true
 Creating file 'one.txt'
+Verifying that file exists succeeded
 - end of stdout/stderr
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )
@@ -140,6 +151,7 @@ Creating file 'one.txt'
   Estimated Cycles:                        |                     (         )
 test_bin_bench_iter::low_level::bench_assists with_setup_path_1:() -> target/release/file-exists two.txt true
 Creating file 'two.txt'
+Verifying that file exists succeeded
 - end of stdout/stderr
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )
@@ -151,6 +163,7 @@ test_bin_bench_iter::low_level::bench_assists with_setup_0:() -> target/release/
 Creating files 'one.txt', 'two.txt'
 Creating file 'one.txt'
 Creating file 'two.txt'
+Verifying that file exists succeeded
 - end of stdout/stderr
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )
@@ -162,6 +175,7 @@ test_bin_bench_iter::low_level::bench_assists with_setup_1:() -> target/release/
 Creating files 'one.txt', 'two.txt'
 Creating file 'one.txt'
 Creating file 'two.txt'
+Verifying that file exists succeeded
 - end of stdout/stderr
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )
@@ -171,6 +185,7 @@ Creating file 'two.txt'
   Estimated Cycles:                        |                     (         )
 test_bin_bench_iter::low_level::bench_assists with_setup_path_and_teardown_0:() -> target/release/file-exists one.txt true
 Creating file 'one.txt'
+Verifying that file exists succeeded
 ./one.txt
 - end of stdout/stderr
   Instructions:                            |                     (No change)
@@ -181,6 +196,7 @@ Creating file 'one.txt'
   Estimated Cycles:                        |                     (         )
 test_bin_bench_iter::low_level::bench_assists with_setup_path_and_teardown_1:() -> target/release/file-exists two.txt true
 Creating file 'two.txt'
+Verifying that file exists succeeded
 ./two.txt
 - end of stdout/stderr
   Instructions:                            |                     (No change)
@@ -191,6 +207,7 @@ Creating file 'two.txt'
   Estimated Cycles:                        |                     (         )
 test_bin_bench_iter::low_level::bench_assists with_setup_and_teardown_both_path_0:() -> target/release/file-exists one.txt true
 Creating file 'one.txt'
+Verifying that file exists succeeded
 Removing 'one.txt'
 - end of stdout/stderr
   Instructions:                            |                     (No change)
@@ -201,6 +218,7 @@ Removing 'one.txt'
   Estimated Cycles:                        |                     (         )
 test_bin_bench_iter::low_level::bench_assists with_setup_and_teardown_both_path_1:() -> target/release/file-exists two.txt true
 Creating file 'two.txt'
+Verifying that file exists succeeded
 Removing 'two.txt'
 - end of stdout/stderr
   Instructions:                            |                     (No change)
@@ -213,6 +231,7 @@ test_bin_bench_iter::low_level::bench_assists with_setup_and_teardown_path_0:() 
 Creating files 'one.txt', 'two.txt'
 Creating file 'one.txt'
 Creating file 'two.txt'
+Verifying that file exists succeeded
 Removing 'one.txt'
 - end of stdout/stderr
   Instructions:                            |                     (No change)
@@ -225,6 +244,7 @@ test_bin_bench_iter::low_level::bench_assists with_setup_and_teardown_path_1:() 
 Creating files 'one.txt', 'two.txt'
 Creating file 'one.txt'
 Creating file 'two.txt'
+Verifying that file exists succeeded
 Removing 'two.txt'
 - end of stdout/stderr
   Instructions:                            |                     (No change)

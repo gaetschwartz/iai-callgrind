@@ -1,0 +1,31 @@
+# Test Description: `test_lib_bench_parallel_consistency`
+#
+# Run each benchmark once without parallel and then with parallel to see if the
+# metrics or any output differs.
+#
+# Expected Result:
+#
+# The metrics and output should match exactly when run serially and in parallel.
+groups:
+  - runs:
+      - args: []
+        expected:
+          files: expected_files.consistency.1a.yml
+          stdout: expected_stdout.consistency.1a
+          no_stderr: true
+      - args: ["--parallel=2"]
+        expected:
+          files: expected_files.consistency.1b.yml
+          stdout: expected_stdout.consistency.1b
+          no_stderr: true
+  - runs:
+      - args: ["--nocapture"]
+        expected:
+          files: expected_files.consistency.1a.yml
+          stdout: expected_stdout.consistency.2a
+          no_stderr: true
+      - args: ["--nocapture", "--parallel=2"]
+        expected:
+          files: expected_files.consistency.1b.yml
+          stdout: expected_stdout.consistency.2b
+          no_stderr: true

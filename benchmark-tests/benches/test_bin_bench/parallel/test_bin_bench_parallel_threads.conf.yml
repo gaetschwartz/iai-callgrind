@@ -1,42 +1,42 @@
 # Test Description: `test_bin_bench_parallel_threads`
 #
-# Same as `test_bin_bench_parallel` but this time with threads in a subprocess.
-# The test is separated from `test_bin_bench_parallel` since the metrics
-# fluctuate a little bit between a non-parallel and a parallel run and we need
+# Same as `test_bin_bench_parallel_consistency` but this time with threads in a
+# subprocess. The test is separated from `test_bin_bench_parallel_consistency`
+# since the metrics vary between a non-parallel and a parallel run and we need
 # to apply the `tolerance` option.
 #
 # Expected Result:
 #
-# The metrics should match with a small tolerance when run serially and in
-# parallel. The rest of the output should match exactly.
+# The metrics should match with a tolerance when run serially and in parallel.
+# The rest of the output should match exactly.
 groups:
   - runs:
       - args: []
         expected:
           stdout: expected_stdout.threads.1a
-          stderr: expected_stderr.empty
+          no_stderr: true
       - args: ["--parallel"]
         tolerance: 10
         expected:
           stdout: expected_stdout.threads.1b
-          stderr: expected_stderr.empty
+          no_stderr: true
   - runs:
       - args: ["--nocapture"]
         expected:
           stdout: expected_stdout.threads.2a
-          stderr: expected_stderr.empty
+          no_stderr: true
       - args: ["--nocapture", "--parallel"]
         tolerance: 10
         expected:
           stdout: expected_stdout.threads.2b
-          stderr: expected_stderr.empty
+          no_stderr: true
   - runs:
       - args: ["--nocapture", "--show-intermediate"]
         expected:
           stdout: expected_stdout.threads.3a
-          stderr: expected_stderr.empty
+          no_stderr: true
       - args: ["--nocapture", "--show-intermediate", "--parallel"]
         tolerance: 10
         expected:
           stdout: expected_stdout.threads.3b
-          stderr: expected_stderr.empty
+          no_stderr: true

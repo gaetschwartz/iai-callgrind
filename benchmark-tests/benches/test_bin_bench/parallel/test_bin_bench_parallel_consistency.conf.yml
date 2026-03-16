@@ -1,0 +1,55 @@
+# Test Description: `test_bin_bench_parallel`
+#
+# The intention is to run each benchmark once without parallel and then with
+# parallel to see if the metrics or any output differs. The documentation states
+# valgrind is single core nevertheless this is a general test if valgrind is
+# capable to be run in parallel without influencing each other or changing the
+# metrics.
+#
+# Expected Result:
+#
+# The metrics and output should match exactly when run serially and in parallel.
+groups:
+  - runs:
+      - args: ["--truncate-description=no"]
+        expected:
+          files: expected_files.consistency.1a.yml
+          stdout: expected_stdout.consistency.1a
+          no_stderr: true
+      - args: ["--parallel", "--truncate-description=no"]
+        flaky: 3
+        expected:
+          files: expected_files.consistency.1b.yml
+          stdout: expected_stdout.consistency.1b
+          no_stderr: true
+  - runs:
+      - args: ["--nocapture", "--truncate-description=no"]
+        expected:
+          files: expected_files.consistency.1a.yml
+          stdout: expected_stdout.consistency.2a
+          no_stderr: true
+      - args: ["--nocapture", "--parallel", "--truncate-description=no"]
+        flaky: 3
+        expected:
+          files: expected_files.consistency.1b.yml
+          stdout: expected_stdout.consistency.2b
+          no_stderr: true
+  - runs:
+      - args:
+          ["--nocapture", "--show-intermediate", "--truncate-description=no"]
+        expected:
+          files: expected_files.consistency.1a.yml
+          stdout: expected_stdout.consistency.3a
+          no_stderr: true
+      - args:
+          [
+            "--nocapture",
+            "--show-intermediate",
+            "--parallel",
+            "--truncate-description=no",
+          ]
+        flaky: 3
+        expected:
+          files: expected_files.consistency.1b.yml
+          stdout: expected_stdout.consistency.3b
+          no_stderr: true

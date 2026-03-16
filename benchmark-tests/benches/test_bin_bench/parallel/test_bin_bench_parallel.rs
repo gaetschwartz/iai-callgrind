@@ -1,52 +1,70 @@
-use benchmark_tests::fibonacci;
-use gungraun::{binary_benchmark, binary_benchmark_group, main, Command};
+use std::path::PathBuf;
+use std::time::Duration;
 
-fn setup_no_output() {
-    fibonacci(5);
-}
+use gungraun::{binary_benchmark, binary_benchmark_group, main, Command, Delay, DelayKind, Stdio};
 
-fn teardown_no_output() {
-    fibonacci(5);
-}
+const SUFFIX: &str = "test-file";
+const PREFIX: &str = module_path!();
 
-fn setup_with_output(tag: &str) {
-    println!("SETUP in {tag}");
-}
-
-fn teardown_with_output(tag: &str) {
-    println!("TEARDOWN in {tag}");
+fn test_file() -> PathBuf {
+    std::env::temp_dir().join(format!("{PREFIX}.{SUFFIX}"))
 }
 
 #[binary_benchmark]
-#[bench::setup_and_teardown_without_output(
-    setup = setup_no_output(),
-    teardown = teardown_no_output()
-)]
-#[bench::setup_and_teardown_with_output(
-    setup = setup_with_output("bench"),
-    teardown = teardown_with_output("bench")
-)]
-fn with_output_in_command() -> Command {
-    Command::new(env!("CARGO_BIN_EXE_echo")).arg("FOO").build()
-}
-
-#[binary_benchmark]
-fn subprocess() -> Command {
-    Command::new(env!("CARGO_BIN_EXE_subprocess"))
-        .args([env!("CARGO_BIN_EXE_echo"), "BAR"])
+fn file_exists() -> Command {
+    Command::new(env!("CARGO_BIN_EXE_file-exists"))
+        .delay(Delay::new(DelayKind::DurationElapse(
+            Duration::from_millis(500),
+        )))
+        .arg(test_file())
+        .arg("true")
         .build()
 }
 
+#[binary_benchmark]
+fn create_file() -> Command {
+    Command::new(env!("CARGO_BIN_EXE_echo"))
+        .arg("FOO")
+        .stdout(Stdio::File(test_file()))
+        .build()
+}
+
+fn remove_test_file(panic_if_not_exists: bool) {
+    let test_file = test_file();
+    let exists = test_file.exists();
+
+    if exists {
+        std::fs::remove_file(test_file).unwrap();
+    }
+
+    if panic_if_not_exists && !exists {
+        panic!("The test file was expected to be removed but did not exist");
+    }
+}
+
+fn max_parallel() -> usize {
+    if let Ok(var) = std::env::var("__MAX_PARALLEL") {
+        var.parse::<usize>()
+            .expect("__MAX_PARALLEL should be a valid number")
+    } else {
+        panic!("__MAX_PARALLEL needs to be set with a valid value");
+    }
+}
+
+// The point here is to start `file_exists` first and then `create_file`
 binary_benchmark_group!(
-    name = my_group,
-    benchmarks = [with_output_in_command, subprocess]
+    name = no_max_parallel,
+    setup = remove_test_file(false),
+    teardown = remove_test_file(false),
+    benchmarks = [file_exists, create_file]
 );
 
 binary_benchmark_group!(
-    name = group_assistants,
-    setup = setup_with_output("group"),
-    teardown = teardown_with_output("group"),
-    benchmarks = with_output_in_command
+    name = max_parallel_group,
+    max_parallel = max_parallel(),
+    setup = remove_test_file(false),
+    teardown = remove_test_file(false),
+    benchmarks = [file_exists, create_file]
 );
 
-main!(binary_benchmark_groups = [my_group, group_assistants]);
+main!(binary_benchmark_groups = [no_max_parallel, max_parallel_group]);

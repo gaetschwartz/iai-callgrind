@@ -1,52 +1,47 @@
 # Test Description: `test_bin_bench_parallel`
 #
-# The intention is to run each benchmark once without parallel and then with
-# parallel to see if the metrics or any output differs. The documentation states
-# valgrind is single core nevertheless this is a general test if valgrind is
-# capable to be run in parallel without influencing each other or changing the
-# metrics.
+# The test is very similar to `test_lib_bench_parallel`. See there for all the
+# comments.
 #
-# Expected Result:
-#
-# The metrics and output should match exactly when run serially and in parallel.
+# A benchmark run in this file is expected to succeed if the benchmarks in the
+# same group are executed in parallel. If the benchmarks don't run in parallel
+# then `file_exists` will panic.
 groups:
   - runs:
-      - args: ["--truncate-description=no"]
+      - args: ["--parallel=2", "--truncate-description=no"]
+        env:
+          __MAX_PARALLEL: "2"
         expected:
-          files: expected_files.1a.yml
-          stdout: expected_stdout.1a
-          stderr: expected_stderr.empty
-      - args: ["--parallel", "--truncate-description=no"]
-        expected:
-          files: expected_files.1b.yml
-          stdout: expected_stdout.1b
-          stderr: expected_stderr.empty
+          files: expected_files.parallel.1.yml
+          stdout: expected_stdout.parallel.1
+          no_stderr: true
+  # `max_parallel = 0` means no limit, so this should run in parallel and succeed
   - runs:
-      - args: ["--nocapture", "--truncate-description=no"]
+      - args: ["--parallel=2", "--truncate-description=no"]
+        env:
+          __MAX_PARALLEL: "0"
         expected:
-          files: expected_files.1a.yml
-          stdout: expected_stdout.2a
-          stderr: expected_stderr.empty
-      - args: ["--nocapture", "--parallel", "--truncate-description=no"]
-        expected:
-          files: expected_files.1b.yml
-          stdout: expected_stdout.2b
-          stderr: expected_stderr.empty
+          files: expected_files.parallel.1.yml
+          stdout: expected_stdout.parallel.1
+          no_stderr: true
   - runs:
-      - args:
-          ["--nocapture", "--show-intermediate", "--truncate-description=no"]
+      - args: ["--parallel=1", "--truncate-description=no"]
+        env:
+          __MAX_PARALLEL: "2"
         expected:
-          files: expected_files.1a.yml
-          stdout: expected_stdout.3a
-          stderr: expected_stderr.empty
-      - args:
-          [
-            "--nocapture",
-            "--show-intermediate",
-            "--parallel",
-            "--truncate-description=no",
-          ]
+          exit_code: 1
+          files: expected_files.parallel.2.yml
+          stdout: expected_stdout.parallel.2
+          stderr: expected_stderr.parallel.2
+  # Disable running in parallel only in the `max_parallel_group` by setting
+  # `max_parallel = 1`. The `no_max_parallel` group is still expected to run
+  # with --parallel=2.
+  - runs:
+      - args: ["--parallel=2", "--truncate-description=no"]
+        env:
+          __MAX_PARALLEL: "1"
         expected:
-          files: expected_files.1b.yml
-          stdout: expected_stdout.3b
-          stderr: expected_stderr.empty
+          exit_code: 1
+          files: expected_files.parallel.3.yml
+          stdout: expected_stdout.parallel.3
+          stderr: expected_stderr.parallel.2

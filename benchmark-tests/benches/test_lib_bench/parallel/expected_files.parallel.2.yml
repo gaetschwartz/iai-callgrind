@@ -1,0 +1,9 @@
+data:
+  - group: no_max_parallel
+    function: print_parallel
+    expected:
+      globs:
+        - pattern: callgrind.print_parallel.log.#*
+          count: 1
+        - pattern: callgrind.print_parallel.out.#*
+          count: 2

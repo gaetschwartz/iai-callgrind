@@ -1,25 +1,34 @@
-test_lib_bench_parallel::my_group::with_output_in_bench without_assists:vec! [5, 4, 3, 2, 1]
+test_lib_bench_parallel_consistency::my_group::with_output_in_bench without_assists:vec! [5, 4, 3, 2, 1]
+last number of sorted array: 5
+- end of stdout/stderr
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )
   LL Hits:                                 |                     (         )
   RAM Hits:                                |                     (         )
   Total read+write:                        |                     (No change)
   Estimated Cycles:                        |                     (         )
-test_lib_bench_parallel::my_group::with_output_in_bench with_setup:setup_worst_case_array(10)
+test_lib_bench_parallel_consistency::my_group::with_output_in_bench with_setup:setup_worst_case_array(10)
+last number of sorted array: 9
+- end of stdout/stderr
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )
   LL Hits:                                 |                     (         )
   RAM Hits:                                |                     (         )
   Total read+write:                        |                     (No change)
   Estimated Cycles:                        |                     (         )
-test_lib_bench_parallel::my_group::with_output_in_bench with_output_in_assists:setup_with_output(8)
+test_lib_bench_parallel_consistency::my_group::with_output_in_bench with_output_in_assists:setup_with_output(8)
+last number of worst case array: 0
+last number of sorted array: 7
+first number of inputs in teardown: 0
+- end of stdout/stderr
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )
   LL Hits:                                 |                     (         )
   RAM Hits:                                |                     (         )
   Total read+write:                        |                     (No change)
   Estimated Cycles:                        |                     (         )
-test_lib_bench_parallel::my_group::multiple_tools without_assists:vec! [5, 4, 3, 2, 1]
+test_lib_bench_parallel_consistency::my_group::multiple_tools without_assists:vec! [5, 4, 3, 2, 1]
+- end of stdout/stderr
   ======= CALLGRIND ====================================================================
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )
@@ -36,7 +45,8 @@ test_lib_bench_parallel::my_group::multiple_tools without_assists:vec! [5, 4, 3,
   At t-end blocks:                         |                     (No change)
   Reads bytes:                             |                     (No change)
   Writes bytes:                            |                     (No change)
-test_lib_bench_parallel::my_group::multiple_tools with_setup:setup_worst_case_array(10)
+test_lib_bench_parallel_consistency::my_group::multiple_tools with_setup:setup_worst_case_array(10)
+- end of stdout/stderr
   ======= CALLGRIND ====================================================================
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )
@@ -53,7 +63,10 @@ test_lib_bench_parallel::my_group::multiple_tools with_setup:setup_worst_case_ar
   At t-end blocks:                         |                     (No change)
   Reads bytes:                             |                     (No change)
   Writes bytes:                            |                     (No change)
-test_lib_bench_parallel::my_group::multiple_tools with_output_in_assists:setup_with_output(8)
+test_lib_bench_parallel_consistency::my_group::multiple_tools with_output_in_assists:setup_with_output(8)
+last number of worst case array: 0
+first number of inputs in teardown: 0
+- end of stdout/stderr
   ======= CALLGRIND ====================================================================
   Instructions:                            |                     (No change)
   L1 Hits:                                 |                     (         )

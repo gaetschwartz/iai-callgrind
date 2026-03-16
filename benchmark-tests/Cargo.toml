@@ -218,8 +218,8 @@ path = "benches/test_bin_bench/parallel/test_bin_bench_parallel.rs"
 
 [[bench]]
 harness = false
-name = "test_bin_bench_parallel_threads"
-path = "benches/test_bin_bench/parallel/test_bin_bench_parallel_threads.rs"
+name = "test_bin_bench_parallel_consistency"
+path = "benches/test_bin_bench/parallel/test_bin_bench_parallel_consistency.rs"
 
 [[bench]]
 harness = false
@@ -230,6 +230,11 @@ path = "benches/test_bin_bench/parallel/test_bin_bench_parallel_cleanup_on_error
 harness = false
 name = "test_bin_bench_parallel_cleanup_on_panic"
 path = "benches/test_bin_bench/parallel/test_bin_bench_parallel_cleanup_on_panic.rs"
+
+[[bench]]
+harness = false
+name = "test_bin_bench_parallel_threads"
+path = "benches/test_bin_bench/parallel/test_bin_bench_parallel_threads.rs"
 
 [[bench]]
 harness = false
@@ -370,6 +375,11 @@ path = "benches/test_lib_bench/parallel/test_lib_bench_parallel.rs"
 harness = false
 name = "test_lib_bench_parallel_cleanup_on_panic"
 path = "benches/test_lib_bench/parallel/test_lib_bench_parallel_cleanup_on_panic.rs"
+
+[[bench]]
+harness = false
+name = "test_lib_bench_parallel_consistency"
+path = "benches/test_lib_bench/parallel/test_lib_bench_parallel_consistency.rs"
 
 [[bench]]
 harness = false

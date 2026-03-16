@@ -1,0 +1,9 @@
+data:
+  - group: no_max_parallel
+    function: file_exists
+    expected:
+      globs:
+        - pattern: callgrind.file_exists.log.#*
+          count: 1
+        - pattern: callgrind.file_exists.out.#*
+          count: 2
