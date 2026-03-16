@@ -38,10 +38,10 @@ error: A binary_benchmark_group! needs a unique name. See the documentation of t
 21 | /     binary_benchmark_group!(
 22 | |         config = LibraryBenchmarkConfig::default(),
 23 | |         compare_by_id = true,
-24 | |         setup = setup(),
-25 | |         teardown = teardown(),
-26 | |         benchmarks =
-27 | |     );
+24 | |         max_parallel = 0,
+...  |
+27 | |         benchmarks =
+28 | |     );
    | |_____^
    |
    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -49,47 +49,47 @@ error: A binary_benchmark_group! needs a unique name. See the documentation of t
 error: A binary_benchmark_group! needs a unique name. See the documentation of this macro for further details.
 
        hint = binary_benchmark_group!(name = some_ident, benchmarks = some_binary_benchmark);
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:29:5
+  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:30:5
    |
-29 | /     binary_benchmark_group!(
-30 | |         config = LibraryBenchmarkConfig::default(),
-31 | |         compare_by_id = true,
-32 | |         setup = setup(),
-33 | |         teardown = teardown(),
-34 | |         benchmarks = bench
-35 | |     );
+30 | /     binary_benchmark_group!(
+31 | |         config = LibraryBenchmarkConfig::default(),
+32 | |         compare_by_id = true,
+33 | |         max_parallel = 0,
+...  |
+36 | |         benchmarks = bench
+37 | |     );
    | |_____^
    |
    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error: A binary_benchmark_group! needs a unique name. See the documentation of this macro for further details.
+error: You are using an invalid or deprecated syntax of the binary_benchmark_group! macro to set up binary benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
-       hint = binary_benchmark_group!(name = some_ident; benchmarks = some_binary_benchmark);
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:37:5
+       hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
+  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:39:5
    |
-37 | /     binary_benchmark_group!(
-38 | |         config = LibraryBenchmarkConfig::default();
-39 | |         compare_by_id = true;
-40 | |         setup = setup();
-41 | |         teardown = teardown();
-42 | |         benchmarks =
-43 | |     );
+39 | /     binary_benchmark_group!(
+40 | |         config = LibraryBenchmarkConfig::default();
+41 | |         compare_by_id = true;
+42 | |         max_parallel = 0,
+...  |
+45 | |         benchmarks =
+46 | |     );
    | |_____^
    |
    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error: A binary_benchmark_group! needs a unique name. See the documentation of this macro for further details.
+error: You are using an invalid or deprecated syntax of the binary_benchmark_group! macro to set up binary benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
-       hint = binary_benchmark_group!(name = some_ident; benchmarks = some_binary_benchmark);
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:45:5
+       hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
+  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:48:5
    |
-45 | /     binary_benchmark_group!(
-46 | |         config = LibraryBenchmarkConfig::default();
-47 | |         compare_by_id = true;
-48 | |         setup = setup();
-49 | |         teardown = teardown();
-50 | |         benchmarks = bench
-51 | |     );
+48 | /     binary_benchmark_group!(
+49 | |         config = LibraryBenchmarkConfig::default();
+50 | |         compare_by_id = true;
+51 | |         max_parallel = 0,
+...  |
+54 | |         benchmarks = bench
+55 | |     );
    | |_____^
    |
    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -97,9 +97,9 @@ error: A binary_benchmark_group! needs a unique name. See the documentation of t
 error: A binary_benchmark_group! needs a unique name. See the documentation of this macro for further details.
 
        hint = binary_benchmark_group!(name = some_ident, benchmarks = some_binary_benchmark);
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:53:5
+  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:57:5
    |
-53 |     binary_benchmark_group!(benchmarks = [bench]);
+57 |     binary_benchmark_group!(benchmarks = [bench]);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -107,9 +107,9 @@ error: A binary_benchmark_group! needs a unique name. See the documentation of t
 error: A binary_benchmark_group! needs a unique name. See the documentation of this macro for further details.
 
        hint = binary_benchmark_group!(name = some_ident, benchmarks = some_binary_benchmark);
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:54:5
+  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:58:5
    |
-54 |     binary_benchmark_group!(benchmarks = bench, bench);
+58 |     binary_benchmark_group!(benchmarks = bench, bench);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -117,9 +117,9 @@ error: A binary_benchmark_group! needs a unique name. See the documentation of t
 error: A binary_benchmark_group! needs a unique name. See the documentation of this macro for further details.
 
        hint = binary_benchmark_group!(name = some_ident, benchmarks = some_binary_benchmark);
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:55:5
+  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:59:5
    |
-55 |     binary_benchmark_group!(benchmarks = [bench, bench]);
+59 |     binary_benchmark_group!(benchmarks = [bench, bench]);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -127,12 +127,12 @@ error: A binary_benchmark_group! needs a unique name. See the documentation of t
 error: A binary_benchmark_group! needs at least 1 benchmark function which is annotated with #[binary_benchmark] or you can use the low level syntax. See the documentation of this macro for further details.
 
        hint = binary_benchmark_group!(name = some_ident, benchmarks = some_binary_benchmark);
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:62:5
+  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:66:5
    |
-62 | /     binary_benchmark_group!(
-63 | |         name = some,
-64 | |         benchmarks =
-65 | |     );
+66 | /     binary_benchmark_group!(
+67 | |         name = some,
+68 | |         benchmarks =
+69 | |     );
    | |_____^
    |
    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -140,12 +140,12 @@ error: A binary_benchmark_group! needs at least 1 benchmark function which is an
 error: You are using an invalid or deprecated syntax of the binary_benchmark_group! macro to set up binary benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
        hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:67:5
+  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:71:5
    |
-67 | /     binary_benchmark_group!(
-68 | |         name = some,
-69 | |         benchmarks = |group|
-70 | |     );
+71 | /     binary_benchmark_group!(
+72 | |         name = some,
+73 | |         benchmarks = |group|
+74 | |     );
    | |_____^
    |
    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -153,12 +153,12 @@ error: You are using an invalid or deprecated syntax of the binary_benchmark_gro
 error: You are using an invalid or deprecated syntax of the binary_benchmark_group! macro to set up binary benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
        hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:72:5
+  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:76:5
    |
-72 | /     binary_benchmark_group!(
-73 | |         name = some,
-74 | |         benchmarks = |group: &mut BinaryBenchmarkGroup|
-75 | |     );
+76 | /     binary_benchmark_group!(
+77 | |         name = some,
+78 | |         benchmarks = |group: &mut BinaryBenchmarkGroup|
+79 | |     );
    | |_____^
    |
    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -166,12 +166,12 @@ error: You are using an invalid or deprecated syntax of the binary_benchmark_gro
 error: A binary_benchmark_group! needs at least 1 benchmark function which is annotated with #[binary_benchmark] or you can use the low level syntax. See the documentation of this macro for further details.
 
        hint = binary_benchmark_group!(name = some_ident; benchmarks = some_binary_benchmark);
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:78:5
+  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:82:5
    |
-78 | /     binary_benchmark_group!(
-79 | |         name = some;
-80 | |         benchmarks =
-81 | |     );
+82 | /     binary_benchmark_group!(
+83 | |         name = some;
+84 | |         benchmarks =
+85 | |     );
    | |_____^
    |
    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -179,12 +179,12 @@ error: A binary_benchmark_group! needs at least 1 benchmark function which is an
 error: This low level form of the binary_benchmark_group! needs you to use the `BinaryBenchmarkGroup` to setup benchmarks. See the documentation of this macro for further details.
 
        hint = binary_benchmark_group!(name = some_ident, benchmarks = |group| { group.binary_benchmark(/* BinaryBenchmark::new */); });
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:83:5
+  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:87:5
    |
-83 | /     binary_benchmark_group!(
-84 | |         name = some;
-85 | |         benchmarks = |group|
-86 | |     );
+87 | /     binary_benchmark_group!(
+88 | |         name = some;
+89 | |         benchmarks = |group|
+90 | |     );
    | |_____^
    |
    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -192,12 +192,12 @@ error: This low level form of the binary_benchmark_group! needs you to use the `
 error: This low level form of the binary_benchmark_group! needs you to use the `BinaryBenchmarkGroup` to setup benchmarks. See the documentation of this macro for further details.
 
        hint = binary_benchmark_group!(name = some_ident, benchmarks = |group: &mut BinaryBenchmarkGroup| { group.binary_benchmark(/* BinaryBenchmark::new */); });
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:88:5
+  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:92:5
    |
-88 | /     binary_benchmark_group!(
-89 | |         name = some;
-90 | |         benchmarks = |group: &mut BinaryBenchmarkGroup|
-91 | |     );
+92 | /     binary_benchmark_group!(
+93 | |         name = some;
+94 | |         benchmarks = |group: &mut BinaryBenchmarkGroup|
+95 | |     );
    | |_____^
    |
    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -205,31 +205,111 @@ error: This low level form of the binary_benchmark_group! needs you to use the `
 error: You are using an invalid or deprecated syntax of the binary_benchmark_group! macro to set up binary benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
        hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:97:5
-   |
-97 |     binary_benchmark_group!(name = some);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:101:5
+    |
+101 |     binary_benchmark_group!(name = some);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: A binary_benchmark_group! needs at least 1 benchmark function which is annotated with #[binary_benchmark] or you can use the low level syntax. See the documentation of this macro for further details.
 
        hint = binary_benchmark_group!(name = some_ident, benchmarks = some_binary_benchmark);
-  --> tests/ui/test_binary_benchmark_group_when_invalid.rs:98:5
-   |
-98 |     binary_benchmark_group!(name = some,);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:102:5
+    |
+102 |     binary_benchmark_group!(name = some,);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: A binary_benchmark_group! needs at least 1 benchmark function which is annotated with #[binary_benchmark] or you can use the low level syntax. See the documentation of this macro for further details.
 
        hint = binary_benchmark_group!(name = some_ident; benchmarks = some_binary_benchmark);
-   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:99:5
+   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:103:5
     |
-99  | /     binary_benchmark_group!(
-100 | |         name = some;
-101 | |     );
+103 | /     binary_benchmark_group!(
+104 | |         name = some;
+105 | |     );
     | |_____^
     |
     = note: this error originates in the macro `binary_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0308]: mismatched types
+   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:117:59
+    |
+117 |     binary_benchmark_group!(name = some_1, max_parallel = None, benchmarks = some_func);
+    |     ------------------------------------------------------^^^^-------------------------
+    |     |                                                     |
+    |     |                                                     expected `usize`, found `Option<_>`
+    |     expected due to this
+    |
+    = note: expected type `usize`
+               found enum `Option<_>`
+
+error[E0308]: mismatched types
+   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:118:59
+    |
+118 |     binary_benchmark_group!(name = some_2, max_parallel = 0i32, benchmarks = some_func);
+    |     ------------------------------------------------------^^^^-------------------------
+    |     |                                                     |
+    |     |                                                     expected `usize`, found `i32`
+    |     expected due to this
+    |
+help: change the type of the numeric literal from `i32` to `usize`
+    |
+118 |     binary_benchmark_group!(name = some_2, max_parallel = 0usize, benchmarks = some_func);
+    |                                                            ~~~~~
+
+error[E0308]: mismatched types
+   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:122:24
+    |
+120 | /     binary_benchmark_group!(
+121 | |         name = some_3,
+122 | |         max_parallel = None,
+    | |                        ^^^^ expected `usize`, found `Option<_>`
+123 | |         benchmarks = [some_func, some_func]
+124 | |     );
+    | |_____- expected due to this
+    |
+    = note: expected type `usize`
+               found enum `Option<_>`
+
+error[E0308]: mismatched types
+   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:127:59
+    |
+127 |     binary_benchmark_group!(name = some_4; max_parallel = None; benchmarks = some_func);
+    |     ------------------------------------------------------^^^^-------------------------
+    |     |                                                     |
+    |     |                                                     expected `usize`, found `Option<_>`
+    |     expected due to this
+    |
+    = note: expected type `usize`
+               found enum `Option<_>`
+
+error[E0308]: mismatched types
+   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:128:59
+    |
+128 |     binary_benchmark_group!(name = some_5; max_parallel = 0i32; benchmarks = some_func);
+    |     ------------------------------------------------------^^^^-------------------------
+    |     |                                                     |
+    |     |                                                     expected `usize`, found `i32`
+    |     expected due to this
+    |
+help: change the type of the numeric literal from `i32` to `usize`
+    |
+128 |     binary_benchmark_group!(name = some_5; max_parallel = 0usize; benchmarks = some_func);
+    |                                                            ~~~~~
+
+error[E0308]: mismatched types
+   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:131:24
+    |
+129 | /     binary_benchmark_group!(
+130 | |         name = some_6;
+131 | |         max_parallel = None;
+    | |                        ^^^^ expected `usize`, found `Option<_>`
+132 | |         benchmarks = some_func, some_func
+133 | |     );
+    | |_____- expected due to this
+    |
+    = note: expected type `usize`
+               found enum `Option<_>`
