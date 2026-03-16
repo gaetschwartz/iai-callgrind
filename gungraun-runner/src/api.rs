@@ -1033,6 +1033,9 @@ pub struct BinaryBenchmarkGroup {
     pub has_teardown: bool,
     /// The name or id of the `binary_benchmark_group!`
     pub id: String,
+    /// The maximum amount of parallelism for this group (0 = no limit, 1 = serial, N >= 2 = limit
+    /// to N)
+    pub max_parallel: Option<usize>,
 }
 
 /// The model for the main! macro
@@ -1206,6 +1209,9 @@ pub struct LibraryBenchmarkGroup {
     pub id: String,
     /// The actual data and the benchmarks of this group
     pub library_benchmarks: Vec<LibraryBenchmark>,
+    /// The maximum amount of parallelism for this group (0 = no limit, 1 = serial, N >= 2 = limit
+    /// to N)
+    pub max_parallel: Option<usize>,
 }
 
 /// The model for the `main` macro

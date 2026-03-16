@@ -77,6 +77,17 @@ pub enum Benches {
     BinBenches(Vec<BinBench>),
 }
 
+/// The configuration values for the maximum amount of parallelism
+#[derive(Debug, Copy, Clone)]
+pub enum MaxParallel {
+    /// No maximum for the amount of parallelism (0 or not specified)
+    NoMaximum,
+    /// No parallelism, run serially (1)
+    Serial,
+    /// Use this as maximum for the amount of parallelism (N >= 2)
+    Count(usize),
+}
+
 /// Data processor used for regular benchmark runs without explicit baseline save/load mode.
 #[derive(Debug)]
 pub struct BaselineDataProcessor {
@@ -131,6 +142,8 @@ pub struct Group {
     pub compare_by_id: bool,
     /// The index of this group in the top-level benchmark list.
     pub index: usize,
+    /// The maximum amount of parallel threads to use for the [`ThreadPool`]
+    pub max_parallel: MaxParallel,
     /// The module path prefix used for this group in output and diagnostics.
     pub module_path: ModulePath,
     /// Number of benchmarks filtered out before execution.
@@ -842,11 +855,17 @@ impl Group {
     pub fn run(self, config: &Arc<Config>) -> Result<BenchmarkSummaries> {
         let mut benchmark_summaries = BenchmarkSummaries::default();
 
-        let mut thread_pool = ThreadPool::<Result<JobResult>>::new(config.meta.args.parallel)?;
         let compare_by_id = self.compare_by_id;
+        let num_threads = match self.max_parallel {
+            MaxParallel::NoMaximum => config.meta.args.parallel,
+            MaxParallel::Serial => 1,
+            MaxParallel::Count(num) => config.meta.args.parallel.min(num),
+        };
         let num_benches = self.benches.len();
         let module_path = Arc::new(self.module_path.clone());
         let main_index = self.index;
+
+        let mut thread_pool = ThreadPool::<Result<JobResult>>::new(num_threads)?;
 
         match self.benches {
             Benches::LibBenches(lib_benches) => {
@@ -1044,6 +1063,7 @@ impl Groups {
                 compare_by_id: binary_benchmark_group
                     .compare_by_id
                     .unwrap_or(defaults::COMPARE_BY_ID),
+                max_parallel: binary_benchmark_group.max_parallel.into(),
                 module_path: group_module_path,
                 num_filtered: 0,
                 setup,
@@ -1194,6 +1214,7 @@ impl Groups {
                 compare_by_id: library_benchmark_group
                     .compare_by_id
                     .unwrap_or(defaults::COMPARE_BY_ID),
+                max_parallel: library_benchmark_group.max_parallel.into(),
                 module_path: group_module_path,
                 num_filtered: 0,
                 setup,
@@ -1335,6 +1356,16 @@ impl Groups {
         }
 
         Ok(benchmark_summaries)
+    }
+}
+
+impl From<Option<usize>> for MaxParallel {
+    fn from(value: Option<usize>) -> Self {
+        match value {
+            None | Some(0) => Self::NoMaximum,
+            Some(1) => Self::Serial,
+            Some(num) => Self::Count(num),
+        }
     }
 }
 

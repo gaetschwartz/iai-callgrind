@@ -70,6 +70,7 @@ impl GroupsBuilder {
         has_setup: bool,
         has_teardown: bool,
         compare_by_id: Option<bool>,
+        max_parallel: Option<usize>,
         benches: InternalMacroBinBenches,
     ) {
         let mut internal_group = InternalBinaryBenchmarkGroup {
@@ -78,6 +79,7 @@ impl GroupsBuilder {
             has_setup,
             has_teardown,
             compare_by_id,
+            max_parallel,
             ..Default::default()
         };
 
