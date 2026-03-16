@@ -20,7 +20,13 @@ A quick reference of available macros in binary benchmarks:
 
 - `#[binary_benchmark]` and its inner attributes `#[bench]` and `#[benches]`:
   The exact pendant to the `#[library_benchmark]` attribute macro.
-- `binary_benchmark_group!`: Just the name of the macro has changed.
+- `binary_benchmark_group!`: Just the name of the macro has changed. It accepts
+  the same parameters as `library_benchmark_group!`, including `config`,
+  `compare_by_id`, `max_parallel`, `setup`, `teardown`, and `benchmarks`. The
+  `max_parallel` parameter lets you limit or disable parallel execution for a
+  specific group when using the `--parallel` CLI option. See [Running Benchmarks
+  in Parallel](../../cli_and_env/parallel.md#limiting-parallelism-per-group) for
+  more details.
 - `binary_benchmark_attribute!`: An additional macro if you intend to
   [migrate](./low_level.md#intermixing-high-level-and-low-level-api) from the high-level to the low-level
   api

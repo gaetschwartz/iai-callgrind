@@ -115,13 +115,13 @@ static mut COUNTER: usize = 0;
 #[library_benchmark]
 fn bench_a() {
     unsafe { COUNTER += 1; } // Only affects this process's COUNTER
-    // COUNTER = 1
+    // COUNTER == 1
 }
 
 #[library_benchmark]
 fn bench_b() {
     unsafe { COUNTER += 1; } // Different process, different COUNTER
-    // COUNTER = 1
+    // COUNTER == 1
 }
 # fn main() {}
 ```
@@ -238,7 +238,8 @@ library_benchmark_group!(
 ```
 
 **Recommendation**: Use unique identifiers for shared resources, or avoid
-parallel execution for such groups.
+parallel execution for such groups (See [Limiting Parallelism Per
+Group](#limiting-parallelism-per-group))
 
 ### Benchmarks with Internal Threading
 
@@ -305,26 +306,7 @@ With `--parallel=4`:
 - **Total: 32 concurrent threads**
 - **Result: Variable metrics across runs**
 
-#### Recommendations
-
-1. **Run threaded benchmarks serially**: Use `--parallel=1` for benchmarks that
-   spawn threads
-2. **Separate into groups**: Organize threaded and non-threaded benchmarks into
-   separate groups
-3. **Expect higher variance**: If you must use parallelism, accept that metrics
-   will vary more
-4. **Profile without parallelism first**: Establish baseline metrics with
-   `--parallel=1` before experimenting with higher values
-
-#### Impact on Different Metrics
-
-| Metric Type             | Impact of Internal Threading + Parallelism |
-| ----------------------- | ------------------------------------------ |
-| Instruction counts      | Relatively stable (deterministic)          |
-| Cache misses            | High variance (cache thrashing)            |
-| Cycle counts            | Very high variance (scheduling effects)    |
-| Memory bandwidth        | High variance (contention)                 |
-| Thread-specific metrics | Non-reproducible                           |
+**Recommendation**: Run threaded benchmarks serially
 
 ## Error Handling
 
@@ -373,7 +355,107 @@ With `--parallel=8` running 8 benchmarks simultaneously:
 5. Error from benchmark #3 is reported
 6. Temporary files are copied for inspection
 
-## Best Practices
+## Limiting Parallelism Per Group
+
+Sometimes you may want to run most benchmarks in parallel but need to disable or
+limit parallelism for specific benchmarks. For example, when:
+
+- A group contains benchmarks that conflict with each other (shared files, ports)
+- A group has benchmarks with internal threading that produce variable results
+- You want to isolate problematic benchmarks
+
+The `max_parallel` parameter in `library_benchmark_group!` and
+`binary_benchmark_group!` lets you control parallelism at the group level:
+
+```rust
+# extern crate gungraun;
+# use gungraun::{library_benchmark, library_benchmark_group};
+# #[library_benchmark] fn bench_a() {}
+# #[library_benchmark] fn bench_b() {}
+# #[library_benchmark] fn bench_c() {}
+# #[library_benchmark] fn bench_limited_a() {}
+# #[library_benchmark] fn bench_limited_b() {}
+# #[library_benchmark] fn bench_serial_a() {}
+# #[library_benchmark] fn bench_serial_b() {}
+// This group runs with full parallelism (up to --parallel value)
+library_benchmark_group!(
+    name = parallel_safe,
+    benchmarks = [bench_a, bench_b, bench_c]
+);
+
+// This group is limited to at most 2 parallel benchmarks
+library_benchmark_group!(
+    name = limited_parallel,
+    max_parallel = 2,
+    benchmarks = [bench_limited_a, bench_limited_b]
+);
+
+// This group runs serially (no parallelism)
+library_benchmark_group!(
+    name = needs_isolation,
+    max_parallel = 1,
+    benchmarks = [bench_serial_a, bench_serial_b]
+);
+# fn main() {}
+```
+
+### How `max_parallel` Values Work
+
+| Value            | Behavior                                   |
+| ---------------- | ------------------------------------------ |
+| Not specified    | No limit (uses `--parallel` value)         |
+| `0`              | No limit (same as not specifying)          |
+| `1`              | Serial execution (one benchmark at a time) |
+| `N` where N >= 2 | Limit to at most N parallel benchmarks     |
+
+### Important Notes
+
+- **Only effective with `--parallel`**: The `max_parallel` parameter has no
+  effect if you don't use the `--parallel` CLI option. Benchmarks run serially
+  by default.
+- **Per-group setting**: Each group can have its own `max_parallel` value,
+  allowing fine-grained control.
+- **Groups still run sequentially**: Even with `max_parallel`, groups themselves
+  still execute one after another. Only benchmarks _within_ a group run in
+  parallel (subject to the limit).
+
+### Example: Mixing Parallel and Serial Groups
+
+```rust
+# extern crate gungraun;
+# #[library_benchmark] fn fast_bench_1() {}
+# #[library_benchmark] fn fast_bench_2() {}
+# #[library_benchmark] fn threaded_bench() {}
+# #[library_benchmark] fn io_bound_bench() {}
+use gungraun::{library_benchmark, library_benchmark_group, main};
+// These can run in parallel with each other
+library_benchmark_group!(
+    name = fast_benches,
+    benchmarks = [fast_bench_1, fast_bench_2]
+);
+
+// These benchmarks must run serially (spawns internal threads) and conflicts on
+// file resources
+library_benchmark_group!(
+    name = threaded_and_io_bound,
+    max_parallel = 1,
+    benchmarks = [threaded_bench, io_bound_bench]
+);
+
+# fn main() {
+main!(library_benchmark_groups = [fast_benches, threaded_and_io_bound]);
+# }
+```
+
+Running with `--parallel=4`:
+
+1. `fast_benches` runs with up to 4 parallel benchmarks
+2. `threaded_and_io_bound` runs serially (waits for `fast_benches` to complete
+   first)
+
+## Conclusion
+
+### Best Practices
 
 - Create a baseline for the serial execution
 
@@ -391,7 +473,8 @@ With `--parallel=8` running 8 benchmarks simultaneously:
 
 ### Isolate Problematic Benchmarks
 
-If some benchmarks don't work well in parallel, isolate them in their own group:
+If some benchmarks don't work well in parallel, isolate them in their own group
+which [limits parallelism](#limiting-parallelism-per-group):
 
 ```rust
 # extern crate gungraun;
@@ -407,21 +490,20 @@ library_benchmark_group!(
     benchmarks = [bench_a, bench_b, bench_c]
 );
 
-// This runs alone (after parallel_safe completes)
+// The benchmarks in this group run serially
 library_benchmark_group!(
     name = needs_isolation,
+    max_parallel = 1,
     benchmarks = [problematic_bench]
 );
 # fn main() {}
 ```
 
-### Consider Your Storage or CI Environment
+#### Consider Your Storage or CI Environment
 
 - **SSD**: Can handle higher parallelism
 - **HDD**: Lower parallelism (2-4) due to seek times
 - **Network storage**: Very low parallelism or serial execution
-
-## Conclusion
 
 ### When to Avoid Parallel Execution
 
@@ -430,6 +512,6 @@ Avoid `--parallel` (or use `--parallel=1`) when:
 - Benchmarks are heavily I/O-bound
 - Benchmarks write to the same files or directories
 - Benchmarks bind to the same network ports
-- You need deterministic, reproducible results for comparison
+- You need 100% deterministic, reproducible results for comparison
 - You're debugging a benchmark
 - System resources are limited
