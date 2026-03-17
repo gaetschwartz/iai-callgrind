@@ -1,65 +1,89 @@
+# Test description: `test_bin_bench_exit_with`
+#
+# We test the behaviour of the benchmark program if it fails and is not expected
+# to fail, does not fail but is expected to fail ... In gungraun the user can
+# accomplished this with the `ExitWith` configuration option.
+#
+# Furthermore we test the behaviour in the presence of unexpected errors. In
+# that case the raw files from valgrind are expected to be transferred from the
+# temporary directory to the benchmark directory. These "error" files are
+# expected to be cleaned up after a benchmark run but before the next data
+# analysis.
 template: test_bin_bench_exit_with.rs.j2
 groups:
   - runs:
       - args: []
-        env:
-          RUSTFLAGS: "-C target-feature=-avx2"
         expected:
-          stdout: expected_stdout.1
+          files: expected_files.1a.yml
+          no_stderr: true
+          stdout: expected_stdout.1a
           exit_code: 0
         template_data:
           exit_code: "0"
           exit_with: ExitWith::Code(0)
-
       - args: []
-        env:
-          RUSTFLAGS: "-C target-feature=-avx2"
         expected:
-          stdout: expected_stdout.2
+          files: expected_files.1b.yml
+          no_stderr: true
+          stdout: expected_stdout.1b
           exit_code: 0
         template_data:
           exit_code: "0"
           exit_with: ExitWith::Success
-
       - args: []
-        env:
-          RUSTFLAGS: "-C target-feature=-avx2"
         expected:
-          stdout: expected_stdout.3
+          files: expected_files.1b.yml
+          no_stderr: true
+          stdout: expected_stdout.1c
           exit_code: 0
         template_data:
           exit_code: "1"
           exit_with: ExitWith::Code(1)
       - args: []
-        env:
-          RUSTFLAGS: "-C target-feature=-avx2"
         expected:
-          stdout: expected_stdout.4
+          files: expected_files.1b.yml
+          no_stderr: true
+          stdout: expected_stdout.1d
           exit_code: 0
         template_data:
           exit_code: "1"
           exit_with: ExitWith::Failure
       - args: []
-        env:
-          RUSTFLAGS: "-C target-feature=-avx2"
         expected:
-          exit_code: 1
-        template_data:
-          exit_code: "1"
-          exit_with: ExitWith::Success
-      - args: []
-        env:
-          RUSTFLAGS: "-C target-feature=-avx2"
-        expected:
+          files: expected_files.1e.yml
+          stderr: expected_stderr.1e
+          stdout: expected_stdout.1e
           exit_code: 1
         template_data:
           exit_code: "0"
           exit_with: ExitWith::Failure
       - args: []
-        env:
-          RUSTFLAGS: "-C target-feature=-avx2"
         expected:
+          files: expected_files.1e.yml
+          stderr: expected_stderr.1f
+          stdout: expected_stdout.1f
           exit_code: 1
         template_data:
           exit_code: "0"
           exit_with: ExitWith::Code(1)
+  - runs:
+      # Now, first an error run
+      - args: []
+        expected:
+          files: expected_files.2a.yml
+          stderr: expected_stderr.2a
+          stdout: expected_stdout.2a
+          exit_code: 1
+        template_data:
+          exit_code: "1"
+          exit_with: ExitWith::Success
+      # Then a successful run
+      - args: []
+        expected:
+          files: expected_files.2b.yml
+          no_stderr: true
+          stdout: expected_stdout.2b
+          exit_code: 0
+        template_data:
+          exit_code: "0"
+          exit_with: ExitWith::Success

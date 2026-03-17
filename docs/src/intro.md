@@ -8,7 +8,7 @@ cache, and memory profiling tools:
 [DHAT](https://valgrind.org/docs/manual/dh-manual.html). Gungraun delivers
 highly accurate and consistent measurements of Rust code, making it an ideal
 choice for continuous integration (CI) environments. Its flexibility allows you
-to access all Valgrind tools, even `Memcheck`, and utilize [Valgrind client
+to access all Valgrind tools, even `Memcheck`, and use [Valgrind client
 requests](./client_requests.md) effortlessly.
 
 Gungraun is:
@@ -33,7 +33,7 @@ Gungraun is:
   quickly create concise and clear benchmarks. Focus more on profiling and your
   code than on the framework.
 
-## Design philosophy and goals
+## Design Philosophy and Goals
 
 Gungraun benchmarks are designed to be runnable with `cargo bench`. The
 benchmark files are expanded to a benchmarking harness which replaces the native
@@ -45,7 +45,7 @@ complicated parts and repetitive tasks away and provide an easy to use and
 intuitive api. Gungraun tries to stay out of your way so you can focus more
 on profiling and your code!
 
-## When not to use Gungraun
+## When Not to Use Gungraun
 
 Although Gungraun is useful in many projects, there are cases where
 Gungraun is not a good fit.
@@ -57,7 +57,7 @@ Gungraun is not a good fit.
 - Gungraun cannot be run on Windows and platforms not supported by
   Valgrind.
 
-## Pronunciation and origin of the word Gungraun
+## Pronunciation and Origin of the Word Gungraun
 
 Like `valgrind`, the name has its roots in old norse mythology and is a
 composition of two words. The first is `gungnir`, Odin's legendary spear, in the

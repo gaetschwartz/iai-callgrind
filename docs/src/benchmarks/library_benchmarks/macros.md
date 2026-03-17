@@ -1,4 +1,4 @@
-# The macros in more detail
+# The Macros in More Detail
 
 This section is a brief reference to all the macros available in library
 benchmarks. Feel free to come back here from other sections if you need a
@@ -21,7 +21,7 @@ pub fn bubble_sort(mut array: Vec<i32>) -> Vec<i32> {
 }
 ```
 
-## The `#[library_benchmark]` attribute
+## The `#[library_benchmark]` Attribute
 
 This attribute needs to be present on all benchmark functions specified in the
 [`library_benchmark_group`](#the-library_benchmark_group-macro). The benchmark
@@ -83,7 +83,7 @@ main!(library_benchmark_groups = bubble_sort_group);
 # }
 ```
 
-### The `#[bench]` attribute
+### The `#[bench]` Attribute
 
 The basic structure is `#[bench::some_id(/* parameters */)]`. The part after the
 `::` must be an id unique within the same `#[library_benchmark]`. This attribute
@@ -132,7 +132,7 @@ main!(library_benchmark_groups = bubble_sort_group);
 # }
 ```
 
-### The `#[benches]` attribute
+### The `#[benches]` Attribute
 
 This attribute is used to specify multiple benchmarks. It accepts the same
 parameters as the [`#[bench]`](#the-bench-attribute) attribute: `args`,
@@ -168,7 +168,7 @@ main!(library_benchmark_groups = bubble_sort_group);
 # }
 ```
 
-## The library_benchmark_group! macro
+## The library_benchmark_group! Macro
 
 The `library_benchmark_group` macro accepts the following parameters (in this
 order and separated by a comma):
@@ -183,6 +183,12 @@ order and separated by a comma):
   with each other as long as the ids (the part after the `::` in
   `#[bench::id(...)]`) match. See also [Comparing benchmark
   functions](./compare_by_id.md)
+- **`max_parallel`** (optional): The default is no limit. If set, `0` means no
+  limit (same as not specifying), `1` disables parallel execution for this group,
+  and values `>= 2` limit the maximum number of parallel benchmarks. This option
+  only has an effect when the `--parallel` CLI option is used. See
+  [Running Benchmarks in Parallel](../../cli_and_env/parallel.md#limiting-parallelism-per-group)
+  for more details.
 - **`setup`** (optional): A setup function or any valid expression which is run
   before all benchmarks of this group
 - **`teardown`** (optional): A teardown function or any valid expression which
@@ -198,7 +204,7 @@ or function call as in `setup = group_setup_function()`. Also, these `setup` and
 `teardown` functions are not overridden by the ones from any of the before
 mentioned attributes.
 
-## The main! macro
+## The main! Macro
 
 This macro is the entry point for Gungraun and creates the benchmark
 harness. It accepts the following top-level arguments in this order (separated

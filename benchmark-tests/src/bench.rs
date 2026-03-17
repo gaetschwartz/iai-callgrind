@@ -89,6 +89,8 @@ lazy_static! {
         Regex::new(r"^(Gungraun result:.*finished in\s*)([0-9.]+)(s)$").expect("Regex should compile");
     static ref THREAD_PANICKED: Regex =
         Regex::new(r"^(?<start>thread '.*' )(?<pid>\([0-9]+\))?(?<end>\s*panicked at .*)$").expect("Regex should compile");
+    static ref ABSOLUTE_PATH_APOSTROPHE_RE: Regex =
+        Regex::new(r"[']([/][^/']+)+[']").expect("Regex should compile");
 }
 
 #[derive(Debug, Clone)]
@@ -147,6 +149,12 @@ struct ExpectedConfig {
     exit_code: Option<i32>,
     #[serde(default)]
     zero_metrics: bool,
+    #[serde(default)]
+    no_files: bool,
+    #[serde(default)]
+    no_stdout: bool,
+    #[serde(default)]
+    no_stderr: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -502,7 +510,14 @@ impl BenchmarkOutput {
         print_info("STDOUT:");
         stdout().write_all(&output.stdout).unwrap();
 
-        if let Some(stderr) = &expected.stderr {
+        if expected.no_stderr {
+            let filtered = self.filter_stderr(&output.stderr);
+            if filtered.is_empty() {
+                print_info("Verifying stderr successful: Expected no stderr");
+            } else {
+                panic!("Assertion of stderr failed: Expected no stderr");
+            }
+        } else if let Some(stderr) = &expected.stderr {
             let mut expected_stderr: Vec<u8> = Vec::new();
             File::open(bench_dir.join(stderr))
                 .expect("File should exist")
@@ -520,11 +535,11 @@ impl BenchmarkOutput {
                     );
 
                     File::create(bench_dir.join(stderr))
-                        .expect("Opening expected stdout for writing should succeed")
+                        .expect("Opening expected stderr for writing should succeed")
                         .write_all(filtered.as_bytes())
-                        .expect("Writing to expected stdout should succeed");
+                        .expect("Writing to expected stderr should succeed");
 
-                    print_info("Overwriting stdout successful");
+                    print_info("Overwriting stderr successful");
                 } else {
                     print_info("Skip overwrite since verifying stderr was successful");
                 }
@@ -540,7 +555,14 @@ impl BenchmarkOutput {
             }
         }
 
-        if let Some(stdout) = &expected.stdout {
+        if expected.no_stdout {
+            let filtered = self.filter_stdout(&output.stdout);
+            if filtered.is_empty() {
+                print_info("Verifying stdout successful: Expected no stdout");
+            } else {
+                panic!("Assertion of stdout failed: Expected no stdout");
+            }
+        } else if let Some(stdout) = &expected.stdout {
             let mut expected_stdout: Vec<u8> = Vec::new();
             File::open(bench_dir.join(stdout))
                 .expect("File should exist")
@@ -612,6 +634,7 @@ impl BenchmarkOutput {
             };
 
             let line = PROCESS_DID_NOT_EXIT_SUCCESSFULLY_RE.replace(&line, "$1<__PATH__>$3");
+            let line = ABSOLUTE_PATH_APOSTROPHE_RE.replace(&line, "'<__ABS_PATH__>$1'");
             let line = REGRESSION_SOFT_RE
                 .replace(&line, "$1<__NUM__>$3<__NUM__>$5<__PERCENT__>$7<__NUM__>$9");
             let line = REGRESSION_HARD_RE.replace(&line, "$1<__NUM__>$3<__DIFF__>$5<__LIMIT__>$7");
@@ -629,6 +652,22 @@ impl BenchmarkOutput {
             } else {
                 (&line[0..0], line.as_str())
             };
+
+            let line = if let Some(caps) = THREAD_PANICKED.captures(line) {
+                let mut new = String::with_capacity(line.len());
+                new.push_str(caps.name("start").unwrap().as_str());
+                if caps.name("pid").is_some() {
+                    new.push_str("(<__PID__>)");
+                }
+
+                new.push_str(caps.name("end").unwrap().as_str());
+
+                new
+            } else {
+                line.to_owned()
+            };
+
+            let line = line.as_str();
 
             // The `  Details: ...` can contain platform, toolchain specific information about a
             // tool run and make the benchmark tests flaky. So, we filter the details. The
@@ -1085,7 +1124,11 @@ impl RunConfig {
         bench_name: &str,
     ) {
         if let Some(expected) = &self.expected {
-            if expected.stdout.is_some() || expected.stderr.is_some() {
+            if expected.stdout.is_some()
+                || expected.no_stdout
+                || expected.stderr.is_some()
+                || expected.no_stderr
+            {
                 output.assert(bench_dir, meta, expected);
             }
             output.assert_exit(expected.exit_code);
@@ -1106,6 +1149,31 @@ impl RunConfig {
                 for expected in expected_runs.data {
                     expected.assert(&dest_dir, schema);
                 }
+            } else if expected.no_files {
+                let package_dir = home_dir.join(PACKAGE);
+                let base_dir = package_dir.join(bench_name);
+
+                if base_dir.exists() {
+                    let list = glob(&format!("{}/**/*", base_dir.display()))
+                        .unwrap()
+                        .map(Result::unwrap)
+                        .fold(String::new(), |mut acc, p| {
+                            let display = p.strip_prefix(&package_dir).unwrap().display();
+                            acc.push_str(&format!("  {display}\n"));
+                            acc
+                        });
+                    panic!(
+                        "The benchmark directory '{}' was not expected to exist but found:\n{list}",
+                        base_dir.display()
+                    );
+                } else {
+                    print_info(format!(
+                        "Verifying the benchmark directory '{}' not exists was successful",
+                        base_dir.display()
+                    ));
+                }
+            } else {
+                // do nothing
             }
         }
 
@@ -1263,5 +1331,40 @@ mod tests {
             ),
             replaced
         );
+    }
+
+    #[rstest]
+    #[case::one_path_component("Expected '/root/exit-with'", &["'/root/exit-with'", "/exit-with"])]
+    #[case::two_path_component(
+        "Expected '/some/root/exit-with'",
+        &["'/some/root/exit-with'", "/exit-with"]
+    )]
+    #[case::multiple_path_component(
+        "Expected '/some/root/and/more/path/components/exit-with'",
+        &["'/some/root/and/more/path/components/exit-with'", "/exit-with"]
+    )]
+    #[case::two_apostrophes(
+        "Expected '/root/exit-with' to exit with '1' but it succeeded",
+        &["'/root/exit-with'", "/exit-with"]
+    )]
+    fn test_absolute_path_apostrophe_re(#[case] haystack: &str, #[case] matches: &[&str]) {
+        if !matches.is_empty() {
+            let caps = ABSOLUTE_PATH_APOSTROPHE_RE
+                .captures(haystack)
+                .expect("The regex should succeed to match");
+
+            let caps_debug_string = format!("{caps:?}");
+            assert_eq!(caps.len(), matches.len(), "{caps_debug_string}");
+
+            for (cap, mat) in caps.iter().zip(matches) {
+                assert_eq!(
+                    cap.expect("The capture should be present").as_str(),
+                    *mat,
+                    "{caps_debug_string}"
+                );
+            }
+        } else {
+            assert!(!ABSOLUTE_PATH_APOSTROPHE_RE.is_match(haystack))
+        }
     }
 }

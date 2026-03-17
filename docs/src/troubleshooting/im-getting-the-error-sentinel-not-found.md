@@ -1,4 +1,4 @@
-# I'm getting the error Sentinel ... not found
+# I'm Getting the Error Sentinel ... Not Found
 
 You've most likely disabled creating debug symbols in your cargo `bench`
 profile. This can originate in an option you've added to the `release` profile

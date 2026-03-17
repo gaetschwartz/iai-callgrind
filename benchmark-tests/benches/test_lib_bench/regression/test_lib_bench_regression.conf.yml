@@ -9,6 +9,7 @@ groups:
           stdout: expected_stdout.empty
           stderr: expected_stderr.callgrind-hard-limit
           exit_code: 1
+          no_files: true
         template_data:
           callgrind_hard_limit: 200.0
       # cachegrind
@@ -17,6 +18,7 @@ groups:
           stdout: expected_stdout.empty
           stderr: expected_stderr.cachegrind-hard-limit
           exit_code: 1
+          no_files: true
         template_data:
           cachegrind_hard_limit: Limit::Float(500000.0)
       # dhat
@@ -25,12 +27,14 @@ groups:
           stdout: expected_stdout.empty
           stderr: expected_stderr.dhat-hard-limit
           exit_code: 1
+          no_files: true
         template_data:
           dhat_hard_limit: 5.0
   # regress all with fail-fast
   - runs:
       - args: []
         expected:
+          files: expected_files.1.yml
           stdout: expected_stdout.1
           stderr: expected_stderr.empty
           exit_code: 0
@@ -38,6 +42,7 @@ groups:
       # regress callgrind fail fast
       - args: []
         expected:
+          files: expected_files.callgrind-fail-fast.yml
           stdout: expected_stdout.callgrind-fail-fast
           stderr: expected_stderr.callgrind-fail-fast
           exit_code: 3
@@ -47,6 +52,7 @@ groups:
       # regress cachegrind fail fast
       - args: []
         expected:
+          files: expected_files.cachegrind-fail-fast.yml
           stdout: expected_stdout.cachegrind-fail-fast
           stderr: expected_stderr.cachegrind-fail-fast
           exit_code: 3
@@ -66,12 +72,14 @@ groups:
   - runs:
       - args: []
         expected:
+          files: expected_files.1.yml
           stdout: expected_stdout.1
           stderr: expected_stderr.empty
           exit_code: 0
         template_data: {}
       - args: []
         expected:
+          files: expected_files.no-fail-fast.yml
           stdout: expected_stdout.no-fail-fast
           stderr: expected_stderr.no-fail-fast
           exit_code: 3
@@ -83,6 +91,7 @@ groups:
   - runs:
       - args: []
         expected:
+          files: expected_files.1.yml
           stdout: expected_stdout.1
           stderr: expected_stderr.empty
           exit_code: 0
@@ -98,6 +107,7 @@ groups:
             "readsbytes=0%,totalbytes=16",
           ]
         expected:
+          files: expected_files.no-fail-fast.yml
           stdout: expected_stdout.args
           stderr: expected_stderr.args
           exit_code: 3
@@ -107,6 +117,7 @@ groups:
           dhat_array_length: 5
       - args: ["--regression-fail-fast"]
         expected:
+          files: expected_files.args-fail-fast.yml
           stdout: expected_stdout.args.fail-fast
           stderr: expected_stderr.callgrind-fail-fast
           exit_code: 3

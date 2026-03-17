@@ -79,9 +79,11 @@ callgrind
 cicd
 clippy
 condi
+condvar
 consts
 coregrind
 coreutils
+cpus
 crabgrind
 cstring
 deallocations
@@ -192,6 +194,7 @@ peekable
 pids
 pipefail
 polonius
+popd
 posix
 postconditions
 powerset
@@ -204,6 +207,7 @@ proccontrol
 profraw
 pthread
 punct
+pushd
 quickstart
 ramhitrate
 ramhits
@@ -233,6 +237,7 @@ rustversion
 rwlock
 rwlocks
 sandboxing
+sanitized
 sched
 schemars
 sctx
@@ -265,7 +270,9 @@ taiki
 taplo
 tempdir
 tempfile
+thiserror
 threadid
+tmpfs
 totalblocks
 totalbytes
 totalevents
@@ -275,8 +282,10 @@ totalunits
 trybuild
 trycmd
 unaddressable
+unistd
 unmark
 unparse
+unsanitized
 usize
 valgrind
 valgrind's

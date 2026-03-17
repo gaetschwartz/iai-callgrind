@@ -1,0 +1,55 @@
+data:
+  - group: my_group
+    function: with_output_in_bench
+    id: without_assists
+    expected:
+      files:
+        - callgrind.with_output_in_bench.without_assists.log
+        - callgrind.with_output_in_bench.without_assists.out
+        - summary.json
+  - group: my_group
+    function: with_output_in_bench
+    id: with_output_in_assists
+    expected:
+      files:
+        - callgrind.with_output_in_bench.with_output_in_assists.log
+        - callgrind.with_output_in_bench.with_output_in_assists.out
+        - summary.json
+  - group: my_group
+    function: with_output_in_bench
+    id: with_setup
+    expected:
+      files:
+        - callgrind.with_output_in_bench.with_setup.log
+        - callgrind.with_output_in_bench.with_setup.out
+        - summary.json
+  - group: my_group
+    function: multiple_tools
+    id: with_output_in_assists
+    expected:
+      files:
+        - callgrind.multiple_tools.with_output_in_assists.log
+        - callgrind.multiple_tools.with_output_in_assists.out
+        - dhat.multiple_tools.with_output_in_assists.log
+        - dhat.multiple_tools.with_output_in_assists.out
+        - summary.json
+  - group: my_group
+    function: multiple_tools
+    id: with_setup
+    expected:
+      files:
+        - callgrind.multiple_tools.with_setup.log
+        - callgrind.multiple_tools.with_setup.out
+        - dhat.multiple_tools.with_setup.log
+        - dhat.multiple_tools.with_setup.out
+        - summary.json
+  - group: my_group
+    function: multiple_tools
+    id: without_assists
+    expected:
+      files:
+        - callgrind.multiple_tools.without_assists.log
+        - callgrind.multiple_tools.without_assists.out
+        - dhat.multiple_tools.without_assists.log
+        - dhat.multiple_tools.without_assists.out
+        - summary.json

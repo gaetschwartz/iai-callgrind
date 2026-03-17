@@ -38,7 +38,7 @@ pub struct Calls {
 pub struct Positions(pub IndexMap<PositionType, u64>);
 
 impl Calls {
-    /// Create new `Calls` struct
+    /// Creates new `Calls` struct.
     pub fn from<I, T>(mut iter: T, mut positions: Positions) -> Self
     where
         I: AsRef<str>,
@@ -101,14 +101,14 @@ impl Metrics {
         Ok(())
     }
 
-    /// Return true if costs are already summarized
+    /// Returns `true` if costs are already summarized.
     ///
     /// This method just probes for [`EventKind::EstimatedCycles`] to detect the summarized state.
     pub fn is_summarized(&self) -> bool {
         self.metric_by_kind(&EventKind::EstimatedCycles).is_some()
     }
 
-    /// Return true if costs can be summarized
+    /// Returns `true` if costs can be summarized.
     ///
     /// This method probes for [`EventKind::I1mr`] which is present if callgrind was run with the
     /// cache simulation (`--cache-sim=yes`) enabled.
@@ -137,7 +137,7 @@ impl FromStr for PositionType {
 }
 
 impl Positions {
-    /// Create a new `Positions` from the content of an iterator
+    /// Creates a new `Positions` from the content of an iterator.
     pub fn try_from_iter_str<'a, I>(iter: I) -> Result<Self>
     where
         I: Iterator<Item = &'a str>,
@@ -163,12 +163,12 @@ impl Positions {
         }
     }
 
-    /// Return the length of the positions
+    /// Returns the length of the positions.
     pub fn len(&self) -> usize {
         self.0.len()
     }
 
-    /// Return true if positions is empty
+    /// Returns `true` if positions is empty.
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }

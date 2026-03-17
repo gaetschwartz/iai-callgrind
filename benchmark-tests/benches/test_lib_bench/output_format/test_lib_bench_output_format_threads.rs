@@ -18,7 +18,7 @@ use gungraun::{
 )]
 fn bench_with_format(a: &str) -> Vec<u64> {
     println!("{a}");
-    black_box(benchmark_tests::find_primes_multi_thread(3))
+    black_box(benchmark_tests::find_primes_multi_thread(2))
 }
 
 #[library_benchmark]
@@ -27,7 +27,7 @@ fn bench_with_format(a: &str) -> Vec<u64> {
 )]
 fn bench_without_format(a: &str) -> Vec<u64> {
     println!("{a}");
-    black_box(benchmark_tests::find_primes_multi_thread(2))
+    black_box(benchmark_tests::find_primes_multi_thread(1))
 }
 
 library_benchmark_group!(

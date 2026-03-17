@@ -1,4 +1,4 @@
-# Configure the exit code of the Command
+# Configure the Exit Code of the Command
 
 Usually, if a `Command` exits with a non-zero exit code, the whole benchmark run
 fails and stops. If the exit code of the benchmarked `Command` is to be expected

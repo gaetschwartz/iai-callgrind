@@ -15,7 +15,7 @@ See also the [Valgrind User
 Manual](https://valgrind.org/docs/manual/manual.html) for all the details about
 each tool and their command line arguments.
 
-## Running other Valgrind tools
+## Running Other Valgrind Tools
 
 It's possible to change the default tool `Callgrind` to any other valgrind tool
 with the [command-line argument](./cli_and_env/basics.md)

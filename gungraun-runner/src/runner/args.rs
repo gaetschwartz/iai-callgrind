@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 
+use anyhow::Result;
 use clap::builder::BoolishValueParser;
 use clap::{ArgAction, Parser};
 use indexmap::{indexset, IndexMap, IndexSet};
@@ -24,6 +25,7 @@ use crate::api::{
     CachegrindMetric, CachegrindMetrics, CallgrindMetrics, DhatMetric, DhatMetrics, ErrorMetric,
     EventKind, RawArgs, ValgrindTool,
 };
+use crate::runner::common::CapturedOutput;
 
 const DOWILD_OPTIONS: Options<u8> = Options::new().enable_escape(true).enable_classes(true);
 
@@ -235,7 +237,7 @@ pub struct CommandLineArgs {
     /// respectively <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetric.html>
     /// for valid metrics and group members.
     ///
-    /// See the the guide
+    /// See the guide
     /// (<https://gungraun.github.io/gungraun/latest/html/regressions.html>) for all
     /// details or replace the format spec in `--callgrind-limits` with the following:
     ///
@@ -457,7 +459,7 @@ pub struct CommandLineArgs {
     /// <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetric.html> for valid metrics
     /// and group members.
     ///
-    /// See the the guide
+    /// See the guide
     /// (<https://gungraun.github.io/gungraun/latest/html/regressions.html>) for all
     /// details or replace the format spec in `--callgrind-limits` with the following:
     ///
@@ -831,6 +833,36 @@ pub struct CommandLineArgs {
     pub output_format: OutputFormatKind,
 
     #[rustfmt::skip]
+    /// Number of benchmarks to run in parallel.
+    ///
+    /// A value of `1` runs benchmarks serially which is the default if this option is not
+    /// specified. Passing `auto` lets the runner choose the parallelism level based on available
+    /// hardware which is the number of available logical cores.
+    ///
+    /// Note that benchmark groups are used as synchronization points and only benchmarks within the
+    /// same group are executed in parallel.
+    ///
+    /// Valgrind and gungraun perform disk I/O even if your benchmarks don't. This is usually a
+    /// bottleneck, so running with parallelism of 10 may provide similar speedup as 5. Actual
+    /// results depend on the hardware and if your benchmarks are performing disk I/O, too.
+    ///
+    /// Examples:
+    /// * --parallel=4
+    /// * --parallel=auto
+    #[arg(
+        long = "parallel",
+        required = false,
+        default_missing_value = "auto",
+        default_value = "1",
+        num_args = 0..=1,
+        require_equals = true,
+        value_parser = parse_parallel,
+        env = "GUNGRAUN_PARALLEL",
+        display_order = 300
+    )]
+    pub parallel: usize,
+
+    #[rustfmt::skip]
     /// If true, the first failed performance regression check fails the whole benchmark run
     ///
     /// Note that if --regression-fail-fast is set to true, no summary is printed.
@@ -1075,16 +1107,48 @@ impl FromStr for BenchmarkFilter {
 
 impl NoCapture {
     /// Apply the `NoCapture` option to the [`Command`]
-    pub fn apply(self, command: &mut Command) {
-        match self {
-            Self::True | Self::False => {}
-            Self::Stderr => {
+    pub fn apply(
+        self,
+        command: &mut Command,
+        captured_output: Option<&CapturedOutput>,
+    ) -> Result<()> {
+        match (self, captured_output) {
+            (Self::True, Some(captured_output)) => {
+                // Both go to the same file, here chosen to be stdout
+                command
+                    .stdout(captured_output.stdout.try_clone()?)
+                    .stderr(captured_output.stdout.try_clone()?);
+            }
+            (Self::False, Some(captured_output)) => {
+                command
+                    .stdout(captured_output.stdout.try_clone()?)
+                    .stderr(captured_output.stderr.try_clone()?);
+            }
+            (Self::Stderr, Some(captured_output)) => {
+                command
+                    .stdout(Stdio::null())
+                    .stderr(captured_output.stderr.try_clone()?);
+            }
+            (Self::Stdout, Some(captured_output)) => {
+                command
+                    .stdout(captured_output.stdout.try_clone()?)
+                    .stderr(Stdio::null());
+            }
+            (Self::True, None) => {
+                command.stdout(Stdio::inherit()).stderr(Stdio::inherit());
+            }
+            (Self::False, None) => {
+                command.stdout(Stdio::piped()).stderr(Stdio::piped());
+            }
+            (Self::Stderr, None) => {
                 command.stdout(Stdio::null()).stderr(Stdio::inherit());
             }
-            Self::Stdout => {
+            (Self::Stdout, None) => {
                 command.stdout(Stdio::inherit()).stderr(Stdio::null());
             }
         }
+
+        Ok(())
     }
 }
 
@@ -1322,6 +1386,23 @@ fn parse_nocapture(value: &str) -> Result<NoCapture, String> {
         Ok(NoCapture::Stdout)
     } else if lowercase == "stderr" {
         Ok(NoCapture::Stderr)
+    } else {
+        Err(format!("Invalid value: {value}"))
+    }
+}
+
+/// Parse --parallel
+fn parse_parallel(value: &str) -> Result<usize, String> {
+    let lowercase = value.to_lowercase();
+
+    if lowercase == "auto" {
+        Ok(num_cpus::get())
+    } else if let Ok(num) = lowercase.parse::<usize>() {
+        if num > 0 {
+            Ok(num)
+        } else {
+            Err(format!("Value must be greater than 0 but was '{value}'"))
+        }
     } else {
         Err(format!("Invalid value: {value}"))
     }

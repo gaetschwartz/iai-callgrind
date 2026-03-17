@@ -8,9 +8,8 @@ use crate::api;
 use crate::runner::cachegrind::regression::CachegrindRegressionConfig;
 use crate::runner::callgrind::regression::CallgrindRegressionConfig;
 use crate::runner::dhat::regression::DhatRegressionConfig;
-use crate::runner::format::print_regressions;
 use crate::runner::metrics::{Metric, MetricsSummary, Summarize};
-use crate::runner::summary::ToolRegression;
+use crate::runner::summary::{ProfileTotal, ToolMetricSummary, ToolRegression};
 
 /// A short-lived utility enum used to hold the raw regressions until they can be transformed into a
 /// real [`ToolRegression`]
@@ -40,13 +39,6 @@ pub trait RegressionConfig<T: Hash + Eq + Summarize + Display + Clone> {
     ///
     /// The limits for event kinds which are not present in the `MetricsSummary` are ignored.
     fn check(&self, metrics_summary: &MetricsSummary<T>) -> Vec<ToolRegression>;
-
-    /// Check for regressions and print them if present
-    fn check_and_print(&self, metrics_summary: &MetricsSummary<T>) -> Vec<ToolRegression> {
-        let regressions = self.check(metrics_summary);
-        print_regressions(&regressions);
-        regressions
-    }
 
     /// Check for regressions and return the [`RegressionMetrics`]
     fn check_regressions(&self, metrics_summary: &MetricsSummary<T>) -> Vec<RegressionMetrics<T>> {
@@ -109,21 +101,48 @@ pub trait RegressionConfig<T: Hash + Eq + Summarize + Display + Clone> {
         regressions
     }
 
-    /// Return the hard limits
+    /// Returns the hard limits.
     fn get_hard_limits(&self) -> &[(T, Metric)];
 
-    /// Return the soft limits
+    /// Returns the soft limits.
     fn get_soft_limits(&self) -> &[(T, f64)];
 }
 
 impl ToolRegressionConfig {
-    /// Return true if the configuration has fail fast set to true
+    /// Returns `true` if the configuration has fail fast set to true.
     pub fn is_fail_fast(&self) -> bool {
         match self {
             Self::Callgrind(regression_config) => regression_config.fail_fast,
             Self::Cachegrind(regression_config) => regression_config.fail_fast,
             Self::Dhat(regression_config) => regression_config.fail_fast,
             Self::None => false,
+        }
+    }
+
+    /// Checks the tool summary against this regression configuration.
+    ///
+    /// The provided `tool_total` must contain metrics of the same tool family as this config.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the metric summary type does not match the active regression configuration.
+    pub fn check(&self, tool_total: &ProfileTotal) -> Vec<ToolRegression> {
+        match (&self, &tool_total.summary) {
+            (
+                Self::Callgrind(callgrind_regression_config),
+                ToolMetricSummary::Callgrind(metrics_summary),
+            ) => callgrind_regression_config.check(metrics_summary),
+            (
+                Self::Cachegrind(cachegrind_regression_config),
+                ToolMetricSummary::Cachegrind(metrics_summary),
+            ) => cachegrind_regression_config.check(metrics_summary),
+            (Self::Dhat(dhat_regression_config), ToolMetricSummary::Dhat(metrics_summary)) => {
+                dhat_regression_config.check(metrics_summary)
+            }
+            (Self::None, _) => vec![],
+            _ => {
+                panic!("The summary type should match the regression config")
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 MD033 -->
 
-# setup and teardown
+# Setup and Teardown
 
 `setup` and `teardown` are your bread and butter in library benchmarks. The
 benchmark functions need to be as clean as possible and almost always only

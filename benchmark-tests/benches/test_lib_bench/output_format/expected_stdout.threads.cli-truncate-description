@@ -1,8 +1,8 @@
 test_lib_bench_output_format_threads::my_group::bench_without_format for_comparison:"A very long string to see if the truncation of th...
-  ======= CALLGRIND ====================================================================
 A very long string to see if the truncation of the description is really working
-Number of primes found in the range 0 to 20000: 2262
+Number of primes found in the range 0 to 10000: 1229
 - end of stdout/stderr
+  ======= CALLGRIND ====================================================================
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
   LL Hits:                                 |N/A                  (*********)
@@ -19,10 +19,10 @@ Number of primes found in the range 0 to 20000: 2262
   Reads bytes:                             |N/A                  (*********)
   Writes bytes:                            |N/A                  (*********)
 test_lib_bench_output_format_threads::my_group::bench_with_format for_comparison:"Another very long string to see if the truncation...
-|======== CALLGRIND ====================================================================
 Another very long string to see if the truncation is disabled with the formatting option
-Number of primes found in the range 0 to 30000: 3245
+Number of primes found in the range 0 to 20000: 2262
 - end of stdout/stderr
+|======== CALLGRIND ====================================================================
 |-## pid: <__PID__> thread: 1 part: 1      |N/A
 | Command: <__COMMAND__>
 | Instructions:                            |N/A                  (*********)
@@ -40,14 +40,6 @@ Number of primes found in the range 0 to 30000: 3245
 | Total read+write:                        |N/A                  (*********)
 | Estimated Cycles:                        |N/A                  (*********)
 |-## pid: <__PID__> thread: 3 part: 1      |N/A
-| Command: <__COMMAND__>
-| Instructions:                            |N/A                  (*********)
-| L1 Hits:                                 |N/A                  (*********)
-| LL Hits:                                 |N/A                  (*********)
-| RAM Hits:                                |N/A                  (*********)
-| Total read+write:                        |N/A                  (*********)
-| Estimated Cycles:                        |N/A                  (*********)
-|-## pid: <__PID__> thread: 4 part: 1      |N/A
 | Command: <__COMMAND__>
 | Instructions:                            |N/A                  (*********)
 | L1 Hits:                                 |N/A                  (*********)

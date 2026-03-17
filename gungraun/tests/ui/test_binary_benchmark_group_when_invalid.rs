@@ -21,6 +21,7 @@ mod test_binary_benchmark_group_when_no_name {
     binary_benchmark_group!(
         config = LibraryBenchmarkConfig::default(),
         compare_by_id = true,
+        max_parallel = 0,
         setup = setup(),
         teardown = teardown(),
         benchmarks =
@@ -29,6 +30,7 @@ mod test_binary_benchmark_group_when_no_name {
     binary_benchmark_group!(
         config = LibraryBenchmarkConfig::default(),
         compare_by_id = true,
+        max_parallel = 0,
         setup = setup(),
         teardown = teardown(),
         benchmarks = bench
@@ -37,6 +39,7 @@ mod test_binary_benchmark_group_when_no_name {
     binary_benchmark_group!(
         config = LibraryBenchmarkConfig::default();
         compare_by_id = true;
+        max_parallel = 0,
         setup = setup();
         teardown = teardown();
         benchmarks =
@@ -45,6 +48,7 @@ mod test_binary_benchmark_group_when_no_name {
     binary_benchmark_group!(
         config = LibraryBenchmarkConfig::default();
         compare_by_id = true;
+        max_parallel = 0,
         setup = setup();
         teardown = teardown();
         benchmarks = bench
@@ -98,6 +102,34 @@ mod test_binary_benchmark_group_when_no_benchmark_argument {
     binary_benchmark_group!(name = some,);
     binary_benchmark_group!(
         name = some;
+    );
+}
+
+mod test_binary_benchmark_group_when_max_parallel {
+    use gungraun::{binary_benchmark, binary_benchmark_group, Command};
+
+    #[binary_benchmark]
+    fn some_func() -> Command {
+        Command::new("foo")
+    }
+
+    // wrong type
+    binary_benchmark_group!(name = some_1, max_parallel = None, benchmarks = some_func);
+    binary_benchmark_group!(name = some_2, max_parallel = 0i32, benchmarks = some_func);
+    // wrong type, multiple benches
+    binary_benchmark_group!(
+        name = some_3,
+        max_parallel = None,
+        benchmarks = [some_func, some_func]
+    );
+
+    // semicolon syntax
+    binary_benchmark_group!(name = some_4; max_parallel = None; benchmarks = some_func);
+    binary_benchmark_group!(name = some_5; max_parallel = 0i32; benchmarks = some_func);
+    binary_benchmark_group!(
+        name = some_6;
+        max_parallel = None;
+        benchmarks = some_func, some_func
     );
 }
 

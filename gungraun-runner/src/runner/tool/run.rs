@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Output};
 
 use anyhow::Result;
-use log::{debug, error, log_enabled};
+use log::{debug, error};
 
 use super::config::ToolConfig;
 use super::path::ToolOutputPath;
@@ -13,9 +13,9 @@ use crate::api::{self, ExitWith, Stream, ValgrindTool};
 use crate::error::Error;
 use crate::runner::args::NoCapture;
 use crate::runner::bin_bench::Delay;
-use crate::runner::common::{Assistant, ModulePath};
+use crate::runner::common::{Assistant, CapturedOutput, ModulePath};
 use crate::runner::meta::Metadata;
-use crate::util::{self, resolve_binary_path};
+use crate::util::resolve_binary_path;
 
 /// The run options for the [`ToolCommand`]
 #[derive(Debug, Default, Clone)]
@@ -44,28 +44,51 @@ pub struct RunOptions {
     pub teardown: Option<Assistant>,
 }
 
-/// The final command to execute
+/// A configured valgrind command ready to be executed
+///
+/// This struct encapsulates a valgrind tool invocation with its command, output capture
+/// configuration, and the specific tool being used.
+#[derive(Debug)]
 pub struct ToolCommand {
-    command: Command,
-    nocapture: NoCapture,
-    tool: ValgrindTool,
+    /// The `std::process` command to be spawned
+    pub command: Command,
+    /// Configuration for whether to capture or pass through the subprocess output
+    pub nocapture: NoCapture,
+    /// The [`ValgrindTool`] to run
+    pub tool: ValgrindTool,
 }
 
-/// The tool specific [`Output`] of the [`ToolCommand`]
-pub struct ToolOutput {
-    /// The output if present
-    pub output: Option<Output>,
-    /// The valgrind tool
+/// A running valgrind tool process and its metadata
+///
+/// This struct represents an actively spawned valgrind tool process and tracks information needed
+/// to monitor its execution and validate its exit status.
+#[derive(Debug)]
+pub struct ToolCommandChild {
+    /// The spawned child process, or `None` if the process has already been consumed
+    pub child: Option<Child>,
+    /// The path to the executable being profiled by valgrind
+    pub executable: PathBuf,
+    /// The expected exit behavior (exit code or signal), or `None` if any exit is acceptable
+    pub exit_with: Option<ExitWith>,
+    /// The path where valgrind will write its output log files
+    pub log_path: ToolOutputPath,
+    /// The valgrind tool running this process (e.g., memcheck, callgrind, massif)
     pub tool: ValgrindTool,
 }
 
 impl ToolCommand {
-    /// Create new `ToolCommand`
-    pub fn new(tool: ValgrindTool, meta: &Metadata, nocapture: NoCapture) -> Self {
+    /// Creates new `ToolCommand`.
+    pub fn new(tool: ValgrindTool, meta: &Metadata, is_default: bool) -> Self {
+        let nocapture = if is_default {
+            meta.args.nocapture
+        } else {
+            NoCapture::False
+        };
+
         Self {
-            tool,
-            nocapture,
             command: meta.into(),
+            nocapture,
+            tool,
         }
     }
 
@@ -81,7 +104,7 @@ impl ToolCommand {
         for (key, _) in std::env::vars() {
             match (key.as_str(), self.tool) {
                 (key @ ("DEBUGINFOD_URLS" | "PATH" | "HOME"), ValgrindTool::Memcheck)
-                | (key @ ("LD_PRELOAD" | "LD_LIBRARY_PATH"), _) => {
+                | (key @ ("LD_PRELOAD" | "LD_LIBRARY_PATH" | "VALGRIND_LIB"), _) => {
                     debug!(
                         "{}: Clearing environment variables: Skipping {key}",
                         self.tool.id()
@@ -96,7 +119,6 @@ impl ToolCommand {
     }
 
     /// Run the `ToolCommand`
-    #[allow(clippy::too_many_lines)]
     pub fn run(
         mut self,
         config: ToolConfig,
@@ -105,8 +127,10 @@ impl ToolCommand {
         run_options: RunOptions,
         output_path: &ToolOutputPath,
         module_path: &ModulePath,
-        mut child: Option<Child>,
-    ) -> Result<ToolOutput> {
+        child: Option<&mut Child>,
+        captured_output: Option<&CapturedOutput>,
+        sandbox_dir: Option<&Path>,
+    ) -> Result<ToolCommandChild> {
         debug!(
             "{}: Running with executable '{}'",
             self.tool.id(),
@@ -115,7 +139,7 @@ impl ToolCommand {
 
         let RunOptions {
             env_clear,
-            current_dir,
+            current_dir: run_dir,
             exit_with,
             envs,
             stdin,
@@ -129,22 +153,28 @@ impl ToolCommand {
             self.env_clear();
         }
 
-        if let Some(dir) = current_dir {
-            debug!(
-                "{}: Setting current directory to '{}'",
-                self.tool.id(),
-                dir.display()
-            );
-            self.command.current_dir(dir);
+        match (sandbox_dir, run_dir) {
+            (None, None) => {}
+            (None, Some(run_dir)) => {
+                self.command.current_dir(run_dir);
+            }
+            (Some(sandbox_dir), None) => {
+                self.command.current_dir(sandbox_dir);
+            }
+            (Some(sandbox_dir), Some(run_dir)) => {
+                // If run_dir is absolute uses run_dir otherwise joins the paths
+                let path = sandbox_dir.join(run_dir);
+                self.command.current_dir(path);
+            }
         }
 
         let mut tool_args = config.args;
-        tool_args.set_output_arg(output_path, Option::<&str>::None);
-        tool_args.set_log_arg(output_path, Option::<&str>::None);
+        tool_args.set_output_arg(output_path);
+        tool_args.set_log_arg(output_path);
         tool_args.set_xtree_arg(output_path);
         tool_args.set_xleak_arg(output_path);
 
-        let executable = resolve_binary_path(executable)?;
+        let executable = resolve_binary_path(executable, sandbox_dir)?;
         let args = tool_args.to_vec();
         debug!(
             "{}: Arguments: {}",
@@ -161,109 +191,71 @@ impl ToolCommand {
             .args(executable_args)
             .envs(envs);
 
-        if config.is_default {
-            debug!("Applying --nocapture options");
-            self.nocapture.apply(&mut self.command);
-        }
+        self.nocapture.apply(&mut self.command, captured_output)?;
 
         if let Some(stdin) = stdin {
             stdin
-                .apply(&mut self.command, Stream::Stdin, child.as_mut())
+                .apply(&mut self.command, Stream::Stdin, child, sandbox_dir)
                 .map_err(|error| Error::BenchmarkError(self.tool, module_path.clone(), error))?;
         }
 
         if let Some(stdout) = stdout {
             stdout
-                .apply(&mut self.command, Stream::Stdout)
+                .apply(&mut self.command, Stream::Stdout, sandbox_dir)
                 .map_err(|error| Error::BenchmarkError(self.tool, module_path.clone(), error))?;
         }
 
         if let Some(stderr) = stderr {
             stderr
-                .apply(&mut self.command, Stream::Stderr)
+                .apply(&mut self.command, Stream::Stderr, sandbox_dir)
                 .map_err(|error| Error::BenchmarkError(self.tool, module_path.clone(), error))?;
         }
 
-        let output = match self.nocapture {
-            NoCapture::True | NoCapture::Stderr | NoCapture::Stdout if config.is_default => {
-                self.command
-                    .status()
-                    .map_err(|error| {
-                        Error::LaunchError(PathBuf::from("valgrind"), error.to_string()).into()
-                    })
-                    .and_then(|status| {
-                        check_exit(
-                            self.tool,
-                            &executable,
-                            None,
-                            status,
-                            &output_path.to_log_output(),
-                            exit_with.as_ref(),
-                        )
-                    })?;
-                None
-            }
-            _ => self
-                .command
-                .output()
-                .map_err(|error| {
-                    Error::LaunchError(PathBuf::from("valgrind"), error.to_string()).into()
-                })
-                .and_then(|output| {
-                    let status = output.status;
-                    check_exit(
-                        self.tool,
-                        &executable,
-                        Some(output),
-                        status,
-                        &output_path.to_log_output(),
-                        exit_with.as_ref(),
-                    )
-                })?,
-        };
-
-        if let Some(mut child) = child {
-            debug!("Waiting for setup child process");
-            let status = child.wait().expect("Setup child process should have run");
-            if !status.success() {
-                return Err(Error::ProcessError(
-                    Box::new(module_path.join("setup").to_string()),
-                    None,
-                    status,
-                    None,
+        self.command
+            .spawn()
+            .map(|c| {
+                ToolCommandChild::new(
+                    self.tool,
+                    c,
+                    executable.clone(),
+                    exit_with,
+                    output_path.to_log_output(),
                 )
-                .into());
-            }
-        }
-
-        output_path.sanitize()?;
-
-        Ok(ToolOutput {
-            tool: self.tool,
-            output,
-        })
+            })
+            .map_err(|error| {
+                Error::LaunchError(PathBuf::from("valgrind"), error.to_string()).into()
+            })
     }
 }
 
-impl ToolOutput {
-    /// Dump the tool output if the [`log::Level`] matches
-    pub fn dump_log(&self, log_level: log::Level) {
-        if let Some(output) = &self.output {
-            if log_enabled!(log_level) {
-                let (stdout, stderr) = (&output.stdout, &output.stderr);
-                if !stdout.is_empty() {
-                    log::log!(log_level, "{} output on stdout:", self.tool.id());
-                    util::write_all_to_stderr(stdout);
-                }
-                if !stderr.is_empty() {
-                    log::log!(log_level, "{} output on stderr:", self.tool.id());
-                    util::write_all_to_stderr(stderr);
-                }
-            }
+impl ToolCommandChild {
+    /// Creates a new `ToolCommandChild` instance to manage a spawned tool process.
+    ///
+    /// This constructor wraps a spawned child process along with metadata needed to track and
+    /// manage its execution. The `tool` parameter specifies which [`ValgrindTool`] is being run,
+    /// `child` is the actual spawned process, `executable` is the path to the binary being
+    /// instrumented, `exit_with` defines the expected exit behavior, and `log_path` specifies
+    /// where the tool's output is written.
+    pub fn new(
+        tool: ValgrindTool,
+        child: Child,
+        executable: PathBuf,
+        exit_with: Option<ExitWith>,
+        log_path: ToolOutputPath,
+    ) -> Self {
+        Self {
+            child: Some(child),
+            executable,
+            exit_with,
+            log_path,
+            tool,
         }
     }
 }
 
+// TODO: Refactor together with ProcessError and take output: Output instead of an option. Then
+// return Result<Output>
+///
 /// Check the exit code of the [`ToolCommand`] and verify it matches the expected [`ExitWith`]
 pub fn check_exit(
     tool: ValgrindTool,
@@ -274,13 +266,9 @@ pub fn check_exit(
     exit_with: Option<&ExitWith>,
 ) -> Result<Option<Output>> {
     let Some(status_code) = status.code() else {
-        return Err(Error::ProcessError(
-            Box::new(tool.id()),
-            output.map(Box::new),
-            status,
-            Some(Box::new(output_path.clone())),
-        )
-        .into());
+        return Err(
+            Error::new_process_error(tool.id(), output, status, Some(output_path.clone())).into(),
+        );
     };
 
     match (status_code, exit_with) {
@@ -292,13 +280,10 @@ pub fn check_exit(
                 executable.display(),
                 code
             );
-            Err(Error::ProcessError(
-                Box::new(tool.id()),
-                output.map(Box::new),
-                status,
-                Some(Box::new(output_path.clone())),
+            Err(
+                Error::new_process_error(tool.id(), output, status, Some(output_path.clone()))
+                    .into(),
             )
-            .into())
         }
         (0i32, Some(ExitWith::Failure)) => {
             error!(
@@ -306,13 +291,10 @@ pub fn check_exit(
                 tool.id(),
                 executable.display(),
             );
-            Err(Error::ProcessError(
-                Box::new(tool.id()),
-                output.map(Box::new),
-                status,
-                Some(Box::new(output_path.clone())),
+            Err(
+                Error::new_process_error(tool.id(), output, status, Some(output_path.clone()))
+                    .into(),
             )
-            .into())
         }
         (_, Some(ExitWith::Failure)) => Ok(output),
         (code, Some(ExitWith::Success)) => {
@@ -322,13 +304,10 @@ pub fn check_exit(
                 executable.display(),
                 code
             );
-            Err(Error::ProcessError(
-                Box::new(tool.id()),
-                output.map(Box::new),
-                status,
-                Some(Box::new(output_path.clone())),
+            Err(
+                Error::new_process_error(tool.id(), output, status, Some(output_path.clone()))
+                    .into(),
             )
-            .into())
         }
         (actual_code, Some(ExitWith::Code(expected_code))) if actual_code == *expected_code => {
             Ok(output)
@@ -341,20 +320,13 @@ pub fn check_exit(
                 expected_code,
                 actual_code
             );
-            Err(Error::ProcessError(
-                Box::new(tool.id()),
-                output.map(Box::new),
-                status,
-                Some(Box::new(output_path.clone())),
+            Err(
+                Error::new_process_error(tool.id(), output, status, Some(output_path.clone()))
+                    .into(),
             )
-            .into())
         }
-        _ => Err(Error::ProcessError(
-            Box::new(tool.id()),
-            output.map(Box::new),
-            status,
-            Some(Box::new(output_path.clone())),
-        )
-        .into()),
+        _ => Err(
+            Error::new_process_error(tool.id(), output, status, Some(output_path.clone())).into(),
+        ),
     }
 }

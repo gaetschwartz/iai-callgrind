@@ -14,6 +14,7 @@ use itertools::Itertools;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use super::common::{Baselines, ModulePath};
 use super::format::{Formatter, OutputFormat, OutputFormatKind, VerticalFormatter};
@@ -22,6 +23,9 @@ use super::tool::parser::ParserOutput;
 use super::tool::regression::RegressionMetrics;
 use crate::api::{CachegrindMetric, DhatMetric, ErrorMetric, EventKind, ValgrindTool};
 use crate::error::Error;
+use crate::runner::args::NoCapture;
+use crate::runner::common::{CapturedOutput, Config};
+use crate::runner::format::{print_no_capture_footer, print_regressions, Header};
 use crate::util::{factor_diff, make_absolute, percentage_diff};
 
 /// The version of the summary json schema
@@ -144,7 +148,7 @@ pub struct Baseline {
 /// The name of the baseline
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-pub struct BaselineName(String);
+pub struct BaselineName(pub String);
 
 /// The `BenchmarkSummary` containing all the information of a single benchmark run
 ///
@@ -340,7 +344,7 @@ impl FromStr for BaselineName {
 }
 
 impl BenchmarkSummary {
-    /// Create a new `BenchmarkSummary`
+    /// Creates a new `BenchmarkSummary`.
     ///
     /// Relative paths are made absolute with the `project_root` as base directory.
     pub fn new(
@@ -373,49 +377,119 @@ impl BenchmarkSummary {
         }
     }
 
-    /// If the summary is json output, print it and eventually safe it, if configured to do so
-    pub fn print_and_save(&self, output_format: &OutputFormatKind) -> Result<()> {
-        let value = match (output_format, &self.summary_output) {
-            (OutputFormatKind::Default, None) => return Ok(()),
-            _ => {
-                serde_json::to_value(self).with_context(|| "Failed to serialize summary to json")?
+    fn print_default(
+        &self,
+        config: &Config,
+        header: &Header,
+        output_format: &OutputFormat,
+        mut captured_output: CapturedOutput,
+    ) -> Result<()> {
+        header.print();
+
+        if config.meta.args.load_baseline.is_none() {
+            match config.meta.args.nocapture {
+                NoCapture::True => {
+                    captured_output.dump()?;
+                }
+                NoCapture::False => {}
+                NoCapture::Stderr => {
+                    captured_output.dump_stderr()?;
+                }
+                NoCapture::Stdout => {
+                    captured_output.dump_stdout()?;
+                }
             }
-        };
 
-        let result = match output_format {
-            OutputFormatKind::Default => Ok(()),
-            OutputFormatKind::Json => {
-                let output = stdout();
-                let writer = output.lock();
-                let result = serde_json::to_writer(writer, &value);
-                println!();
-                result
+            print_no_capture_footer(config.meta.args.nocapture);
+        }
+
+        let has_multiple = self.profiles.has_multiple();
+        let baselines = &self.baselines;
+        for (index, profile) in self.profiles.iter().enumerate() {
+            let is_default = index == 0;
+            let mut formatter = VerticalFormatter::new(output_format.clone());
+            if !output_format.show_only_comparison
+                && (has_multiple || profile.tool != ValgrindTool::Callgrind)
+            {
+                formatter.format_tool_headline(profile.tool);
+                formatter.print_buffer();
             }
-            OutputFormatKind::PrettyJson => {
-                let output = stdout();
-                let writer = output.lock();
-                let result = serde_json::to_writer_pretty(writer, &value);
-                println!();
-                result
-            }
-        };
-        result.with_context(|| "Failed to print json to stdout")?;
 
-        if let Some(output) = &self.summary_output {
-            let file = output.create()?;
-
-            let result = if matches!(output.format, SummaryFormat::PrettyJson) {
-                serde_json::to_writer_pretty(file, &value)
-            } else {
-                serde_json::to_writer(file, &value)
-            };
-
-            result.with_context(|| {
-                format!("Failed to write summary to file: {}", output.path.display())
-            })?;
+            formatter.print(
+                profile.tool,
+                config,
+                baselines,
+                &profile.summaries,
+                is_default,
+            );
+            print_regressions(&profile.summaries.total.regressions);
         }
 
         Ok(())
+    }
+
+    // Print the json `value` to stdout
+    fn print_json(value: &Value, pretty: bool) -> Result<()> {
+        let stdout = stdout().lock();
+        if pretty {
+            serde_json::to_writer_pretty(stdout, &value)
+                .with_context(|| "Failed to print json to stdout")
+                .map(|()| println!())
+        } else {
+            serde_json::to_writer(stdout, &value)
+                .with_context(|| "Failed to print json to stdout")
+                .map(|()| println!())
+        }
+    }
+
+    /// Save the summary json `value` as a file into the benchmark directory
+    fn save_summary(value: &Value, output: &SummaryOutput) -> Result<()> {
+        let file = output.create()?;
+
+        let pretty = matches!(output.format, SummaryFormat::PrettyJson);
+        let result = if pretty {
+            serde_json::to_writer_pretty(file, &value)
+        } else {
+            serde_json::to_writer(file, &value)
+        };
+
+        result
+            .with_context(|| format!("Failed to write summary to file: {}", output.path.display()))
+    }
+
+    /// If the summary is json output, print it and eventually safe it, if configured to do so
+    pub fn print_and_save(
+        &self,
+        config: &Config,
+        header: &Header,
+        output_format: &OutputFormat,
+        captured_output: CapturedOutput,
+    ) -> Result<()> {
+        match output_format.kind {
+            OutputFormatKind::Default => self
+                .print_default(config, header, output_format, captured_output)
+                .and_then(|()| {
+                    if let Some(output) = &self.summary_output {
+                        serde_json::to_value(self)
+                            .with_context(|| "Failed to serialize summary to json")
+                            .and_then(|value| Self::save_summary(&value, output))
+                    } else {
+                        Ok(())
+                    }
+                }),
+            OutputFormatKind::Json | OutputFormatKind::PrettyJson => serde_json::to_value(self)
+                .with_context(|| "Failed to serialize summary to json")
+                .and_then(|value| {
+                    let pretty = matches!(output_format.kind, OutputFormatKind::PrettyJson);
+                    Self::print_json(&value, pretty).and_then(|()| {
+                        if let Some(output) = &self.summary_output {
+                            Self::save_summary(&value, output)
+                        } else {
+                            Ok(())
+                        }
+                    })
+                }),
+        }
     }
 
     /// Check if this `BenchmarkSummary` has recorded any performance regressions
@@ -431,18 +505,13 @@ impl BenchmarkSummary {
         Ok(())
     }
 
-    /// Return true if any [`Profile`] has regressed
+    /// Returns `true` if any [`Profile`] has regressed.
     pub fn is_regressed(&self) -> bool {
         self.profiles.is_regressed()
     }
 
     /// Compare this summary with another and print the result of the comparison
-    pub fn compare_and_print(
-        &self,
-        id: &str,
-        other: &Self,
-        output_format: &OutputFormat,
-    ) -> Result<()> {
+    pub fn compare_and_print(&self, id: &str, other: &Self, output_format: &OutputFormat) {
         let mut summaries = vec![];
 
         for profile in self.profiles.iter() {
@@ -458,21 +527,20 @@ impl BenchmarkSummary {
 
         // There really should always be at least one summary. Also, if the default tool is massif
         // or bbv which (currently) don't have an actual summary.
-        if summaries.is_empty() {
-            Ok(())
-        } else {
+        if !summaries.is_empty() {
             VerticalFormatter::new(output_format.clone()).print_comparison(
                 &self.function_name,
                 id,
                 self.details.as_deref(),
                 summaries,
-            )
+            );
         }
     }
 }
 
 impl Diffs {
-    /// Create a new `Diffs` calculating the percentage and factor from the `new` and `old` metrics
+    /// Creates a new `Diffs` calculating the percentage and factor from the `new` and `old`
+    /// metrics.
     pub fn new(new: Metric, old: Metric) -> Self {
         Self {
             diff_pct: percentage_diff(new, old),
@@ -482,7 +550,7 @@ impl Diffs {
 }
 
 impl FlamegraphSummary {
-    /// Create a new `FlamegraphSummary`
+    /// Creates a new `FlamegraphSummary`.
     pub fn new(event_kind: EventKind) -> Self {
         Self {
             event_kind,
@@ -494,24 +562,24 @@ impl FlamegraphSummary {
 }
 
 impl Profile {
-    /// Return true if one of the summaries has regressed
+    /// Returns `true` if one of the summaries has regressed.
     pub fn is_regressed(&self) -> bool {
         self.summaries.is_regressed()
     }
 }
 
 impl ProfileData {
-    /// Return true if the profile data is empty
+    /// Returns `true` if the profile data is empty.
     pub fn is_empty(&self) -> bool {
         self.parts.is_empty()
     }
 
-    /// Return true if the total and only the total has regressed
+    /// Returns `true` if the total and only the total has regressed.
     pub fn is_regressed(&self) -> bool {
         self.total.is_regressed()
     }
 
-    /// Return true if there are multiple parts
+    /// Returns `true` if there are multiple parts.
     pub fn has_multiple(&self) -> bool {
         self.parts.len() > 1
     }
@@ -571,7 +639,7 @@ impl ProfileData {
         grouped
     }
 
-    /// Create a new `ToolRun` from the output(s) of the tool parsers
+    /// Creates a new `ToolRun` from the output(s) of the tool parsers.
     ///
     /// The summaries created from the new parser outputs and the old parser outputs are grouped by
     /// pid (subprocesses recorded with `--trace-children`), then by part (for example cause by a
@@ -686,7 +754,7 @@ impl From<ParserOutput> for ProfileInfo {
 }
 
 impl ProfilePart {
-    /// Return true if an error checking valgrind tool (like `Memcheck`) has errors detected
+    /// Returns `true` if an error checking valgrind tool (like `Memcheck`) has errors detected.
     pub fn new_has_errors(&self) -> bool {
         match &self.metrics_summary {
             ToolMetricSummary::None
@@ -699,7 +767,7 @@ impl ProfilePart {
         }
     }
 
-    /// Create a new part from `new` parser output
+    /// Creates a new part from `new` parser output.
     pub fn from_new(new: ParserOutput) -> Self {
         let metrics_summary = ToolMetricSummary::from_new_metrics(&new.metrics);
         Self {
@@ -708,7 +776,7 @@ impl ProfilePart {
         }
     }
 
-    /// Create a new part from `old` parser output
+    /// Creates a new part from `old` parser output.
     pub fn from_old(old: ParserOutput) -> Self {
         let metrics_summary = ToolMetricSummary::from_old_metrics(&old.metrics);
         Self {
@@ -717,7 +785,7 @@ impl ProfilePart {
         }
     }
 
-    /// Create a new `ProfilePart` from new and old [`ParserOutput`]
+    /// Creates a new `ProfilePart` from new and old [`ParserOutput`].
     ///
     /// # Panics
     ///
@@ -735,24 +803,24 @@ impl ProfilePart {
 }
 
 impl ProfileTotal {
-    /// Return true if there are any regressions
+    /// Returns `true` if there are any regressions.
     pub fn is_regressed(&self) -> bool {
         !self.regressions.is_empty()
     }
 
-    /// Return true if there is a summary
+    /// Returns `true` if there is a summary.
     pub fn is_some(&self) -> bool {
         self.summary.is_some()
     }
 
-    /// Return true if there is no summary
+    /// Returns `true` if there is no summary.
     pub fn is_none(&self) -> bool {
         self.summary.is_none()
     }
 }
 
 impl Profiles {
-    /// Create a new collection of [`Profile`]s
+    /// Creates a new collection of [`Profile`]s.
     pub fn new(values: Vec<Profile>) -> Self {
         Self(values)
     }
@@ -767,9 +835,14 @@ impl Profiles {
         self.0.push(summary);
     }
 
-    /// Return true if any [`Profile`] has regressed
+    /// Returns `true` if any [`Profile`] has regressed.
     pub fn is_regressed(&self) -> bool {
         self.iter().any(Profile::is_regressed)
+    }
+
+    /// Returns `true` if there are multiple [`Profile`]s.
+    pub fn has_multiple(&self) -> bool {
+        self.0.len() > 1
     }
 }
 
@@ -783,12 +856,12 @@ impl IntoIterator for Profiles {
 }
 
 impl SummaryOutput {
-    /// Create a new `SummaryOutput` with `dir` as base dir and an extension fitting the
+    /// Creates a new `SummaryOutput` with `dir` as base dir and an extension fitting the.
     /// [`SummaryFormat`]
     pub fn new(format: SummaryFormat, dir: &Path) -> Self {
         Self {
             format,
-            path: dir.join("summary.json"),
+            path: Self::path(dir),
         }
     }
 
@@ -813,6 +886,11 @@ impl SummaryOutput {
     pub fn create(&self) -> Result<File> {
         File::create(&self.path).with_context(|| "Failed to create json summary file")
     }
+
+    /// Returns the path to this summary file.
+    pub fn path(dir: &Path) -> PathBuf {
+        dir.join("summary.json")
+    }
 }
 
 impl ToolMetricSummary {
@@ -835,7 +913,7 @@ impl ToolMetricSummary {
         }
     }
 
-    /// Create a new summary from `new` [`ToolMetrics`]
+    /// Creates a new summary from `new` [`ToolMetrics`].
     pub fn from_new_metrics(metrics: &ToolMetrics) -> Self {
         match metrics {
             ToolMetrics::None => Self::None,
@@ -854,7 +932,7 @@ impl ToolMetricSummary {
         }
     }
 
-    /// Create a new summary from `old` [`ToolMetrics`]
+    /// Creates a new summary from `old` [`ToolMetrics`].
     pub fn from_old_metrics(metrics: &ToolMetrics) -> Self {
         match metrics {
             ToolMetrics::None => Self::None,
@@ -873,9 +951,9 @@ impl ToolMetricSummary {
         }
     }
 
-    /// Create a new summary from `new` and `old` [`ToolMetrics`]
+    /// Creates a new summary from `new` and `old` [`ToolMetrics`].
     ///
-    /// Return the `ToolMetricSummary` if the `MetricsKind` are the same kind, else return with
+    /// Returns the `ToolMetricSummary` if the `MetricsKind` are the same kind, else return with.
     /// error
     pub fn try_from_new_and_old_metrics(
         new_metrics: &ToolMetrics,
@@ -908,7 +986,7 @@ impl ToolMetricSummary {
         }
     }
 
-    /// Create a new summary from this summary and another [`ToolMetricSummary`]
+    /// Creates a new summary from this summary and another [`ToolMetricSummary`].
     pub fn from_self_and_other(this: &Self, other: &Self) -> Option<Self> {
         match (this, other) {
             (Self::None, Self::None) => Some(Self::None),
@@ -980,19 +1058,19 @@ impl ToolMetricSummary {
         }
     }
 
-    /// Return true if this summary has metrics
+    /// Returns `true` if this summary has metrics.
     pub fn is_some(&self) -> bool {
         !self.is_none()
     }
 
-    /// Return true if this summary doesn't have metrics (currently massif, bbv)
+    /// Returns `true` if this summary doesn't have metrics (currently massif, bbv).
     pub fn is_none(&self) -> bool {
         matches!(self, Self::None)
     }
 }
 
 impl ToolRegression {
-    /// Create a new `ToolRegression`
+    /// Creates a new `ToolRegression`.
     pub fn with<T>(apply: fn(T) -> MetricKind, regressions: RegressionMetrics<T>) -> Self {
         match regressions {
             RegressionMetrics::Soft(metric, new, old, diff_pct, limit) => Self::Soft {

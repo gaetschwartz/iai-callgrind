@@ -80,7 +80,7 @@ impl TryFrom<&Metrics> for CacheSummary {
 }
 
 impl CyclesEstimator {
-    /// Create a new `CyclesEstimator`
+    /// Creates a new `CyclesEstimator`.
     pub fn new(
         instructions: Metric,
         total_data_cache_reads: Metric,

@@ -122,14 +122,14 @@ impl Metadata {
         debug!("Detected target directory: '{}'", target_dir.display());
 
         // Invoke Valgrind, disabling ASLR if possible because ASLR could noise up the results a bit
-        let valgrind_path = resolve_binary_path("valgrind")?;
+        let valgrind_path = resolve_binary_path("valgrind", None)?;
         let valgrind_wrapper = if args.allow_aslr.unwrap_or_default() {
             debug!("Running with ASLR enabled");
             None
         } else if cfg!(target_os = "linux") {
             debug!("Trying to run with ASLR disabled: Using 'setarch'");
 
-            if let Ok(set_arch) = resolve_binary_path("setarch") {
+            if let Ok(set_arch) = resolve_binary_path("setarch", None) {
                 Some(Cmd {
                     bin: set_arch,
                     args: vec![
@@ -145,7 +145,7 @@ impl Metadata {
         } else if cfg!(target_os = "freebsd") {
             debug!("Trying to run with ASLR disabled: Using 'proccontrol'");
 
-            if let Ok(proc_control) = resolve_binary_path("proccontrol") {
+            if let Ok(proc_control) = resolve_binary_path("proccontrol", None) {
                 Some(Cmd {
                     bin: proc_control,
                     args: vec![

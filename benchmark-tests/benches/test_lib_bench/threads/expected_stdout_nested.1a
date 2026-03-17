@@ -1,7 +1,7 @@
 test_lib_bench_threads_nested::bench_group::bench_thread_in_thread
-  ======= CALLGRIND ====================================================================
 thread in thread: Number of primes found in the range 0 to 10000: 1229
 - end of stdout/stderr
+  ======= CALLGRIND ====================================================================
   ## pid: <__PID__> thread: 1 part: 1      |N/A
   Command: <__COMMAND__>
   Instructions:                            |N/A                  (*********)
@@ -58,9 +58,9 @@ thread in thread: Number of primes found in the range 0 to 10000: 1229
   Command: <__COMMAND__>
   Details: <__DETAILS__>
 test_lib_bench_threads_nested::bench_group::bench_thread_in_thread_in_subprocess
-  ======= CALLGRIND ====================================================================
 thread in thread: Number of primes found in the range 0 to 10000: 1229
 - end of stdout/stderr
+  ======= CALLGRIND ====================================================================
   ## pid: <__PID__> thread: 1 part: 1      |N/A
   Command: <__COMMAND__>
   Instructions:                            |N/A                  (*********)

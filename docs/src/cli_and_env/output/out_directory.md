@@ -1,4 +1,4 @@
-# Customize the output directory
+# Customize the Output Directory
 
 All output files of Gungraun are usually stored using the following scheme:
 
@@ -8,7 +8,7 @@ This directory structure can partly be changed with the following options.
 
 ## Callgrind Home
 
-Per default, all benchmark output files are stored under the
+By default, all benchmark output files are stored under the
 `$WORKSPACE_ROOT/target/gungraun` directory tree. This home directory can be changed
 with the `GUNGRAUN_HOME` environment variable or the command-line argument
 `--home`. The command-line argument overwrites the value of the environment
@@ -16,7 +16,7 @@ variable. For example to store all files under the `/tmp/gungraun`
 directory you can use `GUNGRAUN_HOME=/tmp/gungraun` or `cargo bench --
 --home=/tmp/gungraun`.
 
-## Separate targets
+## Separate Targets
 
 If you're running the benchmarks on different targets, it's necessary to
 separate the output files of the benchmark runs per target or else you could end

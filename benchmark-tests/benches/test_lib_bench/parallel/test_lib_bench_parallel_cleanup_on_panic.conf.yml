@@ -1,0 +1,16 @@
+# Test Description: `test_lib_bench_parallel_cleanup_on_panic`
+#
+# Run two benchmarks in parallel and one of them panics. Then the other
+# benchmark is supposed to be prematurely terminated by the runner.
+#
+# Expected Result:
+#
+# The cargo bench run is supposed to fail as soon as one benchmark panics. Only
+# the error messages from the panicking benchmark are expected to be shown.
+groups:
+  - runs:
+      - args: ["--parallel=2", "--nocapture"]
+        expected:
+          exit_code: 1
+          stdout: expected_stdout.cleanup_on_panic
+          stderr: expected_stderr.cleanup_on_panic

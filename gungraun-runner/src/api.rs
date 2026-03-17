@@ -1,5 +1,7 @@
 //! The api contains all elements which the `runner` can understand
 
+#[cfg(feature = "runner")]
+use std::borrow::Cow;
 use std::ffi::OsString;
 use std::fmt::Display;
 #[cfg(feature = "runner")]
@@ -761,7 +763,7 @@ pub enum EventKind {
 
 /// Set the expected exit status of a binary benchmark
 ///
-/// Per default, the benchmarked binary is expected to succeed, but if a benchmark is expected to
+/// By default, the benchmarked binary is expected to succeed, but if a benchmark is expected to
 /// fail, setting this option is required.
 ///
 /// # Examples
@@ -870,9 +872,12 @@ pub enum Stdio {
 /// We use this enum only internally in the benchmark runner
 #[cfg(feature = "runner")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Stream {
+pub enum Stream {
+    /// The standard input stream of a spawned process.
     Stdin,
+    /// The standard error stream of a spawned process.
     Stderr,
+    /// The standard output stream of a spawned process.
     Stdout,
 }
 
@@ -989,7 +994,7 @@ pub struct BinaryBenchmarkBench {
 /// only.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct BinaryBenchmarkConfig {
-    /// If some, set the the working directory of the benchmarked binary to this path
+    /// If some, set the working directory of the benchmarked binary to this path
     pub current_dir: Option<PathBuf>,
     /// The valgrind tool to run instead of the default callgrind
     pub default_tool: Option<ValgrindTool>,
@@ -1028,6 +1033,9 @@ pub struct BinaryBenchmarkGroup {
     pub has_teardown: bool,
     /// The name or id of the `binary_benchmark_group!`
     pub id: String,
+    /// The maximum amount of parallelism for this group (0 = no limit, 1 = serial, N >= 2 = limit
+    /// to N)
+    pub max_parallel: Option<usize>,
 }
 
 /// The model for the main! macro
@@ -1201,6 +1209,9 @@ pub struct LibraryBenchmarkGroup {
     pub id: String,
     /// The actual data and the benchmarks of this group
     pub library_benchmarks: Vec<LibraryBenchmark>,
+    /// The maximum amount of parallelism for this group (0 = no limit, 1 = serial, N >= 2 = limit
+    /// to N)
+    pub max_parallel: Option<usize>,
 }
 
 /// The model for the `main` macro
@@ -1308,7 +1319,7 @@ impl BinaryBenchmarkConfig {
         self
     }
 
-    /// Resolve the environment variables and create key, value pairs out of them
+    /// Resolves the environment variables and create key, value pairs out of them.
     ///
     /// This is done especially for pass-through environment variables which have a `None` value at
     /// first.
@@ -1324,7 +1335,7 @@ impl BinaryBenchmarkConfig {
             .collect()
     }
 
-    /// Collect all environment variables which don't have a `None` value
+    /// Collects all environment variables which don't have a `None` value.
     ///
     /// Pass-through variables have a `None` value.
     pub fn collect_envs(&self) -> Vec<(OsString, OsString)> {
@@ -1336,7 +1347,7 @@ impl BinaryBenchmarkConfig {
 }
 
 impl CachegrindMetric {
-    /// Return true if this `EventKind` is a derived event
+    /// Returns `true` if this `EventKind` is a derived event.
     ///
     /// Derived events are calculated from Cachegrind's native event types the same ways as for
     /// callgrind's [`EventKind`]
@@ -1373,7 +1384,7 @@ impl CachegrindMetric {
         )
     }
 
-    /// Return the name of the metric which is the exact name of the enum variant
+    /// Returns the name of the metric which is the exact name of the enum variant.
     pub fn to_name(&self) -> String {
         format!("{:?}", *self)
     }
@@ -1676,7 +1687,7 @@ impl FromStr for ErrorMetric {
 impl Summarize for ErrorMetric {}
 
 impl EventKind {
-    /// Return true if this `EventKind` is a derived event
+    /// Returns `true` if this `EventKind` is a derived event.
     ///
     /// Derived events are calculated from Callgrind's native event types. See also
     /// [`crate::runner::callgrind::model::Metrics::make_summary`]. Currently all derived events
@@ -1714,7 +1725,7 @@ impl EventKind {
         )
     }
 
-    /// Return the name of the metric which is the exact name of the enum variant
+    /// Returns the name of the metric which is the exact name of the enum variant.
     pub fn to_name(&self) -> String {
         format!("{:?}", *self)
     }
@@ -2072,7 +2083,7 @@ impl LibraryBenchmarkConfig {
         self
     }
 
-    /// Resolve the environment variables and create key, value pairs out of them
+    /// Resolves the environment variables and create key, value pairs out of them.
     ///
     /// Same as [`BinaryBenchmarkConfig::resolve_envs`]
     pub fn resolve_envs(&self) -> Vec<(OsString, OsString)> {
@@ -2085,7 +2096,7 @@ impl LibraryBenchmarkConfig {
             .collect()
     }
 
-    /// Collect all environment variables which don't have a `None` value
+    /// Collects all environment variables which don't have a `None` value.
     ///
     /// Same as [`BinaryBenchmarkConfig::collect_envs`]
     pub fn collect_envs(&self) -> Vec<(OsString, OsString)> {
@@ -2119,7 +2130,7 @@ impl From<u64> for Limit {
 }
 
 impl RawArgs {
-    /// Create new arguments for a valgrind tool
+    /// Creates new arguments for a valgrind tool.
     pub fn new<I, T>(args: T) -> Self
     where
         I: Into<String>,
@@ -2128,7 +2139,7 @@ impl RawArgs {
         Self(args.into_iter().map(Into::into).collect())
     }
 
-    /// Extend the arguments with the contents of an iterator
+    /// Extends the arguments with the contents of an iterator.
     pub fn extend_ignore_flag<I, T>(&mut self, args: T)
     where
         I: AsRef<str>,
@@ -2148,17 +2159,17 @@ impl RawArgs {
         );
     }
 
-    /// Return true if there are no tool arguments
+    /// Returns `true` if there are no tool arguments.
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
 
-    /// Append the arguments of another `RawArgs`
+    /// Appends the arguments of another `RawArgs`.
     pub fn update(&mut self, other: &Self) {
         self.extend_ignore_flag(other.0.iter());
     }
 
-    /// Prepend the arguments of another `RawArgs`
+    /// Prepends the arguments of another `RawArgs`.
     pub fn prepend(&mut self, other: &Self) {
         if !other.is_empty() {
             let mut other = other.clone();
@@ -2180,12 +2191,79 @@ where
 }
 
 impl Stdin {
+    /// Applies this [`Stdin`] configuration to a [`Command`] for the selected [`Stream`].
+    ///
+    /// This method configures the given [`Command`] according to this [`Stdin`], using the
+    /// [`Stream`] to select which process stream is being configured. When this is
+    /// [`Stdin::Setup`], it optionally pipes data from the provided [`Child`] and falls back to
+    /// regular stdio handling for unsupported combinations. If `current_dir` is provided,
+    /// file-based paths are resolved relative to that directory.
+    ///
+    /// The behavior varies by variant:
+    /// - [`Stdin::Setup(Pipe::Stdout)`][`Stdin::Setup`] or
+    ///   [`Stdin::Setup(Pipe::Stderr)`][`Stdin::Setup`]: Pipes the setup process's stdout or stderr
+    ///   to this process's stdin
+    /// - [`Stdin::Pipe`]: Creates a piped stdin stream
+    /// - [`Stdin::Inherit`]: Inherits stdin from the parent process
+    /// - [`Stdin::Null`]: Connects stdin to `/dev/null` or equivalent
+    /// - [`Stdin::File(path)`][`Stdin::File`]: Reads stdin from the specified file
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - Setup stream piping is requested but the expected setup stream handle is not available
+    /// - Applying the underlying stdio configuration fails (e.g., file cannot be opened)
+    ///
+    /// # Examples
+    ///
+    /// Piping setup stdout to benchmark stdin:
+    ///
+    /// ```no_run
+    /// # let mut setup_child = std::process::Command::new("something").spawn().unwrap();
+    /// use std::process::Command;
+    ///
+    /// use gungraun_runner::api::{Pipe, Stdin, Stream};
+    ///
+    /// let mut command = Command::new("benchmark");
+    /// let stdin = Stdin::Setup(Pipe::Stdout);
+    /// stdin.apply(&mut command, Stream::Stdin, Some(&mut setup_child), None)?;
+    ///
+    /// # Ok::<(), String>(())
+    /// ```
+    ///
+    /// Reading stdin from a file:
+    ///
+    /// ```no_run
+    /// use std::path::Path;
+    /// use std::process::Command;
+    ///
+    /// use gungraun_runner::api::{Stdin, Stream};
+    ///
+    /// let mut command = Command::new("benchmark");
+    /// let stdin = Stdin::File("input.txt".into());
+    /// stdin.apply(
+    ///     &mut command,
+    ///     Stream::Stdin,
+    ///     None,
+    ///     Some(Path::new("/workspace")),
+    /// )?;
+    /// # Ok::<(), String>(())
+    /// ```
+    ///
+    /// [`Command`]: std::process::Command
+    /// [`Child`]: std::process::Child
+    /// [`Stdin::Setup`]: crate::api::Stdin::Setup
+    /// [`Stdin::Pipe`]: crate::api::Stdin::Pipe
+    /// [`Stdin::Inherit`]: crate::api::Stdin::Inherit
+    /// [`Stdin::Null`]: crate::api::Stdin::Null
+    /// [`Stdin::File`]: crate::api::Stdin::File
     #[cfg(feature = "runner")]
-    pub(crate) fn apply(
+    pub fn apply(
         &self,
         command: &mut StdCommand,
         stream: Stream,
         child: Option<&mut Child>,
+        current_dir: Option<&Path>,
     ) -> Result<(), String> {
         match (self, child) {
             (Self::Setup(Pipe::Stdout), Some(child)) => {
@@ -2206,10 +2284,10 @@ impl Stdin {
                 );
                 Ok(())
             }
-            (Self::Setup(_) | Self::Pipe, _) => Stdio::Pipe.apply(command, stream),
-            (Self::Inherit, _) => Stdio::Inherit.apply(command, stream),
-            (Self::Null, _) => Stdio::Null.apply(command, stream),
-            (Self::File(path), _) => Stdio::File(path.clone()).apply(command, stream),
+            (Self::Setup(_) | Self::Pipe, _) => Stdio::Pipe.apply(command, stream, current_dir),
+            (Self::Inherit, _) => Stdio::Inherit.apply(command, stream, current_dir),
+            (Self::Null, _) => Stdio::Null.apply(command, stream, current_dir),
+            (Self::File(path), _) => Stdio::File(path.clone()).apply(command, stream, current_dir),
         }
     }
 }
@@ -2244,28 +2322,94 @@ impl From<&Path> for Stdin {
 }
 
 impl Stdio {
+    /// Applies this stdio configuration to the selected command stream.
+    ///
+    /// This method configures the given [`Command`] according to this [`Stdio`], using the
+    /// [`Stream`] to select which process stream is being configured. For [`Stdio::File`], the
+    /// file path is interpreted relative to `current_dir` when provided, otherwise it is used
+    /// as-is.
+    ///
+    /// The behavior varies by variant:
+    /// - [`Stdio::Pipe`]: Creates a piped stream for the selected process stream
+    /// - [`Stdio::Inherit`]: Inherits the stream from the parent process
+    /// - [`Stdio::Null`]: Connects the stream to `/dev/null` or equivalent
+    /// - [`Stdio::File(path)`][`Stdio::File`]: Opens or creates the specified file for the stream
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - A file cannot be opened for reading (when configuring stdin)
+    /// - A file cannot be created for writing (when configuring stdout or stderr)
+    ///
+    /// # Examples
+    ///
+    /// Piping stdout to a file:
+    ///
+    /// ```no_run
+    /// use std::path::Path;
+    /// use std::process::Command;
+    ///
+    /// use gungraun_runner::api::{Stdio, Stream};
+    ///
+    /// let mut command = Command::new("benchmark");
+    /// let stdout = Stdio::File("output.txt".into());
+    /// stdout.apply(&mut command, Stream::Stdout, Some(Path::new("/workspace")))?;
+    /// # Ok::<(), String>(())
+    /// ```
+    ///
+    /// Inheriting stderr from parent:
+    ///
+    /// ```no_run
+    /// use std::process::Command;
+    ///
+    /// use gungraun_runner::api::{Stdio, Stream};
+    ///
+    /// let mut command = Command::new("benchmark");
+    /// Stdio::Inherit.apply(&mut command, Stream::Stderr, None)?;
+    /// # Ok::<(), String>(())
+    /// ```
+    ///
+    /// [`Command`]: std::process::Command
+    /// [`Stdio::Pipe`]: crate::api::Stdio::Pipe
+    /// [`Stdio::Inherit`]: crate::api::Stdio::Inherit
+    /// [`Stdio::Null`]: crate::api::Stdio::Null
+    /// [`Stdio::File`]: crate::api::Stdio::File
     #[cfg(feature = "runner")]
-    pub(crate) fn apply(&self, command: &mut StdCommand, stream: Stream) -> Result<(), String> {
+    pub fn apply(
+        &self,
+        command: &mut StdCommand,
+        stream: Stream,
+        current_dir: Option<&Path>,
+    ) -> Result<(), String> {
         let stdio = match self {
             Self::Pipe => StdStdio::piped(),
             Self::Inherit => StdStdio::inherit(),
             Self::Null => StdStdio::null(),
-            Self::File(path) => match stream {
-                Stream::Stdin => StdStdio::from(File::open(path).map_err(|error| {
-                    format!(
-                        "Failed to open file '{}' in read mode for {stream}: {error}",
-                        path.display()
-                    )
-                })?),
-                Stream::Stdout | Stream::Stderr => {
-                    StdStdio::from(File::create(path).map_err(|error| {
-                        format!(
-                            "Failed to create file '{}' for {stream}: {error}",
-                            path.display()
-                        )
-                    })?)
+            Self::File(path) => {
+                let path = if let Some(current_dir) = current_dir {
+                    Cow::Owned(current_dir.join(path))
+                } else {
+                    Cow::Borrowed(path)
+                };
+                match stream {
+                    Stream::Stdin => {
+                        StdStdio::from(File::open(path.as_path()).map_err(|error| {
+                            format!(
+                                "Failed to open file '{}' in read mode for {stream}: {error}",
+                                path.display()
+                            )
+                        })?)
+                    }
+                    Stream::Stdout | Stream::Stderr => {
+                        StdStdio::from(File::create(path.as_path()).map_err(|error| {
+                            format!(
+                                "Failed to create file '{}' for {stream}: {error}",
+                                path.display()
+                            )
+                        })?)
+                    }
                 }
-            },
+            }
         };
 
         match stream {
@@ -2275,14 +2419,6 @@ impl Stdio {
         };
 
         Ok(())
-    }
-
-    #[cfg(feature = "runner")]
-    pub(crate) fn is_pipe(&self) -> bool {
-        match self {
-            Self::Inherit => false,
-            Self::Null | Self::File(_) | Self::Pipe => true,
-        }
     }
 }
 
@@ -2312,7 +2448,7 @@ impl Display for Stream {
 }
 
 impl Tool {
-    /// Create a new `Tool` configuration
+    /// Creates a new `Tool` configuration.
     pub fn new(kind: ValgrindTool) -> Self {
         Self {
             kind,
@@ -2327,7 +2463,7 @@ impl Tool {
         }
     }
 
-    /// Create a new `Tool` configuration with the given command-line `args`
+    /// Creates a new `Tool` configuration with the given command-line `args`.
     pub fn with_args<I, T>(kind: ValgrindTool, args: T) -> Self
     where
         I: AsRef<str>,
@@ -2357,7 +2493,7 @@ impl Tool {
 }
 
 impl Tools {
-    /// Return true if `Tools` is empty
+    /// Returns `true` if `Tools` is empty.
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
@@ -2371,7 +2507,7 @@ impl Tools {
         }
     }
 
-    /// Update `Tools` with all [`Tool`]s from an iterator
+    /// Updates `Tools` with all [`Tool`]s from an iterator.
     pub fn update_all<T>(&mut self, tools: T)
     where
         T: IntoIterator<Item = Tool>,
@@ -2381,12 +2517,13 @@ impl Tools {
         }
     }
 
-    /// Update `Tools` with another `Tools`
+    /// Updates `Tools` with another `Tools`.
     pub fn update_from_other(&mut self, tools: &Self) {
         self.update_all(tools.0.iter().cloned());
     }
 
-    /// Search for the [`Tool`] with `kind` and if present remove it from this `Tools` and return it
+    /// Searches for the [`Tool`] with `kind` and if present remove it from this `Tools` and return
+    /// it.
     pub fn consume(&mut self, kind: ValgrindTool) -> Option<Tool> {
         self.0
             .iter()
@@ -2396,7 +2533,7 @@ impl Tools {
 }
 
 impl ValgrindTool {
-    /// Return the id used by the `valgrind --tool` option
+    /// Returns the id used by the `valgrind --tool` option.
     pub fn id(&self) -> String {
         match self {
             Self::DHAT => "dhat".to_owned(),
@@ -2410,7 +2547,7 @@ impl ValgrindTool {
         }
     }
 
-    /// Return true if this tool has output files in addition to log files
+    /// Returns `true` if this tool has output files in addition to log files.
     pub fn has_output_file(&self) -> bool {
         matches!(
             self,
@@ -2418,12 +2555,12 @@ impl ValgrindTool {
         )
     }
 
-    /// Return true if this tool supports xtree memory files
+    /// Returns `true` if this tool supports xtree memory files.
     pub fn has_xtree_file(&self) -> bool {
         matches!(self, Self::Memcheck | Self::Massif | Self::Helgrind)
     }
 
-    /// Return true if this tool supports xleak files
+    /// Returns `true` if this tool supports xleak files.
     pub fn has_xleak_file(&self) -> bool {
         *self == Self::Memcheck
     }
@@ -2463,7 +2600,7 @@ impl TryFrom<&str> for ValgrindTool {
     }
 }
 
-/// Update the value of an [`Option`]
+/// Updates the value of an [`Option`].
 pub fn update_option<T: Clone>(first: &Option<T>, other: &Option<T>) -> Option<T> {
     other.clone().or_else(|| first.clone())
 }

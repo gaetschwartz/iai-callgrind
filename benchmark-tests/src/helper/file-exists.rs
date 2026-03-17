@@ -11,5 +11,18 @@ fn main() {
         value => panic!("Unexpected value: '{value}'"),
     };
 
-    assert_eq!(path.exists(), expected_exists);
+    match (path.exists(), expected_exists) {
+        (true, true) => {
+            println!("Verifying that file exists succeeded");
+        }
+        (true, false) => {
+            panic!("Expected file to not exist but it exists");
+        }
+        (false, true) => {
+            panic!("Expected file to exist but it did not exist");
+        }
+        (false, false) => {
+            println!("Verifying that file doesn't exist succeeded");
+        }
+    }
 }

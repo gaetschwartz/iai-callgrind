@@ -173,10 +173,7 @@ impl ToolArgs {
     }
 
     /// Set the output file argument depending on the tool of this `ToolArgs`
-    pub fn set_output_arg<T>(&mut self, output_path: &ToolOutputPath, modifier: Option<T>)
-    where
-        T: AsRef<str>,
-    {
+    pub fn set_output_arg(&mut self, output_path: &ToolOutputPath) {
         if !self.tool.has_output_file() {
             return;
         }
@@ -184,36 +181,30 @@ impl ToolArgs {
         match self.tool {
             ValgrindTool::Callgrind => {
                 let mut arg = OsString::from("--callgrind-out-file=");
-                let callgrind_out_path = if let Some(modifier) = modifier {
-                    output_path.with_modifiers([modifier.as_ref()])
-                } else if self.trace_children {
+                let callgrind_out_path = if self.trace_children {
                     output_path.with_modifiers(["#%p"])
                 } else {
-                    output_path.clone()
+                    output_path.with_modifiers(["#0"])
                 };
                 arg.push(callgrind_out_path.to_path());
                 self.output_paths.push(arg);
             }
             ValgrindTool::Massif => {
                 let mut arg = OsString::from("--massif-out-file=");
-                let massif_out_path = if let Some(modifier) = modifier {
-                    output_path.with_modifiers([modifier.as_ref()])
-                } else if self.trace_children {
+                let massif_out_path = if self.trace_children {
                     output_path.with_modifiers(["#%p"])
                 } else {
-                    output_path.clone()
+                    output_path.with_modifiers(["#0"])
                 };
                 arg.push(massif_out_path.to_path());
                 self.output_paths.push(arg);
             }
             ValgrindTool::DHAT => {
                 let mut arg = OsString::from("--dhat-out-file=");
-                let dhat_out_path = if let Some(modifier) = modifier {
-                    output_path.with_modifiers([modifier.as_ref()])
-                } else if self.trace_children {
+                let dhat_out_path = if self.trace_children {
                     output_path.with_modifiers(["#%p"])
                 } else {
-                    output_path.clone()
+                    output_path.with_modifiers(["#0"])
                 };
                 arg.push(dhat_out_path.to_path());
                 self.output_paths.push(arg);
@@ -221,20 +212,15 @@ impl ToolArgs {
             ValgrindTool::BBV => {
                 let mut bb_arg = OsString::from("--bb-out-file=");
                 let mut pc_arg = OsString::from("--pc-out-file=");
-                let (bb_out, pc_out) = if let Some(modifier) = modifier {
-                    (
-                        output_path.with_modifiers(["bb", modifier.as_ref()]),
-                        output_path.with_modifiers(["pc", modifier.as_ref()]),
-                    )
-                } else if self.trace_children {
+                let (bb_out, pc_out) = if self.trace_children {
                     (
                         output_path.with_modifiers(["bb", "#%p"]),
                         output_path.with_modifiers(["pc", "#%p"]),
                     )
                 } else {
                     (
-                        output_path.with_modifiers(["bb"]),
-                        output_path.with_modifiers(["pc"]),
+                        output_path.with_modifiers(["bb", "#0"]),
+                        output_path.with_modifiers(["pc", "#0"]),
                     )
                 };
                 bb_arg.push(bb_out.to_path());
@@ -244,12 +230,10 @@ impl ToolArgs {
             }
             ValgrindTool::Cachegrind => {
                 let mut arg = OsString::from("--cachegrind-out-file=");
-                let cachegrind_out_path = if let Some(modifier) = modifier {
-                    output_path.with_modifiers([modifier.as_ref()])
-                } else if self.trace_children {
+                let cachegrind_out_path = if self.trace_children {
                     output_path.with_modifiers(["#%p"])
                 } else {
-                    output_path.clone()
+                    output_path.with_modifiers(["#0"])
                 };
                 arg.push(cachegrind_out_path.to_path());
                 self.output_paths.push(arg);
@@ -260,18 +244,11 @@ impl ToolArgs {
     }
 
     /// Set the logfile argument
-    pub fn set_log_arg<T>(&mut self, output_path: &ToolOutputPath, modifier: Option<T>)
-    where
-        T: AsRef<str>,
-    {
-        let log_output = if let Some(modifier) = modifier {
-            output_path
-                .to_log_output()
-                .with_modifiers([modifier.as_ref()])
-        } else if self.trace_children {
+    pub fn set_log_arg(&mut self, output_path: &ToolOutputPath) {
+        let log_output = if self.trace_children {
             output_path.to_log_output().with_modifiers(["#%p"])
         } else {
-            output_path.to_log_output()
+            output_path.to_log_output().with_modifiers(["#0"])
         };
         let mut arg = OsString::from("--log-file=");
         arg.push(log_output.to_path());
@@ -285,7 +262,9 @@ impl ToolArgs {
                 .to_xtree_output()
                 .map(|p| p.with_modifiers(["#%p"]))
         } else {
-            output_path.to_xtree_output()
+            output_path
+                .to_xtree_output()
+                .map(|p| p.with_modifiers(["#0"]))
         };
 
         if let Some(output) = xtree_output {
@@ -302,7 +281,9 @@ impl ToolArgs {
                 .to_xleak_output()
                 .map(|p| p.with_modifiers(["#%p"]))
         } else {
-            output_path.to_xleak_output()
+            output_path
+                .to_xleak_output()
+                .map(|p| p.with_modifiers(["#0"]))
         };
 
         if let Some(output) = xleak_output {
@@ -340,7 +321,7 @@ impl ToolArgs {
     }
 }
 
-/// Return true if this is an ignored argument related to output or logfiles
+/// Returns `true` if this is an ignored argument related to output or logfiles.
 pub fn is_ignored_outfile_argument(arg: &str) -> bool {
     matches!(
         arg,
@@ -363,7 +344,7 @@ pub fn is_ignored_outfile_argument(arg: &str) -> bool {
     )
 }
 
-/// Return true if this is a generic ignored argument
+/// Returns `true` if this is a generic ignored argument.
 pub fn is_ignored_argument(arg: &str) -> bool {
     matches!(
         arg,

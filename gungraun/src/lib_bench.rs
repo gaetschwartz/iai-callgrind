@@ -154,7 +154,7 @@ impl LibraryBenchmarkConfig {
         self
     }
 
-    /// Clear the environment variables before running a benchmark (Default: true)
+    /// Clears the environment variables before running a benchmark (Default: true).
     ///
     /// # Examples
     ///
@@ -177,7 +177,7 @@ impl LibraryBenchmarkConfig {
         self
     }
 
-    /// Add an environment variables which will be available in library benchmarks
+    /// Adds an environment variables which will be available in library benchmarks.
     ///
     /// These environment variables are available independently of the setting of
     /// [`LibraryBenchmarkConfig::env_clear`].
@@ -209,7 +209,7 @@ impl LibraryBenchmarkConfig {
         self
     }
 
-    /// Add multiple environment variables which will be available in library benchmarks
+    /// Adds multiple environment variables which will be available in library benchmarks.
     ///
     /// See also [`LibraryBenchmarkConfig::env`] for more details.
     ///
@@ -308,7 +308,7 @@ impl LibraryBenchmarkConfig {
         self
     }
 
-    /// Add a configuration for a valgrind tool
+    /// Adds a configuration for a valgrind tool.
     ///
     /// Valid configurations are [`crate::Callgrind`], [`crate::Cachegrind`], [`crate::Dhat`],
     /// [`crate::Memcheck`], [`crate::Helgrind`], [`crate::Drd`], [`crate::Massif`] and
@@ -384,7 +384,7 @@ impl LibraryBenchmarkConfig {
         self
     }
 
-    /// Configure the [`crate::OutputFormat`] of the terminal output of Gungraun
+    /// Configures the [`crate::OutputFormat`] of the terminal output of Gungraun.
     ///
     /// # Examples
     ///

@@ -7,7 +7,6 @@ use std::fmt::{Display, Write};
 use std::path::PathBuf;
 use std::time::Duration;
 
-use anyhow::Result;
 use colored::{Color, ColoredString, Colorize};
 use either_or_both::EitherOrBoth;
 use indexmap::{indexset, IndexSet};
@@ -51,6 +50,7 @@ pub const UNKNOWN: &str = "*********";
 /// The string used to signal that the difference is in the tolerance margin
 pub const WITHIN_TOLERANCE: &str = "Tolerance";
 
+#[derive(Debug)]
 enum IndentKind {
     Normal,
     ToolHeadline,
@@ -72,12 +72,11 @@ pub enum OutputFormatKind {
 /// The first line and header of a binary benchmark run
 ///
 /// For example `module::path id: some args`
-pub struct BinaryBenchmarkHeader {
-    inner: Header,
-    output_format: OutputFormat,
-}
+#[derive(Debug)]
+pub struct BinaryBenchmarkHeader(Header);
 
 /// The header of the comparison between two different benchmarks
+#[derive(Debug)]
 pub struct ComparisonHeader {
     /// The details to print in addition or instead of the metrics
     pub details: Option<String>,
@@ -90,18 +89,18 @@ pub struct ComparisonHeader {
 }
 
 /// The first line and header of a benchmark run
+#[derive(Debug, PartialEq, Clone, Eq)]
 pub struct Header {
     description: Option<String>,
     id: Option<String>,
     module_path: String,
 }
+
 /// The first line and header of a library benchmark run
 ///
 /// For example `module::path id: some args`
-pub struct LibraryBenchmarkHeader {
-    inner: Header,
-    output_format: OutputFormat,
-}
+#[derive(Debug)]
+pub struct LibraryBenchmarkHeader(Header);
 
 /// The `OutputFormat` of the Gungraun terminal output
 #[derive(Debug, Clone, PartialEq)]
@@ -162,10 +161,10 @@ pub trait Formatter {
         baselines: &Baselines,
         data: &ProfileData,
         is_default_tool: bool,
-    ) -> Result<()>;
+    );
 
     /// Format a line in free form as is
-    fn format_line(&mut self, line: &str) -> Result<()>;
+    fn format_line(&mut self, line: &str);
 
     /// Format the output of a single [`ToolMetricSummary`] of a tool
     fn format_single(
@@ -175,12 +174,9 @@ pub trait Formatter {
         info: Option<&EitherOrBoth<ProfileInfo>>,
         metrics_summary: &ToolMetricSummary,
         is_default_tool: bool,
-    ) -> Result<()>;
+    );
 
-    /// Return the [`OutputFormat`] of this formatter
-    fn get_output_format(&self) -> &OutputFormat;
-
-    /// Print the formatted output of the whole [`ProfileData`] if the output format is not json
+    /// Print the formatted output of the whole [`ProfileData`]
     fn print(
         &mut self,
         tool: ValgrindTool,
@@ -188,16 +184,14 @@ pub trait Formatter {
         baselines: &Baselines,
         data: &ProfileData,
         is_default_tool: bool,
-    ) -> Result<()>
-    where
+    ) where
         Self: std::fmt::Display,
     {
-        if self.get_output_format().is_default() {
-            self.format(tool, config, baselines, data, is_default_tool)?;
-            print!("{self}");
-            self.clear();
-        }
-        Ok(())
+        self.format(tool, config, baselines, data, is_default_tool);
+
+        print!("{self}");
+
+        self.clear();
     }
 
     /// Print a comparison between two different benchmarks
@@ -207,11 +201,11 @@ pub trait Formatter {
         id: &str,
         details: Option<&str>,
         summaries: Vec<(ValgrindTool, ToolMetricSummary)>,
-    ) -> Result<()>;
+    );
 }
 
 impl BinaryBenchmarkHeader {
-    /// Create a new `BinaryBenchmarkHeader`
+    /// Creates a new `BinaryBenchmarkHeader`.
     pub fn new(meta: &Metadata, bin_bench: &BinBench) -> Self {
         let path = make_relative(&meta.project_root, &bin_bench.command.path);
 
@@ -238,37 +232,33 @@ impl BinaryBenchmarkHeader {
             )
         };
 
-        Self {
-            inner: Header::new(
-                &bin_bench.module_path,
-                bin_bench.id.clone(),
-                Some(description),
-                &bin_bench.output_format,
-            ),
-            output_format: bin_bench.output_format.clone(),
-        }
-    }
-
-    /// Print the header
-    pub fn print(&self) {
-        if self.output_format.kind == OutputFormatKind::Default {
-            self.inner.print();
-        }
+        Self(Header::new(
+            &bin_bench.module_path,
+            bin_bench.id.clone(),
+            Some(description),
+            &bin_bench.output_format,
+        ))
     }
 
     /// Convert the header to a flamegraph title
     pub fn to_title(&self) -> String {
-        self.inner.to_title()
+        self.0.to_title()
     }
 
-    /// Return the description part of the header
+    /// Returns the description part of the header.
     pub fn description(&self) -> Option<String> {
-        self.inner.description.clone()
+        self.0.description.clone()
+    }
+}
+
+impl Display for BinaryBenchmarkHeader {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }
 
 impl ComparisonHeader {
-    /// Create a new `ComparisonHeader`
+    /// Creates a new `ComparisonHeader`.
     pub fn new<T, U, V>(
         function_name: T,
         id: U,
@@ -318,7 +308,7 @@ impl Display for ComparisonHeader {
 }
 
 impl Header {
-    /// Create a new `Header`
+    /// Creates a new `Header`.
     pub fn new<T>(
         module_path: &ModulePath,
         id: T,
@@ -338,7 +328,7 @@ impl Header {
         }
     }
 
-    /// Create a new `Header` with a description
+    /// Creates a new `Header` with a description.
     pub fn without_description<T>(module_path: &ModulePath, id: T) -> Self
     where
         T: Into<Option<String>>,
@@ -404,8 +394,20 @@ impl Display for Header {
     }
 }
 
+impl From<BinaryBenchmarkHeader> for Header {
+    fn from(value: BinaryBenchmarkHeader) -> Self {
+        value.0
+    }
+}
+
+impl From<LibraryBenchmarkHeader> for Header {
+    fn from(value: LibraryBenchmarkHeader) -> Self {
+        value.0
+    }
+}
+
 impl LibraryBenchmarkHeader {
-    /// Create a new `LibraryBenchmarkHeader`
+    /// Creates a new `LibraryBenchmarkHeader`.
     pub fn new(lib_bench: &LibBench) -> Self {
         let header = Header::new(
             &lib_bench.module_path,
@@ -414,42 +416,38 @@ impl LibraryBenchmarkHeader {
             &lib_bench.output_format,
         );
 
-        Self {
-            inner: header,
-            output_format: lib_bench.output_format.clone(),
-        }
-    }
-
-    /// Print the header
-    pub fn print(&self) {
-        if self.output_format.is_default() {
-            self.inner.print();
-        }
+        Self(header)
     }
 
     /// Convert the header into a flamegraph title
     pub fn to_title(&self) -> String {
-        self.inner.to_title()
+        self.0.to_title()
     }
 
-    /// Return the description part of the header if present
+    /// Returns the description part of the header if present.
     pub fn description(&self) -> Option<String> {
-        self.inner.description.clone()
+        self.0.description.clone()
+    }
+}
+
+impl Display for LibraryBenchmarkHeader {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }
 
 impl OutputFormat {
-    /// Return true if the `OutputFormat` is the default format
+    /// Returns `true` if the `OutputFormat` is the default format.
     pub fn is_default(&self) -> bool {
         self.kind == OutputFormatKind::Default
     }
 
-    /// Return true if the `OutputFormat` is json
+    /// Returns `true` if the `OutputFormat` is json.
     pub fn is_json(&self) -> bool {
         self.kind == OutputFormatKind::Json || self.kind == OutputFormatKind::PrettyJson
     }
 
-    /// Update the output format from the [`Tool`] if present
+    /// Updates the output format from the [`Tool`] if present.
     pub fn update(&mut self, tool: Option<&Tool>) {
         if let Some(tool) = tool {
             if let Some(format) = &tool.output_format {
@@ -484,7 +482,7 @@ impl OutputFormat {
         }
     }
 
-    /// Update the output format with data from command-line arguments in [`Metadata`]
+    /// Updates the output format with data from command-line arguments in [`Metadata`].
     pub fn update_from_meta(&mut self, meta: &Metadata) {
         if let Some(metrics) = &meta.args.cachegrind_metrics {
             self.cachegrind.clone_from(metrics);
@@ -575,7 +573,7 @@ impl From<api::OutputFormat> for OutputFormat {
 }
 
 impl SummaryFormatter {
-    /// Create a new `SummaryFormatter`
+    /// Creates a new `SummaryFormatter`.
     pub fn new(output_format_kind: OutputFormatKind) -> Self {
         Self { output_format_kind }
     }
@@ -660,7 +658,7 @@ impl SummaryFormatter {
 }
 
 impl VerticalFormatter {
-    /// Create a new `VerticalFormatter` (the default format)
+    /// Creates a new `VerticalFormatter` (the default format).
     pub fn new(output_format: OutputFormat) -> Self {
         if output_format.show_grid {
             Self {
@@ -1029,7 +1027,7 @@ impl Formatter for VerticalFormatter {
         info: Option<&EitherOrBoth<ProfileInfo>>,
         metrics_summary: &ToolMetricSummary,
         is_default_tool: bool,
-    ) -> Result<()> {
+    ) {
         if is_default_tool {
             self.format_baseline(baselines);
         }
@@ -1103,7 +1101,6 @@ impl Formatter for VerticalFormatter {
                 );
             }
         }
-        Ok(())
     }
 
     fn format(
@@ -1113,7 +1110,7 @@ impl Formatter for VerticalFormatter {
         baselines: &Baselines,
         data: &ProfileData,
         is_default_tool: bool,
-    ) -> Result<()> {
+    ) {
         if self.output_format.show_only_comparison {
             // no usual data to show
         } else if data.has_multiple() && self.output_format.show_intermediate {
@@ -1129,7 +1126,7 @@ impl Formatter for VerticalFormatter {
                         Some(&part.details),
                         &part.metrics_summary,
                         is_default_tool,
-                    )?;
+                    );
                     first = false;
                 } else {
                     self.format_single(
@@ -1138,7 +1135,7 @@ impl Formatter for VerticalFormatter {
                         Some(&part.details),
                         &part.metrics_summary,
                         is_default_tool,
-                    )?;
+                    );
                 }
             }
 
@@ -1150,10 +1147,10 @@ impl Formatter for VerticalFormatter {
                     None,
                     &data.total.summary,
                     is_default_tool,
-                )?;
+                );
             }
         } else if data.total.is_some() {
-            self.format_single(tool, baselines, None, &data.total.summary, is_default_tool)?;
+            self.format_single(tool, baselines, None, &data.total.summary, is_default_tool);
         } else if data.total.is_none() && !data.parts.is_empty() {
             // Since there is no total, show_all is partly ignored, and we show all data in a little
             // bit more aggregated form without the multiple files headlines. This affects currently
@@ -1170,8 +1167,6 @@ impl Formatter for VerticalFormatter {
         } else {
             // no data to show
         }
-
-        Ok(())
     }
 
     fn print_comparison(
@@ -1180,7 +1175,7 @@ impl Formatter for VerticalFormatter {
         id: &str,
         details: Option<&str>,
         summaries: Vec<(ValgrindTool, ToolMetricSummary)>,
-    ) -> Result<()> {
+    ) {
         if self.output_format.is_default() {
             ComparisonHeader::new(function_name, id, details, &self.output_format).print();
 
@@ -1195,27 +1190,20 @@ impl Formatter for VerticalFormatter {
                         self.indent_sub_header,
                         "-------".bright_black(),
                         tool.to_string().to_uppercase()
-                    ))?;
+                    ));
                 }
-                self.format_single(*tool, &(None, None), None, summary, false)?;
+                self.format_single(*tool, &(None, None), None, summary, false);
             }
             self.print_buffer();
         }
-
-        Ok(())
     }
 
     fn clear(&mut self) {
         self.buffer.clear();
     }
 
-    fn get_output_format(&self) -> &OutputFormat {
-        &self.output_format
-    }
-
-    fn format_line(&mut self, line: &str) -> Result<()> {
+    fn format_line(&mut self, line: &str) {
         self.buffer.push_str(line);
-        Ok(())
     }
 }
 
@@ -1248,7 +1236,7 @@ pub fn format_float(float: f64, unit: char) -> ColoredString {
     }
 }
 
-/// Return the formatted string if `NoCapture` is not `False`
+/// Returns the formatted string if `NoCapture` is not `False`.
 pub fn no_capture_footer(nocapture: NoCapture) -> Option<String> {
     match nocapture {
         NoCapture::True => Some(format!(
@@ -1283,34 +1271,9 @@ pub fn print_list_benchmark(module_path: &ModulePath, id: Option<&String>) {
 }
 
 /// Print the appropriate footer for the [`NoCapture`] option
-pub fn print_no_capture_footer(
-    nocapture: NoCapture,
-    stdout: Option<&api::Stdio>,
-    stderr: Option<&api::Stdio>,
-) {
-    let stdout_is_pipe = stdout.map_or(
-        nocapture == NoCapture::False || nocapture == NoCapture::Stderr,
-        api::Stdio::is_pipe,
-    );
-
-    let stderr_is_pipe = stderr.map_or(
-        nocapture == NoCapture::False || nocapture == NoCapture::Stdout,
-        api::Stdio::is_pipe,
-    );
-
-    // These unwraps are safe because `no_capture_footer` returns None only if `NoCapture` is
-    // `False`
-    match (stdout_is_pipe, stderr_is_pipe) {
-        (true, true) => {}
-        (true, false) => {
-            println!("{}", no_capture_footer(NoCapture::Stderr).unwrap());
-        }
-        (false, true) => {
-            println!("{}", no_capture_footer(NoCapture::Stdout).unwrap());
-        }
-        (false, false) => {
-            println!("{}", no_capture_footer(NoCapture::True).unwrap());
-        }
+pub fn print_no_capture_footer(nocapture: NoCapture) {
+    if let Some(footer) = no_capture_footer(nocapture) {
+        println!("{footer}");
     }
 }
 

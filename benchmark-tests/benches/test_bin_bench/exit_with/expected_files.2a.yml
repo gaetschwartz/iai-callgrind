@@ -1,0 +1,10 @@
+data:
+  - group: my_group
+    function: bench_exit_with
+    id: exit_with
+    expected:
+      globs:
+        - pattern: callgrind.bench_exit_with.exit_with.log.#*
+          count: 1
+        - pattern: callgrind.bench_exit_with.exit_with.out.#*
+          count: 2

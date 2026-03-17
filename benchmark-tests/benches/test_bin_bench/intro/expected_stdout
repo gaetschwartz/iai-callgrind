@@ -153,6 +153,7 @@ test_bin_bench_intro::read_file_group::benches_from_iter from_iter_2:(nth of rea
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
 test_bin_bench_intro::pipe_group::bench_pipe foo:(setup_pipe("foo")) -> target/release/pipe
+- end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
   LL Hits:                                 |N/A                  (*********)
@@ -160,6 +161,7 @@ test_bin_bench_intro::pipe_group::bench_pipe foo:(setup_pipe("foo")) -> target/r
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
 test_bin_bench_intro::pipe_group::bench_pipe bar:(setup_pipe("bar")) -> target/release/pipe
+- end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
   LL Hits:                                 |N/A                  (*********)

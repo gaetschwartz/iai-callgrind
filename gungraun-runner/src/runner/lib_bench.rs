@@ -2,18 +2,16 @@
 //!
 //! This module runs all the library benchmarks
 
-mod defaults {
-    pub const COMPARE_BY_ID: bool = false;
-}
-
 use std::collections::HashMap;
 use std::ffi::OsString;
-use std::time::Instant;
+use std::fmt::Debug;
+use std::marker::{Send, Sync};
+use std::path::Path;
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
 
 use anyhow::Result;
-use log::warn;
 
-use super::common::{Assistant, AssistantKind, Baselines, BenchmarkSummaries, Config, ModulePath};
 use super::format::{LibraryBenchmarkHeader, OutputFormat};
 use super::meta::Metadata;
 use super::summary::{BaselineKind, BaselineName, BenchmarkKind, BenchmarkSummary, SummaryOutput};
@@ -24,34 +22,21 @@ use crate::api::{
     EntryPoint, LibraryBenchmarkConfig, LibraryBenchmarkGroups, RawArgs, ValgrindTool,
 };
 use crate::error::Error;
-use crate::runner::format;
+use crate::runner::common::{
+    BaselineDataProcessor, Baselines, BenchmarkDataProcessor, BenchmarkSummaries, CapturedOutput,
+    Config, Groups, LoadBaselineDataProcessor, ModulePath, Runner, SaveBaselineDataProcessor,
+};
 
 /// Implements [`Benchmark`] to run a [`LibBench`] and compare against an earlier [`BenchmarkKind`]
 #[derive(Debug)]
-struct BaselineBenchmark {
+pub struct BaselineBenchmark {
     baseline_kind: BaselineKind,
 }
-
-// A `Group` is the organizational unit and counterpart of the `library_benchmark_group!` macro
-#[derive(Debug)]
-struct Group {
-    benches: Vec<LibBench>,
-    compare_by_id: bool,
-    index: usize,
-    module_path: ModulePath,
-    num_filtered: usize,
-    setup: Option<Assistant>,
-    teardown: Option<Assistant>,
-}
-
-/// `Groups` is the top-level organizational unit of the `main!` macro for library benchmarks
-#[derive(Debug)]
-struct Groups(Vec<Group>);
 
 /// A `LibBench` represents a single benchmark under the `#[library_benchmark]` attribute macro
 ///
 /// It needs an implementation of `Benchmark` to be run.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LibBench {
     /// The index of the `#[bench]` in the `#[library_benchmark]`
     pub bench_index: usize,
@@ -85,54 +70,102 @@ pub struct LibBench {
 ///
 /// This benchmark runner does not run valgrind or execute anything.
 #[derive(Debug)]
-struct LoadBaselineBenchmark {
+pub struct LoadBaselineBenchmark {
     baseline: BaselineName,
     loaded_baseline: BaselineName,
-}
-
-/// Create and run [`Groups`] with an implementation of [`Benchmark`]
-#[derive(Debug)]
-struct Runner {
-    benchmark: Box<dyn Benchmark>,
-    config: Config,
-    groups: Groups,
-    setup: Option<Assistant>,
-    teardown: Option<Assistant>,
 }
 
 /// Implements [`Benchmark`] to save a [`LibBench`] run as baseline. If present compare against a
 /// former baseline with the same name
 #[derive(Debug)]
-struct SaveBaselineBenchmark {
+pub struct SaveBaselineBenchmark {
     baseline: BaselineName,
 }
 
-/// This trait needs to be implemented to actually run a [`LibBench`]
+/// Strategy interface for executing library benchmarks in different baseline modes.
 ///
 /// Despite having the same name, this trait differs from `bin_bench::Benchmark` and is
 /// designed to run a `LibBench` only.
-trait Benchmark: std::fmt::Debug {
+pub trait Benchmark: Debug + Send + Sync {
+    /// Returns the pair of loaded and active baseline names used for this run.
     fn baselines(&self) -> Baselines;
-    fn output_path(&self, lib_bench: &LibBench, config: &Config, group: &Group) -> ToolOutputPath;
-    fn run(&self, lib_bench: &LibBench, config: &Config, group: &Group)
-        -> Result<BenchmarkSummary>;
+
+    /// Creates the post-run data processor for the selected tools.
+    ///
+    /// The processor uses [`ToolConfigs`], the benchmark `project_root`, and the computed
+    /// [`ToolOutputPath`] to parse metrics, evaluate regressions, and produce additional
+    /// artifacts.
+    fn data_processor(
+        &self,
+        tools: &ToolConfigs,
+        project_root: &Path,
+        output_path: &ToolOutputPath,
+    ) -> Box<dyn BenchmarkDataProcessor>;
+
+    /// Computes the output location for this benchmark run.
+    ///
+    /// The path is derived from [`LibBench`], the global [`Config`], the enclosing
+    /// `group_module_path`, and whether temporary directories should be used.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the output path cannot be created or initialized.
+    fn default_output_path(
+        &self,
+        lib_bench: &LibBench,
+        config: &Config,
+        group_module_path: &ModulePath,
+        use_temp_dir: bool,
+    ) -> Result<ToolOutputPath>;
+
+    /// Executes a benchmark and returns its populated summary.
+    ///
+    /// The method consumes [`LibBench`], uses `main_index` to address the benchmark harness entry,
+    /// optionally captures output into [`CapturedOutput`], reacts to `force_shutdown`, and writes
+    /// artifacts under [`ToolOutputPath`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if launching, running, or post-processing the benchmark fails.
+    fn run(
+        &self,
+        lib_bench: LibBench,
+        config: &Config,
+        main_index: usize,
+        captured_output: Option<CapturedOutput>,
+        force_shutdown: &Arc<AtomicBool>,
+        output_path: ToolOutputPath,
+    ) -> Result<BenchmarkSummary>;
 }
 
 impl Benchmark for BaselineBenchmark {
-    fn output_path(&self, lib_bench: &LibBench, config: &Config, group: &Group) -> ToolOutputPath {
+    fn default_output_path(
+        &self,
+        lib_bench: &LibBench,
+        config: &Config,
+        group_module_path: &ModulePath,
+        use_temp_dir: bool,
+    ) -> Result<ToolOutputPath> {
         let kind = if lib_bench.default_tool.has_output_file() {
             ToolOutputPathKind::Out
         } else {
             ToolOutputPathKind::Log
         };
-        ToolOutputPath::new(
+        let output_path = ToolOutputPath::new(
             kind,
             lib_bench.default_tool,
             &self.baseline_kind,
             &config.meta.target_dir,
-            &group.module_path,
+            group_module_path,
             &lib_bench.name(),
-        )
+            use_temp_dir,
+        )?;
+
+        if !use_temp_dir {
+            output_path.init()?;
+        }
+
+        Ok(output_path)
     }
 
     fn baselines(&self) -> Baselines {
@@ -144,239 +177,58 @@ impl Benchmark for BaselineBenchmark {
 
     fn run(
         &self,
-        lib_bench: &LibBench,
+        lib_bench: LibBench,
         config: &Config,
-        group: &Group,
+        main_index: usize,
+        captured_output: Option<CapturedOutput>,
+        force_shutdown: &Arc<AtomicBool>,
+        output_path: ToolOutputPath,
     ) -> Result<BenchmarkSummary> {
-        let header = LibraryBenchmarkHeader::new(lib_bench);
-        header.print();
-
-        let out_path = self.output_path(lib_bench, config, group);
-        out_path.init()?;
-
-        for path in lib_bench.tools.output_paths(&out_path) {
-            path.shift()?;
-            if path.kind == ToolOutputPathKind::Out {
-                path.to_log_output().shift()?;
-            }
-            if let Some(path) = path.to_xtree_output() {
-                path.shift()?;
-            }
-            if let Some(path) = path.to_xleak_output() {
-                path.shift()?;
-            }
-        }
-
+        let header = LibraryBenchmarkHeader::new(&lib_bench);
         let benchmark_summary = lib_bench.create_benchmark_summary(
             config,
-            &out_path,
+            &output_path,
             &lib_bench.function_name,
             header.description(),
             self.baselines(),
-        )?;
+        );
 
         lib_bench.tools.run(
-            &header.to_title(),
             benchmark_summary,
-            &self.baselines(),
-            &self.baseline_kind,
             config,
             &config.bench_bin,
-            &lib_bench.bench_args(group),
+            &lib_bench.bench_args(main_index),
             &lib_bench.run_options,
-            &out_path,
-            false,
+            &output_path,
             &lib_bench.module_path,
-            &lib_bench.output_format,
+            captured_output.as_ref(),
+            force_shutdown,
         )
     }
-}
 
-impl Groups {
-    fn has_benchmarks(&self) -> bool {
-        self.0.iter().any(|g| !g.benches.is_empty())
-    }
-
-    fn num_filtered(&self) -> usize {
-        self.0.iter().fold(0, |acc, group| acc + group.num_filtered)
-    }
-
-    /// Create this `Groups` from a [`crate::api::LibraryBenchmark`] submitted by the benchmarking
-    /// harness
-    #[allow(clippy::too_many_lines)]
-    fn from_library_benchmark(
-        module_path: &ModulePath,
-        benchmark_groups: LibraryBenchmarkGroups,
-        meta: &Metadata,
-    ) -> Result<Self> {
-        let global_config = benchmark_groups.config;
-        let default_tool = benchmark_groups.default_tool;
-
-        let mut groups = vec![];
-        for (main_index, library_benchmark_group) in benchmark_groups.groups.into_iter().enumerate()
-        {
-            let group_module_path = module_path.join(&library_benchmark_group.id);
-            let group_config = global_config
-                .clone()
-                .update_from_all([library_benchmark_group.config.as_ref()]);
-
-            let setup =
-                library_benchmark_group
-                    .has_setup
-                    .then_some(Assistant::new_group_assistant(
-                        AssistantKind::Setup,
-                        main_index,
-                        group_config.collect_envs(),
-                        false,
-                    ));
-            let teardown =
-                library_benchmark_group
-                    .has_teardown
-                    .then_some(Assistant::new_group_assistant(
-                        AssistantKind::Teardown,
-                        main_index,
-                        group_config.collect_envs(),
-                        false,
-                    ));
-
-            let mut group = Group {
-                index: main_index,
-                benches: vec![],
-                compare_by_id: library_benchmark_group
-                    .compare_by_id
-                    .unwrap_or(defaults::COMPARE_BY_ID),
-                module_path: group_module_path,
-                num_filtered: 0,
-                setup,
-                teardown,
-            };
-
-            for (group_index, library_benchmark_benches) in library_benchmark_group
-                .library_benchmarks
-                .into_iter()
-                .enumerate()
-            {
-                for (bench_index, library_benchmark_bench) in
-                    library_benchmark_benches.benches.into_iter().enumerate()
-                {
-                    let config = group_config.clone().update_from_all([
-                        library_benchmark_benches.config.as_ref(),
-                        library_benchmark_bench.config.as_ref(),
-                    ]);
-
-                    let module_path = group
-                        .module_path
-                        .join(&library_benchmark_bench.function_name);
-
-                    if let Some(iter_count) = library_benchmark_bench.iter_count {
-                        match (iter_count, &library_benchmark_bench.id) {
-                            (0, Some(id)) => {
-                                warn!("The iterator of {module_path} with id '{id}' was empty.");
-                            }
-                            (0, None) => {
-                                warn!("The iterator of {module_path} was empty.");
-                            }
-                            _ => {
-                                for iter_index in 0..iter_count {
-                                    let lib_bench = LibBench::new(
-                                        library_benchmark_bench.id.clone(),
-                                        library_benchmark_bench.args.clone(),
-                                        module_path.clone(),
-                                        library_benchmark_bench.function_name.clone(),
-                                        meta,
-                                        config.clone(),
-                                        group_index,
-                                        bench_index,
-                                        Some(iter_index),
-                                        default_tool,
-                                    )?;
-                                    if let Some(lib_bench) = lib_bench {
-                                        group.benches.push(lib_bench);
-                                    } else {
-                                        group.num_filtered += 1;
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        let lib_bench = LibBench::new(
-                            library_benchmark_bench.id,
-                            library_benchmark_bench.args,
-                            module_path,
-                            library_benchmark_bench.function_name,
-                            meta,
-                            config,
-                            group_index,
-                            bench_index,
-                            None,
-                            default_tool,
-                        )?;
-                        if let Some(lib_bench) = lib_bench {
-                            group.benches.push(lib_bench);
-                        } else {
-                            group.num_filtered += 1;
-                        }
-                    }
-                }
-            }
-
-            groups.push(group);
-        }
-
-        Ok(Self(groups))
-    }
-
-    /// Run all [`LibBench`] benchmarks
-    fn run(&self, benchmark: &dyn Benchmark, config: &Config) -> Result<BenchmarkSummaries> {
-        let mut benchmark_summaries = BenchmarkSummaries::default();
-        for group in &self.0 {
-            if let Some(setup) = &group.setup {
-                setup.run(config, &group.module_path)?;
-            }
-
-            let mut lib_bench_summaries: HashMap<String, Vec<BenchmarkSummary>> =
-                HashMap::with_capacity(group.benches.len());
-            for bench in &group.benches {
-                let fail_fast = bench
-                    .tools
-                    .0
-                    .iter()
-                    .any(|c| c.regression_config.is_fail_fast());
-
-                let lib_bench_summary = benchmark.run(bench, config, group)?;
-                lib_bench_summary.print_and_save(&config.meta.args.output_format)?;
-                lib_bench_summary.check_regression(fail_fast)?;
-
-                benchmark_summaries.add_summary(lib_bench_summary.clone());
-                if group.compare_by_id && bench.output_format.is_default() {
-                    if let Some(id) = &lib_bench_summary.id {
-                        if let Some(sums) = lib_bench_summaries.get_mut(id) {
-                            for sum in sums.iter() {
-                                sum.compare_and_print(
-                                    id,
-                                    &lib_bench_summary,
-                                    &bench.output_format,
-                                )?;
-                            }
-                            sums.push(lib_bench_summary);
-                        } else {
-                            lib_bench_summaries.insert(id.clone(), vec![lib_bench_summary]);
-                        }
-                    }
-                }
-            }
-
-            if let Some(teardown) = &group.teardown {
-                teardown.run(config, &group.module_path)?;
-            }
-        }
-
-        Ok(benchmark_summaries)
+    fn data_processor(
+        &self,
+        tools: &ToolConfigs,
+        project_root: &Path,
+        output_path: &ToolOutputPath,
+    ) -> Box<dyn BenchmarkDataProcessor> {
+        Box::new(BaselineDataProcessor {
+            analyzers: tools.analyzers(project_root, output_path),
+        })
     }
 }
 
 impl LibBench {
-    fn new(
+    /// Returns whether any configured tool enables fail-fast regression handling.
+    pub fn is_fail_fast(&self) -> bool {
+        self.tools
+            .0
+            .iter()
+            .any(|c| c.regression_config.is_fail_fast())
+    }
+
+    /// Creates a new library benchmark.
+    pub fn new(
         id: Option<String>,
         display: Option<String>,
         module_path: ModulePath,
@@ -477,12 +329,14 @@ impl LibBench {
     }
 
     /// The arguments for the `bench_bin` to actually run the benchmark function
-    fn bench_args(&self, group: &Group) -> Vec<OsString> {
+    fn bench_args(&self, main_index: usize) -> Vec<OsString> {
+        // The string has a fixed length to have an equal argument parser in the benchmark binary
+        // for all benchmarks.
         let index_to_string = |index| format!("{index:05}");
 
         let mut args = vec![
             OsString::from("--gungraun-run".to_owned()),
-            OsString::from(index_to_string(group.index)),
+            OsString::from(index_to_string(main_index)),
             OsString::from(index_to_string(self.group_index)),
             OsString::from(index_to_string(self.bench_index)),
         ];
@@ -502,16 +356,14 @@ impl LibBench {
         function_name: &str,
         description: Option<String>,
         baselines: Baselines,
-    ) -> Result<BenchmarkSummary> {
-        let summary_output = if let Some(format) = config.meta.args.save_summary {
-            let output = SummaryOutput::new(format, &output_path.dir);
-            output.init()?;
-            Some(output)
-        } else {
-            None
-        };
+    ) -> BenchmarkSummary {
+        let summary_output = config
+            .meta
+            .args
+            .save_summary
+            .map(|format| SummaryOutput::new(format, &output_path.dir));
 
-        Ok(BenchmarkSummary::new(
+        BenchmarkSummary::new(
             BenchmarkKind::LibraryBenchmark,
             config.meta.project_root.clone(),
             config.package_dir.clone(),
@@ -523,12 +375,18 @@ impl LibBench {
             description,
             summary_output,
             baselines,
-        ))
+        )
     }
 }
 
 impl Benchmark for LoadBaselineBenchmark {
-    fn output_path(&self, lib_bench: &LibBench, config: &Config, group: &Group) -> ToolOutputPath {
+    fn default_output_path(
+        &self,
+        lib_bench: &LibBench,
+        config: &Config,
+        group_module_path: &ModulePath,
+        _use_temp_dir: bool,
+    ) -> Result<ToolOutputPath> {
         let kind = if lib_bench.default_tool.has_output_file() {
             ToolOutputPathKind::BaseOut(self.loaded_baseline.to_string())
         } else {
@@ -539,8 +397,9 @@ impl Benchmark for LoadBaselineBenchmark {
             lib_bench.default_tool,
             &BaselineKind::Name(self.baseline.clone()),
             &config.meta.target_dir,
-            &group.module_path,
+            group_module_path,
             &lib_bench.name(),
+            false,
         )
     }
 
@@ -553,132 +412,64 @@ impl Benchmark for LoadBaselineBenchmark {
 
     fn run(
         &self,
-        lib_bench: &LibBench,
+        lib_bench: LibBench,
         config: &Config,
-        group: &Group,
+        _main_index: usize,
+        _captured_output: Option<CapturedOutput>,
+        _force_shutdown: &Arc<AtomicBool>,
+        output_path: ToolOutputPath,
     ) -> Result<BenchmarkSummary> {
-        let header = LibraryBenchmarkHeader::new(lib_bench);
-        header.print();
-
-        let out_path = self.output_path(lib_bench, config, group);
-
-        let benchmark_summary = lib_bench.create_benchmark_summary(
+        let header = LibraryBenchmarkHeader::new(&lib_bench);
+        Ok(lib_bench.create_benchmark_summary(
             config,
-            &out_path,
+            &output_path,
             &lib_bench.function_name,
             header.description(),
             self.baselines(),
-        )?;
-
-        lib_bench.tools.run_loaded_vs_base(
-            &header.to_title(),
-            &self.baseline,
-            &self.loaded_baseline,
-            benchmark_summary,
-            &self.baselines(),
-            config,
-            &out_path,
-            &lib_bench.output_format,
-        )
-    }
-}
-
-impl Runner {
-    fn has_benchmarks(&self) -> bool {
-        self.groups.has_benchmarks()
+        ))
     }
 
-    fn num_filtered(&self) -> usize {
-        self.groups.num_filtered()
-    }
-
-    /// Create a new `Runner`
-    fn new(benchmark_groups: LibraryBenchmarkGroups, config: Config) -> Result<Self> {
-        let setup = benchmark_groups
-            .has_setup
-            .then_some(Assistant::new_main_assistant(
-                AssistantKind::Setup,
-                benchmark_groups.config.collect_envs(),
-                false,
-            ));
-        let teardown = benchmark_groups
-            .has_teardown
-            .then_some(Assistant::new_main_assistant(
-                AssistantKind::Teardown,
-                benchmark_groups.config.collect_envs(),
-                false,
-            ));
-
-        let groups =
-            Groups::from_library_benchmark(&config.module_path, benchmark_groups, &config.meta)?;
-
-        let benchmark: Box<dyn Benchmark> =
-            if let Some(baseline_name) = &config.meta.args.save_baseline {
-                Box::new(SaveBaselineBenchmark {
-                    baseline: baseline_name.clone(),
-                })
-            } else if let Some(baseline_name) = &config.meta.args.load_baseline {
-                Box::new(LoadBaselineBenchmark {
-                    loaded_baseline: baseline_name.clone(),
-                    baseline: config
-                        .meta
-                        .args
-                        .baseline
-                        .as_ref()
-                        .expect("A baseline should be present")
-                        .clone(),
-                })
-            } else {
-                Box::new(BaselineBenchmark {
-                    baseline_kind: config
-                        .meta
-                        .args
-                        .baseline
-                        .as_ref()
-                        .map_or(BaselineKind::Old, |name| BaselineKind::Name(name.clone())),
-                })
-            };
-
-        Ok(Self {
-            benchmark,
-            config,
-            groups,
-            setup,
-            teardown,
+    fn data_processor(
+        &self,
+        tools: &ToolConfigs,
+        project_root: &Path,
+        output_path: &ToolOutputPath,
+    ) -> Box<dyn BenchmarkDataProcessor> {
+        Box::new(LoadBaselineDataProcessor {
+            analyzers: tools.analyzers(project_root, output_path),
         })
-    }
-
-    /// Run all benchmarks in all groups
-    fn run(&self) -> Result<BenchmarkSummaries> {
-        if let Some(setup) = &self.setup {
-            setup.run(&self.config, &self.config.module_path)?;
-        }
-
-        let summaries = self.groups.run(self.benchmark.as_ref(), &self.config)?;
-
-        if let Some(teardown) = &self.teardown {
-            teardown.run(&self.config, &self.config.module_path)?;
-        }
-
-        Ok(summaries)
     }
 }
 
 impl Benchmark for SaveBaselineBenchmark {
-    fn output_path(&self, lib_bench: &LibBench, config: &Config, group: &Group) -> ToolOutputPath {
+    fn default_output_path(
+        &self,
+        lib_bench: &LibBench,
+        config: &Config,
+        group_module_path: &ModulePath,
+        use_temp_dir: bool,
+    ) -> Result<ToolOutputPath> {
         let kind = if lib_bench.default_tool.has_output_file() {
             ToolOutputPathKind::BaseOut(self.baseline.to_string())
         } else {
             ToolOutputPathKind::BaseLog(self.baseline.to_string())
         };
-        ToolOutputPath::new(
+
+        let output_path = ToolOutputPath::new(
             kind,
             lib_bench.default_tool,
             &BaselineKind::Name(self.baseline.clone()),
             &config.meta.target_dir,
-            &group.module_path,
+            group_module_path,
             &lib_bench.name(),
-        )
+            use_temp_dir,
+        )?;
+
+        if !use_temp_dir {
+            output_path.init()?;
+        }
+
+        Ok(output_path)
     }
 
     fn baselines(&self) -> Baselines {
@@ -690,74 +481,87 @@ impl Benchmark for SaveBaselineBenchmark {
 
     fn run(
         &self,
-        lib_bench: &LibBench,
+        lib_bench: LibBench,
         config: &Config,
-        group: &Group,
+        main_index: usize,
+        captured_output: Option<CapturedOutput>,
+        force_shutdown: &Arc<AtomicBool>,
+        output_path: ToolOutputPath,
     ) -> Result<BenchmarkSummary> {
-        let header = LibraryBenchmarkHeader::new(lib_bench);
-        header.print();
-
-        let out_path = self.output_path(lib_bench, config, group);
-        out_path.init()?;
-
+        let header = LibraryBenchmarkHeader::new(&lib_bench);
         let benchmark_summary = lib_bench.create_benchmark_summary(
             config,
-            &out_path,
+            &output_path,
             &lib_bench.function_name,
             header.description(),
             self.baselines(),
-        )?;
+        );
 
         lib_bench.tools.run(
-            &header.to_title(),
             benchmark_summary,
-            &self.baselines(),
-            &BaselineKind::Name(self.baseline.clone()),
             config,
             &config.bench_bin,
-            &lib_bench.bench_args(group),
+            &lib_bench.bench_args(main_index),
             &lib_bench.run_options,
-            &out_path,
-            true,
+            &output_path,
             &lib_bench.module_path,
-            &lib_bench.output_format,
+            captured_output.as_ref(),
+            force_shutdown,
         )
+    }
+
+    fn data_processor(
+        &self,
+        tools: &ToolConfigs,
+        project_root: &Path,
+        output_path: &ToolOutputPath,
+    ) -> Box<dyn BenchmarkDataProcessor> {
+        Box::new(SaveBaselineDataProcessor {
+            analyzers: tools.analyzers(project_root, output_path),
+        })
+    }
+}
+
+/// Creates the library benchmark executor [`Benchmark`] matching the current baseline mode.
+///
+/// # Panics
+///
+/// Panics when `--load-baseline` is active but no comparison baseline is configured.
+pub fn benchmark_factory(config: &Config) -> Arc<dyn Benchmark> {
+    if let Some(baseline_name) = &config.meta.args.save_baseline {
+        Arc::new(SaveBaselineBenchmark {
+            baseline: baseline_name.clone(),
+        })
+    } else if let Some(baseline_name) = &config.meta.args.load_baseline {
+        Arc::new(LoadBaselineBenchmark {
+            loaded_baseline: baseline_name.clone(),
+            baseline: config
+                .meta
+                .args
+                .baseline
+                .as_ref()
+                .expect("A baseline should be present")
+                .clone(),
+        })
+    } else {
+        Arc::new(BaselineBenchmark {
+            baseline_kind: config
+                .meta
+                .args
+                .baseline
+                .as_ref()
+                .map_or(BaselineKind::Old, |name| BaselineKind::Name(name.clone())),
+        })
     }
 }
 
 /// Print a list of all benchmarks with a short summary
 pub fn list(benchmark_groups: LibraryBenchmarkGroups, config: &Config) -> Result<()> {
-    let groups =
-        Groups::from_library_benchmark(&config.module_path, benchmark_groups, &config.meta)?;
-
-    let mut sum = 0u64;
-    for group in groups.0 {
-        for bench in group.benches {
-            sum += 1;
-            format::print_list_benchmark(&bench.module_path, bench.id.as_ref());
-        }
-    }
-
-    format::print_benchmark_list_summary(sum);
-
-    Ok(())
+    Groups::from_library_benchmark(&config.module_path, benchmark_groups, &config.meta)
+        .map(Groups::list)
 }
 
 /// The top-level method which should be used to initiate running all benchmarks
 pub fn run(benchmark_groups: LibraryBenchmarkGroups, config: Config) -> Result<BenchmarkSummaries> {
-    let runner = Runner::new(benchmark_groups, config)?;
-
-    if runner.has_benchmarks() {
-        let start = Instant::now();
-        let mut summaries = runner.run()?;
-        summaries.elapsed(start);
-        summaries.num_filtered = runner.num_filtered();
-
-        Ok(summaries)
-    } else {
-        Ok(BenchmarkSummaries {
-            num_filtered: runner.num_filtered(),
-            ..Default::default()
-        })
-    }
+    Runner::from_library_benchmark(benchmark_groups, config).and_then(Runner::run)
 }

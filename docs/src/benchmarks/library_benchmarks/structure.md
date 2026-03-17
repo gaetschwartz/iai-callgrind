@@ -1,4 +1,4 @@
-# Structure of a library benchmark
+# Structure of a Library Benchmark
 
 We're reusing our example from the [Quickstart](./quickstart.md) section.
 
@@ -40,7 +40,7 @@ with `use my_lib::fibonacci` and go on as shown above. Next, you need a
 `library_benchmark_group!` in which you specify the names of the benchmark
 functions. Finally, the benchmark harness is created by the `main!` macro.
 
-## The benchmark function
+## The Benchmark Function
 
 The benchmark function has to be annotated with the
 [`#[library_benchmark]`](./macros.md) attribute. The
@@ -104,7 +104,7 @@ other ways to avoid setup and teardown code in the benchmark function,
 which are discussed in full detail in the [setup and
 teardown](./setup_and_teardown.md) section.
 
-## The group
+## The Group
 
 The name of the benchmark functions, here the only benchmark function
 `bench_fibonacci`, which should be benchmarked need to be specified in a
@@ -112,7 +112,7 @@ The name of the benchmark functions, here the only benchmark function
 groups as you like, and you can use it to organize related benchmarks. Each group
 needs a unique `name`.
 
-## The main macro
+## The `main!` Macro
 
 Each group you want to be benchmarked needs to be specified in the
 `library_benchmark_groups` parameter of the `main!` macro and you're all set.

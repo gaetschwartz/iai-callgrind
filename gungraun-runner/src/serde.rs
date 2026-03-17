@@ -32,7 +32,7 @@ pub mod float_64 {
         }
     }
 
-    /// Deserialize a `String` into a `f64`
+    /// Deserializes a `String` into a `f64`.
     pub fn deserialize<'de, D>(deserializer: D) -> Result<f64, D::Error>
     where
         D: Deserializer<'de>,
@@ -40,7 +40,7 @@ pub mod float_64 {
         deserializer.deserialize_any(FieldVisitor)
     }
 
-    /// Serialize `f64` into a `String`
+    /// Serializes `f64` into a `String`.
     pub fn serialize<S>(input: &f64, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,

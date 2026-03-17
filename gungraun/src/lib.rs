@@ -203,7 +203,7 @@
 //!
 //! #### Important default behavior
 //!
-//! Per default, all binary benchmarks run with the environment variables cleared. See also
+//! By default, all binary benchmarks run with the environment variables cleared. See also
 //! [`crate::BinaryBenchmarkConfig::env_clear`] for how to change this behavior.
 //!
 //! #### Quickstart (#binary-benchmarks)

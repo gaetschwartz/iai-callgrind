@@ -7,7 +7,7 @@ and deleted after the `teardown`. `setup`, the `Command` and `teardown` are
 executed inside this temporary directory. This simply describes the order of the
 execution but the `setup` or `teardown` don't need to be present.
 
-## Why using a Sandbox?
+## Why Using a Sandbox?
 
 A `Sandbox` can help mitigating differences in benchmark results on different
 machines. As long as `$TMP_DIR` is unset or set to `/tmp`, the temporary

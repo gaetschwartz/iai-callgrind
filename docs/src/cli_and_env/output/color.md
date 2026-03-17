@@ -1,4 +1,4 @@
-# Changing the color output
+# Changing the Color Output
 
 The terminal output is colored per default but follows the value for the
 `GUNGRAUN_COLOR` environment variable. If `GUNGRAUN_COLOR` is not set,

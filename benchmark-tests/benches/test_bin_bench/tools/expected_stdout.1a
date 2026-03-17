@@ -1,7 +1,7 @@
 test_bin_bench_tools::bench_group::bench_subprocess trace_children:() -> target/release/subprocess <__ABS_PATH__>/sort
-  ======= CALLGRIND ====================================================================
 1999000
 - end of stdout/stderr
+  ======= CALLGRIND ====================================================================
   ## pid: <__PID__> thread: 1 part: 1      |N/A
   Command:             target/release/subprocess <__ABS_PATH__>/sort
   Instructions:                            |N/A                  (*********)
@@ -122,9 +122,9 @@ test_bin_bench_tools::bench_group::bench_subprocess trace_children:() -> target/
   Suppressed Errors:                       |N/A                  (*********)
   Suppressed Contexts:                     |N/A                  (*********)
 test_bin_bench_tools::bench_group::bench_subprocess no_trace_children:() -> target/release/subprocess <__ABS_PATH__>/sort
-  ======= CALLGRIND ====================================================================
 1999000
 - end of stdout/stderr
+  ======= CALLGRIND ====================================================================
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
   LL Hits:                                 |N/A                  (*********)

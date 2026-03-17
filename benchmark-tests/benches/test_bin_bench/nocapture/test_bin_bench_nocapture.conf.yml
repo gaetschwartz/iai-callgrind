@@ -1,6 +1,7 @@
 groups:
   - runs:
+      # FIX: test --nocapture with --load-baseline which should not print the footer
+      # FIX: more tests (with setup, teardown, ...)
       - args: ["--nocapture"]
-        # expected:
-        #   stdout: expected_stdout.1
-        #   files: expected_files.1.yml
+        expected:
+          stdout: expected_stdout.1

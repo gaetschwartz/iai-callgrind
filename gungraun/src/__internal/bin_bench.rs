@@ -70,6 +70,7 @@ impl GroupsBuilder {
         has_setup: bool,
         has_teardown: bool,
         compare_by_id: Option<bool>,
+        max_parallel: Option<usize>,
         benches: InternalMacroBinBenches,
     ) {
         let mut internal_group = InternalBinaryBenchmarkGroup {
@@ -78,6 +79,7 @@ impl GroupsBuilder {
             has_setup,
             has_teardown,
             compare_by_id,
+            max_parallel,
             ..Default::default()
         };
 
@@ -144,7 +146,7 @@ impl GroupsBuilder {
         }
     }
 
-    /// Add a high-level api benchmark to the `group` parsing the `benches`
+    /// Adds a high-level api benchmark to the `group` parsing the `benches`.
     fn high_level(group: &mut InternalBinaryBenchmarkGroup, benches: InternalMacroBinBenches) {
         for (function_name, get_config, macro_bin_benches) in benches {
             let mut internal_binary_benchmark = InternalBinaryBenchmark {
@@ -176,12 +178,11 @@ impl GroupsBuilder {
         }
     }
 
-    /// Add a low-level api benchmark to the `internal_group` parsing the `group`
+    /// Adds a low-level api benchmark to the `internal_group` parsing the `group`.
     ///
     /// In contrast to the high-level api, we need to check for duplicate ids, missing commands ...
     /// The errors are collected and then printed instead of returning on first error and printing
     /// errors one by one.
-    #[allow(clippy::too_many_lines)]
     fn low_level(
         &mut self,
         internal_group: &mut InternalBinaryBenchmarkGroup,

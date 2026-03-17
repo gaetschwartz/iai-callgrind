@@ -1,5 +1,6 @@
 test_bin_bench_sandbox::my_group::with_sandbox sandbox_with_fixture:(check_file_exists("one_line.fix", true)) -> target/release/file-exists one_line.fix true
 File exists: 'one_line.fix'
+Verifying that file exists succeeded
 File exists: 'one_line.fix'
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
@@ -10,6 +11,7 @@ File exists: 'one_line.fix'
   Estimated Cycles:                        |N/A                  (*********)
 test_bin_bench_sandbox::my_group::with_sandbox sandbox_without_fixture:(check_file_exists("one_line.fix", false)) -> target/release/file-exists one_line.fix false
 File does not exist: 'one_line.fix'
+Verifying that file doesn't exist succeeded
 File does not exist: 'one_line.fix'
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
@@ -20,6 +22,7 @@ File does not exist: 'one_line.fix'
   Estimated Cycles:                        |N/A                  (*********)
 test_bin_bench_sandbox::my_group::without_sandbox check_file:(check_file_exists("benches/fixtures/one_line.fix", true)) -> target/release/file-exists benches/fixtures/one_line.fix true
 File exists: 'benches/fixtures/one_line.fix'
+Verifying that file exists succeeded
 File exists: 'benches/fixtures/one_line.fix'
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
@@ -30,6 +33,7 @@ File exists: 'benches/fixtures/one_line.fix'
   Estimated Cycles:                        |N/A                  (*********)
 test_bin_bench_sandbox::my_group::with_current_dir () -> target/release/file-exists bar.txt true
 Created directory 'foo' with file 'bar.txt'
+Verifying that file exists succeeded
 Deleted directory 'foo' with file 'bar.txt'
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)

@@ -47,8 +47,8 @@ pub struct ParserOutput {
 }
 
 /// Needs to be implemented by a parser to be able to be used in the [`parser_factory`]
-pub trait Parser {
-    /// Return the [`ToolOutputPath`]
+pub trait Parser: std::fmt::Debug + Send {
+    /// Returns the [`ToolOutputPath`].
     fn get_output_path(&self) -> &ToolOutputPath;
 
     /// Parse all files of the stored [`ToolOutputPath`]
@@ -64,7 +64,7 @@ pub trait Parser {
     /// Parse a single file
     fn parse_single(&self, path: PathBuf) -> Result<ParserOutput>;
 
-    /// Return a sorted vector of parser results
+    /// Returns a sorted vector of parser results.
     fn parse_with(&self, output_path: &ToolOutputPath) -> Result<Vec<ParserOutput>> {
         debug!("{}: Parsing file '{}'", output_path.tool.id(), output_path);
         let Ok(paths) = output_path.real_paths() else {

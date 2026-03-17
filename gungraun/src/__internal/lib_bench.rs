@@ -43,12 +43,12 @@ impl GroupsBuilder {
         })
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn add_group(
         &mut self,
         id: String,
         config: Option<crate::__internal::InternalLibraryBenchmarkConfig>,
         compare_by_id: Option<bool>,
+        max_parallel: Option<usize>,
         has_setup: bool,
         has_teardown: bool,
         benches: MacroLibBenches,
@@ -59,6 +59,7 @@ impl GroupsBuilder {
             has_setup,
             has_teardown,
             compare_by_id,
+            max_parallel,
             ..Default::default()
         };
 

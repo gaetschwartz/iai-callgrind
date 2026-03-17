@@ -1,8 +1,6 @@
 use std::process::Command;
 
-use gungraun::{
-    binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Dhat, Stdio,
-};
+use gungraun::{binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Dhat};
 
 #[binary_benchmark(config = BinaryBenchmarkConfig::default().env("BINARY_BENCHMARK_ENV", "3"))]
 #[bench::with_env(config = BinaryBenchmarkConfig::default().env("BENCH_ENV", "4"))]
@@ -17,7 +15,6 @@ fn bench_binary() -> gungraun::Command {
             "COMMAND_ENV=5",
         ])
         .env("COMMAND_ENV", "5")
-        .stdout(Stdio::Inherit)
         .build()
 }
 
@@ -71,7 +68,6 @@ fn check_env_is_cleared() -> gungraun::Command {
     gungraun::Command::new(env!("CARGO_BIN_EXE_env"))
         .args(["--is-cleared=true"])
         .env("COMMAND_ENV", "5")
-        .stdout(Stdio::Inherit)
         .build()
 }
 

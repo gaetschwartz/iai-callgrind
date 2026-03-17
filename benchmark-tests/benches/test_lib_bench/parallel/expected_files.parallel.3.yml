@@ -1,0 +1,23 @@
+data:
+  - group: no_max_parallel
+    function: timeout
+    expected:
+      files:
+        - callgrind.timeout.log
+        - callgrind.timeout.out
+        - summary.json
+  - group: no_max_parallel
+    function: print_parallel
+    expected:
+      files:
+        - callgrind.print_parallel.log
+        - callgrind.print_parallel.out
+        - summary.json
+  - group: max_parallel_group
+    function: print_parallel
+    expected:
+      globs:
+        - pattern: callgrind.print_parallel.log.#*
+          count: 1
+        - pattern: callgrind.print_parallel.out.#*
+          count: 2

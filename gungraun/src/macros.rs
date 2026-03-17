@@ -264,6 +264,7 @@ macro_rules! main {
                         $group::__run_setup(false),
                         $group::__run_teardown(false),
                         $group::__compare_by_id(),
+                        $group::__max_parallel(),
                         $group::__BENCHES
                 );
             )+
@@ -460,6 +461,7 @@ macro_rules! main {
                     stringify!($group).to_owned(),
                     $group::__get_config(),
                     $group::__compare_by_id(),
+                    $group::__max_parallel(),
                     $group::__run_setup(false),
                     $group::__run_teardown(false),
                     $group::__BENCHES
@@ -644,6 +646,7 @@ macro_rules! main {
 ///     name = my_group,
 ///     config = BinaryBenchmarkConfig::default(),
 ///     compare_by_id = false,
+///     max_parallel = 1,
 ///     setup = run_setup(),
 ///     teardown = run_teardown(),
 ///     benchmarks =  [ bench_1, bench_2 ]
@@ -658,6 +661,10 @@ macro_rules! main {
 /// * __`compare_by_id`__ (optional): The default is false. If true, all commands from the functions
 ///   specified in the `benchmarks` argument, are compared with each other as long as the ids (the
 ///   part after the `::` in `#[bench::id(...)]`) match.
+/// * __`max_parallel`__ (optional): The default is no limit. If set to a value, `0` means no limit
+///   (same as not specifying this option), `1` disables parallel execution for this group, and
+///   values `>= 2` limit the maximum number of parallel benchmarks to run within this group. This
+///   option does nothing without the `--parallel` command line option.
 /// * __`setup`__ (optional): A function which is executed before all benchmarks in this group
 /// * __`teardown`__ (optional): A function which is executed after all benchmarks in this group
 /// * __`benchmarks`__ (mandatory): A `,`-separated array of `#[binary_benchmark]` annotated
@@ -836,6 +843,7 @@ macro_rules! binary_benchmark_group {
     (
         $( config = $config:expr , $(,)* )?
         $( compare_by_id = $compare:literal , $(,)* )?
+        $( max_parallel = $parallel:expr , $(,)* )?
         $( setup = $setup:expr, $(,)* )?
         $( teardown = $teardown:expr, $(,)* )?
         benchmarks = $( $some:tt )*
@@ -849,6 +857,7 @@ macro_rules! binary_benchmark_group {
     (
         $( config = $config:expr ; $(;)* )?
         $( compare_by_id = $compare:literal ; $(;)* )?
+        $( max_parallel = $parallel:expr ; $(;)* )?
         $( setup = $setup:expr; $(;)* )?
         $( teardown = $teardown:expr; $(;)* )?
         benchmarks = $( $some:tt )*
@@ -863,6 +872,7 @@ macro_rules! binary_benchmark_group {
         name = $name:ident; $(;)*
         $( config = $config:expr; $(;)* )?
         $( compare_by_id = $compare:literal; $(;)* )?
+        $( max_parallel = $parallel:expr ; $(;)* )?
         $( setup = $setup:expr; $(;)* )?
         $( teardown = $teardown:expr; $(;)* )?
         benchmarks =
@@ -878,6 +888,7 @@ macro_rules! binary_benchmark_group {
         name = $name:ident; $(;)*
         $( config = $config:expr ; $(;)* )?
         $( compare_by_id = $compare:literal ; $(;)* )?
+        $( max_parallel = $parallel:expr ; $(;)* )?
         $( setup = $setup:expr; $(;)* )?
         $( teardown = $teardown:expr; $(;)* )?
     ) => {
@@ -892,6 +903,7 @@ macro_rules! binary_benchmark_group {
         name = $name:ident; $(;)*
         $( config = $config:expr ; $(;)* )?
         $( compare_by_id = $compare:literal ; $(;)* )?
+        $( max_parallel = $parallel:expr ; $(;)* )?
         $( setup = $setup:expr; $(;)* )?
         $( teardown = $teardown:expr; $(;)* )?
         benchmarks = $( $function:ident ),+ $(,)*
@@ -945,6 +957,15 @@ macro_rules! binary_benchmark_group {
                 comp
             }
 
+            pub fn __max_parallel() -> Option<usize> {
+                let mut __par = None;
+                $(
+                    let expr: usize = $parallel;
+                    __par = Some(expr);
+                )?
+                __par
+            }
+
             pub fn __get_config() -> Option<$crate::__internal::InternalBinaryBenchmarkConfig> {
                 let mut config = None;
                 $(
@@ -988,6 +1009,7 @@ macro_rules! binary_benchmark_group {
         name = $name:ident, $(,)*
         $( config = $config:expr, $(,)* )?
         $( compare_by_id = $compare:literal, $(,)* )?
+        $( max_parallel = $parallel:expr , $(,)* )?
         $( setup = $setup:expr, $(,)* )?
         $( teardown = $teardown:expr, $(,)* )?
         benchmarks =
@@ -1003,6 +1025,7 @@ macro_rules! binary_benchmark_group {
         name = $name:ident, $(,)*
         $( config = $config:expr , $(,)* )?
         $( compare_by_id = $compare:literal , $(,)* )?
+        $( max_parallel = $parallel:expr , $(,)* )?
         $( setup = $setup:expr, $(,)* )?
         $( teardown = $teardown:expr, $(,)* )?
     ) => {
@@ -1017,6 +1040,7 @@ macro_rules! binary_benchmark_group {
         name = $name:ident, $(,)*
         $( config = $config:expr , $(,)* )?
         $( compare_by_id = $compare:literal , $(,)* )?
+        $( max_parallel = $parallel:expr , $(,)* )?
         $( setup = $setup:expr, $(,)* )?
         $( teardown = $teardown:expr, $(,)* )?
         benchmarks = $function:ident
@@ -1025,6 +1049,7 @@ macro_rules! binary_benchmark_group {
             name = $name;
             $( config = $config; )?
             $( compare_by_id = $compare; )?
+            $( max_parallel = $parallel; )?
             $( setup = $setup; )?
             $( teardown = $teardown; )?
             benchmarks = $function
@@ -1034,6 +1059,7 @@ macro_rules! binary_benchmark_group {
         name = $name:ident, $(,)*
         $( config = $config:expr , $(,)* )?
         $( compare_by_id = $compare:literal , $(,)* )?
+        $( max_parallel = $parallel:expr , $(,)* )?
         $( setup = $setup:expr, $(,)* )?
         $( teardown = $teardown:expr, $(,)* )?
         benchmarks = [ $( $function:ident ),+ $(,)* ]
@@ -1042,6 +1068,7 @@ macro_rules! binary_benchmark_group {
             name = $name;
             $( config = $config; )?
             $( compare_by_id = $compare; )?
+            $( max_parallel = $parallel; )?
             $( setup = $setup; )?
             $( teardown = $teardown; )?
             benchmarks = $( $function ),+
@@ -1051,6 +1078,7 @@ macro_rules! binary_benchmark_group {
         name = $name:ident; $(;)*
         $( config = $config:expr; $(;)* )?
         $( compare_by_id = $compare:literal ; $(;)* )?
+        $( max_parallel = $parallel:expr ; $(;)* )?
         $( setup = $setup:expr; $(;)* )?
         $( teardown = $teardown:expr; $(;)* )?
         benchmarks = |$group:ident|
@@ -1067,6 +1095,7 @@ macro_rules! binary_benchmark_group {
         name = $name:ident; $(;)*
         $( config = $config:expr; $(;)* )?
         $( compare_by_id = $compare:literal ; $(;)* )?
+        $( max_parallel = $parallel:expr ; $(;)* )?
         $( setup = $setup:expr; $(;)* )?
         $( teardown = $teardown:expr; $(;)* )?
         benchmarks = |$group:ident: &mut BinaryBenchmarkGroup|
@@ -1083,6 +1112,7 @@ macro_rules! binary_benchmark_group {
         name = $name:ident; $(;)*
         $( config = $config:expr; $(;)* )?
         $( compare_by_id = $compare:literal ; $(;)* )?
+        $( max_parallel = $parallel:expr ; $(;)* )?
         $( setup = $setup:expr; $(;)* )?
         $( teardown = $teardown:expr; $(;)* )?
         benchmarks = |$group:ident: &mut BinaryBenchmarkGroup| $body:expr
@@ -1134,6 +1164,15 @@ macro_rules! binary_benchmark_group {
                     comp = Some($compare);
                 )?
                 comp
+            }
+
+            pub fn __max_parallel() -> Option<usize> {
+                let mut __par = None;
+                $(
+                    let expr: usize = $parallel;
+                    __par = Some(expr);
+                )?
+                __par
             }
 
             pub fn __run_bench_setup(
@@ -1225,6 +1264,7 @@ macro_rules! binary_benchmark_group {
         name = $name:ident; $(;)*
         $( config = $config:expr; $(;)* )?
         $( compare_by_id = $compare:literal ; $(;)* )?
+        $( max_parallel = $parallel:expr ; $(;)* )?
         $( setup = $setup:expr; $(;)* )?
         $( teardown = $teardown:expr; $(;)* )?
         benchmarks = |$group:ident| $body:expr
@@ -1233,6 +1273,7 @@ macro_rules! binary_benchmark_group {
             name = $name;
             $( config = $config; )?
             $( compare_by_id = $compare; )?
+            $( max_parallel = $parallel; )?
             $( setup = $setup; )?
             $( teardown = $teardown; )?
             benchmarks = |$group: &mut BinaryBenchmarkGroup| $body
@@ -1242,6 +1283,7 @@ macro_rules! binary_benchmark_group {
         name = $name:ident, $(,)*
         $( config = $config:expr, $(,)* )?
         $( compare_by_id = $compare:literal , $(,)* )?
+        $( max_parallel = $parallel:expr , $(,)* )?
         $( setup = $setup:expr, $(,)* )?
         $( teardown = $teardown:expr, $(,)* )?
         benchmarks = |$group:ident: &mut BinaryBenchmarkGroup| $body:expr
@@ -1250,6 +1292,7 @@ macro_rules! binary_benchmark_group {
             name = $name;
             $( config = $config; )?
             $( compare_by_id = $compare; )?
+            $( max_parallel = $parallel; )?
             $( setup = $setup; )?
             $( teardown = $teardown; )?
             benchmarks = |$group: &mut BinaryBenchmarkGroup| $body
@@ -1259,6 +1302,7 @@ macro_rules! binary_benchmark_group {
         name = $name:ident, $(,)*
         $( config = $config:expr, $(,)* )?
         $( compare_by_id = $compare:literal , $(,)* )?
+        $( max_parallel = $parallel:expr , $(,)* )?
         $( setup = $setup:expr, $(,)* )?
         $( teardown = $teardown:expr, $(,)* )?
         benchmarks = |$group:ident| $body:expr
@@ -1267,6 +1311,7 @@ macro_rules! binary_benchmark_group {
             name = $name;
             $( config = $config; )?
             $( compare_by_id = $compare; )?
+            $( max_parallel = $parallel; )?
             $( setup = $setup; )?
             $( teardown = $teardown; )?
             benchmarks = |$group: &mut BinaryBenchmarkGroup| $body
@@ -1323,6 +1368,7 @@ macro_rules! binary_benchmark_group {
 ///     name = my_group,
 ///     config = LibraryBenchmarkConfig::default(),
 ///     compare_by_id = false,
+///     max_parallel = 1,
 ///     setup = group_setup(),
 ///     teardown = group_teardown(),
 ///     benchmarks = [bench_1, bench_2]
@@ -1337,6 +1383,10 @@ macro_rules! binary_benchmark_group {
 /// * __`compare_by_id`__ (optional): The default is false. If true, all benches in the benchmark
 ///   functions specified with the `benchmarks` argument, across any benchmark groups, are compared
 ///   with each other as long as the ids (the part after the `::` in `#[bench::id(...)]`) match.
+/// * __`max_parallel`__ (optional): The default is no limit. If set to a value, `0` means no limit
+///   (same as not specifying this option), `1` disables parallel execution for this group, and
+///   values `>= 2` limit the maximum number of parallel benchmarks to run within this group. This
+///   option does nothing without the `--parallel` command line option.
 /// * __`setup`__ (optional): A setup function or any valid expression which is run before all
 ///   benchmarks of this group
 /// * __`teardown`__ (optional): A teardown function or any valid expression which is run after all
@@ -1356,6 +1406,7 @@ macro_rules! library_benchmark_group {
     (
         $( config = $config:expr ; $(;)* )?
         $( compare_by_id = $compare:literal ; $(;)* )?
+        $( max_parallel = $parallel:expr ; $(;)* )?
         $( setup = $setup:expr ; $(;)* )?
         $( teardown = $teardown:expr ; $(;)* )?
         benchmarks = $( $some:tt )*
@@ -1367,6 +1418,7 @@ macro_rules! library_benchmark_group {
         name = $name:ident;
         $( config = $config:expr ; $(;)* )?
         $( compare_by_id = $compare:literal ; $(;)* )?
+        $( max_parallel = $parallel:expr ; $(;)* )?
         $( setup = $setup:expr ; $(;)* )?
         $( teardown = $teardown:expr ; $(;)* )?
         benchmarks =
@@ -1381,6 +1433,7 @@ macro_rules! library_benchmark_group {
         name = $name:ident; $(;)*
         $( config = $config:expr ; $(;)* )?
         $( compare_by_id = $compare:literal ; $(;)* )?
+        $( max_parallel = $parallel:expr ; $(;)* )?
         $( setup = $setup:expr ; $(;)* )?
         $( teardown = $teardown:expr ; $(;)* )?
         benchmarks = $( $function:ident ),+ $(,)*
@@ -1418,6 +1471,16 @@ macro_rules! library_benchmark_group {
                     comp = Some($compare);
                 )?
                 comp
+            }
+
+            #[inline(never)]
+            pub fn __max_parallel() -> Option<usize> {
+                let mut __par = None;
+                $(
+                    let expr: usize = $parallel;
+                    __par = Some(expr);
+                )?
+                __par
             }
 
             #[inline(never)]
@@ -1460,6 +1523,7 @@ macro_rules! library_benchmark_group {
     (
         $( config = $config:expr , $(,)* )?
         $( compare_by_id = $compare:literal , $(,)* )?
+        $( max_parallel = $parallel:expr , $(,)* )?
         $( setup = $setup:expr , $(,)* )?
         $( teardown = $teardown:expr , $(,)* )?
         benchmarks = $( $some:tt )*
@@ -1471,6 +1535,7 @@ macro_rules! library_benchmark_group {
         name = $name:ident,
         $( config = $config:expr , $(,)* )?
         $( compare_by_id = $compare:literal , $(,)* )?
+        $( max_parallel = $parallel:expr , $(,)* )?
         $( setup = $setup:expr , $(,)* )?
         $( teardown = $teardown:expr , $(,)* )?
         benchmarks =
@@ -1485,6 +1550,7 @@ macro_rules! library_benchmark_group {
         name = $name:ident, $(,)*
         $( config = $config:expr , $(,)* )?
         $( compare_by_id = $compare:literal , $(,)* )?
+        $( max_parallel = $parallel:expr , $(,)* )?
         $( setup = $setup:expr , $(,)* )?
         $( teardown = $teardown:expr , $(,)* )?
         benchmarks = $function:ident
@@ -1493,6 +1559,7 @@ macro_rules! library_benchmark_group {
             name = $name;
             $( config = $config; )?
             $( compare_by_id = $compare; )?
+            $( max_parallel = $parallel; )?
             $( setup = $setup; )?
             $( teardown = $teardown; )?
             benchmarks = $function
@@ -1502,6 +1569,7 @@ macro_rules! library_benchmark_group {
         name = $name:ident, $(,)*
         $( config = $config:expr , $(,)* )?
         $( compare_by_id = $compare:literal , $(,)* )?
+        $( max_parallel = $parallel:expr , $(,)* )?
         $( setup = $setup:expr , $(,)* )?
         $( teardown = $teardown:expr , $(,)* )?
         benchmarks = [ $( $function:ident ),+ $(,)* ]
@@ -1510,6 +1578,7 @@ macro_rules! library_benchmark_group {
             name = $name;
             $( config = $config; )?
             $( compare_by_id = $compare; )?
+            $( max_parallel = $parallel; )?
             $( setup = $setup; )?
             $( teardown = $teardown; )?
             benchmarks = $( $function ),+

@@ -1,4 +1,4 @@
-# Generic benchmark functions
+# Generic Benchmark Functions
 
 Benchmark functions can be generic. And `setup` and `teardown` functions, too.
 There's actually not much more to say about it since generic benchmark (`setup`

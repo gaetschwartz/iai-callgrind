@@ -31,6 +31,7 @@ enum State {
 }
 
 /// The logfile parser for error metrics
+#[derive(Debug)]
 pub struct ErrorMetricLogfileParser {
     /// The [`ToolOutputPath`]
     pub output_path: ToolOutputPath,

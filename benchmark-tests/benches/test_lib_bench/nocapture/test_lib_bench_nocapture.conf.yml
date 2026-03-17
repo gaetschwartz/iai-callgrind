@@ -13,12 +13,12 @@ groups:
       - args: ["--nocapture"]
         expected:
           stdout: expected_stdout.2
-          stderr: expected_stderr.1
+          stderr: expected_stderr.empty
   - runs:
       - args: ["--nocapture=true"]
         expected:
           stdout: expected_stdout.2
-          stderr: expected_stderr.1
+          stderr: expected_stderr.empty
   - runs:
       - args: ["--nocapture=stdout"]
         expected:

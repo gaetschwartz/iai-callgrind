@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD025 MD042 MD033 -->
 
-# Multi-threaded and multi-process applications
+# Multi-Threaded and Multi-Process Applications
 
 The default is to run Gungraun benchmarks with `--separate-threads=yes`,
 `--trace-children=yes` switched on. This enables Gungraun to trace threads
@@ -44,7 +44,7 @@ your code. So, rather than suggesting a single "best" method for benchmarking
 threads and subprocesses, this chapter will run through various possible
 approaches and try to highlight the pros and cons of each.
 
-## Multi-threaded applications
+## Multi-Threaded Applications
 
 `Callgrind` treats each thread and process as a separate unit and it applies
 data collection options to each unit. In library benchmarks the [entry
@@ -173,7 +173,7 @@ Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regression
 As you can see, the counts for the threads `2` and `3` (our spawned threads) are
 all zero.
 
-### Measuring threads using toggles
+### Measuring Threads Using Toggles
 
 At a first glance, setting a toggle to the function in the thread seems to be
 easiest way and can be done like so:
@@ -371,7 +371,7 @@ to the total, this might be an applicable (last) choice.
 
 There is another more reliable way as shown below in the next section.
 
-### Measuring threads using client requests
+### Measuring Threads Using Client Requests
 
 The perhaps most reliable and flexible way to measure threads is using [client
 requests](../../client_requests.md). The downside is that you have to put some
@@ -524,7 +524,7 @@ Altogether, running the benchmark will show:
 
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.49333s</code></pre>
 
-## Multi-process applications
+## Multi-Process Applications
 
 Measuring multi-process applications is in principal not that different from
 multi-threaded applications since subprocesses are just like threads separate
@@ -652,7 +652,7 @@ Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regression
 As expected, the `cat` subprocess is not measured and the metrics are zero for
 the same reasons as the initial measurement of threads.
 
-### Measuring subprocesses using toggles
+### Measuring Subprocesses Using Toggles
 
 The great advantage over measuring threads is that each process has a main
 function that is not inlined by the compiler and can serve as a reliable hook
@@ -718,7 +718,7 @@ producing the desired output
 
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.49333s</code></pre>
 
-### Measuring subprocesses using client requests
+### Measuring Subprocesses Using Client Requests
 
 Naturally, client requests can also be used to measure subprocesses. The
 callgrind client requests are added to the code of the `cat` binary:

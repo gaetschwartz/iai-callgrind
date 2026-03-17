@@ -85,7 +85,7 @@ pub struct Value {
 }
 
 impl CallgrindMap {
-    /// Return true if this map is empty
+    /// Returns `true` if this map is empty.
     pub fn is_empty(&self) -> bool {
         self.map.is_empty()
     }

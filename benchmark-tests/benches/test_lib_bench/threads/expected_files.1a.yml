@@ -1,6 +1,25 @@
 data:
   - group: bench_group
     function: bench_find_primes_multi_thread
+    id: one
+    expected:
+      files:
+        - callgrind.bench_find_primes_multi_thread.one.log
+        - callgrind.bench_find_primes_multi_thread.one.t1.p1.out
+        - callgrind.bench_find_primes_multi_thread.one.t2.p1.out
+        - dhat.bench_find_primes_multi_thread.one.log
+        - dhat.bench_find_primes_multi_thread.one.out
+        - drd.bench_find_primes_multi_thread.one.log
+        - exp-bbv.bench_find_primes_multi_thread.one.log
+        - exp-bbv.bench_find_primes_multi_thread.one.pc.out
+        - exp-bbv.bench_find_primes_multi_thread.one.t1.bb.out
+        - exp-bbv.bench_find_primes_multi_thread.one.t2.bb.out
+        - massif.bench_find_primes_multi_thread.one.log
+        - massif.bench_find_primes_multi_thread.one.out
+        - memcheck.bench_find_primes_multi_thread.one.log
+        - summary.json
+  - group: bench_group
+    function: bench_find_primes_multi_thread
     id: two
     expected:
       files:
@@ -21,32 +40,48 @@ data:
         - memcheck.bench_find_primes_multi_thread.two.log
         - summary.json
   - group: bench_group
-    function: bench_find_primes_multi_thread
-    id: three
+    function: bench_thread_in_subprocess
+    id: one
     expected:
       files:
-        - callgrind.bench_find_primes_multi_thread.three.log
-        - callgrind.bench_find_primes_multi_thread.three.t1.p1.out
-        - callgrind.bench_find_primes_multi_thread.three.t2.p1.out
-        - callgrind.bench_find_primes_multi_thread.three.t3.p1.out
-        - callgrind.bench_find_primes_multi_thread.three.t4.p1.out
-        - dhat.bench_find_primes_multi_thread.three.log
-        - dhat.bench_find_primes_multi_thread.three.out
-        - drd.bench_find_primes_multi_thread.three.log
-        - exp-bbv.bench_find_primes_multi_thread.three.log
-        - exp-bbv.bench_find_primes_multi_thread.three.pc.out
-        - exp-bbv.bench_find_primes_multi_thread.three.t1.bb.out
-        - exp-bbv.bench_find_primes_multi_thread.three.t2.bb.out
-        - exp-bbv.bench_find_primes_multi_thread.three.t3.bb.out
-        - exp-bbv.bench_find_primes_multi_thread.three.t4.bb.out
-        - massif.bench_find_primes_multi_thread.three.log
-        - massif.bench_find_primes_multi_thread.three.out
-        - memcheck.bench_find_primes_multi_thread.three.log
         - summary.json
+      globs:
+        - pattern: callgrind.bench_thread_in_subprocess.one.*.log
+          count: 2
+        - pattern: callgrind.bench_thread_in_subprocess.one.*.out
+          count: 3
+        - pattern: callgrind.bench_thread_in_subprocess.one.*.t1.p1.out
+          count: 1
+        - pattern: callgrind.bench_thread_in_subprocess.one.*.t2.p1.out
+          count: 1
+        - pattern: dhat.bench_thread_in_subprocess.one.*.log
+          count: 2
+        - pattern: dhat.bench_thread_in_subprocess.one.*.out
+          count: 2
+        - pattern: drd.bench_thread_in_subprocess.one.*.log
+          count: 2
+        - pattern: exp-bbv.bench_thread_in_subprocess.one.*.bb.out
+          count: 3
+        - pattern: exp-bbv.bench_thread_in_subprocess.one.*.log
+          count: 2
+        - pattern: exp-bbv.bench_thread_in_subprocess.one.*.pc.out
+          count: 2
+        - pattern: exp-bbv.bench_thread_in_subprocess.one.*.t1.bb.out
+          count: 1
+        - pattern: exp-bbv.bench_thread_in_subprocess.one.*.t2.bb.out
+          count: 1
+        - pattern: massif.bench_thread_in_subprocess.one.*.log
+          count: 2
+        - pattern: massif.bench_thread_in_subprocess.one.*.out
+          count: 2
+        - pattern: memcheck.bench_thread_in_subprocess.one.*.log
+          count: 2
   - group: bench_group
     function: bench_thread_in_subprocess
     id: two
     expected:
+      files:
+        - summary.json
       globs:
         - pattern: callgrind.bench_thread_in_subprocess.two.*.log
           count: 2
@@ -64,12 +99,12 @@ data:
           count: 2
         - pattern: drd.bench_thread_in_subprocess.two.*.log
           count: 2
-        - pattern: exp-bbv.bench_thread_in_subprocess.two.*.pc.out
-          count: 2
-        - pattern: exp-bbv.bench_thread_in_subprocess.two.*.log
-          count: 2
         - pattern: exp-bbv.bench_thread_in_subprocess.two.*.bb.out
           count: 4
+        - pattern: exp-bbv.bench_thread_in_subprocess.two.*.log
+          count: 2
+        - pattern: exp-bbv.bench_thread_in_subprocess.two.*.pc.out
+          count: 2
         - pattern: exp-bbv.bench_thread_in_subprocess.two.*.t1.bb.out
           count: 1
         - pattern: exp-bbv.bench_thread_in_subprocess.two.*.t2.bb.out
@@ -82,50 +117,3 @@ data:
           count: 2
         - pattern: memcheck.bench_thread_in_subprocess.two.*.log
           count: 2
-      files:
-        - summary.json
-  - group: bench_group
-    function: bench_thread_in_subprocess
-    id: three
-    expected:
-      globs:
-        - pattern: callgrind.bench_thread_in_subprocess.three.*.log
-          count: 2
-        - pattern: callgrind.bench_thread_in_subprocess.three.*.out
-          count: 5
-        - pattern: callgrind.bench_thread_in_subprocess.three.*.t1.p1.out
-          count: 1
-        - pattern: callgrind.bench_thread_in_subprocess.three.*.t2.p1.out
-          count: 1
-        - pattern: callgrind.bench_thread_in_subprocess.three.*.t3.p1.out
-          count: 1
-        - pattern: callgrind.bench_thread_in_subprocess.three.*.t4.p1.out
-          count: 1
-        - pattern: dhat.bench_thread_in_subprocess.three.*.log
-          count: 2
-        - pattern: dhat.bench_thread_in_subprocess.three.*.out
-          count: 2
-        - pattern: drd.bench_thread_in_subprocess.three.*.log
-          count: 2
-        - pattern: exp-bbv.bench_thread_in_subprocess.three.*.pc.out
-          count: 2
-        - pattern: exp-bbv.bench_thread_in_subprocess.three.*.log
-          count: 2
-        - pattern: exp-bbv.bench_thread_in_subprocess.three.*.bb.out
-          count: 5
-        - pattern: exp-bbv.bench_thread_in_subprocess.three.*.t1.bb.out
-          count: 1
-        - pattern: exp-bbv.bench_thread_in_subprocess.three.*.t2.bb.out
-          count: 1
-        - pattern: exp-bbv.bench_thread_in_subprocess.three.*.t3.bb.out
-          count: 1
-        - pattern: exp-bbv.bench_thread_in_subprocess.three.*.t4.bb.out
-          count: 1
-        - pattern: massif.bench_thread_in_subprocess.three.*.log
-          count: 2
-        - pattern: massif.bench_thread_in_subprocess.three.*.out
-          count: 2
-        - pattern: memcheck.bench_thread_in_subprocess.three.*.log
-          count: 2
-      files:
-        - summary.json

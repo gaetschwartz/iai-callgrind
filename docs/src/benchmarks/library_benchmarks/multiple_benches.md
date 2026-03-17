@@ -1,9 +1,9 @@
-# Specifying multiple benches at once
+# Specifying Multiple Benches at Once
 
 Multiple benches can be specified at once with the
 [`#[benches]`](macros.md#the-benches-attribute) attribute.
 
-## The `#[benches]` attribute in more detail
+## The `#[benches]` Attribute in More Detail
 
 Let's start with an example:
 

@@ -114,9 +114,11 @@ library_benchmark_group!(
 );
 
 main!(
-    config = LibraryBenchmarkConfig::default().tool(
-        Callgrind::default()
-            .flamegraph(FlamegraphConfig::default().title("Main level flamegraph".to_owned()))
-    ),
+    config = LibraryBenchmarkConfig::default()
+        .env("RUST_BACKTRACE", "1")
+        .tool(
+            Callgrind::default()
+                .flamegraph(FlamegraphConfig::default().title("Main level flamegraph".to_owned()))
+        ),
     library_benchmark_groups = [benches, recursive]
 );

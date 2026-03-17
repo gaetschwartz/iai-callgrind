@@ -96,11 +96,11 @@ pub trait Summarize: Hash + Eq + Clone {
 
 /// Trait for checking the [`Metric`] type of a metric kind (like [`api::EventKind`])
 pub trait TypeChecker {
-    /// Return true if the metric kind is a [`Metric::Float`]
+    /// Returns `true` if the metric kind is a [`Metric::Float`].
     fn is_float(&self) -> bool;
-    /// Return true if the metric kind is a [`Metric::Int`]
+    /// Returns `true` if the metric kind is a [`Metric::Int`].
     fn is_int(&self) -> bool;
-    /// Return true if the `Metric` has the expected metric type
+    /// Returns `true` if the `Metric` has the expected metric type.
     fn verify_metric(&self, metric: Metric) -> bool {
         (self.is_int() && metric.is_int()) || (self.is_float() && metric.is_float())
     }
@@ -123,7 +123,7 @@ impl Metric {
         }
     }
 
-    /// Return true if this `Metric` is [`Metric::Int`]
+    /// Returns `true` if this `Metric` is [`Metric::Int`].
     pub fn is_int(&self) -> bool {
         match self {
             Self::Int(_) => true,
@@ -131,7 +131,7 @@ impl Metric {
         }
     }
 
-    /// Return true if this `Metric` is [`Metric::Float`]
+    /// Returns `true` if this `Metric` is [`Metric::Float`].
     pub fn is_float(&self) -> bool {
         match self {
             Self::Int(_) => false,
@@ -354,21 +354,21 @@ where
         }
     }
 
-    /// Return the metric of the kind at index (of insertion order) if present
+    /// Returns the metric of the kind at index (of insertion order) if present.
     ///
     /// This operation is O(1)
     pub fn metric_by_index(&self, index: usize) -> Option<Metric> {
         self.0.get_index(index).map(|(_, c)| *c)
     }
 
-    /// Return the metric of the `kind` if present
+    /// Returns the metric of the `kind` if present.
     ///
     /// This operation is O(1)
     pub fn metric_by_kind(&self, kind: &K) -> Option<Metric> {
         self.0.get_key_value(kind).map(|(_, c)| *c)
     }
 
-    /// Return the metric kind or an error
+    /// Returns the metric kind or an error.
     ///
     /// # Errors
     ///
@@ -378,7 +378,7 @@ where
             .with_context(|| format!("Missing event type '{kind}"))
     }
 
-    /// Return the contained metric kinds
+    /// Returns the contained metric kinds.
     pub fn metric_kinds(&self) -> Vec<K> {
         self.0.iter().map(|(k, _)| k.clone()).collect()
     }
@@ -396,7 +396,7 @@ where
         self.0.iter()
     }
 
-    /// Return true if there are no metrics present
+    /// Returns `true` if there are no metrics present.
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
@@ -464,7 +464,7 @@ where
 }
 
 impl MetricsDiff {
-    /// Create a new `MetricsDiff` from an [`EitherOrBoth<Metric>`][Metric]
+    /// Creates a new `MetricsDiff` from an [`EitherOrBoth<Metric>`][Metric].
     pub fn new(metrics: EitherOrBoth<Metric>) -> Self {
         if let EitherOrBoth::Both(new, old) = metrics {
             Self {
@@ -512,7 +512,7 @@ impl<K> MetricsSummary<K>
 where
     K: Hash + Eq + Summarize + Display + Clone,
 {
-    /// Create a new `MetricsSummary` calculating the differences between new and old (if any)
+    /// Creates a new `MetricsSummary` calculating the differences between new and old (if any).
     /// [`Metrics`]
     ///
     /// # Panics
@@ -621,7 +621,7 @@ impl Mul<Metric> for u64 {
 #[cfg(test)]
 mod tests {
     use std::cmp::Ordering;
-    use std::{f64, iter};
+    use std::iter;
 
     use either_or_both::EitherOrBoth;
     use pretty_assertions::assert_eq;

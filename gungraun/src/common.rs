@@ -146,7 +146,7 @@ pub struct Drd(__internal::InternalTool);
 /// subprocesses. This leads to complications since the call graph is not be fully recovered just by
 /// examining each thread/subprocess separately. So, the total metrics in the flamegraphs might not
 /// be the same as the total metrics shown in the terminal output. If in doubt, the terminal output
-/// shows the the correct metrics.
+/// shows the correct metrics.
 ///
 /// # Examples
 ///
@@ -239,7 +239,7 @@ pub struct Massif(__internal::InternalTool);
 #[derive(Debug, Clone, IntoInner, AsRef)]
 pub struct Memcheck(__internal::InternalTool);
 
-/// Configure the default output format of the terminal output of Gungraun
+/// Configures the default output format of the terminal output of Gungraun.
 ///
 /// This configuration is only applied to the default output format (`--output-format=default`) and
 /// not to any of the json output formats like (`--output-format=json`).
@@ -270,7 +270,7 @@ pub struct Memcheck(__internal::InternalTool);
 pub struct OutputFormat(__internal::InternalOutputFormat);
 
 impl Bbv {
-    /// Create a new `BBV` configuration with initial command-line arguments
+    /// Creates a new `BBV` configuration with initial command-line arguments.
     ///
     /// See also [`Callgrind::args`] and [`Bbv::args`]
     ///
@@ -289,7 +289,7 @@ impl Bbv {
         Self(__internal::InternalTool::with_args(ValgrindTool::BBV, args))
     }
 
-    /// Add command-line arguments to the `BBV` configuration
+    /// Adds command-line arguments to the `BBV` configuration.
     ///
     /// Valid arguments
     /// are <https://valgrind.org/docs/manual/bbv-manual.html#bbv-manual.usage> and the core
@@ -336,7 +336,7 @@ impl Default for Bbv {
 }
 
 impl Cachegrind {
-    /// Create a new `Cachegrind` configuration with initial command-line arguments
+    /// Creates a new `Cachegrind` configuration with initial command-line arguments.
     ///
     /// See also [`Callgrind::args`] and [`Cachegrind::args`]
     ///
@@ -358,7 +358,7 @@ impl Cachegrind {
         ))
     }
 
-    /// Add command-line arguments to the `Cachegrind` configuration
+    /// Adds command-line arguments to the `Cachegrind` configuration.
     ///
     /// Valid arguments
     /// are <https://valgrind.org/docs/manual/cg-manual.html#cg-manual.cgopts> and the core
@@ -429,7 +429,7 @@ impl Cachegrind {
         self
     }
 
-    /// Configure the limits percentages over/below which a performance regression can be assumed
+    /// Configures the limits percentages over/below which a performance regression can be assumed.
     ///
     /// DEPRECATED: Please use [`Cachegrind::soft_limits`] instead.
     #[deprecated = "Please use Cachegrind::soft_limits instead"]
@@ -440,7 +440,7 @@ impl Cachegrind {
         self.soft_limits(limits)
     }
 
-    /// Configure the soft limits over/below which a performance regression can be assumed
+    /// Configures the soft limits over/below which a performance regression can be assumed.
     ///
     /// Same as [`Callgrind::soft_limits`] but for [`CachegrindMetric`].
     ///
@@ -485,7 +485,7 @@ impl Cachegrind {
         self
     }
 
-    /// Set hard limits above which a performance regression can be assumed
+    /// Sets hard limits above which a performance regression can be assumed.
     ///
     /// Same as [`Callgrind::hard_limits`] but for [`CachegrindMetrics`].
     ///
@@ -568,7 +568,7 @@ impl Default for Cachegrind {
 }
 
 impl Callgrind {
-    /// Create a new `Callgrind` configuration with initial command-line arguments
+    /// Creates a new `Callgrind` configuration with initial command-line arguments.
     ///
     /// See also [`Callgrind::args`]
     ///
@@ -590,7 +590,7 @@ impl Callgrind {
         ))
     }
 
-    /// Add command-line arguments to the `Callgrind` configuration
+    /// Adds command-line arguments to the `Callgrind` configuration.
     ///
     /// The command-line arguments are passed directly to the callgrind invocation. Valid arguments
     /// are <https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options> and the core
@@ -633,7 +633,7 @@ impl Callgrind {
         self
     }
 
-    /// Set or unset the entry point for a benchmark
+    /// Sets or unset the entry point for a benchmark.
     ///
     /// Gungraun sets the [`--toggle-collect`] argument of callgrind to the benchmark function
     /// which we call [`EntryPoint::Default`]. Specifying a `--toggle-collect` argument, sets
@@ -724,7 +724,7 @@ impl Callgrind {
         self
     }
 
-    /// Configure the limits percentages over/below which a performance regression can be assumed
+    /// Configures the limits percentages over/below which a performance regression can be assumed.
     ///
     /// DEPRECATED: Use [`Callgrind::soft_limits`] instead.
     #[deprecated = "Please use Callgrind::soft_limits instead"]
@@ -735,7 +735,7 @@ impl Callgrind {
         self.soft_limits(limits)
     }
 
-    /// Configure the soft limits over/below which a performance regression can be assumed
+    /// Configures the soft limits over/below which a performance regression can be assumed.
     ///
     /// A soft limit consists of an [`EventKind`] and a percentage over which a regression is
     /// assumed. If the limit is negative, then a regression is assumed to be below this limit.
@@ -779,7 +779,7 @@ impl Callgrind {
         self
     }
 
-    /// Set hard limits above which a performance regression can be assumed
+    /// Sets hard limits above which a performance regression can be assumed.
     ///
     /// In contrast to [`Callgrind::soft_limits`], hard limits restrict an [`EventKind`] in absolute
     /// numbers instead of a percentage. A hard limit only affects the `new` benchmark run.
@@ -1004,7 +1004,7 @@ impl Default for Callgrind {
 }
 
 impl Dhat {
-    /// Create a new `Callgrind` configuration with initial command-line arguments
+    /// Creates a new `Callgrind` configuration with initial command-line arguments.
     ///
     /// See also [`Callgrind::args`] and [`Dhat::args`]
     ///
@@ -1026,7 +1026,7 @@ impl Dhat {
         ))
     }
 
-    /// Add command-line arguments to the `Dhat` configuration
+    /// Adds command-line arguments to the `Dhat` configuration.
     ///
     /// Valid arguments
     /// are <https://valgrind.org/docs/manual/dh-manual.html#dh-manual.options> and the core
@@ -1093,7 +1093,7 @@ impl Dhat {
         self
     }
 
-    /// Set or unset the entry point for DHAT
+    /// Sets or unset the entry point for DHAT.
     ///
     /// The basic concept of this [`EntryPoint`] is almost the same as for
     /// [`Callgrind::entry_point`] and for additional details see there. For library benchmarks the
@@ -1111,7 +1111,7 @@ impl Dhat {
     /// [`Callgrind`]. As a consequence, allocations and deallocations in the `setup` and
     /// `teardown` function are excluded from the final metrics. This behavior typically aligns with
     /// user expectations. However, DHAT has a unique characteristic: if the benchmarked function
-    /// utilizes an array created in the setup function, the metrics will not capture the reads and
+    /// uses an array created in the setup function, the metrics will not capture the reads and
     /// writes to that array. To accurately measure these reads and writes, it is necessary to set
     /// the entry point to the setup function.
     ///
@@ -1186,7 +1186,7 @@ impl Dhat {
         self
     }
 
-    /// Add one or multiple `frames` which will be included in the benchmark metrics
+    /// Adds one or multiple `frames` which will be included in the benchmark metrics.
     ///
     /// `Frames` are special to Gungraun and the DHAT equivalent to callgrind toggles
     /// (`--toggle-collect`) and like `--toggle-collect` this method accepts simple glob patterns
@@ -1289,7 +1289,7 @@ impl Dhat {
         self
     }
 
-    /// Configure the limits percentages over/below which a performance regression can be assumed
+    /// Configures the limits percentages over/below which a performance regression can be assumed.
     ///
     /// Same as [`Callgrind::soft_limits`] but for [`DhatMetric`]s.
     ///
@@ -1323,7 +1323,7 @@ impl Dhat {
         self
     }
 
-    /// Set hard limits above which a performance regression can be assumed
+    /// Sets hard limits above which a performance regression can be assumed.
     ///
     /// Same as [`Callgrind::hard_limits`] but for [`DhatMetric`]s.
     ///
@@ -1409,7 +1409,7 @@ impl Default for Dhat {
 }
 
 impl Drd {
-    /// Create a new `Drd` configuration with initial command-line arguments
+    /// Creates a new `Drd` configuration with initial command-line arguments.
     ///
     /// See also [`Callgrind::args`] and [`Drd::args`]
     ///
@@ -1428,7 +1428,7 @@ impl Drd {
         Self(__internal::InternalTool::with_args(ValgrindTool::DRD, args))
     }
 
-    /// Add command-line arguments to the `Drd` configuration
+    /// Adds command-line arguments to the `Drd` configuration.
     ///
     /// Valid arguments are <https://valgrind.org/docs/manual/drd-manual.html#drd-manual.options>
     /// and the core valgrind command-line arguments
@@ -1527,9 +1527,9 @@ impl FlamegraphConfig {
     /// The default is `false`.
     ///
     /// Instead of showing the differential flamegraph from the viewing angle of what has happened
-    /// the negated differential flamegraph shows what will happen. Especially, this allows to see
-    /// vanished event lines (in blue) for example because the underlying code has improved and
-    /// removed an unnecessary function call.
+    /// the negated differential flamegraph shows what will happen. Especially, this allows you to
+    /// see vanished event lines (in blue) for example because the underlying code has improved
+    /// and removed an unnecessary function call.
     ///
     /// See also [Differential Flame
     /// Graphs](https://www.brendangregg.com/blog/2014-11-09/differential-flame-graphs.html) from
@@ -1679,7 +1679,7 @@ impl FlamegraphConfig {
 }
 
 impl Helgrind {
-    /// Create a new `Helgrind` configuration with initial command-line arguments
+    /// Creates a new `Helgrind` configuration with initial command-line arguments.
     ///
     /// See also [`Callgrind::args`] and [`Helgrind::args`]
     ///
@@ -1701,7 +1701,7 @@ impl Helgrind {
         ))
     }
 
-    /// Add command-line arguments to the `Helgrind` configuration
+    /// Adds command-line arguments to the `Helgrind` configuration.
     ///
     /// Valid arguments
     /// are <https://valgrind.org/docs/manual/hg-manual.html#hg-manual.options> and the core
@@ -1778,7 +1778,7 @@ impl Default for Helgrind {
 }
 
 impl Massif {
-    /// Create a new `Massif` configuration with initial command-line arguments
+    /// Creates a new `Massif` configuration with initial command-line arguments.
     ///
     /// See also [`Callgrind::args`] and [`Massif::args`]
     ///
@@ -1800,7 +1800,7 @@ impl Massif {
         ))
     }
 
-    /// Add command-line arguments to the `Massif` configuration
+    /// Adds command-line arguments to the `Massif` configuration.
     ///
     /// Valid arguments
     /// are <https://valgrind.org/docs/manual/ms-manual.html#ms-manual.options> and the core
@@ -1849,7 +1849,7 @@ impl Default for Massif {
 }
 
 impl Memcheck {
-    /// Create a new `Memcheck` configuration with initial command-line arguments
+    /// Creates a new `Memcheck` configuration with initial command-line arguments.
     ///
     /// See also [`Callgrind::args`] and [`Memcheck::args`]
     ///
@@ -1871,7 +1871,7 @@ impl Memcheck {
         ))
     }
 
-    /// Add command-line arguments to the `Memcheck` configuration
+    /// Adds command-line arguments to the `Memcheck` configuration.
     ///
     /// Valid arguments
     /// are <https://valgrind.org/docs/manual/mc-manual.html#mc-manual.options> and the core

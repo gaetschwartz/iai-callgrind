@@ -102,14 +102,18 @@ impl Assert {
         };
 
         let maps = parser
-            .parse(&ToolOutputPath::new(
-                ToolOutputPathKind::Out,
-                ValgrindTool::Callgrind,
-                &BaselineKind::Old,
-                &self.target_dir,
-                &self.module_path.join(&self.group),
-                &format!("{}.{}", self.function, self.id),
-            ))
+            .parse(
+                &ToolOutputPath::new(
+                    ToolOutputPathKind::Out,
+                    ValgrindTool::Callgrind,
+                    &BaselineKind::Old,
+                    &self.target_dir,
+                    &self.module_path.join(&self.group),
+                    &format!("{}.{}", self.function, self.id),
+                    false,
+                )
+                .unwrap(),
+            )
             .unwrap();
 
         let mut total = CallgrindMap::default();

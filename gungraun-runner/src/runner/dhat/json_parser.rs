@@ -14,6 +14,7 @@ use crate::runner::tool::parser::{Header, Parser, ParserOutput};
 use crate::runner::tool::path::ToolOutputPath;
 
 /// The dhat output file json parser
+#[derive(Debug)]
 pub struct JsonParser {
     entry_point: EntryPoint,
     frames: Vec<String>,
@@ -21,7 +22,7 @@ pub struct JsonParser {
 }
 
 impl JsonParser {
-    /// Create a new `JsonParser`
+    /// Creates a new `JsonParser`.
     pub fn new(output_path: ToolOutputPath, entry_point: EntryPoint, frames: Vec<String>) -> Self {
         Self {
             entry_point,

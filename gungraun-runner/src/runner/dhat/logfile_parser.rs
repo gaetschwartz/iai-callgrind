@@ -37,6 +37,7 @@ enum State {
 }
 
 /// The dhat logfile parser
+#[derive(Debug)]
 pub struct DhatLogfileParser {
     /// The [`ToolOutputPath`]
     pub output_path: ToolOutputPath,
@@ -45,7 +46,7 @@ pub struct DhatLogfileParser {
 }
 
 impl DhatLogfileParser {
-    /// Create a new `DhatLogfileParser`
+    /// Creates a new `DhatLogfileParser`.
     pub fn new(output_path: ToolOutputPath, root_dir: PathBuf) -> Self {
         Self {
             output_path,

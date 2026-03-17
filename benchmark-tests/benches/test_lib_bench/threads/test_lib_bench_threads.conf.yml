@@ -1,5 +1,3 @@
-# TODO: Run these tests on nightly toolchain when rust upstream bug in nightly
-# is fixed
 groups:
   - runs_on: "!x86_64-unknown-freebsd"
     rust_version: "!=nightly"
@@ -21,8 +19,8 @@ groups:
         expected:
           files: expected_files.1b.yml
           stdout: expected_stdout.1b
-      # Test all baseline options and verify the multiple files due to the
-      # subprocesses and threads
+      # Test all baseline options and verify the existence of the multiple files
+      # of the subprocesses and threads
       - args: ["--nocapture", "--save-baseline"]
         tolerance: 5
         expected:

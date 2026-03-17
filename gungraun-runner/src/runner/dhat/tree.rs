@@ -74,7 +74,7 @@ pub struct RootTree {
 
 /// The trait to be implemented for a dhat prefix tree
 pub trait Tree {
-    /// Create a new `Tree` from the given parameters
+    /// Creates a new `Tree` from the given parameters.
     fn from_json(dhat_data: DhatData, entry_point: &EntryPoint, frames: &[String]) -> Self
     where
         Self: std::marker::Sized + Default,
@@ -127,7 +127,7 @@ pub trait Tree {
         tree
     }
 
-    /// Return the [`Data`] of the root
+    /// Returns the [`Data`] of the root.
     fn get_root_data(&self) -> &Data;
 
     /// Insert a prefix with the given [`Data`] into this [`Tree`]
@@ -141,12 +141,12 @@ pub trait Tree {
         }
     }
 
-    /// Return the metrics of the root node
+    /// Returns the metrics of the root node.
     fn metrics(&self) -> ToolMetrics {
         self.get_root_data().metrics(self.mode())
     }
 
-    /// Return the dhat invocation [`Mode`]
+    /// Returns the dhat invocation [`Mode`].
     fn mode(&self) -> Mode;
 
     /// Set the dhat invocation [`Mode`]
@@ -343,7 +343,7 @@ impl Tree for DhatTree {
 }
 
 impl Node {
-    /// Create a new `Node`
+    /// Creates a new `Node`.
     pub fn new(prefix: Vec<usize>, children: Vec<Self>, data: Data) -> Self {
         Self {
             children,
@@ -352,7 +352,7 @@ impl Node {
         }
     }
 
-    /// Create a new default `Node` with the given prefix
+    /// Creates a new default `Node` with the given prefix.
     pub fn with_prefix(prefix: Vec<usize>) -> Self {
         Self {
             prefix,

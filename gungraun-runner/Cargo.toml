@@ -30,6 +30,7 @@ runner = [
   "dep:cargo_metadata",
   "dep:clap",
   "dep:colored",
+  "dep:crossbeam",
   "dep:derive_more",
   "dep:env_logger",
   "dep:either-or-both",
@@ -39,6 +40,8 @@ runner = [
   "dep:itertools",
   "dep:lazy_static",
   "dep:log",
+  "dep:nix",
+  "dep:num_cpus",
   "dep:polonius-the-crab",
   "dep:regex",
   "dep:sanitize-filename",
@@ -67,6 +70,7 @@ clap = { workspace = true, optional = true, features = [
   "wrap_help",
 ] }
 colored = { workspace = true, optional = true }
+crossbeam = { workspace = true, optional = true }
 derive_more = { workspace = true, optional = true, features = ["as_ref"] }
 either-or-both = { workspace = true, optional = true, features = [
   "indexmap",
@@ -82,6 +86,8 @@ inferno = { workspace = true, optional = true, default-features = false, feature
 itertools = { workspace = true, optional = true }
 lazy_static = { workspace = true, optional = true }
 log = { workspace = true, optional = true }
+nix = { workspace = true, optional = true, features = ["signal"] }
+num_cpus = { workspace = true, optional = true }
 polonius-the-crab = { workspace = true, optional = true }
 regex = { workspace = true, optional = true }
 sanitize-filename = { workspace = true, optional = true }
@@ -111,7 +117,7 @@ path = "src/main.rs"
 missing_docs = "warn"
 
 [lints.clippy]
-pedantic = "warn"
+pedantic = { level = "warn", priority = -1 }
 allow_attributes = "warn"
 arbitrary_source_item_ordering = "warn"
 assertions_on_result_states = "warn"

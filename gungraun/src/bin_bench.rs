@@ -312,7 +312,7 @@ pub struct Delay(__internal::InternalDelay);
 pub struct Sandbox(__internal::InternalSandbox);
 
 impl Bench {
-    /// Create a new `Bench` with a unique [`BenchmarkId`]
+    /// Creates a new `Bench` with a unique [`BenchmarkId`].
     ///
     /// If the provided [`BenchmarkId`] is invalid, `gungraun` exits with an error.
     ///
@@ -350,7 +350,7 @@ impl Bench {
         }
     }
 
-    /// Add a [`BinaryBenchmarkConfig`] for this `Bench`
+    /// Adds a [`BinaryBenchmarkConfig`] for this `Bench`.
     ///
     /// A `Bench` without a `BinaryBenchmarkConfig` behaves like having specified the default
     /// [`BinaryBenchmarkConfig`]. This [`BinaryBenchmarkConfig`] overwrites the values of a
@@ -371,7 +371,7 @@ impl Bench {
         self
     }
 
-    /// Add a [`Command`] to this `Bench`
+    /// Adds a [`Command`] to this `Bench`.
     ///
     /// A `Bench` with multiple `Commands` behaves exactly as the
     /// [`#[benches]`](crate::binary_benchmark) attribute
@@ -406,7 +406,7 @@ impl Bench {
         self
     }
 
-    /// Add multiple [`Command`]s to this `Bench`
+    /// Adds multiple [`Command`]s to this `Bench`.
     ///
     /// See also [`Bench::command`].
     ///
@@ -441,7 +441,7 @@ impl Bench {
         self
     }
 
-    /// Add a `setup` function to be executed before the [`Command`] is executed
+    /// Adds a `setup` function to be executed before the [`Command`] is executed.
     ///
     /// This `setup` function overwrites the `setup` function of [`BinaryBenchmark`]. In the
     /// presence of a [`Sandbox`], this function is executed in the sandbox.
@@ -482,7 +482,7 @@ impl Bench {
         self
     }
 
-    /// Add a `teardown` function to be executed after the [`Command`] is executed
+    /// Adds a `teardown` function to be executed after the [`Command`] is executed.
     ///
     /// This `teardown` function overwrites the `teardown` function of [`BinaryBenchmark`]. In the
     /// presence of a [`Sandbox`], this function is executed in the sandbox.
@@ -694,7 +694,7 @@ impl BenchmarkId {
         Self(format!("{}_{parameter}", id.as_ref()))
     }
 
-    /// Create a new `BenchmarkId`
+    /// Creates a new `BenchmarkId`.
     ///
     /// `BenchmarkId`s can be created from any string-like input. See [`BenchmarkId::validate`] for
     /// ids which are considered valid.
@@ -829,7 +829,7 @@ where
 }
 
 impl BinaryBenchmark {
-    /// Create a new `BinaryBenchmark`
+    /// Creates a new `BinaryBenchmark`.
     ///
     /// A `BinaryBenchmark` is the equivalent of the
     /// [`#[binary_benchmark]`](`crate::binary_benchmark`) attribute in the low-level api and needs
@@ -866,7 +866,7 @@ impl BinaryBenchmark {
         }
     }
 
-    /// Add a [`BinaryBenchmarkConfig`] to this `BinaryBenchmark`
+    /// Adds a [`BinaryBenchmarkConfig`] to this `BinaryBenchmark`.
     ///
     /// # Examples
     ///
@@ -890,7 +890,7 @@ impl BinaryBenchmark {
         self
     }
 
-    /// Add a [`Bench`] to this `BinaryBenchmark`
+    /// Adds a [`Bench`] to this `BinaryBenchmark`.
     ///
     /// Adding a [`Bench`] which doesn't contain a [`Command`] is an error.
     ///
@@ -918,7 +918,7 @@ impl BinaryBenchmark {
         self
     }
 
-    /// Add a `setup` function to this `BinaryBenchmark`
+    /// Adds a `setup` function to this `BinaryBenchmark`.
     ///
     /// This `setup` function is used in all [`Bench`]es of this `BinaryBenchmark` if not overridden
     /// by the `Bench`.
@@ -960,7 +960,7 @@ impl BinaryBenchmark {
         self
     }
 
-    /// Add a `teardown` function to this `BinaryBenchmark`
+    /// Adds a `teardown` function to this `BinaryBenchmark`.
     ///
     /// This `teardown` function is used in all [`Bench`]es of this `BinaryBenchmark` if not
     /// overridden by the `Bench`.
@@ -1117,7 +1117,7 @@ impl BinaryBenchmarkConfig {
         self
     }
 
-    /// Add an environment variable to the [`Command`]
+    /// Adds an environment variable to the [`Command`].
     ///
     /// These environment variables are available independently of the setting of
     /// [`BinaryBenchmarkConfig::env_clear`].
@@ -1149,7 +1149,7 @@ impl BinaryBenchmarkConfig {
         self
     }
 
-    /// Add multiple environment variables to the [`Command`]
+    /// Adds multiple environment variables to the [`Command`].
     ///
     /// # Examples
     ///
@@ -1268,7 +1268,7 @@ impl BinaryBenchmarkConfig {
         self
     }
 
-    /// Set the directory of the benchmarked binary (Default: Unchanged)
+    /// Sets the directory of the benchmarked binary (Default: Unchanged).
     ///
     /// Unchanged means, in the case of running with the sandbox enabled, the root of the sandbox.
     /// In the case of running without sandboxing enabled, this'll be the directory which `cargo
@@ -1319,9 +1319,9 @@ impl BinaryBenchmarkConfig {
         self
     }
 
-    /// Set the expected exit status [`ExitWith`] of a benchmarked binary
+    /// Sets the expected exit status [`ExitWith`] of a benchmarked binary.
     ///
-    /// Per default, the benchmarked binary is expected to succeed which is the equivalent of
+    /// By default, the benchmarked binary is expected to succeed which is the equivalent of
     /// [`ExitWith::Success`]. But, if a benchmark is expected to fail, setting this option is
     /// required.
     ///
@@ -1368,7 +1368,7 @@ impl BinaryBenchmarkConfig {
         self
     }
 
-    /// Add a configuration for a valgrind tool
+    /// Adds a configuration for a valgrind tool.
     ///
     /// Valid configurations are [`crate::Callgrind`], [`crate::Cachegrind`], [`crate::Dhat`],
     /// [`crate::Memcheck`], [`crate::Helgrind`], [`crate::Drd`], [`crate::Massif`] and
@@ -1447,7 +1447,7 @@ impl BinaryBenchmarkConfig {
         self
     }
 
-    /// Configure benchmarks to run in a [`Sandbox`] (Default: false)
+    /// Configures benchmarks to run in a [`Sandbox`] (Default: false).
     ///
     /// If specified, we create a temporary directory in which the `setup` and `teardown` functions
     /// of the `#[binary_benchmark]` (`#[bench]`, `#[benches]`) and the [`Command`] itself are run.
@@ -1487,7 +1487,7 @@ impl BinaryBenchmarkConfig {
         self
     }
 
-    /// Configure the [`crate::OutputFormat`] of the terminal output of Gungraun
+    /// Configures the [`crate::OutputFormat`] of the terminal output of Gungraun.
     ///
     /// # Examples
     ///
@@ -1569,7 +1569,7 @@ impl BinaryBenchmarkConfig {
 }
 
 impl BinaryBenchmarkGroup {
-    /// Add a [`BinaryBenchmark`] to this group
+    /// Adds a [`BinaryBenchmark`] to this group.
     ///
     /// This can be a binary benchmark created with [`BinaryBenchmark::new`] or a
     /// [`crate::binary_benchmark`] attributed function addable with the
@@ -1579,7 +1579,7 @@ impl BinaryBenchmarkGroup {
     ///
     /// # Examples
     ///
-    /// Add a [`BinaryBenchmark`] to this group
+    /// Adds a [`BinaryBenchmark`] to this group.
     ///
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
@@ -1631,7 +1631,7 @@ impl BinaryBenchmarkGroup {
         self
     }
 
-    /// Add multiple [`BinaryBenchmark`]s at once
+    /// Adds multiple [`BinaryBenchmark`]s at once.
     pub fn binary_benchmarks<I, T>(&mut self, binary_benchmarks: T) -> &mut Self
     where
         I: Into<BinaryBenchmark>,
@@ -1696,7 +1696,7 @@ impl Command {
 
     /// Delay the execution of the [`Command`]
     ///
-    /// This option allows to delay the [`Command`] execution till a certain event has happened.
+    /// This option allows you to delay the [`Command`] execution till a certain event has happened.
     /// Supported events are:
     ///  - Timer expired
     ///  - File path exists
@@ -1859,7 +1859,7 @@ impl Command {
     /// [`Stdin`] enum mirrors most of the possibilities of [`std::process::Stdio`] but also some
     /// additional possibilities most notably [`Stdin::Setup`] (see there for more details).
     ///
-    /// Per default, the stdin is not inherited from the parent and any attempt by the child process
+    /// By default, the stdin is not inherited from the parent and any attempt by the child process
     /// to read from the stdin stream will result in the stream immediately closing.
     ///
     /// The options you might be interested in the most are [`Stdin::File`], which mirrors the
@@ -2049,7 +2049,7 @@ impl Command {
         self
     }
 
-    /// Add an environment variable available for this [`Command`]
+    /// Adds an environment variable available for this [`Command`].
     ///
     /// These environment variables are available independently of the setting of
     /// [`BinaryBenchmarkConfig::env_clear`] and additive to environment variables added with
@@ -2085,13 +2085,13 @@ impl Command {
         self
     }
 
-    /// Add multiple environment variables available for this [`Command`]
+    /// Adds multiple environment variables available for this [`Command`].
     ///
     /// See [`Command::env`] for more details.
     ///
     /// # Examples
     ///
-    /// Add the custom environment variables "FOO=BAR" and `BAR=BAZ`:
+    /// Adds the custom environment variables "FOO=BAR" and `BAR=BAZ`:.
     ///
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
@@ -2123,7 +2123,7 @@ impl Command {
         self
     }
 
-    /// Set the directory of the benchmarked binary (Default: Unchanged)
+    /// Sets the directory of the benchmarked binary (Default: Unchanged).
     ///
     /// See also [`BinaryBenchmarkConfig::current_dir`]
     ///
@@ -2184,7 +2184,7 @@ impl Command {
         self
     }
 
-    /// Set the expected exit status [`ExitWith`] of this [`Command`]
+    /// Sets the expected exit status [`ExitWith`] of this [`Command`].
     ///
     /// See also [`BinaryBenchmarkConfig::exit_with`]. This setting overwrites the setting of the
     /// [`BinaryBenchmarkConfig`].
@@ -2434,9 +2434,9 @@ where
 }
 
 impl Sandbox {
-    /// Create a new `Sandbox` builder
+    /// Creates a new `Sandbox` builder.
     ///
-    /// Per default, a [`Command`] is not run in a `Sandbox` because setting up a `Sandbox` usually
+    /// By default, a [`Command`] is not run in a `Sandbox` because setting up a `Sandbox` usually
     /// involves some user interaction, for example copying fixtures into it with
     /// [`Sandbox::fixtures`].
     ///
@@ -2445,7 +2445,7 @@ impl Sandbox {
     ///
     /// # Examples
     ///
-    /// Enable the sandbox for all benchmarks
+    /// Enables the sandbox for all benchmarks.
     ///
     /// ```rust
     /// use gungraun::{main, BinaryBenchmarkConfig, Sandbox};
