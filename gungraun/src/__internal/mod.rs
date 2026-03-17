@@ -110,11 +110,13 @@ impl std::fmt::Display for ModulePath {
     }
 }
 
+#[derive(Debug)]
 pub enum BenchmarkKind {
     BinaryBenchmark,
     LibraryBenchmark,
 }
 
+#[derive(Debug)]
 pub struct Runner {
     cmd: std::process::Command,
     module_path: String,

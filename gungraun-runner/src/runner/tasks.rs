@@ -32,6 +32,7 @@ type JobId = usize;
 type TaskHandle = JoinHandle<Result<()>>;
 
 /// The wrapper for a [`std::process::Child`] of the setup/teardown or benchmark process
+#[derive(Debug)]
 struct ProcessChild(Child);
 
 /// This struct is used to start and terminate processes related to the execution of a benchmark
@@ -77,6 +78,7 @@ enum ProcessState {
     Kill,
 }
 
+#[derive(Debug)]
 struct Task {
     thread: Option<TaskHandle>,
 }

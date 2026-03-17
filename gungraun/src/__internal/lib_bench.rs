@@ -6,6 +6,7 @@ type MacroLibBenches<'a> = &'a [&'a (
     &'a [crate::__internal::InternalMacroLibBench],
 )];
 
+#[derive(Debug)]
 pub struct GroupsBuilder(crate::__internal::InternalLibraryBenchmarkGroups);
 
 impl GroupsBuilder {

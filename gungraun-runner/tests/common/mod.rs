@@ -14,13 +14,16 @@ use serde::{Deserialize, Serialize};
 
 pub const FIXTURES_ROOT: &str = "tests/fixtures";
 
+#[derive(Debug)]
 pub struct Fixtures;
 
+#[derive(Debug)]
 pub struct Runner {
     args: Vec<OsString>,
     path: OsString,
 }
 
+#[derive(Debug)]
 pub struct RunnerOutput(Output);
 
 #[derive(Debug, Clone)]

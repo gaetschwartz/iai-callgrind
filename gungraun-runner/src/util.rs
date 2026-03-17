@@ -17,12 +17,14 @@ use crate::error::Error;
 use crate::runner::metrics::Metric;
 
 /// The union over two [`IndexMaps`][IndexMap]
+#[derive(Debug)]
 pub struct Union<K, V> {
     primary: IndexMap<K, V>,
     secondary: IndexMap<K, V>,
 }
 
 /// The consuming iterator over the [`Union`] returning owned data by cloning it
+#[derive(Debug)]
 pub struct UnionIterator<'a, K, V> {
     primary_iter: indexmap::map::Iter<'a, K, V>,
     secondary_iter: indexmap::map::Iter<'a, K, V>,

@@ -13,6 +13,7 @@ use crate::runner::summary::{ProfileTotal, ToolMetricSummary, ToolRegression};
 
 /// A short-lived utility enum used to hold the raw regressions until they can be transformed into a
 /// real [`ToolRegression`]
+#[derive(Debug)]
 pub enum RegressionMetrics<T> {
     /// The result of a checked soft limit
     Soft(T, Metric, Metric, f64, f64),
