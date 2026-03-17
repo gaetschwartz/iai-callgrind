@@ -1557,7 +1557,13 @@ mod tests {
     #[case::old_costs_0(EventKind::Ir, 1, Some(0), "+++inf+++", Some("+++inf+++"))]
     #[case::all_costs_0(EventKind::Ir, 0, Some(0), "No change", None)]
     #[case::new_costs_u64_max(EventKind::Ir, u64::MAX, None, "*********", None)]
-    #[case::old_costs_u64_max(EventKind::Ir, u64::MAX / 10, Some(u64::MAX), "-90.0000%", Some("-10.0000x"))]
+    #[case::old_costs_u64_max(
+    EventKind::Ir,
+    u64::MAX / 10,
+    Some(u64::MAX),
+    "-90.0000%",
+    Some("-10.0000x")
+)]
     #[case::all_costs_u64_max(EventKind::Ir, u64::MAX, Some(u64::MAX), "No change", None)]
     #[case::no_change_when_not_0(EventKind::Ir, 1000, Some(1000), "No change", None)]
     #[case::neg_change_when_not_0(EventKind::Ir, 2000, Some(3000), "-33.3333%", Some("-1.50000x"))]
@@ -1702,7 +1708,10 @@ mod tests {
     #[case::split(
         "Field:",
         EitherOrBoth::Both(format!("{}1", u64::MAX), "right".to_owned()),
-        "  Field:               184467440737095516151\n                                           |right\n"
+        concat!(
+            "  Field:               184467440737095516151\n",
+            "                                           |right\n"
+        )
     )]
     fn test_vertical_formatter_write_field<T>(
         #[case] field: &str,

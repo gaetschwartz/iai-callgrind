@@ -53,7 +53,8 @@ use super::{bindings, fatal_error};
 /// The meaning of the `weight` argument will depend on what the event represents, which is up to
 /// the user. If no meaningful `weight` argument exists, just use 1.
 ///
-/// See also [Ad hoc profiling](https://valgrind.org/docs/manual/dh-manual.html#dh-manual.ad-hoc-profiling)
+/// See also
+/// [Ad hoc profiling](https://valgrind.org/docs/manual/dh-manual.html#dh-manual.ad-hoc-profiling)
 #[inline(always)]
 pub fn ad_hoc_event(weight: usize) {
     do_client_request!(

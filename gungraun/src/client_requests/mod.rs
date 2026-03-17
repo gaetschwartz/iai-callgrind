@@ -233,9 +233,9 @@ cfg_if! {
     if #[cfg(feature = "client_requests")] {
         /// Allow prints to valgrind log
         ///
-        /// This macro is a safe variant of the `VALGRIND_PRINTF` function, checking for `\0` bytes in the
-        /// formatting string. However, if you're sure there are no `\0` bytes present you can
-        /// safely use [`crate::valgrind_printf_unchecked`] which performs better compared to this
+        /// This macro is a safe variant of the `VALGRIND_PRINTF` function, checking for `\0` bytes
+    /// in the formatting string. However, if you're sure there are no `\0` bytes present you can
+    /// safely use [`crate::valgrind_printf_unchecked`] which performs better compared to this
         /// macro.
         #[macro_export]
         macro_rules! valgrind_printf {
@@ -393,9 +393,9 @@ cfg_if! {
     } else {
         /// Allow prints to valgrind log
         ///
-        /// This macro is a safe variant of the `VALGRIND_PRINTF` function, checking for `\0` bytes in the
-        /// formatting string. However, if you're sure there are no `\0` bytes present you can
-        /// safely use [`crate::valgrind_printf_unchecked`] which performs better compared to this
+        /// This macro is a safe variant of the `VALGRIND_PRINTF` function, checking for `\0` bytes
+    /// in the formatting string. However, if you're sure there are no `\0` bytes present you can
+    /// safely use [`crate::valgrind_printf_unchecked`] which performs better compared to this
         /// macro.
         #[macro_export]
         macro_rules! valgrind_printf {

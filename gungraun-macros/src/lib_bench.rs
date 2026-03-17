@@ -170,7 +170,8 @@ impl Bench {
                 } else {
                     abort!(
                         pair, "Invalid argument: {}", pair.path.require_ident()?;
-                        help = "Valid arguments are: `args`, `file`, `iter`, `config`, `setup`, `teardown`"
+                        help = "Valid arguments are: `args`, `file`, `iter`, `config`, `setup`, \
+                        `teardown`"
                     );
                 }
             }

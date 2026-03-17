@@ -82,7 +82,8 @@ impl CallgrindProperties {
     /// Compare by target ids `pid`, `part` and `thread`
     ///
     /// Highest precedence takes `pid`. Second is `part` and third is `thread` all sorted ascending.
-    /// See also [Callgrind Format](https://valgrind.org/docs/manual/cl-format.html#cl-format.reference.grammar)
+    /// See also [Callgrind
+    /// Format](https://valgrind.org/docs/manual/cl-format.html#cl-format.reference.grammar)
     pub fn compare_target_ids(&self, other: &Self) -> Ordering {
         self.pid.cmp(&other.pid).then_with(|| {
             self.thread

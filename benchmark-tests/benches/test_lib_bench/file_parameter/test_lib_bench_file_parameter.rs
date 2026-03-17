@@ -55,7 +55,10 @@ fn two_lines(value: String) {
 }
 
 #[library_benchmark]
-#[benches::two_lines(file = "benchmark-tests/benches/fixtures/two_lines.fix", setup = string_to_u64)]
+#[benches::two_lines(
+    file = "benchmark-tests/benches/fixtures/two_lines.fix",
+    setup = string_to_u64
+)]
 fn two_lines_with_setup(value: u64) {
     let path = PathBuf::from("/tmp/gungraun.two_lines.fix");
     if !path.exists() {

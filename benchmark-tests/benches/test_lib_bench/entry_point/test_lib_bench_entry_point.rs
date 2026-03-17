@@ -101,8 +101,8 @@ fn assert_default() {
                     .iter()
                     .find_map(|(k, v)| {
                         (
-                            k.func == "test_lib_bench_entry_point::bench_lib::__gungraun_wrapper_mod::bench_lib" &&
-                            k.file == Some(SourcePath::Relative(file!().into()))
+                            k.func == "test_lib_bench_entry_point::bench_lib::__gungraun_wrapper_mod::bench_lib"
+                                && k.file == Some(SourcePath::Relative(file!().into()))
                         )
                         .then(|| v.metrics.clone())
                     })

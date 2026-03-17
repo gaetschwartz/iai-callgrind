@@ -27,7 +27,10 @@ lazy_static! {
     //
     // Note callgrind doesn't support xtree, xleak files
     static ref CALLGRIND_ORIG_FILENAME_RE: Regex = Regex::new(
-        "^(?<type>[.](out|log))(?<base>[.](old|base@[^.-]+))?(?<pid>[.][#][0-9]+)?(?<part>[.][0-9]+)?(?<thread>-[0-9]+)?$"
+        concat!(
+            "^(?<type>[.](out|log))(?<base>[.](old|base@[^.-]+))?",
+            "(?<pid>[.][#][0-9]+)?(?<part>[.][0-9]+)?(?<thread>-[0-9]+)?$"
+        )
     )
     .expect("Regex should compile");
 
@@ -35,7 +38,10 @@ lazy_static! {
     ///
     /// Note bbv doesn't support xtree, xleak files
     static ref BBV_ORIG_FILENAME_RE: Regex = Regex::new(
-        "^(?<type>[.](?:out|log))(?<base>[.](old|base@[^.]+))?(?<bbv_type>[.](?:bb|pc))?(?<pid>[.][#][0-9]+)?(?<thread>[.][0-9]+)?$"
+        concat!(
+            "^(?<type>[.](?:out|log))(?<base>[.](old|base@[^.]+))?",
+            "(?<bbv_type>[.](?:bb|pc))?(?<pid>[.][#][0-9]+)?(?<thread>[.][0-9]+)?$"
+        )
     )
     .expect("Regex should compile");
 
@@ -47,7 +53,11 @@ lazy_static! {
     .expect("Regex should compile");
 
     static ref REAL_FILENAME_RE: Regex = Regex::new(
-        "^(?:[.](?<pid>[0-9]+))?(?:[.]t(?<tid>[0-9]+))?(?:[.]p(?<part>[0-9]+))?(?:[.](?<bbv>bb|pc))?(?:[.](?<type>out|log|xtree|xleak))(?:[.](?<base>old|base@[^.]+))?$"
+        concat!(
+            "^(?:[.](?<pid>[0-9]+))?(?:[.]t(?<tid>[0-9]+))?(?:[.]p(?<part>[0-9]+))?",
+            "(?:[.](?<bbv>bb|pc))?(?:[.](?<type>out|log|xtree|xleak))",
+            "(?:[.](?<base>old|base@[^.]+))?$"
+        )
     )
     .expect("Regex should compile");
 }
@@ -1354,20 +1364,59 @@ mod tests {
     #[rstest]
     #[case::out(".out", vec![("type", "out")])]
     #[case::pid_out(".2049595.out", vec![("pid", "2049595"), ("type", "out")])]
-    #[case::pid_thread_out(".2049595.t1.out", vec![("pid", "2049595"), ("tid", "1"), ("type", "out")])]
-    #[case::pid_thread_part_out(".2049595.t1.p1.out", vec![("pid", "2049595"), ("tid", "1"), ("part", "1"), ("type", "out")])]
+    #[case::pid_thread_out(
+        ".2049595.t1.out",
+        vec![("pid", "2049595"), ("tid", "1"), ("type", "out")]
+    )]
+    #[case::pid_thread_part_out(
+        ".2049595.t1.p1.out",
+        vec![("pid", "2049595"), ("tid", "1"), ("part", "1"), ("type", "out")]
+    )]
     #[case::out_old(".out.old", vec![("type", "out"), ("base", "old")])]
-    #[case::pid_out_old(".2049595.out.old", vec![("pid", "2049595"), ("type", "out"), ("base", "old")])]
-    #[case::pid_thread_out_old(".2049595.t1.out.old", vec![("pid", "2049595"), ("tid", "1"), ("type", "out"), ("base", "old")])]
-    #[case::pid_thread_part_out_old(".2049595.t1.p1.out.old", vec![("pid", "2049595"), ("tid", "1"), ("part", "1"), ("type", "out"), ("base", "old")])]
+    #[case::pid_out_old(
+        ".2049595.out.old",
+        vec![("pid", "2049595"), ("type", "out"), ("base", "old")]
+    )]
+    #[case::pid_thread_out_old(
+        ".2049595.t1.out.old",
+        vec![("pid", "2049595"), ("tid", "1"), ("type", "out"), ("base", "old")]
+    )]
+    #[case::pid_thread_part_out_old(
+        ".2049595.t1.p1.out.old",
+        vec![
+            ("pid", "2049595"),
+            ("tid", "1"),
+            ("part", "1"),
+            ("type", "out"),
+            ("base", "old")
+        ]
+    )]
     #[case::out_base(".out.base@name", vec![("type", "out"), ("base", "base@name")])]
-    #[case::pid_out_base(".2049595.out.base@name", vec![("pid", "2049595"), ("type", "out"), ("base", "base@name")])]
-    #[case::pid_thread_out_base(".2049595.t1.out.base@name", vec![("pid", "2049595"), ("tid", "1"), ("type", "out"), ("base", "base@name")])]
-    #[case::pid_thread_part_out_base(".2049595.t1.p1.out.base@name", vec![("pid", "2049595"), ("tid", "1"), ("part", "1"), ("type", "out"), ("base", "base@name")])]
+    #[case::pid_out_base(
+        ".2049595.out.base@name",
+        vec![("pid", "2049595"), ("type", "out"), ("base", "base@name")]
+    )]
+    #[case::pid_thread_out_base(
+        ".2049595.t1.out.base@name",
+        vec![("pid", "2049595"), ("tid", "1"), ("type", "out"), ("base", "base@name")]
+    )]
+    #[case::pid_thread_part_out_base(
+        ".2049595.t1.p1.out.base@name",
+        vec![
+            ("pid", "2049595"),
+            ("tid", "1"),
+            ("part", "1"),
+            ("type", "out"),
+            ("base", "base@name")
+        ]
+    )]
     #[case::bb_out(".bb.out", vec![("bbv", "bb"), ("type", "out")])]
     #[case::pc_out(".pc.out", vec![("bbv", "pc"), ("type", "out")])]
     #[case::pid_bb_out(".123.bb.out", vec![("pid", "123"), ("bbv", "bb"), ("type", "out")])]
-    #[case::pid_thread_bb_out(".123.t1.bb.out", vec![("pid", "123"), ("tid", "1"), ("bbv", "bb"), ("type", "out")])]
+    #[case::pid_thread_bb_out(
+        ".123.t1.bb.out",
+        vec![("pid", "123"), ("tid", "1"), ("bbv", "bb"), ("type", "out")]
+    )]
     #[case::log(".log", vec![("type", "log")])]
     #[case::xtree(".xtree", vec![("type", "xtree")])]
     #[case::xtree_old(".xtree.old", vec![("type", "xtree"), ("base", "old")])]

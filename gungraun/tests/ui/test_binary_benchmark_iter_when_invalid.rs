@@ -39,7 +39,8 @@ mod test_when_no_bench_arg {
 // 36 |     #[binary_benchmark]
 //    |     ^^^^^^^^^^^^^^^^^^^
 //    |
-//    = note: this error originates in the attribute macro `binary_benchmark` (in Nightly builds, run with -Z macro-backtrace for more info)
+//    = note: this error originates in the attribute macro `binary_benchmark` (in Nightly
+//      builds, run with -Z macro-backtrace for more info)
 // help: you must specify a type for this binding, like `i32`
 //    |
 // 36 |     #[binary_benchmark]: i32

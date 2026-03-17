@@ -28,18 +28,24 @@ fn bench13(value: u64) {
 #[library_benchmark(config = LibraryBenchmarkConfig::default())]
 fn bench14() {}
 
-
 // with all valid parameters
-#[library_benchmark(config = LibraryBenchmarkConfig::default(), setup = setup_no_args, teardown = teardown_unit)]
+#[library_benchmark(
+    config = LibraryBenchmarkConfig::default(),
+    setup = setup_no_args,
+    teardown = teardown_unit
+)]
 fn bench20(value: u64) {
     _ = value;
 }
 
 // Mix the order of the parameters
-#[library_benchmark(teardown = teardown_unit, setup = setup_no_args, config = LibraryBenchmarkConfig::default())]
+#[library_benchmark(
+    teardown = teardown_unit,
+    setup = setup_no_args,
+    config = LibraryBenchmarkConfig::default()
+)]
 fn bench21(value: u64) {
     _ = value;
 }
-
 
 fn main() {}

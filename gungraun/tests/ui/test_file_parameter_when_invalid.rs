@@ -52,13 +52,19 @@ mod test_args_and_file_parameter {
     use super::*;
 
     #[library_benchmark]
-    #[benches::my_id(file = "gungraun/tests/fixtures/numbers.fix", args = [("valid_arg".to_owned()), "another".to_owned()])]
+    #[benches::my_id(
+    file = "gungraun/tests/fixtures/numbers.fix",
+    args = [("valid_arg".to_owned()), "another".to_owned()]
+)]
     fn bench_library(value: String) -> u64 {
         value.parse::<u64>().unwrap()
     }
 
     #[binary_benchmark]
-    #[benches::my_id(file = "gungraun/tests/fixtures/numbers.fix", args = [("valid_arg".to_owned()), "another".to_owned()])]
+    #[benches::my_id(
+    file = "gungraun/tests/fixtures/numbers.fix",
+    args = [("valid_arg".to_owned()), "another".to_owned()]
+)]
     fn bench_binary(value: String) -> u64 {
         value.parse::<u64>().unwrap()
     }

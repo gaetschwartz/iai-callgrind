@@ -291,7 +291,14 @@ mod tests {
     #[case::short_addr("0x1234: malloc (in /usr/lib/some.so)", ("0x1234", "malloc", "in /usr/lib/some.so"))]
     #[case::no_in("0x12345678: malloc (/usr/lib/some.so)", ("0x12345678", "malloc", "/usr/lib/some.so"))]
     #[case::some("0x12345678: malloc (in /usr/lib/some.so)", ("0x12345678", "malloc", "in /usr/lib/some.so"))]
-    #[case::long_with_multiple_parentheses("0x40440E3: call_once<(), (dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)> (function.rs:284)", ("0x40440E3", "call_once<(), (dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)>", "function.rs:284"))]
+    #[case::long_with_multiple_parentheses(
+    "0x40440E3: call_once<(), (dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)> (function.rs:284)",
+    (
+        "0x40440E3",
+        "call_once<(), (dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)>",
+        "function.rs:284"
+    )
+)]
     fn test_frame_from_str(#[case] haystack: &str, #[case] frame: (&str, &str, &str)) {
         let expected = Frame::from(frame);
         let actual = haystack.parse::<Frame>().unwrap();

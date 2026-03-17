@@ -38,27 +38,29 @@ lazy_static! {
     static ref BACKTRACE_RE: Regex =
         regex::Regex::new(r"^((at|by)\s*0x[0-9A-Za-z]+\s*:)").expect("Regex should compile");
     static ref MEMCHECK_CHECKED_RE: Regex =
-        regex::Regex::new(r"^(\s*Checked\s*)([0-9,.]+)(\s*bytes)\s*$").expect("Regex should compile");
+        regex::Regex::new(r"^(\s*Checked\s*)([0-9,.]+)(\s*bytes)\s*$")
+            .expect("Regex should compile");
     static ref MEMCHECK_TOTAL_HEAP_USAGE_RE: Regex =
         regex::Regex::new(r"^(?i:(\s*total heap usage:\s*))(.*)$").expect("Regex should compile");
-    static ref MEMCHECK_LEAK_SUMMARY_RE: Regex =
-        regex::Regex::new(r"(?i:(\s*(definitely lost|indirectly lost|possibly lost|still reachable|suppressed):\s*))([ 0-9,()+.]*)(\s*bytes in\s*)([ 0-9,()+.]*)(\s*blocks\s*)$")
-            .expect("Regex should compile");
+    static ref MEMCHECK_LEAK_SUMMARY_RE: Regex = regex::Regex::new(concat!(
+        r"(?i:(\s*(definitely lost|indirectly lost|possibly lost|",
+        r"still reachable|suppressed):\s*))([ 0-9,()+.]*)(\s*bytes in\s*)",
+        r"([ 0-9,()+.]*)(\s*blocks\s*)$"
+    ))
+    .expect("Regex should compile");
     static ref MEMCHECK_RM_NUMBERS_RE: Regex =
-        regex::Regex::new(r"[+-]?[0-9][0-9,.]*")
-            .expect("Regex should compile");
+        regex::Regex::new(r"[+-]?[0-9][0-9,.]*").expect("Regex should compile");
     static ref MEMORY_ADDRESS_RE: Regex =
         regex::Regex::new(r"0x[0-9A-Za-z]+").expect("Regex should compile");
     static ref CACHEGRIND_NUM_REFS_RE: Regex =
-        regex::Regex::new(r"((I|D|LL)\s*refs:\s*)([ 0-9,()+rdw]*)\s*$").expect("Regex should compile");
+        regex::Regex::new(r"((I|D|LL)\s*refs:\s*)([ 0-9,()+rdw]*)\s*$")
+            .expect("Regex should compile");
     static ref WARNING_EXIDX_RE: Regex =
         regex::Regex::new(r"^[ ]*Warning: whilst reading EXIDX:.*$").expect("Regex should compile");
     static ref READING_EXIDX_RE: Regex =
         regex::Regex::new(r"^[ ]*Reading EXIDX entries:.*$").expect("Regex should compile");
-    static ref NUMBER_RE: Regex =
-        regex::Regex::new(r"[0-9]+").expect("Regex should compile");
-    static ref REDIR_RE: Regex =
-        regex::Regex::new(r"^(REDIR:)(.*)").expect("Regex should compile");
+    static ref NUMBER_RE: Regex = regex::Regex::new(r"[0-9]+").expect("Regex should compile");
+    static ref REDIR_RE: Regex = regex::Regex::new(r"^(REDIR:)(.*)").expect("Regex should compile");
 }
 
 #[derive(Debug)]

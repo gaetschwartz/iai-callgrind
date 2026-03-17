@@ -111,10 +111,20 @@ pub struct CommandLineArgs {
     #[arg(long = "exact", hide = true, action = ArgAction::SetTrue, required = false)]
     _exact: bool,
 
-    #[arg(long = "exclude-should-panic", hide = true, action = ArgAction::SetTrue, required = false)]
+    #[arg(
+        long = "exclude-should-panic",
+        hide = true,
+        action = ArgAction::SetTrue,
+        required = false
+    )]
     _exclude_should_panic: bool,
 
-    #[arg(long = "force-run-in-process", hide = true, action = ArgAction::SetTrue, required = false)]
+    #[arg(
+        long = "force-run-in-process",
+        hide = true,
+        action = ArgAction::SetTrue,
+        required = false
+    )]
     _force_run_in_process: bool,
 
     #[arg(long = "format", hide = true, required = false, num_args = 0..)]
@@ -164,8 +174,10 @@ pub struct CommandLineArgs {
     /// could noise up the callgrind cache simulation results a bit. Setting this option to true
     /// runs all benchmarks with ASLR enabled.
     ///
-    /// See also
-    /// <https://docs.kernel.org/admin-guide/sysctl/kernel.html?highlight=randomize_va_space#randomize-va-space>
+    /// See also [kernel.org: randomize_va_space]
+    ///
+    /// [kernel.org: randomize_va_space]:
+    /// https://docs.kernel.org/admin-guide/sysctl/kernel.html#randomize-va-space
     #[arg(
         long = "allow-aslr",
         default_missing_value = "true",
@@ -1462,7 +1474,10 @@ mod tests {
     #[case::two_key_value("--some=yes --other=no", &["--some=yes", "--other=no"])]
     #[case::single_escaped("--some='yes and no'", &["--some=yes and no"])]
     #[case::double_escaped("--some='\"yes and no\"'", &["--some=\"yes and no\""])]
-    #[case::multiple_escaped("--some='yes and no' --other='no and yes'", &["--some=yes and no", "--other=no and yes"])]
+    #[case::multiple_escaped(
+    "--some='yes and no' --other='no and yes'",
+    &["--some=yes and no", "--other=no and yes"]
+)]
     fn test_parse_callgrind_args(#[case] value: &str, #[case] expected: &[&str]) {
         let actual = parse_args(value).unwrap();
         assert_eq!(actual, RawArgs::from_iter(expected));

@@ -142,19 +142,21 @@ impl Args {
         if !has_setup && actual != expected {
             if let Some(span) = self.span() {
                 emit_error!(
-                    span,
-                    "Expected {} arguments but found {}",
-                    expected,
-                    actual;
-                    help = "This argument is expected to have the same amount of parameters as the benchmark function";
-                );
+                span,
+                                    "Expected {} arguments but found {}",
+                                    expected,
+                                    actual;
+                                    help = "This argument is expected to have the same amount of \
+                                    parameters as the benchmark function"
+                                );
             } else {
                 emit_error!(
                     self,
                     "Expected {} arguments but found {}",
                     expected,
                     actual;
-                    help = "This argument is expected to have the same amount of parameters as the benchmark function";
+                    help = "This argument is expected to have the same amount of parameters as \
+                    the benchmark function"
                 );
             }
         }
@@ -222,7 +224,8 @@ impl Bench {
             if !(expected_num_args == 1 || has_setup) {
                 abort!(
                     literal,
-                    "The benchmark function should take exactly one `String` argument if the file parameter is present";
+                    "The benchmark function should take exactly one `String` argument if the file \
+                    parameter is present";
                     help = "fn benchmark_function(line: String) ..."
                 )
             }
@@ -249,7 +252,8 @@ impl Bench {
             if !(expected_num_args == 1 || has_setup) {
                 abort!(
                     fn_span,
-                    "The benchmark function can only take exactly one argument if the iter parameter is present";
+                    "The benchmark function can only take exactly one argument if the iter \
+                    parameter is present";
                     help = "fn benchmark_function(arg: String) ...";
                     note = "If you need more than one argument you can use a tuple as input and
     destruct it in the function signature. Example:
@@ -371,7 +375,8 @@ impl File {
             } else {
                 abort!(
                     pair.value, "Invalid value for `file`";
-                    help = "The `file` argument needs a literal string containing the path to an existing file at compile time";
+                    help = "The `file` argument needs a literal string containing the path to an \
+                    existing file at compile time";
                     note = "`file = \"benches/some_fixture\"`"
                 );
             }

@@ -266,11 +266,10 @@ where
             debug!("Found '{}': '{}'", binary.to_string_lossy(), path.display());
             Ok(path)
         }
-        Err(error) => Err(
-            anyhow! {"{error}: '{0}' could not be found. Is '{0}' installed, executable and in the PATH?",
-                binary.to_string_lossy()
-            },
-        ),
+        Err(error) => Err(anyhow! {
+            "{error}: '{0}' could not be found. Is '{0}' installed, executable and in the PATH?",
+            binary.to_string_lossy()
+        }),
     }
 }
 

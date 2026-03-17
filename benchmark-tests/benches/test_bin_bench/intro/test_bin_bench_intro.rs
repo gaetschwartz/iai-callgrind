@@ -89,7 +89,10 @@ fn create_file_with_content(path: &str, content: &str) {
 #[bench::baz(args = ("baz.txt", "some baz content"), setup = create_file_with_content)]
 // Or multiple benches at once. The alternate syntax for `args` in the `#[benches]` attribute is
 // `args = [(...), (...), ...]` (An array of tuples)
-#[benches::multiple(args = [("aaa.txt", "aaa"), ("aaaa.txt", "aaa")], setup = create_file_with_content)]
+#[benches::multiple(
+    args = [("aaa.txt", "aaa"), ("aaaa.txt", "aaa")],
+    setup = create_file_with_content
+)]
 fn bench_with_setup(path: &str, content: &str) -> gungraun::Command {
     gungraun::Command::new(READ_FILE_EXE)
         .args([path, content])

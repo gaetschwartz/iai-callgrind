@@ -331,7 +331,9 @@ macro_rules! main {
                         __run_teardown(true);
                     },
                     (index, Some(next)) => {
-                        let main_index = index.parse::<usize>().expect("A valid main index should be present");
+                        let main_index = index
+                            .parse::<usize>()
+                            .expect("A valid main index should be present");
                         let current = next;
                         let next = args_iter.next();
 
@@ -368,10 +370,16 @@ macro_rules! main {
                                     );
                                 }
                             }
-                            (name, _) => panic!("Invalid function '{}' in group with index '{}'", name, main_index)
+                            (name, _) => panic!(
+                                "Invalid function '{}' in group with index '{}'",
+                                name, main_index
+                            )
                         }
                     }
-                    (name, _) => panic!("Invalid configuration with value '{}' found in this scope", name)
+                    (name, _) => panic!(
+                        "Invalid configuration with value '{}' found in this scope",
+                        name
+                    )
                 }
             } else {
                 if let Err(errors) = __run() {
@@ -635,7 +643,9 @@ macro_rules! main {
 /// The following top-level arguments are accepted (in this order):
 ///
 /// ```rust
-/// # use gungraun::{binary_benchmark, binary_benchmark_group, BinaryBenchmarkGroup, BinaryBenchmarkConfig};
+/// # use gungraun::{
+/// #     binary_benchmark, binary_benchmark_group, BinaryBenchmarkGroup, BinaryBenchmarkConfig,
+/// # };
 /// # fn run_setup() {}
 /// # fn run_teardown() {}
 /// # #[binary_benchmark]
@@ -849,8 +859,8 @@ macro_rules! binary_benchmark_group {
         benchmarks = $( $some:tt )*
     ) => {
         compile_error!(
-            "A binary_benchmark_group! needs a unique name. See the documentation of this macro for \
-            further details.\n\n\
+            "A binary_benchmark_group! needs a unique name. See the documentation of this \
+            macro for further details.\n\n\
             hint = binary_benchmark_group!(name = some_ident, benchmarks = some_binary_benchmark);"
         );
     };
@@ -863,8 +873,8 @@ macro_rules! binary_benchmark_group {
         benchmarks = $( $some:tt )*
     ) => {
         compile_error!(
-            "A binary_benchmark_group! needs a unique name. See the documentation of this macro for \
-            further details.\n\n\
+            "A binary_benchmark_group! needs a unique name. See the documentation of this \
+            macro for further details.\n\n\
             hint = binary_benchmark_group!(name = some_ident; benchmarks = some_binary_benchmark);"
         );
     };

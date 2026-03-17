@@ -929,9 +929,11 @@ pub enum ToolRegressionConfig {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum ValgrindTool {
-    /// [Callgrind: a call-graph generating cache and branch prediction profiler](https://valgrind.org/docs/manual/cl-manual.html)
+    /// [Callgrind: a call-graph generating cache and branch prediction
+    /// profiler](https://valgrind.org/docs/manual/cl-manual.html)
     Callgrind,
-    /// [Cachegrind: a high-precision tracing profiler](https://valgrind.org/docs/manual/cg-manual.html)
+    /// [Cachegrind: a high-precision tracing
+    /// profiler](https://valgrind.org/docs/manual/cg-manual.html)
     Cachegrind,
     /// [DHAT: a dynamic heap analysis tool](https://valgrind.org/docs/manual/dh-manual.html)
     DHAT,
@@ -943,7 +945,8 @@ pub enum ValgrindTool {
     DRD,
     /// [Massif: a heap profiler](https://valgrind.org/docs/manual/ms-manual.html)
     Massif,
-    /// [BBV: an experimental basic block vector generation tool](https://valgrind.org/docs/manual/bbv-manual.html)
+    /// [BBV: an experimental basic block vector generation
+    /// tool](https://valgrind.org/docs/manual/bbv-manual.html)
     BBV,
 }
 
@@ -2739,7 +2742,11 @@ mod tests {
     #[case::empty_base(vec![], &["--a=yes"], vec!["--a=yes"])]
     #[case::no_flags(vec![], &["a=yes"], vec!["--a=yes"])]
     #[case::already_exists_single(vec!["--a=yes"], &["--a=yes"], vec!["--a=yes","--a=yes"])]
-    #[case::already_exists_when_multiple(vec!["--a=yes", "--b=yes"], &["--a=yes"], vec!["--a=yes", "--b=yes", "--a=yes"])]
+    #[case::already_exists_when_multiple(
+    vec!["--a=yes", "--b=yes"],
+    &["--a=yes"],
+    vec!["--a=yes", "--b=yes", "--a=yes"]
+)]
     fn test_raw_args_extend_ignore_flags(
         #[case] base: Vec<&str>,
         #[case] data: &[&str],
