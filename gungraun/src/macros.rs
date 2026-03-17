@@ -1335,7 +1335,7 @@ macro_rules! binary_benchmark_group {
             to set up binary benchmarks. See the documentation of this macro, the README \
             (https://github.com/gungraun/gungraun) or the docs \
             (https://docs.rs/gungraun/latest/gungraun) for further details.\n\n\
-            hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])"
+            hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ]);"
         );
     };
 }
@@ -1602,7 +1602,7 @@ macro_rules! library_benchmark_group {
             to set up library benchmarks. See the documentation of this macro, the README \
             (https://github.com/gungraun/gungraun) or the docs \
             (https://docs.rs/gungraun/latest/gungraun) for further details.\n\n\
-            hint: library_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])"
+            hint: library_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ]);"
         );
     };
 }
