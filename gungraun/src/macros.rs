@@ -960,7 +960,8 @@ macro_rules! binary_benchmark_group {
             pub fn __max_parallel() -> Option<usize> {
                 let mut __par = None;
                 $(
-                    __par = Some($parallel);
+                    let expr: usize = $parallel;
+                    __par = Some(expr);
                 )?
                 __par
             }
@@ -1168,7 +1169,8 @@ macro_rules! binary_benchmark_group {
             pub fn __max_parallel() -> Option<usize> {
                 let mut __par = None;
                 $(
-                    __par = Some($parallel);
+                    let expr: usize = $parallel;
+                    __par = Some(expr);
                 )?
                 __par
             }
@@ -1475,7 +1477,8 @@ macro_rules! library_benchmark_group {
             pub fn __max_parallel() -> Option<usize> {
                 let mut __par = None;
                 $(
-                    __par = Some($parallel);
+                    let expr: usize = $parallel;
+                    __par = Some(expr);
                 )?
                 __par
             }
@@ -1556,6 +1559,7 @@ macro_rules! library_benchmark_group {
             name = $name;
             $( config = $config; )?
             $( compare_by_id = $compare; )?
+            $( max_parallel = $parallel; )?
             $( setup = $setup; )?
             $( teardown = $teardown; )?
             benchmarks = $function
