@@ -17,7 +17,7 @@ groups:
           stdout: expected_stdout.consistency.1a
           no_stderr: true
       - args: ["--parallel", "--truncate-description=no"]
-        flaky: 3
+        tolerance: 0.1
         expected:
           files: expected_files.consistency.1b.yml
           stdout: expected_stdout.consistency.1b
@@ -29,7 +29,7 @@ groups:
           stdout: expected_stdout.consistency.2a
           no_stderr: true
       - args: ["--nocapture", "--parallel", "--truncate-description=no"]
-        flaky: 3
+        tolerance: 0.1
         expected:
           files: expected_files.consistency.1b.yml
           stdout: expected_stdout.consistency.2b
@@ -48,7 +48,7 @@ groups:
             "--parallel",
             "--truncate-description=no",
           ]
-        flaky: 3
+        tolerance: 0.1
         expected:
           files: expected_files.consistency.1b.yml
           stdout: expected_stdout.consistency.3b
