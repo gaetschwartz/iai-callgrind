@@ -1,9 +1,9 @@
 # Comparison of Gungraun with Iai
 
-This is a comparison with [Iai](https://github.com/bheisler/iai). There is no
-known downside in using Gungraun instead of Iai. Although the original idea of
-Iai will always be remembered, Gungraun has surpassed Iai over the years in
-functionality, stability and flexibility.
+This is a comparison with [Iai][iai]. There is no known downside in using
+Gungraun instead of Iai. Although the original idea of Iai will always be
+remembered, Gungraun has surpassed Iai over the years in functionality,
+stability and flexibility.
 
 Gungraun Pros:
 
@@ -69,3 +69,5 @@ Gungraun Pros:
   `.json` format.
 
 - Fixed the wrong labeling of `L1 Accesses`, ... to `L1 Hits`, ...
+
+[iai]: https://github.com/bheisler/iai

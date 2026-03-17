@@ -25,6 +25,8 @@ have a corresponding command-line argument are:
 
 For an update-to-date list run `cargo bench` with `--help` as described above.
 
+<!-- FIX: UPDATE -->
+
 ````text
 High-precision and consistent benchmarking framework/harness for Rust
 

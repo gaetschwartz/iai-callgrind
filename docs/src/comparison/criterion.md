@@ -1,9 +1,7 @@
 # Comparison of Gungraun with Criterion-rs
 
-This is a comparison with
-[Criterion-rs](https://github.com/bheisler/criterion.rs?tab=readme-ov-file) but
-some of the points in Pros and Cons also apply to other wall-clock time based
-benchmarking frameworks.
+This is a comparison with [Criterion-rs][criterion] but some of the points in
+Pros and Cons also apply to other wall-clock time based benchmarking frameworks.
 
 Gungraun Pros:
 
@@ -59,3 +57,5 @@ Gungraun. But in the CI and for performance regression checks, you shouldn't use
 `Criterion-rs` or other wall-clock time based benchmarks at all.
 
 [^note]: <https://sqlite.org/cpu.html#performance_measurement>
+
+[criterion]: https://github.com/bheisler/criterion.rs?tab=readme-ov-file

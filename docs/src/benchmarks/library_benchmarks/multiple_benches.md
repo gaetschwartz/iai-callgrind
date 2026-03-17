@@ -77,10 +77,9 @@ but a lot more concise especially if a lot of values are passed to the same
 
 Specifying a lot of benchmarks with args (`args = [1, 2, 3, 4, 5, 6, 7]` and so)
 on can be cumbersome. Gungraun supports creating multiple benchmarks from an
-iterator, more precisely anything that implements
-[`IntoIterator`](https://doc.rust-lang.org/std/iter/trait.IntoIterator.html)
-from the standard library. Each element of the iterator creates a separate
-benchmark case. For example creating multiple benchmarks from a range:
+iterator, more precisely anything that implements [`IntoIterator`] from the
+standard library. Each element of the iterator creates a separate benchmark
+case. For example creating multiple benchmarks from a range:
 
 ```rust
 # extern crate gungraun;
@@ -230,3 +229,5 @@ library_benchmark_group!(name = my_group, benchmarks = some_bench);
 main!(library_benchmark_groups = my_group);
 # }
 ```
+
+[`IntoIterator`]: https://doc.rust-lang.org/std/iter/trait.IntoIterator.html

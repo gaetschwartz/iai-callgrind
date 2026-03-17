@@ -50,6 +50,30 @@ Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
 - **Import Order:** std -> external crates -> crate modules.
 - **Sorting:** Imports and modules should be sorted alphabetically.
 
+### Markdown
+
+- **Reference-Style Links:** Always use reference-style links in markdown files.
+    - Use short, descriptive link references inline.
+    - Define all references at the bottom of the file.
+    - Sort reference definitions alphabetically by reference name.
+    - **Short Form:** When the link text and reference name are identical, use
+      the implicit reference syntax `[Text]` instead of `[Text][Text]`.
+        - Prefer: `[Guide]` → Not: `[Guide][Guide]`
+    - Example:
+
+        ```markdown
+        See the [Issue Tracker][issue-tracker] for existing bugs and [pull
+        requests][pull-requests] for ongoing work. Also check the [Guide] for
+        documentation.
+
+        [Guide]: https://gungraun.github.io/gungraun/
+        [issue-tracker]: https://github.com/gungraun/gungraun/issues
+        [pull-requests]: https://github.com/gungraun/gungraun/pulls
+        ```
+
+    - **Rationale:** Keeps content readable, makes URL updates easier, and
+      follows the project's existing convention in files like `CONTRIBUTING.md`.
+
 ### Naming Conventions
 
 - **Types/Traits:** `UpperCamelCase`

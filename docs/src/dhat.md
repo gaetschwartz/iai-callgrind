@@ -4,7 +4,7 @@
 
 ## Intro to DHAT
 
-To fully understand DHAT please read the [Valgrind docs][Dhat] of DHAT. Here's
+To fully understand DHAT please read the [Valgrind docs][dhat] of DHAT. Here's
 just a short summary and quote from the docs:
 
 > DHAT is primarily a tool for examining how programs use their heap
@@ -420,4 +420,4 @@ these are the same metrics:
   │   │     Writes:    26,184 bytes (54.23%, 9,228.46/Minstr), 0.8/byte
 ```
 
-[Dhat]: https://valgrind.org/docs/manual/dh-manual.html
+[dhat]: https://valgrind.org/docs/manual/dh-manual.html

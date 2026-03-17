@@ -1,8 +1,7 @@
 # Low-Level API
 
 I'm not going into full detail of the low-level api here since it is fully
-documented in the
-[api Documentation](https://docs.rs/gungraun/0.17.2/gungraun/index.html).
+documented in the [api Documentation][api-docs].
 
 ## The Basic Structure
 
@@ -109,3 +108,5 @@ with the `#[binary_benchmark]` attribute into the low-level api structures. Just
 keep it as it is and add it to a the `group` with
 `group.binary_benchmark(binary_benchmark_attribute(attribute_benchmark))`.
 That's it! You can continue hacking on your benchmarks in the low-level api.
+
+[api-docs]: https://docs.rs/gungraun/0.17.2/gungraun/index.html

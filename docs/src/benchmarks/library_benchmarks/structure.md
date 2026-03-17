@@ -51,12 +51,11 @@ benchmark function as parameters. Naturally, the parameters of the benchmark
 function must match the argument list of the `#[bench]` attribute. It is always
 a good idea to return something from the benchmark function, here it is the
 computed `u64` value from the `fibonacci` function wrapped in a `black_box`. See
-the docs of
-[`std::hint::black_box`](https://doc.rust-lang.org/std/hint/fn.black_box.html)
-for more information about its usage. Simply put, _all_ values and variables in
-the benchmarking function (but not in your library function) need to be wrapped
-in a `black_box` except for the input parameters (here `value`) because Gungraun
-already does that. But, it is no error to `black_box` the `value` again.
+the docs of [`std::hint::black_box`][rust-black-box] for more information about
+its usage. Simply put, _all_ values and variables in the benchmarking function
+(but not in your library function) need to be wrapped in a `black_box` except
+for the input parameters (here `value`) because Gungraun already does that. But,
+it is no error to `black_box` the `value` again.
 
 The `bench` attribute takes any expression which includes function calls. The
 following would have worked too and is one way to avoid the costs of the setup
@@ -115,3 +114,5 @@ group needs a unique `name`.
 
 Each group you want to be benchmarked needs to be specified in the
 `library_benchmark_groups` parameter of the `main!` macro and you're all set.
+
+[rust-black-box]: https://doc.rust-lang.org/std/hint/fn.black_box.html

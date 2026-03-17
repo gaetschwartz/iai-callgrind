@@ -217,18 +217,15 @@ checks.
 
 The ones known to the author of this humble guide are
 
-- [SQLite](https://sqlite.org/cpu.html#performance_measurement): They use mainly
-  cpu instructions to measure performance improvements (and regressions).
-- Also in benchmarks of the [rustc](https://github.com/rust-lang/rustc-perf)
-  compiler and
-  [compiler-builtins](https://github.com/rust-lang/compiler-builtins),
+- [SQLite][sqlite]: They use mainly cpu instructions to measure performance
+  improvements (and regressions).
+- Also in benchmarks of the [rustc] compiler and [compiler-builtins],
   instruction counts play a great role. But, they also use cache metrics and
   cycles.
-- [SpacetimeDB](https://github.com/clockworklabs/SpacetimeDB)
+- [SpacetimeDB][spacetimedb]
 
-If you know of others, please feel free to
-[add](https://github.com/gungraun/gungraun/blob/5bec95ee37330954916ea29e7a7dc40ca62bc454/docs/src/regressions.md)
-them to this list.
+If you know of others, please feel free to [add][github-src-regressions] them to
+this list.
 
 [`EventKind`]: https://docs.rs/gungraun/0.17.2/gungraun/enum.EventKind.html
 [`CallgrindMetrics`]:
@@ -239,3 +236,9 @@ them to this list.
     https://docs.rs/gungraun/0.17.2/gungraun/enum.CachegrindMetrics.html
 [`DhatMetric`]: https://docs.rs/gungraun/0.17.2/gungraun/enum.DhatMetric.html
 [`DhatMetrics`]: https://docs.rs/gungraun/0.17.2/gungraun/enum.DhatMetrics.html
+[sqlite]: https://sqlite.org/cpu.html#performance_measurement
+[rustc]: https://github.com/rust-lang/rustc-perf
+[compiler-builtins]: https://github.com/rust-lang/compiler-builtins
+[spacetimedb]: https://github.com/clockworklabs/SpacetimeDB
+[github-src-regressions]:
+    https://github.com/gungraun/gungraun/blob/main/docs/src/regressions.md

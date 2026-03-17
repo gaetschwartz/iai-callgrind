@@ -41,10 +41,8 @@ GUNGRAUN_RUNNER=/tmp/bin/gungraun-runner cargo bench --bench my-bench
 
 ### Binstall
 
-The `gungraun-runner` binary is
-[pre-built](https://github.com/gungraun/gungraun/releases/tag/v0.17.2) for most
-platforms supported by valgrind and easily installable with
-[binstall](https://github.com/cargo-bins/cargo-binstall)
+The `gungraun-runner` binary is [pre-built] for most platforms supported by
+valgrind and easily installable with [binstall]
 
 ```shell
 cargo binstall gungraun-runner@0.17.2
@@ -73,7 +71,7 @@ could look like this
 ```
 
 Or, speed up the overall installation time with `binstall` using the
-[taiki-e/install-action](https://github.com/taiki-e/install-action)
+[taiki-e/install-action][install-action]
 
 ```yaml
 - uses: taiki-e/install-action@cargo-binstall
@@ -85,3 +83,7 @@ Or, speed up the overall installation time with `binstall` using the
       )
       cargo binstall --no-confirm gungraun-runner --version $version
 ```
+
+[binstall]: https://github.com/cargo-bins/cargo-binstall
+[pre-built]: https://github.com/gungraun/gungraun/releases/tag/v0.17.2
+[install-action]: https://github.com/taiki-e/install-action

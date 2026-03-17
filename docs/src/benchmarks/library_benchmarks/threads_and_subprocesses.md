@@ -7,8 +7,9 @@ The default is to run Gungraun benchmarks with `--separate-threads=yes`,
 subprocesses, respectively. Note that `--separate-threads=yes` is not strictly
 necessary to be able to trace threads. But, if they are separated, Gungraun can
 collect and display the metrics for each thread. Due to the way `callgrind`
-applies [data collection options] like `--toggle-collect`, `--collect-atstart`,
-... further configuration is needed in library benchmarks.
+applies [data collection options][data-collection-options] like
+`--toggle-collect`, `--collect-atstart`, ... further configuration is needed in
+library benchmarks.
 
 To actually see the collected metrics in the terminal output for all threads
 and/or subprocesses you can switch on `OutputFormat::show_intermediate`:
@@ -529,18 +530,16 @@ Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regression
 
 Measuring multi-process applications is in principal not that different from
 multi-threaded applications since subprocesses are just like threads separate
-units. As for threads, the [data collection options] are applied to subprocesses
-separately from the main process.
+units. As for threads, the [data collection options][data-collection-options]
+are applied to subprocesses separately from the main process.
 
-Note there are multiple
-[valgrind command-line arguments](https://valgrind.org/docs/manual/manual-core.html#manual-core.basicopts)
+Note there are multiple [valgrind command-line arguments][valgrind-cli-args]
 that can disable the collection of metrics for uninteresting subprocesses, for
 example subprocesses that are spawned by your library function but are not part
 of your library/binary crate.
 
 For the following examples suppose the code below is the `cat` binary and part
-of a crate (so we can use
-[`env!("CARGO_BIN_EXE_cat")`](https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-crates)):
+of a crate (so we can use [`env!("CARGO_BIN_EXE_cat")`][cargo-env]):
 
 ```rust
 use std::fs::File;
@@ -813,5 +812,9 @@ Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regression
 As expected, the metrics for the `cat` binary are a little bit lower since we
 skipped measuring the parsing of the command-line arguments.
 
-[data collection options]:
+[cargo-env]:
+    https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-crates
+[data-collection-options]:
     https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options.collection
+[valgrind-cli-args]:
+    https://valgrind.org/docs/manual/manual-core.html#manual-core.basicopts

@@ -6,30 +6,24 @@ Thank you for your interest in contributing to Gungraun!
 
 ## Feature Requests and Bug reports
 
-Feature requests and bug reports should be reported in the
-[Issue Tracker](https://github.com/gungraun/gungraun/issues). Please have a look
-at existing issues with the
-[enhancement](https://github.com/gungraun/gungraun/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement)
-or
-[bug](https://github.com/gungraun/gungraun/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
-labels.
+Feature requests and bug reports should be reported in the [Issue
+Tracker][gungraun-issues]. Please have a look at existing issues with the
+[enhancement][gungraun-issues-enhancement] or [bug][gungraun-issues-bug] labels.
 
 ## Patches / Pull Requests
 
-All patches have to be sent on GitHub as
-[pull requests](https://github.com/gungraun/gungraun/pulls). Before starting a
-pull request, it is best to open an issue first so no efforts are wasted.
+All patches have to be sent on GitHub as [pull requests][gungraun-pull]. Before
+starting a pull request, it is best to open an issue first so no efforts are
+wasted.
 
 If you are looking for a place to start contributing to Gungraun, take a look at
-the [help wanted](https://github.com/gungraun/gungraun/labels/help%20wanted) or
-[good first issue](https://github.com/gungraun/gungraun/labels/good%20first%20issue)
-issues.
+the [help wanted][gungraun-help-wanted] or [good first
+issue][gungraun-issues-first] issues.
 
 The minimum supported version (MSRV) of Gungraun is Rust `1.74.1` and all
 patches are expected to work with the minimum supported version.
 
-All notable changes need to be added to the
-[CHANGELOG](https://github.com/gungraun/gungraun/blob/4f29964c153a2dd20283fb1502db3de630148629/CHANGELOG.md).
+All notable changes need to be added to the [CHANGELOG][changelog].
 
 ## How to get started
 
@@ -40,10 +34,9 @@ git clone https://github.com/gungraun/gungraun.git
 cd gungraun
 ```
 
-Working on this project is a piece of cake with
-[just](https://github.com/casey/just) and the `just` shell completions
-installed. Using `just` also ensures that you use the same commands, arguments,
-options as they are used in the ci.
+Working on this project is a piece of cake with [just] and the `just` shell
+completions installed. Using `just` also ensures that you use the same commands,
+arguments, options as they are used in the ci.
 
 Before running any install commands with `just`, it is recommended to first
 inspect it with `--dry-run` and see if you're fine with the changes. Install the
@@ -132,8 +125,8 @@ same:
 
 ## Working on the guide
 
-The main documentation of Gungraun is in the [guide][Guide]. The source code
-lives in the `docs/src` subdirectory of this repo.
+The main documentation of Gungraun is in the [guide]. The source code lives in
+the `docs/src` subdirectory of this repo.
 
 To start working on the guide, ensure you have everything necessary installed
 with `just book-install`. After everything's installed, you need two terminal
@@ -218,7 +211,20 @@ on the test configuration, benchmarks are sometimes run multiple times.
 ## Contact
 
 If there are any outstanding questions about contributing to gungraun, they can
-be asked on the
-[gungraun issue tracker](https://github.com/gungraun/gungraun/issues).
+be asked on the [gungraun issue tracker][gungraun-issues].
 
-[Guide]: https://gungraun.github.io/gungraun/
+[changelog]: https://github.com/gungraun/gungraun/blob/main/CHANGELOG.md
+[guide]: https://gungraun.github.io/gungraun/
+[gungraun-help-wanted]:
+    https://github.com/gungraun/gungraun/labels/help%20wanted
+[gungraun-issues]: https://github.com/gungraun/gungraun/issues
+[gungraun-issues-bug]:
+    https://github.com/gungraun/gungraun/issues?q=is%3Aissue+is%3Aopen+label%3Abug
+[gungraun-issues-enhancement]:
+    https://github.com/gungraun/gungraun/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement
+[gungraun-issues-first]:
+    https://github.com/gungraun/gungraun/labels/good%20first%20issue
+[gungraun-pull]: https://github.com/gungraun/gungraun/pulls
+[just]: https://github.com/casey/just
+[rust-analyzer]:
+    https://github.com/rust-lang/rust-analyzer/blob/master/CONTRIBUTING.md

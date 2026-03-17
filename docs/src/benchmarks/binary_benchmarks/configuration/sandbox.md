@@ -1,10 +1,10 @@
 # Sandbox
 
-The [`Sandbox`](https://docs.rs/gungraun/0.17.2/gungraun/struct.Sandbox.html) is
-a temporary directory which is created before the execution of the `setup` and
-deleted after the `teardown`. `setup`, the `Command` and `teardown` are executed
-inside this temporary directory. This simply describes the order of the
-execution but the `setup` or `teardown` don't need to be present.
+The [`Sandbox`] is a temporary directory which is created before the execution
+of the `setup` and deleted after the `teardown`. `setup`, the `Command` and
+`teardown` are executed inside this temporary directory. This simply describes
+the order of the execution but the `setup` or `teardown` don't need to be
+present.
 
 ## Why Using a Sandbox?
 
@@ -163,3 +163,5 @@ binary_benchmark_group!(name = my_group, benchmarks = bench_binary);
 main!(binary_benchmark_groups = my_group);
 # }
 ```
+
+[`Sandbox`]: https://docs.rs/gungraun/0.17.2/gungraun/struct.Sandbox.html

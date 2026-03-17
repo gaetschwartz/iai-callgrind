@@ -1,11 +1,10 @@
 # Valgrind Client Requests
 
-Gungraun ships with its own interface to the
-[Valgrind's Client Request Mechanism](https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq).
-Gungraun's client requests have zero overhead (relative to the "C"
-implementation of Valgrind) on many targets which are also natively supported by
-valgrind. In short, Gungraun provides a complete and performant implementation
-of Valgrind Client Requests.
+Gungraun ships with its own interface to the [Valgrind's Client Request
+Mechanism][valgrind-client-req]. Gungraun's client requests have zero overhead
+(relative to the "C" implementation of Valgrind) on many targets which are also
+natively supported by valgrind. In short, Gungraun provides a complete and
+performant implementation of Valgrind Client Requests.
 
 ## Installation
 
@@ -121,7 +120,7 @@ main!(library_benchmark_groups = my_group);
 ```
 
 The default [`EntryPoint`][EntryPoint] sets the
-[`--toggle-collect`][Callgrind Arguments] to the benchmark function (here
+[`--toggle-collect`][callgrind-arguments] to the benchmark function (here
 `bench_function`) and `--collect-atstart=no`. So, `Callgrind` starts collecting
 the events when entering the benchmark function, not the moment
 `start_instrumentation` is called. This behaviour can be remedied with
@@ -175,10 +174,11 @@ As the standard toggle is now switched off and the option `--collect-atstart=no`
 is also omitted, you must specify `--collect-atstart=no` manually in
 `LibraryBenchmarkConfig::raw_callgrind_args`.
 
-Please see the
-[`docs`](https://docs.rs/gungraun/0.17.2/gungraun/client_requests) for more
-details!
+Please see the [`docs`][api-docs] for more details!
 
-[Callgrind Arguments]:
+[api-docs]: https://docs.rs/gungraun/0.17.2/gungraun/client_requests
+[callgrind-arguments]:
     https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options
 [EntryPoint]: https://docs.rs/gungraun/0.17.2/gungraun/enum.EntryPoint.html
+[valgrind-client-req]:
+    https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
