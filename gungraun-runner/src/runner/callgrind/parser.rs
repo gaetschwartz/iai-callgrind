@@ -11,7 +11,6 @@ use simplematch::DoWild;
 
 use super::model::{Metrics, Positions};
 use crate::api::EventKind;
-use crate::runner::summary::ProfileInfo;
 use crate::runner::tool::parser::ParserOutput;
 use crate::runner::tool::path::ToolOutputPath;
 use crate::runner::DEFAULT_TOGGLE;
@@ -90,19 +89,6 @@ impl CallgrindProperties {
                 .cmp(&other.thread)
                 .then_with(|| self.part.cmp(&other.part))
         })
-    }
-
-    /// Convert into ``ProfileInfo``
-    pub fn into_info(self, path: &Path) -> ProfileInfo {
-        ProfileInfo {
-            command: self.cmd.expect("A command should be present"),
-            pid: self.pid.expect("A pid should be present"),
-            parent_pid: None,
-            details: None,
-            path: path.to_owned(),
-            part: self.part,
-            thread: self.thread,
-        }
     }
 }
 
