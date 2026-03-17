@@ -20,7 +20,7 @@ use nix::unistd::Pid;
 use super::common::AssistantKind;
 use crate::error::Error;
 use crate::runner::args::NoCapture;
-use crate::runner::common::{Assistant, Config, ModulePath, Streams};
+use crate::runner::common::{Assistant, CapturedOutput, Config, ModulePath};
 use crate::runner::tool::config::ToolConfig;
 use crate::runner::tool::path::ToolOutputPath;
 use crate::runner::tool::run::{check_exit, RunOptions, ToolCommand, ToolCommandChild};
@@ -265,18 +265,18 @@ impl ProcessHandler {
     /// Starts the [`Assistant`] process for either setup or teardown.
     ///
     /// `force_parallel` is a flag to indicate if the assistant should run in parallel to the
-    /// benchmark process even if not configured in the assistant itself. [`Streams`] are optional
-    /// file streams for the assistant terminal output and configure whether output should be
-    /// captured with [`NoCapture`]. Note that the output is always captured if `streams` are
-    /// present. However, depending on the [`NoCapture`] value the captured streams are printed to
-    /// stdout in the post processing of the benchmark data.
+    /// benchmark process even if not configured in the assistant itself. The optional
+    /// [`CapturedOutput`] contains file streams for the terminal output. Configure whether output
+    /// should be captured with [`NoCapture`]. Note that the output is always captured if
+    /// `captured_output` is present. However, depending on the [`NoCapture`] value the captured
+    /// output is printed to stdout in the post processing of the benchmark data.
     pub fn start_assistant(
         &mut self,
         force_parallel: bool,
         assistant: &Assistant,
         config: &Config,
         module_path: &ModulePath,
-        streams: Option<&Streams>,
+        captured_output: Option<&CapturedOutput>,
         nocapture: NoCapture,
     ) -> Result<()> {
         if self.force_shutdown.load(atomic::Ordering::Acquire) {
@@ -288,7 +288,7 @@ impl ProcessHandler {
                 let child = assistant.run(
                     config,
                     module_path,
-                    streams,
+                    captured_output,
                     force_parallel,
                     self.sandbox_dir.as_deref(),
                     nocapture,
@@ -300,7 +300,7 @@ impl ProcessHandler {
                 let child = assistant.run(
                     config,
                     module_path,
-                    streams,
+                    captured_output,
                     force_parallel,
                     self.sandbox_dir.as_deref(),
                     nocapture,
@@ -334,7 +334,7 @@ impl ProcessHandler {
         run_options: RunOptions,
         output_path: &ToolOutputPath,
         module_path: &ModulePath,
-        streams: Option<&Streams>,
+        captured_output: Option<&CapturedOutput>,
     ) -> Result<()> {
         if !self.setup_is_parallel {
             if let Some(Err(error)) = self.wait_for_setup() {
@@ -354,7 +354,7 @@ impl ProcessHandler {
             output_path,
             module_path,
             self.setup.as_mut().map(|(_, c)| c),
-            streams,
+            captured_output,
             self.sandbox_dir.as_deref(),
         )?;
 
@@ -655,7 +655,6 @@ mod tests {
     use crate::runner::lib_bench::{self, LibBench};
     use crate::runner::meta::Metadata;
 
-    // TODO: more tests?
     #[rstest]
     #[case::size_one_jobs_zero(1, 0)]
     #[case::equal_one(1, 1)]

@@ -85,7 +85,7 @@ Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
             /// [`Config`]: crate::runner::common::Config
             /// [`ToolOutputPath`]: crate::runner::tool::path::ToolOutputPath
             ```
-        - Short, simple types like `Config`, `Header`, `Streams` can use short form inline.
+        - Short, simple types like `Config`, `Header`, `CapturedOutput` can use short form inline.
         - Long paths like `crate::runner::tool::path::ToolOutputPath` should use reference-style.
     - **Type References in Documentation:** Use rustdoc links for types, not parameter names.
         - Use `[`Type`]` for types/structs/enums/variants (e.g., `[`Command`]`, `[`Child`]`, `[`Stdin::Setup`]`)

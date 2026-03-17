@@ -17,7 +17,7 @@ use super::regression::ToolRegressionConfig;
 use super::run::{RunOptions, ToolCommand};
 use crate::api::{self, EntryPoint, RawArgs, Tool, Tools, ValgrindTool};
 use crate::runner::callgrind::flamegraph::Config as FlamegraphConfig;
-use crate::runner::common::{Analyzer, Config, ModulePath, Sandbox, Streams};
+use crate::runner::common::{Analyzer, CapturedOutput, Config, ModulePath, Sandbox};
 use crate::runner::format::OutputFormat;
 use crate::runner::meta::Metadata;
 use crate::runner::summary::BenchmarkSummary;
@@ -455,7 +455,7 @@ impl ToolConfigs {
         run_options: &RunOptions,
         output_path: &ToolOutputPath,
         module_path: &ModulePath,
-        streams: Option<&Streams>,
+        captured_output: Option<&CapturedOutput>,
         force_shutdown: &Arc<AtomicBool>,
     ) -> Result<BenchmarkSummary> {
         for tool_config in self.0.iter().filter(|t| t.is_enabled) {
@@ -485,14 +485,14 @@ impl ToolConfigs {
             let is_default = tool_config.is_default;
             let command = ToolCommand::new(tool, &config.meta, is_default);
             let nocapture = command.nocapture;
-            let streams = if is_default { streams } else { None };
+            let captured_output = if is_default { captured_output } else { None };
             run_options.setup.as_ref().map_or(Ok(()), |setup| {
                 process_handler.start_assistant(
                     true,
                     setup,
                     config,
                     module_path,
-                    streams,
+                    captured_output,
                     nocapture,
                 )
             })?;
@@ -514,13 +514,20 @@ impl ToolConfigs {
                     run_options.clone(),
                     &output_path,
                     module_path,
-                    streams,
+                    captured_output,
                 )
                 .and_then(|()| process_handler.wait_or_shutdown())?;
 
             if let Some(teardown) = run_options.teardown.as_ref() {
                 process_handler
-                    .start_assistant(true, teardown, config, module_path, streams, nocapture)
+                    .start_assistant(
+                        true,
+                        teardown,
+                        config,
+                        module_path,
+                        captured_output,
+                        nocapture,
+                    )
                     .and_then(|()| process_handler.wait_for_teardown().transpose())?;
             }
 

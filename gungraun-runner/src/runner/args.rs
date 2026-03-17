@@ -25,7 +25,7 @@ use crate::api::{
     CachegrindMetric, CachegrindMetrics, CallgrindMetrics, DhatMetric, DhatMetrics, ErrorMetric,
     EventKind, RawArgs, ValgrindTool,
 };
-use crate::runner::common::Streams;
+use crate::runner::common::CapturedOutput;
 
 const DOWILD_OPTIONS: Options<u8> = Options::new().enable_escape(true).enable_classes(true);
 
@@ -1107,27 +1107,31 @@ impl FromStr for BenchmarkFilter {
 
 impl NoCapture {
     /// Apply the `NoCapture` option to the [`Command`]
-    pub fn apply(self, command: &mut Command, streams: Option<&Streams>) -> Result<()> {
-        match (self, streams) {
-            (Self::True, Some(streams)) => {
+    pub fn apply(
+        self,
+        command: &mut Command,
+        captured_output: Option<&CapturedOutput>,
+    ) -> Result<()> {
+        match (self, captured_output) {
+            (Self::True, Some(captured_output)) => {
                 // Both go to the same file, here chosen to be stdout
                 command
-                    .stdout(streams.stdout.try_clone()?)
-                    .stderr(streams.stdout.try_clone()?);
+                    .stdout(captured_output.stdout.try_clone()?)
+                    .stderr(captured_output.stdout.try_clone()?);
             }
-            (Self::False, Some(streams)) => {
+            (Self::False, Some(captured_output)) => {
                 command
-                    .stdout(streams.stdout.try_clone()?)
-                    .stderr(streams.stderr.try_clone()?);
+                    .stdout(captured_output.stdout.try_clone()?)
+                    .stderr(captured_output.stderr.try_clone()?);
             }
-            (Self::Stderr, Some(streams)) => {
+            (Self::Stderr, Some(captured_output)) => {
                 command
                     .stdout(Stdio::null())
-                    .stderr(streams.stderr.try_clone()?);
+                    .stderr(captured_output.stderr.try_clone()?);
             }
-            (Self::Stdout, Some(streams)) => {
+            (Self::Stdout, Some(captured_output)) => {
                 command
-                    .stdout(streams.stdout.try_clone()?)
+                    .stdout(captured_output.stdout.try_clone()?)
                     .stderr(Stdio::null());
             }
             (Self::True, None) => {

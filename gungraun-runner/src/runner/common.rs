@@ -163,6 +163,8 @@ pub struct Groups(pub Vec<Group>);
 pub struct JobResult {
     /// Final benchmark summary produced by the executed job.
     pub benchmark_summary: BenchmarkSummary,
+    /// Captured stdout/stderr output associated with this job.
+    pub captured_output: CapturedOutput,
     /// Data processor used to parse and finalize tool outputs.
     pub data_processor: Box<dyn BenchmarkDataProcessor>,
     /// Whether regressions in this job should immediately fail the run.
@@ -171,8 +173,6 @@ pub struct JobResult {
     pub header: Header,
     /// Output formatting configuration used when printing this job result.
     pub output_format: OutputFormat,
-    /// Captured stdout/stderr streams associated with this job.
-    pub streams: Streams,
 }
 
 /// Data processor used when loading and comparing against an existing baseline.
@@ -210,10 +210,9 @@ pub struct Runner {
     teardown: Option<Assistant>,
 }
 
-// TODO: Rename to CapturedOutput
-/// Temporary output streams used to capture benchmark stdout and stderr.
+/// Temporary output files used to capture benchmark stdout and stderr.
 #[derive(Debug)]
-pub struct Streams {
+pub struct CapturedOutput {
     /// Temporary file receiving captured stderr output.
     pub stderr: File,
     /// Temporary file receiving captured stdout output.
@@ -517,7 +516,7 @@ impl Assistant {
         &self,
         config: &Config,
         module_path: &ModulePath,
-        streams: Option<&Streams>,
+        captured_output: Option<&CapturedOutput>,
         force_parallel: bool,
         current_dir: Option<&Path>,
         nocapture: NoCapture,
@@ -536,7 +535,7 @@ impl Assistant {
             command.current_dir(current_dir);
         }
 
-        nocapture.apply(&mut command, streams)?;
+        nocapture.apply(&mut command, captured_output)?;
 
         match &self.pipe {
             Some(Pipe::Stdout) => {
@@ -758,7 +757,7 @@ impl Group {
             let output_format = bench.output_format.clone();
 
             thread_pool.execute(move |force_shutdown| {
-                let streams = Streams::new()?;
+                let captured_output = CapturedOutput::new()?;
                 let output_path =
                     benchmark.default_output_path(&bench, &config, &module_path, true)?;
 
@@ -768,7 +767,7 @@ impl Group {
                 match benchmark.run(
                     bench,
                     &config,
-                    Some(streams.try_clone()?),
+                    Some(captured_output.try_clone()?),
                     &force_shutdown,
                     output_path.clone(),
                 ) {
@@ -777,13 +776,13 @@ impl Group {
                         fail_fast,
                         header: header.into(),
                         output_format,
-                        streams,
+                        captured_output,
                         data_processor,
                     }),
                     Err(error) => Err(anyhow::Error::from(Error::JobError(
                         Box::new(error),
                         header.into(),
-                        streams,
+                        captured_output,
                         Box::new(output_path),
                     ))),
                 }
@@ -809,7 +808,7 @@ impl Group {
             let output_format = bench.output_format.clone();
 
             thread_pool.execute(move |force_shutdown| {
-                let streams = Streams::new()?;
+                let captured_output = CapturedOutput::new()?;
                 let output_path =
                     benchmark.default_output_path(&bench, &config, &module_path, true)?;
 
@@ -820,7 +819,7 @@ impl Group {
                     bench,
                     &config,
                     main_index,
-                    Some(streams.try_clone()?),
+                    Some(captured_output.try_clone()?),
                     &force_shutdown,
                     output_path.clone(),
                 ) {
@@ -829,13 +828,13 @@ impl Group {
                         fail_fast,
                         header: header.into(),
                         output_format,
-                        streams,
+                        captured_output,
                         data_processor,
                     }),
                     Err(error) => Err(anyhow::Error::from(Error::JobError(
                         Box::new(error),
                         header.into(),
-                        streams,
+                        captured_output,
                         Box::new(output_path),
                     ))),
                 }
@@ -892,7 +891,7 @@ impl Group {
                 fail_fast,
                 header,
                 output_format,
-                streams,
+                captured_output,
                 mut data_processor,
             } = match result {
                 // On error, wait for all threads to finish and/or shutdown their running processes
@@ -924,7 +923,12 @@ impl Group {
             if let Err(e) = data_processor
                 .finalize(&mut benchmark_summary, config, &header)
                 .and_then(|()| {
-                    benchmark_summary.print_and_save(config, &header, &output_format, streams)
+                    benchmark_summary.print_and_save(
+                        config,
+                        &header,
+                        &output_format,
+                        captured_output,
+                    )
                 })
                 .and_then(|()| benchmark_summary.check_regression(fail_fast))
             {
@@ -1679,7 +1683,7 @@ impl BenchmarkDataProcessor for SaveBaselineDataProcessor {
     }
 }
 
-impl Streams {
+impl CapturedOutput {
     /// Creates new temporary files for capturing stdout and stderr.
     ///
     /// # Errors
@@ -1688,10 +1692,10 @@ impl Streams {
     pub fn new() -> Result<Self> {
         tempfile()
             .and_then(|stdout| tempfile().map(|stderr| Self { stderr, stdout }))
-            .with_context(|| "Creating streams failed")
+            .with_context(|| "Creating captured output failed")
     }
 
-    /// Creates a duplicate `Streams` handle backed by cloned file descriptors.
+    /// Creates a duplicate `CapturedOutput` handle backed by cloned file descriptors.
     ///
     /// # Errors
     ///
@@ -1704,10 +1708,10 @@ impl Streams {
                     .try_clone()
                     .map(|stderr| Self { stderr, stdout })
             })
-            .with_context(|| "Cloning streams failed")
+            .with_context(|| "Cloning captured output failed")
     }
 
-    /// Flushes and rewinds both captured streams to the beginning.
+    /// Flushes and rewinds both captured output files to the beginning.
     ///
     /// # Errors
     ///
@@ -1718,7 +1722,7 @@ impl Streams {
             .and_then(|()| self.stdout.rewind())
             .and_then(|()| self.stderr.flush())
             .and_then(|()| self.stderr.rewind())
-            .with_context(|| "Resetting streams failed")
+            .with_context(|| "Resetting captured output failed")
     }
 
     /// Returns cloned stdout and stderr file handles as [`std::process::Stdio`].
@@ -1735,7 +1739,7 @@ impl Streams {
     ///
     /// # Errors
     ///
-    /// Returns an error if stream reset or copying data to terminal streams fails.
+    /// Returns an error if stream reset or copying data to terminal output fails.
     pub fn dump(&mut self) -> Result<()> {
         self.reset().and_then(|()| {
             let mut stdout_lock = stdout().lock();
@@ -1744,25 +1748,25 @@ impl Streams {
             std::io::copy(&mut self.stdout, &mut stdout_lock)
                 .and_then(|_| std::io::copy(&mut self.stderr, &mut stderr_lock))
                 .map(|_| ())
-                .with_context(|| "Dumping streams failed")
+                .with_context(|| "Dumping captured output failed")
         })
     }
 
-    /// Writes captured stdout and stderr to terminal streams without changing the `self` state.
+    /// Writes captured stdout and stderr to terminal output without changing the `self` state.
     ///
     /// # Errors
     ///
     /// Returns an error if cloning, resetting, or copying stream data fails.
     pub fn dump_cloned(&self) -> Result<()> {
-        let mut streams = self.try_clone()?;
-        streams.reset().and_then(|()| {
+        let mut captured_output = self.try_clone()?;
+        captured_output.reset().and_then(|()| {
             let mut stdout_lock = stdout().lock();
             let mut stderr_lock = stderr().lock();
 
-            std::io::copy(&mut streams.stdout, &mut stdout_lock)
-                .and_then(|_| std::io::copy(&mut streams.stderr, &mut stderr_lock))
+            std::io::copy(&mut captured_output.stdout, &mut stdout_lock)
+                .and_then(|_| std::io::copy(&mut captured_output.stderr, &mut stderr_lock))
                 .map(|_| ())
-                .with_context(|| "Dumping cloned streams failed")
+                .with_context(|| "Dumping cloned captured output failed")
         })
     }
 

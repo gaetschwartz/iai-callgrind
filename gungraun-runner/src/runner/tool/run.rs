@@ -13,7 +13,7 @@ use crate::api::{self, ExitWith, Stream, ValgrindTool};
 use crate::error::Error;
 use crate::runner::args::NoCapture;
 use crate::runner::bin_bench::Delay;
-use crate::runner::common::{Assistant, ModulePath, Streams};
+use crate::runner::common::{Assistant, CapturedOutput, ModulePath};
 use crate::runner::meta::Metadata;
 use crate::util::resolve_binary_path;
 
@@ -128,7 +128,7 @@ impl ToolCommand {
         output_path: &ToolOutputPath,
         module_path: &ModulePath,
         child: Option<&mut Child>,
-        streams: Option<&Streams>,
+        captured_output: Option<&CapturedOutput>,
         sandbox_dir: Option<&Path>,
     ) -> Result<ToolCommandChild> {
         debug!(
@@ -191,7 +191,7 @@ impl ToolCommand {
             .args(executable_args)
             .envs(envs);
 
-        self.nocapture.apply(&mut self.command, streams)?;
+        self.nocapture.apply(&mut self.command, captured_output)?;
 
         if let Some(stdin) = stdin {
             stdin

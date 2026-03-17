@@ -24,7 +24,7 @@ use super::tool::regression::RegressionMetrics;
 use crate::api::{CachegrindMetric, DhatMetric, ErrorMetric, EventKind, ValgrindTool};
 use crate::error::Error;
 use crate::runner::args::NoCapture;
-use crate::runner::common::{Config, Streams};
+use crate::runner::common::{CapturedOutput, Config};
 use crate::runner::format::{print_no_capture_footer, print_regressions, Header};
 use crate::util::{factor_diff, make_absolute, percentage_diff};
 
@@ -382,21 +382,21 @@ impl BenchmarkSummary {
         config: &Config,
         header: &Header,
         output_format: &OutputFormat,
-        mut streams: Streams,
+        mut captured_output: CapturedOutput,
     ) -> Result<()> {
         header.print();
 
         if config.meta.args.load_baseline.is_none() {
             match config.meta.args.nocapture {
                 NoCapture::True => {
-                    streams.dump()?;
+                    captured_output.dump()?;
                 }
                 NoCapture::False => {}
                 NoCapture::Stderr => {
-                    streams.dump_stderr()?;
+                    captured_output.dump_stderr()?;
                 }
                 NoCapture::Stdout => {
-                    streams.dump_stdout()?;
+                    captured_output.dump_stdout()?;
                 }
             }
 
@@ -463,11 +463,11 @@ impl BenchmarkSummary {
         config: &Config,
         header: &Header,
         output_format: &OutputFormat,
-        streams: Streams,
+        captured_output: CapturedOutput,
     ) -> Result<()> {
         match output_format.kind {
             OutputFormatKind::Default => self
-                .print_default(config, header, output_format, streams)
+                .print_default(config, header, output_format, captured_output)
                 .and_then(|()| {
                     if let Some(output) = &self.summary_output {
                         serde_json::to_value(self)

@@ -23,8 +23,8 @@ use crate::api::{
 };
 use crate::error::Error;
 use crate::runner::common::{
-    BaselineDataProcessor, Baselines, BenchmarkDataProcessor, BenchmarkSummaries, Config, Groups,
-    LoadBaselineDataProcessor, ModulePath, Runner, SaveBaselineDataProcessor, Streams,
+    BaselineDataProcessor, Baselines, BenchmarkDataProcessor, BenchmarkSummaries, CapturedOutput,
+    Config, Groups, LoadBaselineDataProcessor, ModulePath, Runner, SaveBaselineDataProcessor,
 };
 
 /// Implements [`Benchmark`] to run a [`LibBench`] and compare against an earlier [`BenchmarkKind`]
@@ -121,7 +121,7 @@ pub trait Benchmark: Debug + Send + Sync {
     /// Executes a benchmark and returns its populated summary.
     ///
     /// The method consumes [`LibBench`], uses `main_index` to address the benchmark harness entry,
-    /// optionally captures output into [`Streams`], reacts to `force_shutdown`, and writes
+    /// optionally captures output into [`CapturedOutput`], reacts to `force_shutdown`, and writes
     /// artifacts under [`ToolOutputPath`].
     ///
     /// # Errors
@@ -132,7 +132,7 @@ pub trait Benchmark: Debug + Send + Sync {
         lib_bench: LibBench,
         config: &Config,
         main_index: usize,
-        streams: Option<Streams>,
+        captured_output: Option<CapturedOutput>,
         force_shutdown: &Arc<AtomicBool>,
         output_path: ToolOutputPath,
     ) -> Result<BenchmarkSummary>;
@@ -180,7 +180,7 @@ impl Benchmark for BaselineBenchmark {
         lib_bench: LibBench,
         config: &Config,
         main_index: usize,
-        streams: Option<Streams>,
+        captured_output: Option<CapturedOutput>,
         force_shutdown: &Arc<AtomicBool>,
         output_path: ToolOutputPath,
     ) -> Result<BenchmarkSummary> {
@@ -201,7 +201,7 @@ impl Benchmark for BaselineBenchmark {
             &lib_bench.run_options,
             &output_path,
             &lib_bench.module_path,
-            streams.as_ref(),
+            captured_output.as_ref(),
             force_shutdown,
         )
     }
@@ -415,7 +415,7 @@ impl Benchmark for LoadBaselineBenchmark {
         lib_bench: LibBench,
         config: &Config,
         _main_index: usize,
-        _streams: Option<Streams>,
+        _captured_output: Option<CapturedOutput>,
         _force_shutdown: &Arc<AtomicBool>,
         output_path: ToolOutputPath,
     ) -> Result<BenchmarkSummary> {
@@ -484,7 +484,7 @@ impl Benchmark for SaveBaselineBenchmark {
         lib_bench: LibBench,
         config: &Config,
         main_index: usize,
-        streams: Option<Streams>,
+        captured_output: Option<CapturedOutput>,
         force_shutdown: &Arc<AtomicBool>,
         output_path: ToolOutputPath,
     ) -> Result<BenchmarkSummary> {
@@ -505,7 +505,7 @@ impl Benchmark for SaveBaselineBenchmark {
             &lib_bench.run_options,
             &output_path,
             &lib_bench.module_path,
-            streams.as_ref(),
+            captured_output.as_ref(),
             force_shutdown,
         )
     }

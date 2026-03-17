@@ -9,7 +9,7 @@ use std::process::{ExitStatus, Output};
 use version_compare::Cmp;
 
 use crate::api::ValgrindTool;
-use crate::runner::common::{ModulePath, Streams};
+use crate::runner::common::{CapturedOutput, ModulePath};
 use crate::runner::format::Header;
 use crate::runner::tool::path::ToolOutputPath;
 use crate::util::write_all_to_stderr;
@@ -37,8 +37,13 @@ pub enum Error {
     ///
     /// Don't initialize this error manually but instead use [`Error::new_process_error`].
     ///
-    /// `JobError(wrapped_error, benchmark_header, output_streams, tool_output_path)`
-    JobError(Box<anyhow::Error>, Header, Streams, Box<ToolOutputPath>),
+    /// `JobError(wrapped_error, benchmark_header, captured_output, tool_output_path)`
+    JobError(
+        Box<anyhow::Error>,
+        Header,
+        CapturedOutput,
+        Box<ToolOutputPath>,
+    ),
     /// The error when trying to start an external [`std::process::Command`] fails
     ///
     /// `LaunchError(executable_path, message)`
@@ -186,9 +191,9 @@ impl Display for Error {
                 let header = Header::without_description(module_path, id.clone());
                 write!(f, "Misconfiguration in: {header}\nCaused by:\n  {message}",)
             }
-            Self::JobError(error, header, streams, _) => {
+            Self::JobError(error, header, captured_output, _) => {
                 header.print();
-                let _ = streams.dump_cloned();
+                let _ = captured_output.dump_cloned();
                 write!(f, "Error in task: {error}")
             }
             Self::TaskInterrupt => {
