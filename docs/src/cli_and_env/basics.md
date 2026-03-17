@@ -1,16 +1,18 @@
 # Basic Usage
 
-It's possible to pass arguments to Gungraun separated by `--` (`cargo bench
--- ARGS`). If you're running into the error `Unrecognized Option`, see
+It's possible to pass arguments to Gungraun separated by `--`
+(`cargo bench -- ARGS`). If you're running into the error `Unrecognized Option`,
+see
 [Troubleshooting](../troubleshooting/running-cargo-bench-results-in-an-unrecognized-option-error.md).
-For a complete rundown of possible arguments, execute `cargo bench --bench
-<benchmark> -- --help`. Almost all command-line arguments have a corresponding
-environment variable. The environment variables which don't have a corresponding
-command-line argument are:
+For a complete rundown of possible arguments, execute
+`cargo bench --bench <benchmark> -- --help`. Almost all command-line arguments
+have a corresponding environment variable. The environment variables which don't
+have a corresponding command-line argument are:
 
-- `GUNGRAUN_COLOR`: [Control the colored output of Gungraun](./output/color.md) (Default
-  is `auto`)
-- `GUNGRAUN_LOG`: [Define the log level](./output/logging.md) (Default is `WARN`)
+- `GUNGRAUN_COLOR`: [Control the colored output of Gungraun](./output/color.md)
+  (Default is `auto`)
+- `GUNGRAUN_LOG`: [Define the log level](./output/logging.md) (Default is
+  `WARN`)
 
 ## Exit Codes
 

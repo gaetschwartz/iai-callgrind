@@ -13,8 +13,7 @@ just a short summary and quote from the docs:
 > information about these blocks such as sizes, lifetimes, numbers of reads and
 > writes, and read and write patterns.
 
-The rest of this chapter is dedicated to how DHAT is integrated into
-Gungraun.
+The rest of this chapter is dedicated to how DHAT is integrated into Gungraun.
 
 ## The DHAT modes
 
@@ -30,22 +29,22 @@ this is the mode used in the next sections.
 ## The Default Entry Point
 
 The DHAT default entry point `EntryPoint::Default` in library benchmarks behaves
-like [`Callgrind's
-EntryPoint`](./benchmarks/library_benchmarks/custom_entry_point.md). This
-centers the collected metrics shown in the terminal output on the benchmark
+like
+[`Callgrind's EntryPoint`](./benchmarks/library_benchmarks/custom_entry_point.md).
+This centers the collected metrics shown in the terminal output on the benchmark
 function. The entry point is set to `EntryPoint::None` for binary benchmarks.
 But, if necessary, the entry point can be turned off or customized in
 `Dhat::entry_point`.
 
 Similar to Callgrind's entry point, the default entry point for DHAT excludes
-metrics related to [`setup` and/or `teardown`
-code](./benchmarks/library_benchmarks/setup_and_teardown.md), as well as any
-elements specified in the `args` parameter of the `#[bench]` or `#[benches]`
-attributes. This behavior typically aligns with user expectations. However, DHAT
-has a unique characteristic: if the benchmarked function uses an array
-created in the setup function, the metrics will not capture the reads and writes
-to that array. To accurately measure these reads and writes, it is necessary to
-set the entry point to the setup function (in this case, the
+metrics related to
+[`setup` and/or `teardown` code](./benchmarks/library_benchmarks/setup_and_teardown.md),
+as well as any elements specified in the `args` parameter of the `#[bench]` or
+`#[benches]` attributes. This behavior typically aligns with user expectations.
+However, DHAT has a unique characteristic: if the benchmarked function uses an
+array created in the setup function, the metrics will not capture the reads and
+writes to that array. To accurately measure these reads and writes, it is
+necessary to set the entry point to the setup function (in this case, the
 `setup_worst_case_array` function).
 
 ```rust
@@ -91,11 +90,11 @@ main!(
 Running DHAT instead of or in addition to Callgrind is pretty straight-forward
 and not different to any [other tool](./tools.md):
 
-Either use [command-line arguments or environment
-variables](./cli_and_env/basics.md): `--default-tool=dhat` or
-`GUNGRAUN_DEFAULT_TOOL=dhat` (replaces callgrind as default tool) or
-`--tools=dhat` or `GUNGRAUN_TOOLS=dhat` (runs DHAT in addition to the
-default tool).
+Either use
+[command-line arguments or environment variables](./cli_and_env/basics.md):
+`--default-tool=dhat` or `GUNGRAUN_DEFAULT_TOOL=dhat` (replaces callgrind as
+default tool) or `--tools=dhat` or `GUNGRAUN_TOOLS=dhat` (runs DHAT in addition
+to the default tool).
 
 ## Usage in a Benchmark and a Small Example Analysis
 
@@ -179,9 +178,9 @@ with error.
 
 It is possible to specify additional `Dhat::frames` for example when
 benchmarking multi-threaded functions. Like in callgrind, each thread/subprocess
-in DHAT is treated as a separate unit and thus requires `frames` (the
-Gungraun specific approximation of callgrind toggles) in addition to the
-default entry point to include the interesting ones in the measurements.
+in DHAT is treated as a separate unit and thus requires `frames` (the Gungraun
+specific approximation of callgrind toggles) in addition to the default entry
+point to include the interesting ones in the measurements.
 
 By example. Suppose there's a function in the `benchmark_tests` library
 `find_primes_multi_thread(num_threads: usize)` which searches for primes in the

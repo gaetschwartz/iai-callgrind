@@ -2,18 +2,18 @@
 
 # Comparing with Baselines
 
-Usually, two consecutive benchmark runs let Gungraun compare these two
-runs. It's sometimes desirable to compare the current benchmark run against a
-static reference, instead. For example, if you're working longer on the
-implementation of a feature, you may wish to compare against a baseline from
-another branch or the commit from which you started off hacking on your new
-feature to make sure you haven't introduced performance regressions.
-Gungraun offers such custom baselines. If you are familiar with
+Usually, two consecutive benchmark runs let Gungraun compare these two runs.
+It's sometimes desirable to compare the current benchmark run against a static
+reference, instead. For example, if you're working longer on the implementation
+of a feature, you may wish to compare against a baseline from another branch or
+the commit from which you started off hacking on your new feature to make sure
+you haven't introduced performance regressions. Gungraun offers such custom
+baselines. If you are familiar with
 [criterion.rs](https://bheisler.github.io/criterion.rs/book/user_guide/command_line_options.html#baselines),
 the following command line arguments should also be very familiar to you:
 
-- `--save-baseline=NAME` (env: `GUNGRAUN_SAVE_BASELINE`): Compare against
-  the `NAME` baseline if present and then overwrite it.
+- `--save-baseline=NAME` (env: `GUNGRAUN_SAVE_BASELINE`): Compare against the
+  `NAME` baseline if present and then overwrite it.
 - `--baseline=NAME` (env: `GUNGRAUN_BASELINE`): Compare against the `NAME`
   baseline without overwriting it
 - `--load-baseline=NAME` (env: `GUNGRAUN_LOAD_BASELINE`): Load the `NAME`

@@ -6,32 +6,40 @@ labels: ""
 assignees: ""
 ---
 
-**Describe the bug**
+## Describe the bug
+
 A clear and concise description of what the bug is.
 
-**Expected behavior**
+## Expected behavior
+
 A clear and concise description of what you expected to happen.
 
-**To Reproduce**
+## To Reproduce
+
 Steps to reproduce the behavior:
 
 1. ...
 2. ...
 3. ...
-   ...
+
+...
 
 <!-- markdownlint-disable MD036 -->
 
-**Minimal example**
+## Minimal example
 
 ```rust
 // If applicable, the minimal benchmark which causes the bug
 ```
 
-**Versions**
+## Versions
+
 gungraun: ...
+
 valgrind: ...
+
 OS and architecture: ...
 
-**Additional context**
+## Additional context
+
 Add any other context about the problem here.

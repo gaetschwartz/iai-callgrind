@@ -1,9 +1,9 @@
 # More Examples Needed?
 
 As in [library benchmarks](../library_benchmarks/examples.md), I'm referring
-here to the [github repository](https://github.com/gungraun/gungraun).
-The binary benchmarks functionality of Gungraun is tested with system tests
-in the private
+here to the [github repository](https://github.com/gungraun/gungraun). The
+binary benchmarks functionality of Gungraun is tested with system tests in the
+private
 [benchmark-tests](https://github.com/gungraun/gungraun/tree/main/benchmark-tests/benches/test_lib_bench)
 package.
 

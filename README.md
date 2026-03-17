@@ -26,17 +26,18 @@
 </div>
 <br>
 
-Gungraun leverages Valgrind's profiling tools like [Callgrind][Callgrind Manual], [Cachegrind][Cachegrind Manual] and [DHAT][DHAT Manual] to provide
-extremely accurate and consistent measurements of Rust code, making it perfectly
-suited to run in environments like a CI. Gungraun aids in analyzing and
-optimizing code paths from the source code level down to the assembly
-instruction level.
+Gungraun leverages Valgrind's profiling tools like
+[Callgrind][Callgrind Manual], [Cachegrind][Cachegrind Manual] and
+[DHAT][DHAT Manual] to provide extremely accurate and consistent measurements of
+Rust code, making it perfectly suited to run in environments like a CI. Gungraun
+aids in analyzing and optimizing code paths from the source code level down to
+the assembly instruction level.
 
 Gungraun is:
 
-- **Precise**: High-precision measurements of `Instruction` counts, `Estimated
-Cycles` and many other metrics allow you to reliably detect very small
-  optimizations and regressions of your code.
+- **Precise**: High-precision measurements of `Instruction` counts,
+  `Estimated Cycles` and many other metrics allow you to reliably detect very
+  small optimizations and regressions of your code.
 - **Consistent**: Gungraun can take accurate measurements even in virtualized CI
   environments and make them comparable between different systems completely
   negating the noise of the environment.
@@ -59,10 +60,9 @@ details.
 ## Quickstart/Documentation
 
 To get started read the [Guide] and see some introductory examples in
-[Quickstart for library
-benchmarks](https://gungraun.github.io/gungraun/latest/html/benchmarks/library_benchmarks/quickstart.html)
-or [Quickstart for binary
-benchmarks](https://gungraun.github.io/gungraun/latest/html/benchmarks/binary_benchmarks/quickstart.html).
+[Quickstart for library benchmarks](https://gungraun.github.io/gungraun/latest/html/benchmarks/library_benchmarks/quickstart.html)
+or
+[Quickstart for binary benchmarks](https://gungraun.github.io/gungraun/latest/html/benchmarks/binary_benchmarks/quickstart.html).
 A small migration check-list can be found in the [Guide][Migration checklist].
 
 If you need help or have questions, don't hesitate to [open an issue] or a
@@ -82,9 +82,9 @@ default settings so you can focus more on profiling and your code!
 
 ## How far are we?
 
-Gungraun is in a mature development stage and is already [in
-use](https://github.com/gungraun/gungraun/network/dependents). Nevertheless, you
-may experience big changes between a minor version bump. The main profiling
+Gungraun is in a mature development stage and is already
+[in use](https://github.com/gungraun/gungraun/network/dependents). Nevertheless,
+you may experience big changes between a minor version bump. The main profiling
 tools `Callgrind`, `Cachegrind` and `DHAT` are fully integrated, with full
 support for benchmarking async, multi-threaded and multi-process applications.
 Please read our [Vision](./VISION.md) to learn more about the ideas and the
@@ -92,8 +92,8 @@ direction the future path might take.
 
 ## When not to use Gungraun
 
-Although Gungraun is useful in many projects, there are cases where
-Gungraun is not a good fit.
+Although Gungraun is useful in many projects, there are cases where Gungraun is
+not a good fit.
 
 - If you need wall-clock times, Gungraun cannot help you much. The estimation of
   cpu cycles merely correlates to wall-clock times but is not a replacement for
@@ -126,8 +126,9 @@ silent. The last syllable `raun` can be pronounced like the english word `rain`.
 ## Links
 
 - Gungraun/Iai-Callgrind is [mentioned](https://youtu.be/qfknfCsICUM?t=1228) in
-  a talk at [RustNation UK](https://www.rustnationuk.com/) about [Towards
-  Impeccable Rust](https://www.youtube.com/watch?v=qfknfCsICUM) by Jon Gjengset
+  a talk at [RustNation UK](https://www.rustnationuk.com/) about
+  [Towards Impeccable Rust](https://www.youtube.com/watch?v=qfknfCsICUM) by Jon
+  Gjengset
 - Gungraun/Iai-Callgrind is supported by [Bencher]
 
 ## Related Projects
@@ -158,9 +159,9 @@ license at your option.
 
 According to [Valgrind's documentation][Valgrind Client Request Mechanism]:
 
-> The Valgrind headers, unlike most of the rest of
-> the code, are under a BSD-style license, so you may include them without worrying
-> about license incompatibility.
+> The Valgrind headers, unlike most of the rest of the code, are under a
+> BSD-style license, so you may include them without worrying about license
+> incompatibility.
 
 We have included the original license where we made use of the original header
 files.
@@ -168,12 +169,15 @@ files.
 [Api Docs]: https://docs.rs/gungraun/latest/gungraun/
 [Bencher]: https://bencher.dev/learn/benchmarking/rust/iai/
 [Guide]: https://gungraun.github.io/gungraun/
-[Migration checklist]: https://gungraun.github.io/gungraun/latest/html/migration/iai-callgrind-to-gungraun.html
+[Migration checklist]:
+    https://gungraun.github.io/gungraun/latest/html/migration/iai-callgrind-to-gungraun.html
 [kcachegrind]: https://kcachegrind.github.io/html/Home.html
 [Valgrind]: https://valgrind.org/
-[Valgrind Client Request Mechanism]: https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
+[Valgrind Client Request Mechanism]:
+    https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
 [Callgrind Manual]: https://valgrind.org/docs/manual/cl-manual.html
 [Cachegrind Manual]: https://valgrind.org/docs/manual/cg-manual.html
 [DHAT Manual]: https://valgrind.org/docs/manual/dh-manual.html
-[Callgrind Annotate]: https://valgrind.org/docs/manual/cl-manual.html#cl-manual.callgrind_annotate-options
+[Callgrind Annotate]:
+    https://valgrind.org/docs/manual/cl-manual.html#cl-manual.callgrind_annotate-options
 [open an issue]: https://github.com/gungraun/gungraun/issues

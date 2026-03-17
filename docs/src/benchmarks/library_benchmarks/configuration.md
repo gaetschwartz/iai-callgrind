@@ -1,8 +1,8 @@
 # Configuration
 
 Library benchmarks can be configured with the [`LibraryBenchmarkConfig`] and
-with [Command-line arguments and Environment
-variables](../../cli_and_env/basics.md).
+with
+[Command-line arguments and Environment variables](../../cli_and_env/basics.md).
 
 The `LibraryBenchmarkConfig` can be specified at different levels and sets the
 configuration values for the same and lower levels. The values of the
@@ -106,4 +106,5 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-[`LibraryBenchmarkConfig`]: https://docs.rs/gungraun/0.17.2/gungraun/struct.LibraryBenchmarkConfig.html
+[`LibraryBenchmarkConfig`]:
+    https://docs.rs/gungraun/0.17.2/gungraun/struct.LibraryBenchmarkConfig.html

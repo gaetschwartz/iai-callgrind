@@ -9,9 +9,9 @@ were renamed from `iai-callgrind` to `gungraun`, `iai-callgrind-runner` to
 - Update the library: Rename `iai-callgrind` to `gungraun` in your `Cargo.toml`
   and use a version `>=0.17.0`.
 - Update all usages of `use iai_callgrind` to `use gungraun`.
-- Update the binary: Uninstall the old binary with `cargo uninstall
-iai-callgrind-runner`. Install the new binary for example with binstall:
-  `cargo binstall gungraun-runner@0.17.2`
+- Update the binary: Uninstall the old binary with
+  `cargo uninstall iai-callgrind-runner`. Install the new binary for example
+  with binstall: `cargo binstall gungraun-runner@0.17.2`
 - Update any scripts which installed `iai-callgrind-runner` in the CI to use
   `gungraun-runner`.
 - If you are parsing the benchmark output: The summary line has changed from

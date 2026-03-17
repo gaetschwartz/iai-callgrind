@@ -1,8 +1,8 @@
 # Low-Level API
 
 I'm not going into full detail of the low-level api here since it is fully
-documented in the [api
-Documentation](https://docs.rs/gungraun/0.17.2/gungraun/index.html).
+documented in the
+[api Documentation](https://docs.rs/gungraun/0.17.2/gungraun/index.html).
 
 ## The Basic Structure
 
@@ -42,21 +42,21 @@ It cannot be instantiated. Instead, it is passed as argument to the expression
 of the `benchmarks` parameter in a `binary_benchmark_group`. You can choose any
 name instead of `group`, we just have used `group` throughout the examples.
 
-There's the shorter `benchmarks = |group| /* ... */` instead of `benchmarks =
-|group: &mut BinaryBenchmarkGroup| /* ... */`. We use the more verbose variant
-in the examples because it is more informative for benchmarking starters.
+There's the shorter `benchmarks = |group| /* ... */` instead of
+`benchmarks = |group: &mut BinaryBenchmarkGroup| /* ... */`. We use the more
+verbose variant in the examples because it is more informative for benchmarking
+starters.
 
 Furthermore, the `#[library_benchmark]` macro correlates with
-`gungraun::LibraryBenchmark` and `#[bench]` with `gungraun::Bench`.
-The parameters of the macros are now functions in the respective structs. The
-return value of the benchmark function, the `gungraun::Command`, is now
-also a function `gungraun::Bench::command`.
+`gungraun::LibraryBenchmark` and `#[bench]` with `gungraun::Bench`. The
+parameters of the macros are now functions in the respective structs. The return
+value of the benchmark function, the `gungraun::Command`, is now also a function
+`gungraun::Bench::command`.
 
-Note there is no `gungraun::Benches` struct since specifying multiple
-commands with `gungraun::Bench::command` behaves exactly the same way as
-the `#[benches]` attribute. So, the `file` parameter of `#[benches]` is a part
-of `gungraun::Bench` and can be used with the `gungraun::Bench::file`
-function.
+Note there is no `gungraun::Benches` struct since specifying multiple commands
+with `gungraun::Bench::command` behaves exactly the same way as the `#[benches]`
+attribute. So, the `file` parameter of `#[benches]` is a part of
+`gungraun::Bench` and can be used with the `gungraun::Bench::file` function.
 
 ## Intermixing High-Level and Low-Level API
 

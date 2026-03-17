@@ -1,13 +1,13 @@
 # Overview
 
-Gungraun can be used to benchmark the [library](./library_benchmarks.md)
-and [binary](./binary_benchmarks.md) of your project's crates. Library and
-binary benchmarks are treated differently by Gungraun and cannot be
-intermixed in the same benchmark file. This is indeed a feature and helps
-keeping things organized. Having different and multiple benchmark files for
-library and binary benchmarks is no problem for Gungraun and is usually a
-good idea anyway. Having benchmarks for different binaries in the same
-benchmark file however is fully supported.
+Gungraun can be used to benchmark the [library](./library_benchmarks.md) and
+[binary](./binary_benchmarks.md) of your project's crates. Library and binary
+benchmarks are treated differently by Gungraun and cannot be intermixed in the
+same benchmark file. This is indeed a feature and helps keeping things
+organized. Having different and multiple benchmark files for library and binary
+benchmarks is no problem for Gungraun and is usually a good idea anyway. Having
+benchmarks for different binaries in the same benchmark file however is fully
+supported.
 
 Head over to the [Quickstart](./library_benchmarks/quickstart.md) section of
 library benchmarks if you want to start benchmarking your library functions or
@@ -38,5 +38,6 @@ access point to the program point you actually want to benchmark.
 
 You should always choose binary benchmarks over library benchmarks if you want
 to benchmark the behaviour of the executable if the input comes from a pipe
-since this feature is exclusive to binary benchmarks. See [The Command's stdin
-and simulating piped input](./binary_benchmarks/stdin_and_pipe.md) for more.
+since this feature is exclusive to binary benchmarks. See
+[The Command's stdin and simulating piped input](./binary_benchmarks/stdin_and_pipe.md)
+for more.

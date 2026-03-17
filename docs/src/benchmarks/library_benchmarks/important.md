@@ -4,8 +4,7 @@
 
 The environment variables are cleared before running a library benchmark. Have a
 look into the [Configuration](./configuration.md) section if you need to change
-that behavior. Gungraun sometimes deviates from the valgrind defaults which
-are:
+that behavior. Gungraun sometimes deviates from the valgrind defaults which are:
 
 | Gungraun                 | Valgrind (v3.23)        |
 | ------------------------ | ----------------------- |
@@ -16,8 +15,8 @@ are:
 
 The thread and subprocess specific valgrind options enable tracing threads and
 subprocesses basically but there's usually some additional configuration
-necessary to [trace the metrics of threads and
-subprocesses](./threads_and_subprocesses.md).
+necessary to
+[trace the metrics of threads and subprocesses](./threads_and_subprocesses.md).
 
 As show in the table above, the benchmarks run with cache simulation switched
 on. This adds run time. If you don't need the cache metrics and estimation of
@@ -70,5 +69,5 @@ Gungraun reports the cache hits and an estimation of cpu cycles:
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.49333s</code></pre>
 
 If you prefer cache misses over cache hits or just want both metrics displayed
-you can fully customize the [callgrind output
-format](../library_benchmarks/configuration/output_format.md).
+you can fully customize the
+[callgrind output format](../library_benchmarks/configuration/output_format.md).

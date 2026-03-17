@@ -70,9 +70,9 @@ presents you with something like the following:
 
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.49333s</code></pre>
 
-As opposed to library benchmarks, binary benchmarks have access to a [low-level
-api](./low_level.md). Here, pretty much the same as the above high-level usage
-but written in the low-level api:
+As opposed to library benchmarks, binary benchmarks have access to a
+[low-level api](./low_level.md). Here, pretty much the same as the above
+high-level usage but written in the low-level api:
 
 ```rust
 # extern crate gungraun;

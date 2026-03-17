@@ -1,8 +1,8 @@
 # Prerequisites
 
-In order to use Gungraun, you must have
-[Valgrind](https://www.valgrind.org) installed. This means that
-Gungraun cannot be used on platforms that are not supported by Valgrind.
+In order to use Gungraun, you must have [Valgrind](https://www.valgrind.org)
+installed. This means that Gungraun cannot be used on platforms that are not
+supported by Valgrind.
 
 The default benchmarking tool is `Callgrind` and is in most cases perfectly
 suited to do the job but if you want or need to use
@@ -11,9 +11,8 @@ version `>= 3.22` and client requests (see below).
 
 ## Debug Symbols
 
-It's required to run the Gungraun benchmarks with debugging symbols
-switched on. For example in your `~/.cargo/config` or your project's
-`Cargo.toml`:
+It's required to run the Gungraun benchmarks with debugging symbols switched on.
+For example in your `~/.cargo/config` or your project's `Cargo.toml`:
 
 ```toml
 [profile.bench]
@@ -21,9 +20,9 @@ debug = true
 ```
 
 Now, all benchmarks which are run with `cargo bench` include the debug symbols.
-(See also [Cargo
-Profiles](https://doc.rust-lang.org/cargo/reference/profiles.html) and [Cargo
-Config](https://doc.rust-lang.org/cargo/reference/config.html)).
+(See also
+[Cargo Profiles](https://doc.rust-lang.org/cargo/reference/profiles.html) and
+[Cargo Config](https://doc.rust-lang.org/cargo/reference/config.html)).
 
 It's required that settings like `strip = true` or other configuration options
 stripping the debug symbols need to be disabled explicitly for the `bench`
@@ -40,13 +39,13 @@ strip = false
 
 ## Valgrind Client Requests
 
-If you want to make use of [Valgrind Client
-Requests](https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq)
+If you want to make use of
+[Valgrind Client Requests](https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq)
 shipped with Gungraun, you also need `libclang` (clang >= 5.0) installed. See
 also the requirements of
 [bindgen](https://rust-lang.github.io/rust-bindgen/requirements.html) and of
-[cc](https://github.com/rust-lang/cc-rs). It's worth noting that you can use
-the `Valgrind Client Requests` of Gungraun without the rest of Gungraun by
+[cc](https://github.com/rust-lang/cc-rs). It's worth noting that you can use the
+`Valgrind Client Requests` of Gungraun without the rest of Gungraun by
 specifying the `client_requests` feature and disabling the default features.
 
 More details on the usage and requirements of `Valgrind Client Requests` in
@@ -55,10 +54,10 @@ More details on the usage and requirements of `Valgrind Client Requests` in
 ## Installation of Valgrind
 
 Gungraun is intentionally independent of a specific version of valgrind.
-However, Gungraun was only tested with versions of valgrind >= `3.20.0`. It
-is therefore highly recommended to use a recent version of valgrind. Also, if
-you want or need to, [building valgrind from
-source](https://sourceware.org/git/?p=valgrind.git;a=blob;f=README;h=eabcc6ad88c8cab6dfe73cfaaaf5543023c2e941;hb=HEAD)
+However, Gungraun was only tested with versions of valgrind >= `3.20.0`. It is
+therefore highly recommended to use a recent version of valgrind. Also, if you
+want or need to,
+[building valgrind from source](https://sourceware.org/git/?p=valgrind.git;a=blob;f=README;h=eabcc6ad88c8cab6dfe73cfaaaf5543023c2e941;hb=HEAD)
 is usually a straight-forward process. Just make sure the `valgrind` binary is
 in your `$PATH` so that Gungraun can find it.
 

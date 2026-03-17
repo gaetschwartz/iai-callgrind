@@ -1,11 +1,11 @@
 # Valgrind Client Requests
 
-Gungraun ships with its own interface to the [Valgrind's Client Request
-Mechanism](https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq).
+Gungraun ships with its own interface to the
+[Valgrind's Client Request Mechanism](https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq).
 Gungraun's client requests have zero overhead (relative to the "C"
 implementation of Valgrind) on many targets which are also natively supported by
-valgrind. In short, Gungraun provides a complete and performant
-implementation of Valgrind Client Requests.
+valgrind. In short, Gungraun provides a complete and performant implementation
+of Valgrind Client Requests.
 
 ## Installation
 
@@ -18,9 +18,9 @@ gungraun = { version = "0.17.2", features = ["client_requests"] }
 ```
 
 If you need the client requests in your production code, you don't want them to
-do anything when not running under valgrind with Gungraun benchmarks. You
-can achieve that by adding Gungraun with the `client_requests_defs` feature
-to your runtime dependencies and with the `client_requests` feature to your
+do anything when not running under valgrind with Gungraun benchmarks. You can
+achieve that by adding Gungraun with the `client_requests_defs` feature to your
+runtime dependencies and with the `client_requests` feature to your
 `dev-dependencies` like so:
 
 ```toml
@@ -38,8 +38,8 @@ compile down to nothing and don't add any overhead to your production code. It
 simply provides the "definitions", method signatures and macros without body.
 Only with the activated `client_requests` feature they will be actually
 executed. Note that the client requests do not depend on any other part of
-Gungraun, so you could even use the client requests without the rest of
-Gungraun by disabling the default-features:
+Gungraun, so you could even use the client requests without the rest of Gungraun
+by disabling the default-features:
 
 ```toml
 gungraun = { version = "0.17.2", default-features = false, features = [
@@ -51,10 +51,11 @@ When building Gungraun with client requests, the valgrind header files must
 exist in your standard include path (most of the time `/usr/include`). This is
 usually the case if you've installed valgrind with your distribution's package
 manager. If not, you can point the `GUNGRAUN_VALGRIND_INCLUDE` or
-`GUNGRAUN_<triple>_VALGRIND_INCLUDE` environment variables to the include
-path. So, if the headers can be found in `/home/foo/repo/valgrind/{valgrind.h,
-callgrind.h, ...}`, the correct include path would be
-`GUNGRAUN_VALGRIND_INCLUDE=/home/foo/repo` (not `/home/foo/repo/valgrind`)
+`GUNGRAUN_<triple>_VALGRIND_INCLUDE` environment variables to the include path.
+So, if the headers can be found in
+`/home/foo/repo/valgrind/{valgrind.h, callgrind.h, ...}`, the correct include
+path would be `GUNGRAUN_VALGRIND_INCLUDE=/home/foo/repo` (not
+`/home/foo/repo/valgrind`)
 
 ## Usage
 
@@ -80,8 +81,8 @@ fn main() {
 ## Library Benchmarks
 
 In [library benchmarks](./benchmarks/library_benchmarks.md) you might need to
-use [`EntryPoint::None`][EntryPoint] to make the client requests work
-as expected:
+use [`EntryPoint::None`][EntryPoint] to make the client requests work as
+expected:
 
 ```rust
 # extern crate gungraun;
@@ -119,10 +120,12 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-The default [`EntryPoint`][EntryPoint] sets the [`--toggle-collect`][Callgrind Arguments] to the benchmark function (here `bench_function`) and
-`--collect-atstart=no`. So, `Callgrind` starts collecting the events when
-entering the benchmark function, not the moment `start_instrumentation` is
-called. This behaviour can be remedied with `EntryPoint::None`:
+The default [`EntryPoint`][EntryPoint] sets the
+[`--toggle-collect`][Callgrind Arguments] to the benchmark function (here
+`bench_function`) and `--collect-atstart=no`. So, `Callgrind` starts collecting
+the events when entering the benchmark function, not the moment
+`start_instrumentation` is called. This behaviour can be remedied with
+`EntryPoint::None`:
 
 ```rust
 # extern crate gungraun;
@@ -168,14 +171,14 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-As the standard toggle is now switched off and the option
-`--collect-atstart=no` is also omitted, you must specify
-`--collect-atstart=no` manually in
+As the standard toggle is now switched off and the option `--collect-atstart=no`
+is also omitted, you must specify `--collect-atstart=no` manually in
 `LibraryBenchmarkConfig::raw_callgrind_args`.
 
 Please see the
-[`docs`](https://docs.rs/gungraun/0.17.2/gungraun/client_requests) for
-more details!
+[`docs`](https://docs.rs/gungraun/0.17.2/gungraun/client_requests) for more
+details!
 
-[Callgrind Arguments]: https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options
+[Callgrind Arguments]:
+    https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options
 [EntryPoint]: https://docs.rs/gungraun/0.17.2/gungraun/enum.EntryPoint.html

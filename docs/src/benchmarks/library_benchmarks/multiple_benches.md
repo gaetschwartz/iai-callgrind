@@ -37,8 +37,8 @@ main!(library_benchmark_groups = my_group);
 
 Usually the `arguments` are passed directly to the benchmarking function as it
 can be seen in the `#[benches::multiple(/* arguments */)]` case. In
-`#[benches::with_setup(/* ... */)]`, the arguments are passed to the `setup` function
-instead. The above `#[library_benchmark]` is pretty much the same as
+`#[benches::with_setup(/* ... */)]`, the arguments are passed to the `setup`
+function instead. The above `#[library_benchmark]` is pretty much the same as
 
 ```rust
 # extern crate gungraun;
@@ -75,12 +75,12 @@ but a lot more concise especially if a lot of values are passed to the same
 
 ### The `iter` parameter
 
-Specifying a lot of benchmarks with args (`args = [1, 2, 3, 4, 5, 6, 7]` and so) on
-can be cumbersome. Gungraun supports creating multiple benchmarks from an
+Specifying a lot of benchmarks with args (`args = [1, 2, 3, 4, 5, 6, 7]` and so)
+on can be cumbersome. Gungraun supports creating multiple benchmarks from an
 iterator, more precisely anything that implements
 [`IntoIterator`](https://doc.rust-lang.org/std/iter/trait.IntoIterator.html)
-from the standard library. Each element of the iterator creates a separate benchmark
-case. For example creating multiple benchmarks from a range:
+from the standard library. Each element of the iterator creates a separate
+benchmark case. For example creating multiple benchmarks from a range:
 
 ```rust
 # extern crate gungraun;

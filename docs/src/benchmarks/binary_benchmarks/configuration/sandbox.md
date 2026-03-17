@@ -1,27 +1,26 @@
 # Sandbox
 
-The
-[`Sandbox`](https://docs.rs/gungraun/0.17.2/gungraun/struct.Sandbox.html)
-is a temporary directory which is created before the execution of the `setup`
-and deleted after the `teardown`. `setup`, the `Command` and `teardown` are
-executed inside this temporary directory. This simply describes the order of the
+The [`Sandbox`](https://docs.rs/gungraun/0.17.2/gungraun/struct.Sandbox.html) is
+a temporary directory which is created before the execution of the `setup` and
+deleted after the `teardown`. `setup`, the `Command` and `teardown` are executed
+inside this temporary directory. This simply describes the order of the
 execution but the `setup` or `teardown` don't need to be present.
 
 ## Why Using a Sandbox?
 
 A `Sandbox` can help mitigating differences in benchmark results on different
 machines. As long as `$TMP_DIR` is unset or set to `/tmp`, the temporary
-directory has a constant length on unix machines (except android
-which uses `/data/local/tmp`). The directory itself is created with a constant
-length but random name like `/tmp/.a23sr8fk`.
+directory has a constant length on unix machines (except android which uses
+`/data/local/tmp`). The directory itself is created with a constant length but
+random name like `/tmp/.a23sr8fk`.
 
 It is not implausible that an executable has different event counts just because
 the directory it is executed in has a different length. For example, if a member
 of your project has set up the project in `/home/bob/workspace/our-project`
 running the benchmarks in this directory, and the ci runs the benchmarks in
 `/runner/our-project`, the event counts might differ. If possible, the
-benchmarks should be run in a constant environment. For example [clearing the
-environment variables](../important.md) is also such a measure.
+benchmarks should be run in a constant environment. For example
+[clearing the environment variables](../important.md) is also such a measure.
 
 Other good reasons for using a `Sandbox` are convenience, e.g. if you create
 files during the `setup` and `Command` run and do not want to delete all files

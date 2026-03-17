@@ -1,23 +1,27 @@
 # Gungraun Agent Guidelines
 
-This document provides instructions for AI agents working on the Gungraun repository.
+This document provides instructions for AI agents working on the Gungraun
+repository.
 
 ## 1. Build, Lint, and Test Commands
 
-Gungraun uses `just` as a task runner. Always prefer `just` commands over direct `cargo` invocations when available to ensure consistency with CI/CD.
+Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
+`cargo` invocations when available to ensure consistency with CI/CD.
 
 ### formatting & Linting
 
 - **Format Code (Rust):** `just fmt` (Requires nightly toolchain)
 - **Format TOML:** `just fmt-toml`
 - **Format Prettier (JSON/YAML/MD):** `just fmt-prettier`
-    - **Important:** Always run `just fmt-prettier` after making changes to `AGENTS.md`
+    - **Important:** Always run `just fmt-prettier` after making changes to
+      `AGENTS.md`
 - **Lint (Clippy):** `just lint` (Uses stable toolchain)
 - **Check All Formatting:** `just check-fmt-all`
 
 ### Testing
 
-- **Run All Tests:** `just test-all` (Excludes client-request-tests and benchmarks)
+- **Run All Tests:** `just test-all` (Excludes client-request-tests and
+  benchmarks)
 - **Run Package Tests:** `just test package package=<package_name>`
     - Example: `just test package package=gungraun`
 - **Run UI Tests:** `just test-ui` (Fixed to MSRV compiler)
@@ -58,10 +62,12 @@ Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
 - **Library (`gungraun`):** Use specific, typed errors where possible.
 - **Runner (`gungraun-runner`):**
     - Uses a central `Error` enum in `src/error.rs`.
-    - Variants include `BenchmarkError`, `ConfigurationError`, `JobError` (wrapping `anyhow`), etc.
+    - Variants include `BenchmarkError`, `ConfigurationError`, `JobError`
+      (wrapping `anyhow`), etc.
     - `JobError` wraps `anyhow::Error` for internal task failures.
     - Implement `Display` for user-facing error messages.
-    - Use `thiserror` (if available) or manual `std::error::Error` implementation.
+    - Use `thiserror` (if available) or manual `std::error::Error`
+      implementation.
 
 ### Code Structure
 
@@ -74,10 +80,14 @@ Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
     - Extensive doc comments (`///`) on public items.
     - Top-level crate documentation in `lib.rs`.
     - Examples in doc comments are encouraged.
-    - When documenting functions or methods, describe parameters in fluent text rather than using structured `# Arguments` sections with parameter lists. Parameters should be naturally integrated into the documentation prose.
-    - **Rustdoc Links:** Use reference-style links for long paths with multiple `::` accessors.
+    - When documenting functions or methods, describe parameters in fluent text
+      rather than using structured `# Arguments` sections with parameter lists.
+      Parameters should be naturally integrated into the documentation prose.
+    - **Rustdoc Links:** Use reference-style links for long paths with multiple
+      `::` accessors.
         - Use short form inline: `[`ToolOutputPath`]`
-        - Define full path at bottom: `[`ToolOutputPath`]: crate::runner::tool::path::ToolOutputPath`
+        - Define full path at bottom:
+          `[`ToolOutputPath`]: crate::runner::tool::path::ToolOutputPath`
         - Example:
             ```rust
             /// Generates flamegraph summaries using [`Config`] and [`ToolOutputPath`].
@@ -85,11 +95,16 @@ Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
             /// [`Config`]: crate::runner::common::Config
             /// [`ToolOutputPath`]: crate::runner::tool::path::ToolOutputPath
             ```
-        - Short, simple types like `Config`, `Header`, `CapturedOutput` can use short form inline.
-        - Long paths like `crate::runner::tool::path::ToolOutputPath` should use reference-style.
-    - **Type References in Documentation:** Use rustdoc links for types, not parameter names.
-        - Use `[`Type`]` for types/structs/enums/variants (e.g., `[`Command`]`, `[`Child`]`, `[`Stdin::Setup`]`)
-        - Use backticks `` `parameter_name` `` only when referring to the parameter itself, not its type
+        - Short, simple types like `Config`, `Header`, `CapturedOutput` can use
+          short form inline.
+        - Long paths like `crate::runner::tool::path::ToolOutputPath` should use
+          reference-style.
+    - **Type References in Documentation:** Use rustdoc links for types, not
+      parameter names.
+        - Use `[`Type`]` for types/structs/enums/variants (e.g., `[`Command`]`,
+          `[`Child`]`, `[`Stdin::Setup`]`)
+        - Use backticks `` `parameter_name` `` only when referring to the
+          parameter itself, not its type
         - Example:
             ```rust
             /// Applies this [`Stdin`] configuration to a [`Command`] for the selected [`Stream`].
@@ -107,10 +122,12 @@ Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
 
 - **Unit Tests:** Co-located in the same file or `mod tests` within the file.
 - **Integration Tests:** Located in `tests/` directory of the package.
-- **Benchmarks:** defined using `#[library_benchmark]` and `#[binary_benchmark]` attributes.
+- **Benchmarks:** defined using `#[library_benchmark]` and `#[binary_benchmark]`
+  attributes.
 
 ## 3. Workflow specific
 
-- **Dependencies:** Check `Cargo.toml` before adding new dependencies. Use `cargo add` only if necessary and approved.
+- **Dependencies:** Check `Cargo.toml` before adding new dependencies. Use
+  `cargo add` only if necessary and approved.
 - **Lockfile:** Do not manually edit `Cargo.lock`.
 - **Pre-commit:** Ensure `just fmt` and `just lint` pass before committing.
