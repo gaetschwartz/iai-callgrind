@@ -64,7 +64,7 @@ error: A binary_benchmark_group! needs a unique name. See the documentation of t
 
 error: You are using an invalid or deprecated syntax of the binary_benchmark_group! macro to set up binary benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
-       hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
+       hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ]);
   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:39:5
    |
 39 | /     binary_benchmark_group!(
@@ -80,7 +80,7 @@ error: You are using an invalid or deprecated syntax of the binary_benchmark_gro
 
 error: You are using an invalid or deprecated syntax of the binary_benchmark_group! macro to set up binary benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
-       hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
+       hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ]);
   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:48:5
    |
 48 | /     binary_benchmark_group!(
@@ -139,7 +139,7 @@ error: A binary_benchmark_group! needs at least 1 benchmark function which is an
 
 error: You are using an invalid or deprecated syntax of the binary_benchmark_group! macro to set up binary benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
-       hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
+       hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ]);
   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:71:5
    |
 71 | /     binary_benchmark_group!(
@@ -152,7 +152,7 @@ error: You are using an invalid or deprecated syntax of the binary_benchmark_gro
 
 error: You are using an invalid or deprecated syntax of the binary_benchmark_group! macro to set up binary benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
-       hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
+       hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ]);
   --> tests/ui/test_binary_benchmark_group_when_invalid.rs:76:5
    |
 76 | /     binary_benchmark_group!(
@@ -204,7 +204,7 @@ error: This low level form of the binary_benchmark_group! needs you to use the `
 
 error: You are using an invalid or deprecated syntax of the binary_benchmark_group! macro to set up binary benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
-       hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
+       hint: binary_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ]);
    --> tests/ui/test_binary_benchmark_group_when_invalid.rs:101:5
     |
 101 |     binary_benchmark_group!(name = some);

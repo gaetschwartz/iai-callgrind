@@ -93,7 +93,7 @@ error[E0428]: the name `some` is defined multiple times
 
 error: You are using an invalid or deprecated syntax of the library_benchmark_group! macro to set up library benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
-       hint: library_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
+       hint: library_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ]);
   --> tests/ui/test_library_benchmark_group_when_invalid.rs:52:5
    |
 52 |     library_benchmark_group!(name = some_name);
@@ -161,7 +161,7 @@ error: A library_benchmark_group! needs at least 1 benchmark function annotated 
 
 error: You are using an invalid or deprecated syntax of the library_benchmark_group! macro to set up library benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
-       hint: library_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ])
+       hint: library_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ]);
   --> tests/ui/test_library_benchmark_group_when_invalid.rs:92:5
    |
 92 |     library_benchmark_group!(something);
