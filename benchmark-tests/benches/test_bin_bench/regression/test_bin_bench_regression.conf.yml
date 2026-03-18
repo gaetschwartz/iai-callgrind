@@ -4,7 +4,7 @@ groups:
       - args: []
         expected:
           stdout: expected_stdout.1
-          stderr: expected_stderr.empty
+          no_stderr: true
           exit_code: 0
         template_data:
           array_length: 4
@@ -21,7 +21,7 @@ groups:
       - args: []
         expected:
           stdout: expected_stdout.1
-          stderr: expected_stderr.empty
+          no_stderr: true
           exit_code: 0
         template_data:
           array_length: 4

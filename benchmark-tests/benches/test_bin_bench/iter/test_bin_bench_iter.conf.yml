@@ -2,9 +2,9 @@ groups:
   - runs:
       - args: ["--nocapture"]
         expected:
-          stderr: expected_stderr.empty
           stdout: expected_stdout.1
+          no_stderr: true
       - args: ["--nocapture"]
         expected:
-          stderr: expected_stderr.empty
+          no_stderr: true
           stdout: expected_stdout.2

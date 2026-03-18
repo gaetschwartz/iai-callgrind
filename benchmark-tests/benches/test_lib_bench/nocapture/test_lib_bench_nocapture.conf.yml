@@ -3,27 +3,27 @@ groups:
       - args: []
         expected:
           stdout: expected_stdout.1
-          stderr: expected_stderr.empty
+          no_stderr: true
   - runs:
       - args: ["--nocapture=false"]
         expected:
           stdout: expected_stdout.1
-          stderr: expected_stderr.empty
+          no_stderr: true
   - runs:
       - args: ["--nocapture"]
         expected:
           stdout: expected_stdout.2
-          stderr: expected_stderr.empty
+          no_stderr: true
   - runs:
       - args: ["--nocapture=true"]
         expected:
           stdout: expected_stdout.2
-          stderr: expected_stderr.empty
+          no_stderr: true
   - runs:
       - args: ["--nocapture=stdout"]
         expected:
           stdout: expected_stdout.3
-          stderr: expected_stderr.empty
+          no_stderr: true
   - runs:
       - args: ["--nocapture=stderr"]
         expected:
