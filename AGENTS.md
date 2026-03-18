@@ -113,16 +113,19 @@ Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
         - Define full path at bottom:
           `[`ToolOutputPath`]: crate::runner::tool::path::ToolOutputPath`
         - Example:
+
             ```rust
             /// Generates flamegraph summaries using [`Config`] and [`ToolOutputPath`].
             ///
             /// [`Config`]: crate::runner::common::Config
             /// [`ToolOutputPath`]: crate::runner::tool::path::ToolOutputPath
             ```
+
         - Short, simple types like `Config`, `Header`, `CapturedOutput` can use
           short form inline.
         - Long paths like `crate::runner::tool::path::ToolOutputPath` should use
           reference-style.
+
     - **Type References in Documentation:** Use rustdoc links for types, not
       parameter names.
         - Use `[`Type`]` for types/structs/enums/variants (e.g., `[`Command`]`,
@@ -130,6 +133,7 @@ Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
         - Use backticks `` `parameter_name` `` only when referring to the
           parameter itself, not its type
         - Example:
+
             ```rust
             /// Applies this [`Stdin`] configuration to a [`Command`] for the selected [`Stream`].
             ///
@@ -148,6 +152,60 @@ Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
 - **Integration Tests:** Located in `tests/` directory of the package.
 - **Benchmarks:** defined using `#[library_benchmark]` and `#[binary_benchmark]`
   attributes.
+
+#### System Test Documentation
+
+System test configuration files (`.conf.yml`) must include a test case
+description comment block at the top with the following fields:
+
+| Field             | Required | Purpose                                                                                      |
+| ----------------- | -------- | -------------------------------------------------------------------------------------------- |
+| Test Case         | Yes      | Unique identifier for the test usually the file name of the test without the `.rs` suffix    |
+| Description       | Yes      | Brief explanation of what is being tested                                                    |
+| Test Steps        | Yes      | Numbered sequence of actions performed during the test                                       |
+| Test Inputs       | Yes      | Specific inputs, configurations, or scenarios being tested                                   |
+| Expected Outcomes | Yes      | Clear, measurable expectations for correct execution                                         |
+| Preconditions     | No       | Conditions that must be met before test execution                                            |
+| Postconditions    | No       | Expected state after test execution (only include if it adds value beyond Expected Outcomes) |
+| Test Environment  | No       | Specific environment requirements (e.g., tool versions)                                      |
+
+Do not include a Notes field. Integrate any necessary context into the
+appropriate required fields instead.
+
+Example:
+
+```yaml
+# Test Case: `test_lib_bench_iter`
+#
+# Description:
+#   Validates the `iter` parameter of library benchmarks (`benches::foo(iter =
+#   ...)`), which creates benchmarks for each element of an iterator.
+#
+# Test Steps:
+#   1. Run all benchmarks with no prior baseline
+#   2. Run all benchmarks again with the first run as baseline
+#
+# Test Inputs:
+#   - Various iterator configurations: tuples, vectors, ranges, and generic types
+#   - Edge cases: empty iterator, single element
+#   - Benchmarks with and without setup and teardown functions
+#   - Benchmarks with DHAT to test that the iterator allocation itself isn't
+#     attributed to the benchmark metrics
+#
+# Expected Outcomes:
+#   - First run: All benchmarks complete successfully (exit code 0)
+#   - Second run: All benchmarks complete successfully and compare against the
+#     first run without differences
+#   - Output matches expected stdout for the corresponding Rust version
+#   - No errors or error output
+#   - Slightly different output for MSRV and stable in the description of the
+#     benchmark (e.g., `vec! [1, 2]` in MSRV vs `vec![1, 2]` in newer versions).
+#   - The benchmark order is stable and equals the iterator order.
+#   - If the iterator is empty no benchmark should be created for this `benches`
+#     directive
+
+groups: ...
+```
 
 ## 3. Workflow specific
 
