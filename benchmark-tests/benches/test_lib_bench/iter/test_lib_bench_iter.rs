@@ -31,6 +31,12 @@ fn teardown(num: u64) -> Result<u64, String> {
 }
 
 #[library_benchmark]
+#[benches::empty(iter = vec![])]
+fn bench_empty(num: u64) -> u64 {
+    black_box(fibonacci(num))
+}
+
+#[library_benchmark]
 #[benches::one(iter = vec![(1, 2)])]
 #[benches::two(iter = vec![(1, 2), (2, 3)])]
 fn bench_when_tuple((a, b): (u64, u64)) -> u64 {
@@ -97,6 +103,7 @@ where
 library_benchmark_group!(
     name = my_group,
     benchmarks = [
+        bench_empty,
         bench_when_tuple,
         bench_single,
         bench_allocation,
