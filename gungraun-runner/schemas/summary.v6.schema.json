@@ -1176,42 +1176,42 @@
       "description": "The valgrind tools which can be run\n\nNote the default changes from `Callgrind` to `Cachegrind` if the `cachegrind` feature is\nselected.",
       "oneOf": [
         {
-          "description": "[Callgrind: a call-graph generating cache and branch prediction profiler](https://valgrind.org/docs/manual/cl-manual.html)",
+          "description": "Callgrind: a call-graph generating cache and branch prediction profiler\n<https://valgrind.org/docs/manual/cl-manual.html>",
           "type": "string",
           "const": "Callgrind"
         },
         {
-          "description": "[Cachegrind: a high-precision tracing profiler](https://valgrind.org/docs/manual/cg-manual.html)",
+          "description": "Cachegrind: a high-precision tracing profiler\n<https://valgrind.org/docs/manual/cg-manual.html>",
           "type": "string",
           "const": "Cachegrind"
         },
         {
-          "description": "[DHAT: a dynamic heap analysis tool](https://valgrind.org/docs/manual/dh-manual.html)",
+          "description": "DHAT: a dynamic heap analysis tool\n<https://valgrind.org/docs/manual/dh-manual.html>",
           "type": "string",
           "const": "DHAT"
         },
         {
-          "description": "[Memcheck: a memory error detector](https://valgrind.org/docs/manual/mc-manual.html)",
+          "description": "Memcheck: a memory error detector\n<https://valgrind.org/docs/manual/mc-manual.html>",
           "type": "string",
           "const": "Memcheck"
         },
         {
-          "description": "[Helgrind: a thread error detector](https://valgrind.org/docs/manual/hg-manual.html)",
+          "description": "Helgrind: a thread error detector\n<https://valgrind.org/docs/manual/hg-manual.html>",
           "type": "string",
           "const": "Helgrind"
         },
         {
-          "description": "[DRD: a thread error detector](https://valgrind.org/docs/manual/drd-manual.html)",
+          "description": "DRD: a thread error detector\n<https://valgrind.org/docs/manual/drd-manual.html>",
           "type": "string",
           "const": "DRD"
         },
         {
-          "description": "[Massif: a heap profiler](https://valgrind.org/docs/manual/ms-manual.html)",
+          "description": "Massif: a heap profiler\n<https://valgrind.org/docs/manual/ms-manual.html>",
           "type": "string",
           "const": "Massif"
         },
         {
-          "description": "[BBV: an experimental basic block vector generation tool](https://valgrind.org/docs/manual/bbv-manual.html)",
+          "description": "BBV: an experimental basic block vector generation tool\n<https://valgrind.org/docs/manual/bbv-manual.html>",
           "type": "string",
           "const": "BBV"
         }

@@ -974,24 +974,29 @@ pub enum ToolRegressionConfig {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum ValgrindTool {
-    /// [Callgrind: a call-graph generating cache and branch prediction
-    /// profiler](https://valgrind.org/docs/manual/cl-manual.html)
+    /// Callgrind: a call-graph generating cache and branch prediction profiler
+    /// <https://valgrind.org/docs/manual/cl-manual.html>
     Callgrind,
-    /// [Cachegrind: a high-precision tracing
-    /// profiler](https://valgrind.org/docs/manual/cg-manual.html)
+    /// Cachegrind: a high-precision tracing profiler
+    /// <https://valgrind.org/docs/manual/cg-manual.html>
     Cachegrind,
-    /// [DHAT: a dynamic heap analysis tool](https://valgrind.org/docs/manual/dh-manual.html)
+    /// DHAT: a dynamic heap analysis tool
+    /// <https://valgrind.org/docs/manual/dh-manual.html>
     DHAT,
-    /// [Memcheck: a memory error detector](https://valgrind.org/docs/manual/mc-manual.html)
+    /// Memcheck: a memory error detector
+    /// <https://valgrind.org/docs/manual/mc-manual.html>
     Memcheck,
-    /// [Helgrind: a thread error detector](https://valgrind.org/docs/manual/hg-manual.html)
+    /// Helgrind: a thread error detector
+    /// <https://valgrind.org/docs/manual/hg-manual.html>
     Helgrind,
-    /// [DRD: a thread error detector](https://valgrind.org/docs/manual/drd-manual.html)
+    /// DRD: a thread error detector
+    /// <https://valgrind.org/docs/manual/drd-manual.html>
     DRD,
-    /// [Massif: a heap profiler](https://valgrind.org/docs/manual/ms-manual.html)
+    /// Massif: a heap profiler
+    /// <https://valgrind.org/docs/manual/ms-manual.html>
     Massif,
-    /// [BBV: an experimental basic block vector generation
-    /// tool](https://valgrind.org/docs/manual/bbv-manual.html)
+    /// BBV: an experimental basic block vector generation tool
+    /// <https://valgrind.org/docs/manual/bbv-manual.html>
     BBV,
 }
 
