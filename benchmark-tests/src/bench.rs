@@ -380,7 +380,7 @@ impl Benchmark {
         let template = env.get_template(&self.bench_name).unwrap();
 
         let dest = File::create(meta.get_template()).unwrap();
-        template.render_to_write(template_data, dest).unwrap();
+        template.render_captured_to(template_data, dest).unwrap();
 
         self.run_bench(cargo_args, args, envs, capture, tolerance)
     }
