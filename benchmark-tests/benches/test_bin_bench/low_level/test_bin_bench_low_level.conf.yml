@@ -1,3 +1,30 @@
+# Test Case: `test_bin_bench_low_level`
+#
+# Description:
+#   Tests the low-level API for binary benchmarks using `BinaryBenchmark`,
+#   `Bench`, and `BinaryBenchmarkGroup` directly instead of attribute macros.
+#   Validates that the low-level API produces equivalent results to the
+#   attribute-based approach.
+#
+# Test Steps:
+#   1. Run all benchmarks with `--nocapture` testing various low-level configs
+#
+# Test Inputs:
+#   - `BinaryBenchmark::new()` and `Bench::new()` direct construction
+#   - Short and long group syntax variations
+#   - `binary_benchmark_attribute!` macro for converting attributes
+#   - Config at binary benchmark and bench levels
+#   - Setup and teardown function overrides
+#   - Sandbox override at binary benchmark level
+#   - Environment variables at all config levels
+#
+# Expected Outcomes:
+#   - Low-level API produces correct benchmark structure
+#   - Config inheritance and overrides work correctly
+#   - Setup/teardown execute in expected order
+#   - Sandbox correctly isolates files
+#   - Environment variables checked across all levels
+
 groups:
   - runs:
       - args: ["--nocapture"]

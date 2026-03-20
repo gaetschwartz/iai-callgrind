@@ -1,5 +1,27 @@
+# Test Case: `test_bin_bench_setup_child`
+#
+# Description:
+#   Tests setup child process with `Stdin::Setup(Pipe::Stdout)` configuration,
+#   which pipes the stdout of the setup function to the stdin of the command
+#   being benchmarked.
+#
+# Test Steps:
+#   1. Run benchmark with `--nocapture` to capture setup output piped to stdin
+#
+# Test Inputs:
+#   - Setup function that prints "SETUP CHILD PROCESS" after 500ms delay
+#   - `Stdin::Setup(Pipe::Stdout)` to pipe setup output to command stdin
+#   - `pipe` binary that echoes stdin to stdout
+#
+# Expected Outcomes:
+#   - Setup function output is piped to command's stdin
+#   - Command receives and processes the piped input
+#   - Stdout matches expected format showing correct execution order
+#   - No stderr output (clean execution)
+
 groups:
   - runs:
       - args: ["--nocapture"]
         expected:
           stdout: expected_stdout
+          no_stderr: true

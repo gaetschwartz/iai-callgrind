@@ -1,3 +1,23 @@
+# Test Case: `test_bin_bench_list_arg`
+#
+# Description:
+#   Tests the `--list` argument for listing all available benchmarks without
+#   executing them. Validates that the output correctly shows all benchmark IDs
+#   organized by groups.
+#
+# Test Steps:
+#   1. Run with `--list` flag to list all benchmarks
+#
+# Test Inputs:
+#   - `--list` argument
+#   - Multiple groups with multiple benchmarks
+#   - Benchmarks defined with `#[binary_benchmark]` and `binary_benchmark_group!`
+#
+# Expected Outcomes:
+#   - Exit code 0 (success)
+#   - Stdout lists all benchmarks in expected format
+#   - No benchmarks are executed (only listed)
+
 groups:
   - runs:
       - args: ["--list"]

@@ -1,3 +1,29 @@
+# Test Case: `test_bin_bench_config`
+#
+# Description:
+#   Tests `BinaryBenchmarkConfig` inheritance and override behavior at main,
+#   group, binary benchmark, and bench levels. Validates that environment
+#   variables set at each level are correctly inherited and overridden.
+#
+# Test Steps:
+#   1. Run benchmarks with `--nocapture` verifying environment configuration
+#
+# Test Inputs:
+#   - `MAIN_ENV=1` set at `main!` level
+#   - `GROUP_ENV=2` set at `binary_benchmark_group!` level
+#   - `BINARY_BENCHMARK_ENV=3` set at `#[binary_benchmark]` level
+#   - `BENCH_ENV=4` set at `#[bench]` level
+#   - `COMMAND_ENV=5` set on `Command` directly
+#   - the `env` helper binary with --is-cleared=true/false` to verify
+#     environment clearing behavior
+#   - `DHAT` tool for additional config testing
+#
+# Expected Outcomes:
+#   - Environment variables correctly inherited from parent configs
+#   - Child configs override parent values for same variable
+#   - Setup/teardown see environment cleared from Command-level vars
+#   - Stdout shows all expected environment values
+
 groups:
   - runs:
       - args: ["--nocapture"]

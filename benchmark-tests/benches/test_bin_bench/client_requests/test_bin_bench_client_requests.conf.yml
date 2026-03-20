@@ -1,5 +1,26 @@
+# Test Case: `test_bin_bench_client_requests`
+#
+# Description:
+#   Tests Valgrind client requests integration in benchmarked binaries.
+#   Validates that client requests made from within the benchmarked code work
+#   correctly during Valgrind instrumentation.
+#
+# Test Steps:
+#   1. Run benchmark with `--nocapture` and Callgrind tool
+#
+# Test Inputs:
+#   - `Callgrind` tool with `--instr-atstart=no` argument
+#   - Binary that makes Valgrind client requests
+#   - `--nocapture` flag to show output
+#
+# Expected Outcomes:
+#   - Client requests execute correctly during benchmark
+#   - Stdout matches expected output format
+#   - No stderr output (clean execution)
+
 groups:
   - runs:
       - args: ["--nocapture"]
         expected:
           stdout: expected_stdout.1
+          no_stderr: true

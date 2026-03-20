@@ -1,5 +1,29 @@
+# Test Case: `test_bin_bench_command_delay`
+#
+# Description:
+#   Tests command delay options for waiting before benchmark execution starts.
+#   Validates delay by duration, file existence, TCP connection, and UDP
+#   response with timeout handling.
+#
+# Test Steps:
+#   1. Run benchmarks with `--nocapture` testing different delay configurations
+#
+# Test Inputs:
+#   - `Delay::new(Duration)` - fixed time delay (500ms)
+#   - `Delay::new(DelayKind::PathExists)` - wait for file to exist
+#   - `Delay::new(DelayKind::TcpConnect)` - wait for TCP server
+#   - `Delay::new(DelayKind::UdpResponse)` - wait for UDP server response
+#   - All delays use 500ms timeout
+#   - Setup runs in parallel with delay (`setup_parallel(true)`)
+#
+# Expected Outcomes:
+#   - Delays correctly wait for specified conditions
+#   - Setup functions run in parallel during delay
+#   - Stdout shows expected output from each benchmark
+
 groups:
   - runs:
       - args: ["--nocapture"]
         expected:
           stdout: expected_stdout.1
+          no_stderr: true

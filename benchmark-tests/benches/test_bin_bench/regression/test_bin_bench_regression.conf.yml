@@ -1,3 +1,29 @@
+# Test Case: `test_bin_bench_regression`
+#
+# Description:
+#   Validates soft limits regression checking with the `fail_fast` option for
+#   Callgrind and Cachegrind tools. Tests that benchmarks can fail when metrics
+#   exceed configured limits, and that `fail_fast` controls whether subsequent
+#   benchmarks run after a failure.
+#
+# Test Steps:
+#   1. Run with `array_length=4` to create a baseline
+#   2. Run with `array_length=5` (metrics exceed limits) - should fail
+#   3. Repeat steps 1-2 with `fail_fast=true` and `fail_fast=false`
+#
+# Test Inputs:
+#   - `fail_fast=true`: Remaining benchmarks are skipped after first failure
+#   - `fail_fast=false`: All benchmarks run even after failure
+#   - Soft limits set to 0.0 threshold (any metric will exceed)
+#   - Both Callgrind (`Ir` event) and Cachegrind (`Ir` metric) tested
+#
+# Expected Outcomes:
+#   - `array_length=4`: All benchmarks pass with exit code 0
+#   - `array_length=5`: Benchmarks fail with exit code 3 (regression limit
+#      exceeded)
+#   - `fail_fast=true`: Error output shows only first failure
+#   - `fail_fast=false`: Error output shows all failures
+
 template: test_bin_bench_regression.rs.j2
 groups:
   - runs:

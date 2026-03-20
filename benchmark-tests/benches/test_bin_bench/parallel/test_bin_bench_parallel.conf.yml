@@ -1,11 +1,29 @@
-# Test Description: `test_bin_bench_parallel`
+# Test Case: `test_bin_bench_parallel`
 #
-# The test is very similar to `test_lib_bench_parallel`. See there for all the
-# comments.
+# Description:
+#   Tests parallel execution of benchmarks with the `--parallel` flag and
+#   `max_parallel` configuration. Validates that benchmarks execute in parallel
+#   when configured, and that `max_parallel` limits are respected.
 #
-# A benchmark run in this file is expected to succeed if the benchmarks in the
-# same group are executed in parallel. If the benchmarks don't run in parallel
-# then `file_exists` will panic.
+# Test Steps:
+#   1. Run with `--parallel=2` and `max_parallel=2` (should succeed)
+#   2. Run with `--parallel=2` and `max_parallel=0` (unlimited, should succeed)
+#   3. Run with `--parallel=1` and `max_parallel=2` (should fail - serial)
+#   4. Run with `--parallel=2` and `max_parallel=1` (should fail - serial)
+#
+# Test Inputs:
+#   - `--parallel=N` flag to enable parallel execution
+#   - `__MAX_PARALLEL` environment variable to control max parallelism per group
+#   - Groups configured with different `max_parallel` values
+#   - `--truncate-description=no` for more consistent output
+#
+# Expected Outcomes:
+#   - Parallel runs succeed, serial runs fail
+#   - Runs fail when parallel execution is requested but not allowed by config
+#   - Exit code 0 for success, exit code 1 for failure
+#   - Expected files and stdout match on success
+#   - Error messages reported in stderr on failure
+
 groups:
   - runs:
       - args: ["--parallel=2", "--truncate-description=no"]

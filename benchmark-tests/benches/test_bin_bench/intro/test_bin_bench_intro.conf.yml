@@ -1,3 +1,30 @@
+# Test Case: `test_bin_bench_intro`
+#
+# Description:
+#   This is both a test and an introduction to binary benchmarks. It validates
+#   that the introductory example compiles and runs correctly, while also
+#   serving as documentation for core binary benchmark features including
+#   `#[binary_benchmark]`, `#[bench]`, `#[benches]`, setup/teardown, sandboxes,
+#   and stdin/stdout piping.
+#
+# Test Steps:
+#   1. Run all benchmarks with `--nocapture` and `--truncate-description=false`
+#
+# Test Inputs:
+#   - Simple `echo` benchmarks demonstrating basic usage
+#   - `read-file` benchmarks with setup functions and file creation
+#   - Benchmarks from iterator (`#[benches::from_iter]`)
+#   - Benchmarks from file (`#[benches::file]`)
+#   - Pipe benchmarks with `Stdin::Setup(Pipe::Stdout)`
+#   - Multiple binary benchmark groups
+#   - Sandbox enabled for file isolation
+#
+# Expected Outcomes:
+#   - All benchmarks run successfully
+#   - Output matches expected stdout format
+#   - Setup/teardown execute in correct order
+#   - Files created and cleaned up in sandbox
+
 groups:
   - runs:
       - args: ["--nocapture", "--truncate-description=false"]

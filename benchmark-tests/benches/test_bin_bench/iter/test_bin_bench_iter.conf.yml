@@ -1,3 +1,24 @@
+# Test Case: `test_bin_bench_iter`
+#
+# Description:
+#   Validates the `iter` parameter for binary benchmarks, which creates separate
+#   benchmarks for each element of an iterator. Tests tuple iterators and path
+#   iterators with setup/teardown functions.
+#
+# Test Steps:
+#   1. Run all benchmarks with `--nocapture` (first pass, no baseline)
+#   2. Run all benchmarks again (second pass, for comparison)
+#
+# Test Inputs:
+#   - Tuple iterators: `vec![(1, 2)]` and `vec![(1, 2), (3, 4)]`
+#   - Path iterators with `setup` and `teardown` functions
+#
+# Expected Outcomes:
+#   - Each iterator element creates a separate benchmark
+#   - Setup functions execute before benchmark, teardown functions after
+#   - Output matches expected stdout format for each run
+#   - No stderr output (clean execution)
+
 groups:
   - runs:
       - args: ["--nocapture"]

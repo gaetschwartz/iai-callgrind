@@ -1,3 +1,30 @@
+# Test Case: `test_bin_bench_tools`
+#
+# Description:
+#   Tests running multiple Valgrind tools (Dhat, Massif, Bbv, Memcheck, Drd,
+#   Helgrind) in a single benchmark run. Also validates the `trace-children`
+#   option for subprocess instrumentation.
+#
+# Test Steps:
+#   1. Run benchmarks with `--nocapture` and all tools enabled
+#   2. Run again to verify baseline comparison works
+#
+# Test Inputs:
+#   - `Dhat` with `--time-stamp=yes` argument
+#   - `Massif` with default configuration
+#   - `Bbv` with default configuration
+#   - `Memcheck` with `--time-stamp=yes` argument
+#   - `Drd` with default configuration
+#   - `Helgrind` with default configuration
+#   - `trace-children=yes/no` option for subprocess handling
+#
+# Expected Outcomes:
+#   - All tools produce expected output files
+#   - Stdout matches expected format (platform-specific for FreeBSD)
+#   - No stderr output (clean execution)
+#   - Subprocess instrumentation works with `trace-children` option
+#   - FreeBSD platform has separate expected outputs
+
 groups:
   - runs_on: "!x86_64-unknown-freebsd"
     runs:
@@ -5,17 +32,21 @@ groups:
         expected:
           files: expected_files.1a.yml
           stdout: expected_stdout.1a
+          no_stderr: true
       - args: ["--nocapture"]
         expected:
           files: expected_files.1b.yml
           stdout: expected_stdout.1b
+          no_stderr: true
   - runs_on: "x86_64-unknown-freebsd"
     runs:
       - args: ["--nocapture"]
         expected:
           files: expected_files.1a.yml
           stdout: expected_stdout.freebsd.1a
+          no_stderr: true
       - args: ["--nocapture"]
         expected:
           files: expected_files.1b.yml
           stdout: expected_stdout.freebsd.1b
+          no_stderr: true

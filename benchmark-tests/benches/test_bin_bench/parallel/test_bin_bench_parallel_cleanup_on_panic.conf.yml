@@ -1,14 +1,24 @@
-# Test Description: `test_bin_bench_parallel_cleanup_on_panic`
+# Test Case: `test_bin_bench_parallel_cleanup_on_panic`
 #
-# This test works similar to `test_bin_bench_parallel_cleanup_on_exit` but this
-# time the first benchmark process exits abnormally with a panic instead of an
-# error. The result should be same.
+# Description:
+#   Tests cleanup behavior when one benchmark process panics during parallel
+#   execution. Similar to error cleanup but tests panic handling instead of
+#   normal error exit.
 #
-# Expected Result:
+# Test Steps:
+#   1. Run with `--parallel=2` where first benchmark panics
+#   2. Verify second benchmark process is killed before completing
 #
-# All parallel running benchmark processes should be killed and cleanup up
-# silently if one of the benchmark processes exits with a panic. Only the error
-# message of the first error benchmark process is printed.
+# Test Inputs:
+#   - `--parallel=2` to run two benchmarks simultaneously
+#   - First benchmark panics immediately
+#   - Second benchmark would normally wait then print message (but should be killed)
+#
+# Expected Outcomes:
+#   - Exit code 1 (failure from panic)
+#   - Second benchmark process terminated (no completion message)
+#   - Only panic error output in stderr
+#   - All parallel processes cleaned up silently
 groups:
   - runs:
       - args: ["--parallel=2"]

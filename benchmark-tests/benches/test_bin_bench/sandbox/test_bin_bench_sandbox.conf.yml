@@ -1,3 +1,27 @@
+# Test Case: `test_bin_bench_sandbox`
+#
+# Description:
+#   Tests `Sandbox` configuration for file isolation in binary benchmarks.
+#   Validates sandbox creation, fixture handling, current directory changes, and
+#   automatic cleanup after benchmark execution.
+#
+# Test Steps:
+#   1. Run benchmarks with `--nocapture` testing sandbox configurations
+#
+# Test Inputs:
+#   - `Sandbox::new(true)` with fixtures: copies fixture files into sandbox
+#   - `Sandbox::new(true)` without fixtures: empty sandbox created
+#   - `Sandbox::new(false)`: no sandbox, runs in current directory
+#   - `current_dir` option to change working directory within sandbox
+#   - `truncate_description(None)` for full output
+#
+# Expected Outcomes:
+#   - Files created in sandbox are cleaned up after benchmark
+#   - Fixtures are copied into sandbox when specified
+#   - `current_dir` changes working directory correctly
+#   - With `Sandbox::new(false)`, files persist outside sandbox
+#   - Setup/check functions execute correctly
+
 groups:
   - runs:
       - args: ["--nocapture"]

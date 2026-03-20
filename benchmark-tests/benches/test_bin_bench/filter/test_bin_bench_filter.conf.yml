@@ -1,3 +1,28 @@
+# Test Case: `test_bin_bench_filter`
+#
+# Description:
+#   Tests benchmark filtering by name patterns using the filter argument.
+#   Validates that only matching benchmarks are executed.
+#
+# Test Steps:
+#   1. Run with filter `none` - no benchmarks should run
+#   2. Run with filter `test_bin_bench_filter::*` - all benchmarks in file
+#   3. Run with filter `*::group_1::*` - benchmarks in group_1
+#   4. Run with filter `*::minimal_bench` - specific benchmark without ID
+#   5. Run with filter `*::forty_two` - specific benchmark with ID
+#
+# Test Inputs:
+#   - All tests use `--nocapture` to show output
+#   - Various glob patterns for filtering
+#   - Benchmarks with and without IDs (from `#[bench::forty_two(42)]`)
+#
+# Expected Outcomes:
+#   - `none`: Exit code 0, no benchmarks run
+#   - `test_bin_bench_filter::*`: All benchmarks in file run
+#   - `*::group_1::*`: Only group_1 benchmarks run
+#   - `*::minimal_bench`: Only minimal_bench runs (without ID)
+#   - `*::forty_two`: Only the forty_two benchmark runs
+
 groups:
   - runs:
       - args: ["--nocapture", "none"]
