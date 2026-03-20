@@ -1,7 +1,7 @@
 error: A library_benchmark_group! needs a name and at least 1 benchmark function annotated with #[library_benchmark]. See the documentation of this macro for more details.
 
        hint: library_benchmark_group!(name = some_ident, benchmarks = [ bench_1, bench_2 ]);
- --> tests/ui/test_library_benchmark_group_when_invalid.rs:4:5
+ --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:4:5
   |
 4 |     library_benchmark_group!();
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -11,7 +11,7 @@ error: A library_benchmark_group! needs a name and at least 1 benchmark function
 error: A library_benchmark_group! needs a name
 
        hint: library_benchmark_group!(name = some_ident; benchmarks = ...);
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:13:5
+  --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:13:5
    |
 13 |     library_benchmark_group!(benchmarks = some_func);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -21,7 +21,7 @@ error: A library_benchmark_group! needs a name
 error: A library_benchmark_group! needs a name
 
        hint: library_benchmark_group!(name = some_ident, benchmarks = ...);
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:16:5
+  --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:16:5
    |
 16 | /     library_benchmark_group!(
 17 | |         config = LibraryBenchmarkConfig::default(),
@@ -37,7 +37,7 @@ error: A library_benchmark_group! needs a name
 error: A library_benchmark_group! needs a name
 
        hint: library_benchmark_group!(name = some_ident; benchmarks = ...);
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:25:5
+  --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:25:5
    |
 25 | /     library_benchmark_group!(
 26 | |         config = LibraryBenchmarkConfig::default();
@@ -53,7 +53,7 @@ error: A library_benchmark_group! needs a name
 error: A library_benchmark_group! needs a name
 
        hint: library_benchmark_group!(name = some_ident; benchmarks = ...);
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:34:5
+  --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:34:5
    |
 34 |     library_benchmark_group!(benchmarks = [some_func]);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -63,7 +63,7 @@ error: A library_benchmark_group! needs a name
 error: A library_benchmark_group! needs a name
 
        hint: library_benchmark_group!(name = some_ident; benchmarks = ...);
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:35:5
+  --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:35:5
    |
 35 |     library_benchmark_group!(benchmarks = some_func, some_func);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -73,7 +73,7 @@ error: A library_benchmark_group! needs a name
 error: A library_benchmark_group! needs a name
 
        hint: library_benchmark_group!(name = some_ident; benchmarks = ...);
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:36:5
+  --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:36:5
    |
 36 |     library_benchmark_group!(benchmarks = [some_func, some_func]);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -81,7 +81,7 @@ error: A library_benchmark_group! needs a name
    = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0428]: the name `some` is defined multiple times
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:45:5
+  --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:45:5
    |
 45 |     library_benchmark_group!(name = some, benchmarks = some_func);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `some` redefined here
@@ -94,7 +94,7 @@ error[E0428]: the name `some` is defined multiple times
 error: You are using an invalid or deprecated syntax of the library_benchmark_group! macro to set up library benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
        hint: library_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ]);
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:52:5
+  --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:52:5
    |
 52 |     library_benchmark_group!(name = some_name);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -104,7 +104,7 @@ error: You are using an invalid or deprecated syntax of the library_benchmark_gr
 error: A library_benchmark_group! needs at least 1 benchmark function annotated with #[library_benchmark]
 
        hint: library_benchmark_group!(name = some_ident, benchmarks = some_library_benchmark);
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:59:5
+  --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:59:5
    |
 59 | /     library_benchmark_group!(
 60 | |         name = some_name,
@@ -117,7 +117,7 @@ error: A library_benchmark_group! needs at least 1 benchmark function annotated 
 error: A library_benchmark_group! needs at least 1 benchmark function annotated with #[library_benchmark]
 
        hint: library_benchmark_group!(name = some_ident, benchmarks = some_library_benchmark);
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:63:5
+  --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:63:5
    |
 63 | /     library_benchmark_group!(
 64 | |         name = some_name,
@@ -133,7 +133,7 @@ error: A library_benchmark_group! needs at least 1 benchmark function annotated 
 error: A library_benchmark_group! needs at least 1 benchmark function annotated with #[library_benchmark]
 
        hint: library_benchmark_group!(name = some_ident; benchmarks = some_library_benchmark);
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:74:5
+  --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:74:5
    |
 74 | /     library_benchmark_group!(
 75 | |         name = some_name;
@@ -146,7 +146,7 @@ error: A library_benchmark_group! needs at least 1 benchmark function annotated 
 error: A library_benchmark_group! needs at least 1 benchmark function annotated with #[library_benchmark]
 
        hint: library_benchmark_group!(name = some_ident; benchmarks = some_library_benchmark);
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:78:5
+  --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:78:5
    |
 78 | /     library_benchmark_group!(
 79 | |         name = some_name;
@@ -162,7 +162,7 @@ error: A library_benchmark_group! needs at least 1 benchmark function annotated 
 error: You are using an invalid or deprecated syntax of the library_benchmark_group! macro to set up library benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) or the docs (https://docs.rs/gungraun/latest/gungraun) for further details.
 
        hint: library_benchmark_group!(name = some_name, benchmarks = [ bench_1, bench_2 ]);
-  --> tests/ui/test_library_benchmark_group_when_invalid.rs:92:5
+  --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:92:5
    |
 92 |     library_benchmark_group!(something);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -170,7 +170,7 @@ error: You are using an invalid or deprecated syntax of the library_benchmark_gr
    = note: this error originates in the macro `library_benchmark_group` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0308]: mismatched types
-   --> tests/ui/test_library_benchmark_group_when_invalid.rs:102:60
+   --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:102:60
     |
 102 |     library_benchmark_group!(name = some_1, max_parallel = None, benchmarks = some_func);
     |     -------------------------------------------------------^^^^-------------------------
@@ -182,7 +182,7 @@ error[E0308]: mismatched types
                found enum `Option<_>`
 
 error[E0308]: mismatched types
-   --> tests/ui/test_library_benchmark_group_when_invalid.rs:103:60
+   --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:103:60
     |
 103 |     library_benchmark_group!(name = some_2, max_parallel = 0i32, benchmarks = some_func);
     |     -------------------------------------------------------^^^^-------------------------
@@ -196,7 +196,7 @@ help: change the type of the numeric literal from `i32` to `usize`
     |                                                             ~~~~~
 
 error[E0308]: mismatched types
-   --> tests/ui/test_library_benchmark_group_when_invalid.rs:107:24
+   --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:107:24
     |
 105 | /     library_benchmark_group!(
 106 | |         name = some_3,
@@ -210,7 +210,7 @@ error[E0308]: mismatched types
                found enum `Option<_>`
 
 error[E0308]: mismatched types
-   --> tests/ui/test_library_benchmark_group_when_invalid.rs:112:60
+   --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:112:60
     |
 112 |     library_benchmark_group!(name = some_4; max_parallel = None; benchmarks = some_func);
     |     -------------------------------------------------------^^^^-------------------------
@@ -222,7 +222,7 @@ error[E0308]: mismatched types
                found enum `Option<_>`
 
 error[E0308]: mismatched types
-   --> tests/ui/test_library_benchmark_group_when_invalid.rs:113:60
+   --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:113:60
     |
 113 |     library_benchmark_group!(name = some_5; max_parallel = 0i32; benchmarks = some_func);
     |     -------------------------------------------------------^^^^-------------------------
@@ -236,7 +236,7 @@ help: change the type of the numeric literal from `i32` to `usize`
     |                                                             ~~~~~
 
 error[E0308]: mismatched types
-   --> tests/ui/test_library_benchmark_group_when_invalid.rs:116:24
+   --> tests/ui/lib_bench/test_library_benchmark_group_when_invalid.rs:116:24
     |
 114 | /     library_benchmark_group!(
 115 | |         name = some_6;

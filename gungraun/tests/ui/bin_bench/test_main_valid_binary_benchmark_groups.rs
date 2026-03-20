@@ -1,4 +1,4 @@
-mod test_main_when_single_group {
+mod test_when_single_group {
     use gungraun::{binary_benchmark, binary_benchmark_group, main};
 
     #[binary_benchmark]
@@ -10,7 +10,7 @@ mod test_main_when_single_group {
     main!(binary_benchmark_groups = some);
 }
 
-mod test_main_when_multiple_groups {
+mod test_when_multiple_groups {
     use gungraun::{binary_benchmark, binary_benchmark_group, main};
 
     #[binary_benchmark]

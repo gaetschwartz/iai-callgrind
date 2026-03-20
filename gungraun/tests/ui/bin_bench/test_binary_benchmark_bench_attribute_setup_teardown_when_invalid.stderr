@@ -1,5 +1,5 @@
 error[E0061]: this function takes 1 argument but 0 arguments were supplied
- --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:7:27
+ --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:7:27
   |
 6 |     #[binary_benchmark]
   |     ------------------- an argument of type `&str` is missing
@@ -7,7 +7,7 @@ error[E0061]: this function takes 1 argument but 0 arguments were supplied
   |                           ^^^^^
   |
 note: function defined here
- --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:4:8
+ --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:4:8
   |
 4 |     fn setup(_arg: &str) {}
   |        ^^^^^ ----------
@@ -17,7 +17,7 @@ help: provide the argument
   |
 
 error[E0061]: this function takes 1 argument but 2 arguments were supplied
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:19:46
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:19:46
    |
 19 |     #[bench::some(args = ("1", "2"), setup = setup)]
    |                          ----------          ^^^^^
@@ -25,13 +25,13 @@ error[E0061]: this function takes 1 argument but 2 arguments were supplied
    |                          unexpected argument of type `&str`
    |
 note: function defined here
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:16:8
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:16:8
    |
 16 |     fn setup(_arg: &str) {}
    |        ^^^^^ ----------
 
 error[E0061]: this function takes 1 argument but 0 arguments were supplied
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:33:30
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:33:30
    |
 32 |     #[binary_benchmark]
    |     ------------------- an argument of type `&str` is missing
@@ -39,7 +39,7 @@ error[E0061]: this function takes 1 argument but 0 arguments were supplied
    |                              ^^^^^^^^
    |
 note: function defined here
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:30:8
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:30:8
    |
 30 |     fn teardown(_arg: &str) {}
    |        ^^^^^^^^ ----------
@@ -49,7 +49,7 @@ help: provide the argument
    |
 
 error[E0061]: this function takes 1 argument but 2 arguments were supplied
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:45:49
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:45:49
    |
 45 |     #[bench::some(args = ("1", "2"), teardown = teardown)]
    |                          ----------             ^^^^^^^^
@@ -57,19 +57,19 @@ error[E0061]: this function takes 1 argument but 2 arguments were supplied
    |                          unexpected argument of type `&str`
    |
 note: function defined here
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:42:8
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:42:8
    |
 42 |     fn teardown(_arg: &str) {}
    |        ^^^^^^^^ ----------
 
 error[E0061]: this function takes 1 argument but 0 arguments were supplied
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:59:27
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:59:27
    |
 59 |     #[bench::some(setup = setup())]
    |                           ^^^^^-- an argument of type `&str` is missing
    |
 note: function defined here
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:56:8
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:56:8
    |
 56 |     fn setup(_arg: &str) {}
    |        ^^^^^ ----------
@@ -79,7 +79,7 @@ help: provide the argument
    |                                ~~~~~~~~~~~~
 
 error[E0061]: this function takes 1 argument but 2 arguments were supplied
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:71:27
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:71:27
    |
 71 |     #[bench::some(setup = setup("1", "2"))]
    |                           ^^^^^    -----
@@ -88,19 +88,19 @@ error[E0061]: this function takes 1 argument but 2 arguments were supplied
    |                                    help: remove the extra argument
    |
 note: function defined here
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:68:8
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:68:8
    |
 68 |     fn setup(_arg: &str) {}
    |        ^^^^^ ----------
 
 error[E0061]: this function takes 1 argument but 0 arguments were supplied
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:83:30
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:83:30
    |
 83 |     #[bench::some(teardown = teardown())]
    |                              ^^^^^^^^-- an argument of type `&str` is missing
    |
 note: function defined here
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:80:8
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:80:8
    |
 80 |     fn teardown(_arg: &str) {}
    |        ^^^^^^^^ ----------
@@ -110,7 +110,7 @@ help: provide the argument
    |                                      ~~~~~~~~~~~~
 
 error[E0061]: this function takes 1 argument but 2 arguments were supplied
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:95:30
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:95:30
    |
 95 |     #[bench::some(teardown = teardown("1", "2"))]
    |                              ^^^^^^^^    -----
@@ -119,13 +119,13 @@ error[E0061]: this function takes 1 argument but 2 arguments were supplied
    |                                          help: remove the extra argument
    |
 note: function defined here
-  --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:92:8
+  --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:92:8
    |
 92 |     fn teardown(_arg: &str) {}
    |        ^^^^^^^^ ----------
 
 error[E0061]: this function takes 1 argument but 2 arguments were supplied
-   --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:108:27
+   --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:108:27
     |
 108 |     #[bench::some(setup = setup("1", "2"), teardown = teardown("1", "2"))]
     |                           ^^^^^    -----
@@ -134,13 +134,13 @@ error[E0061]: this function takes 1 argument but 2 arguments were supplied
     |                                    help: remove the extra argument
     |
 note: function defined here
-   --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:105:8
+   --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:105:8
     |
 105 |     fn setup(_arg: &str) {}
     |        ^^^^^ ----------
 
 error[E0061]: this function takes 1 argument but 2 arguments were supplied
-   --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:108:55
+   --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:108:55
     |
 108 |     #[bench::some(setup = setup("1", "2"), teardown = teardown("1", "2"))]
     |                                                       ^^^^^^^^    -----
@@ -149,13 +149,13 @@ error[E0061]: this function takes 1 argument but 2 arguments were supplied
     |                                                                   help: remove the extra argument
     |
 note: function defined here
-   --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:104:8
+   --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:104:8
     |
 104 |     fn teardown(_arg: &str) {}
     |        ^^^^^^^^ ----------
 
 error[E0061]: this function takes 1 argument but 0 arguments were supplied
-   --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:121:27
+   --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:121:27
     |
 120 |     #[binary_benchmark]
     |     ------------------- an argument of type `&str` is missing
@@ -163,7 +163,7 @@ error[E0061]: this function takes 1 argument but 0 arguments were supplied
     |                           ^^^^^
     |
 note: function defined here
-   --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:118:8
+   --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:118:8
     |
 118 |     fn setup(_arg: &str) {}
     |        ^^^^^ ----------
@@ -173,7 +173,7 @@ help: provide the argument
     |
 
 error[E0061]: this function takes 1 argument but 0 arguments were supplied
-   --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:121:45
+   --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:121:45
     |
 120 |     #[binary_benchmark]
     |     ------------------- an argument of type `&str` is missing
@@ -181,7 +181,7 @@ error[E0061]: this function takes 1 argument but 0 arguments were supplied
     |                                             ^^^^^^^^
     |
 note: function defined here
-   --> tests/ui/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:117:8
+   --> tests/ui/bin_bench/test_binary_benchmark_bench_attribute_setup_teardown_when_invalid.rs:117:8
     |
 117 |     fn teardown(_arg: &str) {}
     |        ^^^^^^^^ ----------

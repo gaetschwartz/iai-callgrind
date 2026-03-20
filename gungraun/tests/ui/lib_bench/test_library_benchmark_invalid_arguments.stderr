@@ -2,13 +2,13 @@ error: Invalid argument: wrong
 
          = help: Valid arguments are: `config`, `setup`, `teardown`
 
- --> tests/ui/test_library_benchmark_invalid_arguments.rs:3:21
+ --> tests/ui/lib_bench/test_library_benchmark_invalid_arguments.rs:3:21
   |
 3 | #[library_benchmark(wrong = LibraryBenchmarkConfig::default())]
   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: unexpected end of input, expected an expression
- --> tests/ui/test_library_benchmark_invalid_arguments.rs:9:1
+ --> tests/ui/lib_bench/test_library_benchmark_invalid_arguments.rs:9:1
   |
 9 | #[library_benchmark(config = )]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -16,7 +16,7 @@ error: unexpected end of input, expected an expression
   = note: this error originates in the attribute macro `library_benchmark` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: unexpected end of input, expected an expression
-  --> tests/ui/test_library_benchmark_invalid_arguments.rs:12:1
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_arguments.rs:12:1
    |
 12 | #[library_benchmark(setup = )]
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -24,7 +24,7 @@ error: unexpected end of input, expected an expression
    = note: this error originates in the attribute macro `library_benchmark` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: unexpected end of input, expected an expression
-  --> tests/ui/test_library_benchmark_invalid_arguments.rs:15:1
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_arguments.rs:15:1
    |
 15 | #[library_benchmark(teardown = )]
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -32,7 +32,7 @@ error: unexpected end of input, expected an expression
    = note: this error originates in the attribute macro `library_benchmark` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `InternalLibraryBenchmarkConfig: From<&str>` is not satisfied
- --> tests/ui/test_library_benchmark_invalid_arguments.rs:6:30
+ --> tests/ui/lib_bench/test_library_benchmark_invalid_arguments.rs:6:30
   |
 6 | #[library_benchmark(config = "wrong")]
   |                              ^^^^^^^ the trait `From<&str>` is not implemented for `InternalLibraryBenchmarkConfig`

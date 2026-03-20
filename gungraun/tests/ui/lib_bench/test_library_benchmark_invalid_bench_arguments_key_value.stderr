@@ -2,7 +2,7 @@ error: Invalid argument: invalid
 
          = help: Valid arguments are: `args`, `config`, `setup`, teardown`
 
- --> tests/ui/test_library_benchmark_invalid_bench_arguments_key_value.rs:4:13
+ --> tests/ui/lib_bench/test_library_benchmark_invalid_bench_arguments_key_value.rs:4:13
   |
 4 | #[bench::id(invalid = "value")]
   |             ^^^^^^^^^^^^^^^^^
@@ -14,7 +14,7 @@ error: Failed parsing `args`
          = note: #[bench::id(args = (1, 2))] or
                                #[bench::id(args = [1, 2]])]
 
- --> tests/ui/test_library_benchmark_invalid_bench_arguments_key_value.rs:8:20
+ --> tests/ui/lib_bench/test_library_benchmark_invalid_bench_arguments_key_value.rs:8:20
   |
 8 | #[bench::id(args = "value")]
   |                    ^^^^^^^

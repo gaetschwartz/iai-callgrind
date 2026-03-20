@@ -1,10 +1,10 @@
-mod test_main_deprecated_plain_functions {
+mod test_deprecated_plain_functions {
     use gungraun::main;
     fn some_func() {}
     main!(some_func);
 }
 
-mod test_main_deprecated_callgrind_args_and_functions {
+mod test_deprecated_callgrind_args_and_functions {
     use gungraun::main;
     fn some_func() {}
     main!(

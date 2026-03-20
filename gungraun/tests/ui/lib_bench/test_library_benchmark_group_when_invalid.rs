@@ -1,10 +1,10 @@
-mod test_library_benchmark_group_when_empty {
+mod test_when_empty {
     use gungraun::library_benchmark_group;
 
     library_benchmark_group!();
 }
 
-mod test_library_benchmark_group_when_no_name {
+mod test_when_no_name {
     use gungraun::{library_benchmark, library_benchmark_group};
 
     #[library_benchmark]
@@ -36,7 +36,7 @@ mod test_library_benchmark_group_when_no_name {
     library_benchmark_group!(benchmarks = [some_func, some_func]);
 }
 
-mod test_library_benchmark_group_when_same_name {
+mod test_when_same_name {
     use gungraun::{library_benchmark, library_benchmark_group};
 
     #[library_benchmark]
@@ -46,13 +46,13 @@ mod test_library_benchmark_group_when_same_name {
     library_benchmark_group!(name = some, benchmarks = some_func);
 }
 
-mod test_library_benchmark_group_when_no_benchmark_argument {
+mod test_when_no_benchmark_argument {
     use gungraun::library_benchmark_group;
 
     library_benchmark_group!(name = some_name);
 }
 
-mod test_library_benchmark_group_when_no_benchmarks {
+mod test_when_no_benchmarks {
     use gungraun::library_benchmark_group;
 
     // comma syntax
@@ -86,13 +86,13 @@ mod test_library_benchmark_group_when_no_benchmarks {
     );
 }
 
-mod test_library_benchmark_group_when_unknown_token {
+mod test_when_unknown_token {
     use gungraun::library_benchmark_group;
 
     library_benchmark_group!(something);
 }
 
-mod test_library_benchmark_group_when_max_parallel {
+mod test_when_max_parallel {
     use gungraun::{library_benchmark, library_benchmark_group};
 
     #[library_benchmark]

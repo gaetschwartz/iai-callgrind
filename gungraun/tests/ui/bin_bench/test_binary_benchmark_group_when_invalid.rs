@@ -1,10 +1,10 @@
-mod test_binary_benchmark_group_when_empty {
+mod test_when_empty {
     use gungraun::binary_benchmark_group;
 
     binary_benchmark_group!();
 }
 
-mod test_binary_benchmark_group_when_no_name {
+mod test_when_no_name {
     use gungraun::{binary_benchmark, binary_benchmark_group, Command};
 
     #[binary_benchmark]
@@ -59,7 +59,7 @@ mod test_binary_benchmark_group_when_no_name {
     binary_benchmark_group!(benchmarks = [bench, bench]);
 }
 
-mod test_binary_benchmark_group_low_level_when_no_benchmark {
+mod test_low_level_when_no_benchmark {
     use gungraun::binary_benchmark_group;
 
     // comma syntax
@@ -95,7 +95,7 @@ mod test_binary_benchmark_group_low_level_when_no_benchmark {
     );
 }
 
-mod test_binary_benchmark_group_when_no_benchmark_argument {
+mod test_when_no_benchmark_argument {
     use gungraun::binary_benchmark_group;
 
     binary_benchmark_group!(name = some);
@@ -105,7 +105,7 @@ mod test_binary_benchmark_group_when_no_benchmark_argument {
     );
 }
 
-mod test_binary_benchmark_group_when_max_parallel {
+mod test_when_max_parallel {
     use gungraun::{binary_benchmark, binary_benchmark_group, Command};
 
     #[binary_benchmark]

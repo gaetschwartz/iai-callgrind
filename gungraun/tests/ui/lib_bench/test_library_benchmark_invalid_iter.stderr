@@ -1,5 +1,5 @@
 error: Only one parameter of `file`, `args` or `iter` can be present
- --> tests/ui/test_libary_benchmark_invalid_iter.rs:7:16
+ --> tests/ui/lib_bench/test_library_benchmark_invalid_iter.rs:7:16
   |
 7 |     #[benches::some(iter = 1..=2, args = [0, 1])]
   |                ^^^^
@@ -8,7 +8,7 @@ error: Duplicate argument: `iter`
 
          = help: `iter` is allowed only once
 
-  --> tests/ui/test_libary_benchmark_invalid_iter.rs:17:35
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_iter.rs:17:35
    |
 17 |     #[benches::some(iter = 1..=2, iter = vec![0, 1])]
    |                                   ^^^^^^^^^^^^^^^^^
@@ -22,7 +22,7 @@ error: The benchmark function can only take exactly one argument if the iter par
            #[benches::some_id(iter = vec![(1, 2)])]
            fn benchmark_function((first, second): (u64, u64)) -> usize { ... }
 
-  --> tests/ui/test_libary_benchmark_invalid_iter.rs:28:8
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_iter.rs:28:8
    |
 28 |     fn bench_10() -> u64 {
    |        ^^^^^^^^
@@ -36,13 +36,13 @@ error: The benchmark function can only take exactly one argument if the iter par
            #[benches::some_id(iter = vec![(1, 2)])]
            fn benchmark_function((first, second): (u64, u64)) -> usize { ... }
 
-  --> tests/ui/test_libary_benchmark_invalid_iter.rs:38:8
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_iter.rs:38:8
    |
 38 |     fn bench_10(a: u64, b: u64) -> u64 {
    |        ^^^^^^^^
 
 error[E0308]: mismatched types
-  --> tests/ui/test_libary_benchmark_invalid_iter.rs:46:5
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_iter.rs:46:5
    |
 46 |     #[library_benchmark]
    |     ^^^^^^^^^^^^^^^^^^^^
@@ -51,7 +51,7 @@ error[E0308]: mismatched types
    |     arguments to this function are incorrect
    |
 note: function defined here
-  --> tests/ui/test_libary_benchmark_invalid_iter.rs:47:16
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_iter.rs:47:16
    |
 47 |     #[benches::some(iter = 1..=2)]
    |                ^^^^
@@ -60,7 +60,7 @@ note: function defined here
    = note: this error originates in the attribute macro `library_benchmark` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0308]: mismatched types
-  --> tests/ui/test_libary_benchmark_invalid_iter.rs:60:5
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_iter.rs:60:5
    |
 60 |     #[library_benchmark]
    |     ^^^^^^^^^^^^^^^^^^^^
@@ -69,7 +69,7 @@ error[E0308]: mismatched types
    |     arguments to this function are incorrect
    |
 note: function defined here
-  --> tests/ui/test_libary_benchmark_invalid_iter.rs:61:16
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_iter.rs:61:16
    |
 61 |     #[benches::some(iter = 1..=2, setup = setup)]
    |                ^^^^
@@ -78,7 +78,7 @@ note: function defined here
    = note: this error originates in the attribute macro `library_benchmark` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0631]: type mismatch in function arguments
-  --> tests/ui/test_libary_benchmark_invalid_iter.rs:75:43
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_iter.rs:75:43
    |
 70 |     fn setup(a: String) -> u64 {
    |     -------------------------- found signature defined here
@@ -98,7 +98,7 @@ note: required by a bound in `Option::<T>::map`
    |            ^^^^^^^^^^^^^^ required by this bound in `Option::<T>::map`
 
 error[E0308]: mismatched types
-  --> tests/ui/test_libary_benchmark_invalid_iter.rs:89:46
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_iter.rs:89:46
    |
 89 |     #[benches::some(iter = 1..=2, teardown = teardown)]
    |                                              ^^^^^^^^
@@ -107,13 +107,13 @@ error[E0308]: mismatched types
    |                                              arguments to this function are incorrect
    |
 note: function defined here
-  --> tests/ui/test_libary_benchmark_invalid_iter.rs:84:8
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_iter.rs:84:8
    |
 84 |     fn teardown(a: u64) {
    |        ^^^^^^^^ ------
 
 error[E0689]: can't call method `into_iter` on ambiguous numeric type `{integer}`
-  --> tests/ui/test_libary_benchmark_invalid_iter.rs:99:28
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_iter.rs:99:28
    |
 99 |     #[benches::some(iter = 1)]
    |                            ^

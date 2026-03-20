@@ -1,5 +1,5 @@
 error: You are using an invalid or deprecated syntax of the main! macro to set up benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) and docs (https://docs.rs/gungraun/latest/gungraun/) for further details.
- --> tests/ui/test_main_invalid_library_benchmark_setup_deprecated.rs:4:5
+ --> tests/ui/lib_bench/test_main_invalid_library_benchmark_setup_deprecated.rs:4:5
   |
 4 |     main!(some_func);
   |     ^^^^^^^^^^^^^^^^
@@ -7,7 +7,7 @@ error: You are using an invalid or deprecated syntax of the main! macro to set u
   = note: this error originates in the macro `main` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: You are using an invalid or deprecated syntax of the main! macro to set up benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) and docs (https://docs.rs/gungraun/latest/gungraun/) for further details.
-  --> tests/ui/test_main_invalid_library_benchmark_setup_deprecated.rs:10:5
+  --> tests/ui/lib_bench/test_main_invalid_library_benchmark_setup_deprecated.rs:10:5
    |
 10 | /     main!(
 11 | |         callgrind_args = "some";
