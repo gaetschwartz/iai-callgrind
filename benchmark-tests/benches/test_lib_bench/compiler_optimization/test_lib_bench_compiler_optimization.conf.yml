@@ -1,3 +1,24 @@
+# Test Case: `test_lib_bench_compiler_optimization`
+#
+# Description:
+#   Validates handling of compiler optimization where identical functions may be
+#   optimized away by the compiler, ensuring Gungraun correctly handles functions
+#   that compile to the same machine code.
+#
+# Test Steps:
+#   1. Run benchmarks with functions that have identical implementations
+#
+# Test Inputs:
+#   - Functions with identical implementations (may be optimized to same code)
+#   - Functions with bench attribute vs without
+#   - Functions with different names but same body
+#   - Functions with parameters vs no parameters
+#
+# Expected Outcomes:
+#   - All benchmarks complete successfully
+#   - Compiler-optimized functions are measured correctly
+#   - No duplicate entries in output despite identical implementations
+
 groups:
   - runs:
       - args: []

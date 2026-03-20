@@ -1,10 +1,32 @@
+# Test Case: `test_lib_bench_threads_nested`
+#
+# Description:
+#   Validates nested thread execution (threads spawning threads) with multiple
+#   Valgrind tools, ensuring correct metric collection for complex threading patterns.
+#
+# Test Steps:
+#   1. Run with `--nocapture` multiple times for comparison
+#   2. Test `--save-baseline` to capture nested thread results
+#   3. Test `--load-baseline` to compare against saved results
+#
+# Test Inputs:
+#   - Thread-in-thread benchmark executing nested threads
+#   - Subprocess benchmark with nested thread spawning
+#   - Callgrind and DHAT with `EntryPoint::None` for manual instrumentation
+#   - `--instr-atstart=no` to control instrumentation timing
+#
+# Expected Outcomes:
+#   - Nested thread execution completes successfully
+#   - Output files reflect correct thread structure
+#   - Baseline save/load works correctly with nested threads
+#
+# Test Environment:
+#   - Excluded on FreeBSD and nightly Rust
+#   - Uses `entry_point(EntryPoint::None)` with manual instrumentation calls
+
 # TODO: Run these tests on nightly toolchain when rust upstream bug in nightly
 # is fixed
 
-# In contrast to the unnested `test_lib_bench_threads` the numbers either
-# deviate by up to 0.1% between two runs in the ci or they don't on my home pc.
-# The output is therefore tested in `test_lib_bench_threads` but not here. The
-# rest stays the same.
 groups:
   - runs_on: "!x86_64-unknown-freebsd"
     rust_version: "!=nightly"

@@ -1,3 +1,25 @@
+# Test Case: `test_lib_bench_threads`
+#
+# Description:
+#   Validates multi-threaded benchmark execution with multiple Valgrind tools,
+#   ensuring correct metric collection across threads and subprocesses.
+#
+# Test Steps:
+#   1. Run with `--nocapture` multiple times for comparison
+#   2. Test `--save-baseline` to capture threaded benchmark results
+#   3. Test `--load-baseline` to compare against saved results
+#
+# Test Inputs:
+#   - Multi-threaded benchmarks using `find_primes_multi_thread`
+#   - Subprocess benchmarks spawning threads
+#   - Callgrind with `toggle-collect` for thread-aware profiling
+#   - DHAT, Memcheck, DRD, Massif, BBV tools
+#   - `compare_by_id` for consistent comparison
+#
+# Test Environment:
+#   - Excluded on FreeBSD and nightly Rust due to thread scheduling differences
+#   - Uses `flaky: 3` retry tolerance on FreeBSD
+
 groups:
   - runs_on: "!x86_64-unknown-freebsd"
     rust_version: "!=nightly"

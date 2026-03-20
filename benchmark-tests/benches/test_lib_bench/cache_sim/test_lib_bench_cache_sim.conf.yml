@@ -1,3 +1,30 @@
+# Test Case: `test_lib_bench_cache_sim`
+#
+# Description:
+#   Validates Callgrind cache simulation (cache-sim option) with flamegraph
+#   generation and soft limits on event kinds. Verifies that Gungraun can run
+#   with cache simulation enabled or disabled.
+#
+# Test Steps:
+#   1. Run benchmarks with cache simulation enabled and disabled
+#   2. Run a second time to verify there are no differences and all `.old`
+#      baseline files are created correctly
+#
+# Test Inputs:
+#   - Callgrind with cache simulation enabled (--cache-sim=yes)
+#   - Callgrind with cache simulation disabled (--cache-sim=no)
+#   - Soft limits on `EventKind::Ir` at main config level
+#   - Flamegraph configuration at main level
+#
+# Expected Outcomes:
+#   - All benchmarks complete successfully
+#   - Cache metrics (L1 hits, LL hits, cache misses, etc.) and estimated cycles
+#     present when cache simulation enabled
+#   - Cache metrics absent when cache simulation disabled (only instruction
+#     counts available)
+#   - Flamegraph files generated correctly for both configurations
+#   - No differences between baseline and second run (`.old` files)
+
 groups:
   - runs:
       - args: []

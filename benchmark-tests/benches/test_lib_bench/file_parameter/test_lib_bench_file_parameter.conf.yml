@@ -1,3 +1,22 @@
+# Test Case: `test_lib_bench_file_parameter`
+#
+# Description:
+#   Validates the `file` parameter for #[benches] attributes, which loads
+#   benchmark inputs from files line by line, creating one benchmark run per
+#   line.
+#
+# Test Steps:
+#   1. Run all benchmarks
+#
+# Test Inputs:
+#   - Single-line fixture file with and without setup
+#   - Multi-line fixture file with and without setup
+#
+# Expected Outcomes:
+#   - File content passed correctly to benchmark function line by line
+#   - Each line creates a separate benchmark case
+#   - Setup functions correctly transform file content
+
 groups:
   - runs:
       - args: []

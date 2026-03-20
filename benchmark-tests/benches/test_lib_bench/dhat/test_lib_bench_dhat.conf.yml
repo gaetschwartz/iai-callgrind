@@ -1,3 +1,33 @@
+# Test Case: `test_lib_bench_dhat`
+#
+# Description:
+#   Validates DHAT tool features including heap allocation tracking, entry
+#   points, hard limits on metrics, copy mode, ad-hoc mode, and allocation
+#   within functions. Test, if metrics like ReadsBytes, WritesBytes need to be
+#   tracked but the initial allocation took place in the setup function that the
+#   EntryPoint::Custom or frames can be used to accomplished that.
+#
+# Test Steps:
+#   1. Run benchmarks to create a baseline
+#   2. Run benchmarks a second time to compare against the baseline
+#
+# Test Inputs:
+#   - DHAT with custom entry points (EntryPoint::Custom, EntryPoint::None)
+#   - DHAT hard limits on metrics (TotalBytes, TotalBlocks, ReadsBytes,
+#     WritesBytes)
+#   - DHAT in default heap mode for profiling heap allocations
+#   - DHAT copy mode for profiling heap block copies
+#   - DHAT ad-hoc mode for tracking custom events via client requests
+#   - Allocation inside setup function vs inside benchmark function
+#   - Default tool set to DHAT at main level
+#
+# Expected Outcomes:
+#   - Heap allocations tracked and attributed correctly
+#   - Hard limits enforced, benchmarks fail if limits exceeded
+#   - Copy mode tracks memory copy operations
+#   - Ad-hoc mode tracks custom events
+#   - Entry point configuration correctly affects cost attribution
+
 groups:
   - runs:
       - args: []

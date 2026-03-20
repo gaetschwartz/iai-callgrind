@@ -1,3 +1,20 @@
+# Test Case: `test_lib_bench_list_arg`
+#
+# Description:
+#   Validates the `--list` argument which lists all available benchmarks without
+#   running them.
+#
+# Test Steps:
+#   1. Run benchmarks with `--list` argument
+#
+# Test Inputs:
+#   - The `--list` flag to list available benchmarks
+#
+# Expected Outcomes:
+#   - Exit code 0 (success)
+#   - Output lists all benchmarks in format: `crate::group::bench: benchmark`
+#   - Total count of benchmarks matches definition in source
+
 groups:
   - runs:
       - args: ["--list"]

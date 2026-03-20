@@ -1,3 +1,30 @@
+# Test Case: `test_lib_bench_tools`
+#
+# Description:
+#   Validates multiple Valgrind tools (Callgrind, DHAT, Memcheck, Massif, BBV,
+#   DRD, Helgrind) in a single benchmark run.
+#
+# Test Steps:
+#   1. Run with `--nocapture` to see captured output
+#   2. Run without `--nocapture` to verify output capture
+#   3. Test baseline save/load functionality when all tools are present
+#   4. Test baseline comparison after modifying benchmark
+#
+# Test Inputs:
+#   - Bubble sort benchmarks with various input sizes
+#   - Subprocess benchmark with `--toggle-collect` filtering
+#   - Memory leak benchmark for Memcheck errors
+#   - Soft limits on Callgrind metrics
+#   - Multiple Valgrind tools configured simultaneously
+#
+# Expected Outcomes:
+#   - All configured tools produce output files
+#   - Baseline operations work correctly with multiple tools
+#   - Comparisons reflect metric changes between runs
+#
+# Test Environment:
+#   - Excluded on FreeBSD due to tool compatibility
+
 groups:
   - runs_on: "!x86_64-unknown-freebsd"
     runs:

@@ -1,12 +1,24 @@
-# Test Description: `test_lib_bench_parallel_cleanup_on_panic`
+# Test Case: `test_lib_bench_parallel_cleanup_on_panic`
 #
-# Run two benchmarks in parallel and one of them panics. Then the other
-# benchmark is supposed to be prematurely terminated by the runner.
+# Description:
+#   Validates cleanup behavior when a benchmark panics during parallel
+#   execution, ensuring other running benchmarks are terminated gracefully.
 #
-# Expected Result:
+# Test Steps:
+#   1. Run two benchmarks in parallel with `--parallel=2 --nocapture`
+#   2. One benchmark panics during execution
+#   3. Verify the other benchmark is terminated and error messages are captured
 #
-# The cargo bench run is supposed to fail as soon as one benchmark panics. Only
-# the error messages from the panicking benchmark are expected to be shown.
+# Test Inputs:
+#   - `--parallel=2` to run benchmarks concurrently
+#   - `--nocapture` to see output
+#   - One benchmark designed to panic during execution
+#
+# Expected Outcomes:
+#   - Exit code 1 (failure due to panic)
+#   - Only error messages from the panicking benchmark are shown
+#   - The non-panicking benchmark is terminated by the runner
+
 groups:
   - runs:
       - args: ["--parallel=2", "--nocapture"]

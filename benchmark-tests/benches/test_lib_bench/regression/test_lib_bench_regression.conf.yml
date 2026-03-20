@@ -1,3 +1,31 @@
+# Test Case: `test_lib_bench_regression`
+#
+# Description:
+#   Validates regression detection with soft/hard limits and fail-fast behavior,
+#   testing limit configuration via code and CLI arguments.
+#
+# Test Steps:
+#   1. Run with invalid hard limit (float instead of integer) - should error
+#   2. Run with regression-enabled config and fail-fast disabled
+#   3. Run with regression-enabled config and fail-fast enabled for each tool
+#   4. Run with regression limits set via CLI arguments
+#
+# Test Inputs:
+#   - Soft limits at 0% threshold (any change triggers regression)
+#   - Hard limits below actual metric values (forces regression)
+#   - `--callgrind-limits`, `--cachegrind-limits`, `--dhat-limits` CLI arguments
+#   - `--regression-fail-fast` CLI flag
+#   - Template-generated test files with varying array sizes to provoke a
+#     difference in the metrics
+#
+# Expected Outcomes:
+#   - Invalid limit types produce clear error messages
+#   - Exit code 0 when no regression detected
+#   - Exit code 3 when regression detected
+#   - Fail-fast stops at first regression with an error message; without
+#     fail-fast, all regressions are reported
+#   - The output contains a hint about the limit type and the limit itself
+
 # spell-checker: ignore readsbytes
 template: test_lib_bench_regression.rs.j2
 groups:

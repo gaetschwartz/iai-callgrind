@@ -1,3 +1,30 @@
+# Test Case: `test_lib_bench_setup_and_teardown`
+#
+# Description:
+#   Validates benchmark-level setup and teardown functions, including various
+#   parameter passing patterns and expression-based arguments.
+#
+# Test Steps:
+#   1. Run all benchmarks with default configuration
+#
+# Test Inputs:
+#   - Setup functions with no arguments
+#   - Setup functions with one or more arguments
+#   - Setup functions with expression-based arguments
+#   - Teardown functions receiving benchmark results
+#   - `#[bench]` and `#[benches]` attribute configurations
+#   - Global setup/teardown at `#[library_benchmark]` level
+#
+# Expected Outcomes:
+#   - Setup functions execute before benchmark runs
+#   - Teardown functions execute after benchmark runs
+#   - Arguments are passed correctly to setup functions
+#   - Teardown functions receive computed values from benchmarks
+#   - All benchmarks complete successfully
+
 groups:
   - runs:
-      - args: []
+      - args: ["--nocapture"]
+        expected:
+          stdout: expected_stdout
+          no_stderr: true

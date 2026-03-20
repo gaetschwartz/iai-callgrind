@@ -26,6 +26,7 @@
 #   - Slightly different output for MSRV and stable in the description of the
 #     benchmark (e.g., `vec! [1, 2]` in MSRV vs `vec![1, 2]` in newer versions).
 #   - The benchmark order is stable and equals the iterator order.
+
 groups:
   - rust_version: ">1.74.1"
     runs:

@@ -1,3 +1,26 @@
+# Test Case: `test_lib_bench_readme_example_fibonacci`
+#
+# Description:
+#   Validates the Fibonacci benchmark example from the README, testing basic
+#   benchmark functionality and CLI options like `--home` and
+#   `--separate-targets`.
+#
+# Test Steps:
+#   1. Run benchmarks twice (creates baseline for comparison)
+#   2. Run with `--separate-targets` to test per-target compilation
+#   3. Run with `--home=/tmp/gungraun` to test custom home directory
+#
+# Test Inputs:
+#   - Fibonacci benchmark from README example
+#   - `--separate-targets` flag for separate target compilation
+#   - `--home` flag for custom output directory
+#
+# Expected Outcomes:
+#   - First run group: Creates baseline files
+#   - Second run group: Uses separate targets for x86_64-linux-gnu
+#   - Third run group: Uses custom home directory (`/tmp/gungraun`)
+#   - All benchmarks complete successfully
+
 # spell-checker:ignore rmdirs
 
 groups:

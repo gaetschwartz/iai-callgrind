@@ -1,3 +1,32 @@
+# Test Case: `test_lib_bench_xtree`
+#
+# Description:
+#   Validates Valgrind's xtree/xleak memory profiling options (`xtree-memory`,
+#   `xtree-leak`) and correct file creation with Memcheck, Helgrind, and Massif
+#   tools.
+#
+# Test Steps:
+#   1. Run with various xtree configurations (first group: without memory leak)
+#   2. Run with xtree options and memory leak to test leak detection and report
+#   3. Run with xtree in subprocess to test multi-process handling
+#
+# Test Inputs:
+#   - `xtree-memory=full` for memory profiling
+#   - `xtree-leak=yes` for leak detection profiling
+#   - Combined xtree-memory and xtree-leak options
+#   - Benchmarks with and without intentional memory leaks
+#   - Subprocess benchmarks that leak memory
+#
+# Expected Outcomes:
+#   - xtree/xleak output files are created correctly
+#   - Memory leaks are detected and reported
+#   - Baseline save/load works with xtree output
+#
+# Test Environment:
+#   - Excluded on nightly Rust due to memcheck reporting issues (Rust issue
+#     #135608)
+#   - Different expected fixtures for Rust versions >= 1.89 and < 1.89
+
 groups:
   # Do not run on nightly due to memcheck reporting possibly lost bytes. Might
   # be this related to https://github.com/rust-lang/rust/issues/135608

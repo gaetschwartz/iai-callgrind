@@ -1,11 +1,24 @@
-# Test Description: `test_lib_bench_parallel_consistency`
+# Test Case: `test_lib_bench_parallel_consistency`
 #
-# Run each benchmark once without parallel and then with parallel to see if the
-# metrics or any output differs.
+# Description:
+#   Validates that benchmark metrics and output remain consistent when run
+#   serially versus in parallel.
 #
-# Expected Result:
+# Test Steps:
+#   1. Run benchmarks without `--parallel`, then with `--parallel=2`
+#   2. Run benchmarks with `--nocapture` (no parallel), then with `--nocapture
+#      --parallel=2`
 #
-# The metrics and output should match exactly when run serially and in parallel.
+# Test Inputs:
+#   - Groups of benchmarks run both serially and in parallel
+#   - `--parallel=2` flag for parallel execution
+#   - `--nocapture` flag for output visibility
+#
+# Expected Outcomes:
+#   - Metrics and output files match between serial and parallel runs
+#   - No differences in benchmark results due to execution mode
+#   - Both runs complete successfully with exit code 0
+
 groups:
   - runs:
       - args: []

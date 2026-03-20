@@ -1,3 +1,24 @@
+# Test Case: `test_lib_bench_single`
+#
+# Description:
+#   Validates single benchmark execution with baseline save/load functionality,
+#   testing comparison between different baseline runs.
+#
+# Test Steps:
+#   1. Save baseline `foo` with `worst_case_start=0`
+#   2. Save baseline `bar` with `worst_case_start=300` (different input size)
+#   3. Load baseline `bar` and compare against baseline `foo`
+#
+# Test Inputs:
+#   - Template-generated benchmark with configurable `worst_case_start`
+#   - `--save-baseline` and `--load-baseline` arguments
+#   - `--baseline` argument for comparison baseline
+#
+# Expected Outcomes:
+#   - Baseline files are created correctly
+#   - Comparisons between baselines show expected metric differences
+#   - Output matches expected fixtures for each run
+
 template: test_lib_bench_single.rs.j2
 groups:
   - runs:

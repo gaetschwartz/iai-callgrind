@@ -1,3 +1,30 @@
+# Test Case: `test_lib_bench_compare`
+#
+# Description:
+#   Validates the compare_by_id feature for comparing benchmarks by ID within
+#   groups, allowing performance comparison across different benchmark functions.
+#
+# Test Steps:
+#   1. Run benchmarks with compare_by_id enabled across various group
+#      configurations
+#   2. Run benchmarks with --show-only-comparison flag
+#
+# Test Inputs:
+#   - Single benchmark group with compare_by_id enabled
+#   - Multiple benchmark groups with compare_by_id enabled
+#   - Benchmarks with explicit IDs via #[bench::id] attribute
+#   - With and without DHAT
+#   - Benchmarks without explicit IDs
+#
+# Expected Outcomes:
+#   - Benchmarks are compared by ID within each group
+#   - Comparison works across multiple benches in the same group
+#   - Benchmarks excluded from comparison due to not matching ids
+#     (no_compare_multiple) or because they have no ID are not compared
+#   - Output shows comparison view with baseline vs comparison columns
+#   - --show-only-comparison suppresses non-comparison output
+#   - The comparison includes DHAT if present
+
 groups:
   - runs:
       - args: []

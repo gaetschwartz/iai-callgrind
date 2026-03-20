@@ -1,3 +1,31 @@
+# Test Case: `test_lib_bench_cachegrind`
+#
+# Description:
+#   Validates Cachegrind tool configuration, including tool overrides at
+#   different levels and manual instrumentation via client requests.
+#
+# Test Steps:
+#   1. Run benchmarks without cachegrind feature (default tool behavior)
+#   2. Run without cachegrind feature, then with cachegrind feature enabled
+#   3. Run twice with cachegrind feature (baseline comparison)
+#   4. Run with cachegrind feature, then without (verifies feature toggle)
+#
+# Test Inputs:
+#   - Cachegrind as additional tool with cache-sim enabled/disabled
+#   - Cachegrind tool_override at bench level
+#   - Callgrind tool_override at bench level
+#   - Manual Cachegrind instrumentation via client requests
+#     (start_instrumentation/stop_instrumentation) using `instr-at-start=no`
+#   - `--features cachegrind` cargo flag
+#
+# Expected Outcomes:
+#   - All benchmarks complete successfully
+#   - Tool configurations correctly applied at library_benchmark level
+#   - Cachegrind output files created when feature is enabled
+#   - Manual Cachegrind instrumentation produces expected output
+#   - `--cache-sim` CLI argument produces different terminal output for
+#     verification of tool behavior
+
 groups:
   - runs:
       - args: []
