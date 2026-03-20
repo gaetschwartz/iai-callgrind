@@ -1,3 +1,12 @@
+//! Verifies whether a file exists or not.
+//!
+//! Asserts that a file's existence matches the expected state.
+//!
+//! # Arguments
+//!
+//! * `<path>` - Path to the file to check.
+//! * `<true|false>` - Expected existence: `true` if file should exist, `false` if it should not.
+
 use std::path::PathBuf;
 
 fn main() {

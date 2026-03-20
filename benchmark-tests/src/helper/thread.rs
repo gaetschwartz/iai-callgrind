@@ -1,3 +1,13 @@
+//! Multi-threaded prime number finder for benchmarking thread handling.
+//!
+//! Finds prime numbers across multiple threads to test threading behavior in benchmarks. Supports
+//! both simple multi-threaded execution and nested thread scenarios with Callgrind instrumentation.
+//!
+//! # Arguments
+//!
+//! * `[num_threads]` - Number of threads to spawn (default: 0, uses main thread only).
+//! * `--thread-in-thread` - Run a nested thread scenario with Callgrind instrumentation control.
+
 use benchmark_tests::{find_primes_multi_thread, thread_in_thread_with_instrumentation};
 
 fn main() {

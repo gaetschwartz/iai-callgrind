@@ -1,3 +1,12 @@
+//! Sleeps for a specified duration then exits normally.
+//!
+//! Used for testing timeout handling and process termination in benchmarks printing a message after
+//! the timeout duration.
+//!
+//! # Arguments
+//!
+//! * `[timeout_ms]` - Number of milliseconds to sleep (default: 20000).
+
 use std::io::Error;
 use std::thread::sleep;
 use std::time::Duration;

@@ -1,3 +1,12 @@
+//! Prints the contents of a file to stdout.
+//!
+//! A simple `cat`-like utility. Usable for testing if a file is present or the content of a file is
+//! as expected.
+//!
+//! # Arguments
+//!
+//! * `<file>` - Path to the file to read and print to stdout.
+
 use std::fs::File;
 use std::io::{copy, stdout, BufReader, BufWriter, Write};
 

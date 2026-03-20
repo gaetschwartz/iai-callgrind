@@ -1,3 +1,12 @@
+//! Reads a file and verifies its content matches expected value.
+//!
+//! Asserts that the file's content exactly equals the provided expected string.
+//!
+//! # Arguments
+//!
+//! * `<file>` - Path to the file to read.
+//! * `<expected>` - Expected content that the file should contain.
+
 use std::fs::File;
 use std::io::Read;
 
