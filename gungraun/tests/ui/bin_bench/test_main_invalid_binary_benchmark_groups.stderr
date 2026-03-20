@@ -1,0 +1,34 @@
+error: The binary_benchmark_groups argument needs at least one `name` of a `binary_benchmark_group!`
+  --> tests/ui/bin_bench/test_main_invalid_binary_benchmark_groups.rs:24:5
+   |
+24 |     main!(binary_benchmark_groups = );
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in the macro `main` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: You are using an invalid or deprecated syntax of the main! macro to set up benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) and docs (https://docs.rs/gungraun/latest/gungraun/) for further details.
+  --> tests/ui/bin_bench/test_main_invalid_binary_benchmark_groups.rs:29:5
+   |
+29 |     main!(something);
+   |     ^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in the macro `main` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0433]: failed to resolve: use of undeclared crate or module `some_func`
+ --> tests/ui/bin_bench/test_main_invalid_binary_benchmark_groups.rs:6:37
+  |
+6 |     main!(binary_benchmark_groups = some_func);
+  |                                     ^^^^^^^^^ use of undeclared crate or module `some_func`
+
+error[E0277]: the trait bound `InternalBinaryBenchmarkConfig: From<&str>` is not satisfied
+  --> tests/ui/bin_bench/test_main_invalid_binary_benchmark_groups.rs:19:5
+   |
+19 |     main!(config = "some string", binary_benchmark_groups = some);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `From<&str>` is not implemented for `InternalBinaryBenchmarkConfig`
+   |
+   = help: the following other types implement trait `From<T>`:
+             <InternalBinaryBenchmarkConfig as From<BinaryBenchmarkConfig>>
+             <InternalBinaryBenchmarkConfig as From<&BinaryBenchmarkConfig>>
+             <InternalBinaryBenchmarkConfig as From<&mut BinaryBenchmarkConfig>>
+   = note: required for `&str` to implement `Into<InternalBinaryBenchmarkConfig>`
+   = note: this error originates in the macro `main` (in Nightly builds, run with -Z macro-backtrace for more info)

@@ -3,7 +3,7 @@
 This section is a brief reference to all the macros available in library
 benchmarks. Feel free to come back here from other sections if you need a
 reference. For the complete documentation of each macro see the [api
-Documentation](https://docs.rs/gungraun/0.17.2/gungraun/).
+Documentation][api-docs].
 
 For the following examples it is assumed that there is a file `lib.rs` in a
 crate named `my_lib` with the following content:
@@ -50,11 +50,10 @@ main!(library_benchmark_groups = bubble_sort_group);
 
 The following parameters are accepted:
 
-- `config`: Takes a
-  [`LibraryBenchmarkConfig`](https://docs.rs/gungraun/0.17.2/gungraun/struct.LibraryBenchmarkConfig.html)
-- `setup`: A global setup function which is applied to all following [`#[bench]`](#the-bench-attribute)
-  and [`#[benches]`](#the-benches-attribute) attributes if not overwritten by a `setup` parameter of these
-  attributes.
+- `config`: Takes a [`LibraryBenchmarkConfig`]
+- `setup`: A global setup function which is applied to all following
+  [`#[bench]`](#the-bench-attribute) and [`#[benches]`](#the-benches-attribute)
+  attributes if not overwritten by a `setup` parameter of these attributes.
 - `teardown`: Similar to `setup` but takes a global `teardown` function.
 
 ```rust
@@ -89,18 +88,18 @@ The basic structure is `#[bench::some_id(/* parameters */)]`. The part after the
 `::` must be an id unique within the same `#[library_benchmark]`. This attribute
 accepts the following parameters:
 
-- `args`: A tuple with a list of arguments which are passed to the
-  benchmark function. The parentheses also need to be present if there is only a
-  single argument (`#[bench::my_id(args = (10))]`).
-- `config`: Accepts a
-  [`LibraryBenchmarkConfig`](https://docs.rs/gungraun/0.17.2/gungraun/struct.LibraryBenchmarkConfig.html)
+- `args`: A tuple with a list of arguments which are passed to the benchmark
+  function. The parentheses also need to be present if there is only a single
+  argument (`#[bench::my_id(args = (10))]`).
+- `config`: Accepts a [`LibraryBenchmarkConfig`]
 - `setup`: A function which takes the arguments specified in the `args`
   parameter and passes its return value to the benchmark function.
 - `teardown`: A function which takes the return value of the benchmark function.
 
 If no other parameters besides `args` are present you can simply pass the
-arguments as a list of values. So, instead of `#[bench::my_id(args = (10,
-20))]`, you could also use the shorter `#[bench::my_id(10, 20)]`.
+arguments as a list of values. So, instead of
+`#[bench::my_id(args = (10, 20))]`, you could also use the shorter
+`#[bench::my_id(10, 20)]`.
 
 ```rust
 # extern crate gungraun;
@@ -137,9 +136,10 @@ main!(library_benchmark_groups = bubble_sort_group);
 This attribute is used to specify multiple benchmarks. It accepts the same
 parameters as the [`#[bench]`](#the-bench-attribute) attribute: `args`,
 `config`, `setup` and `teardown` and additionally the `iter` and `file`
-parameters which are explained in full detail in [Specifying multiple benchmarks
-at once](./multiple_benches.md). In contrast to the `args` parameter in
-[`#[bench]`](#the-bench-attribute), `args` takes an array of arguments.
+parameters which are explained in full detail in
+[Specifying multiple benchmarks at once](./multiple_benches.md). In contrast to
+the `args` parameter in [`#[bench]`](#the-bench-attribute), `args` takes an
+array of arguments.
 
 ```rust
 # extern crate gungraun;
@@ -175,18 +175,17 @@ order and separated by a comma):
 
 - **`name`** (mandatory): A unique name used to identify the group for the
   `main!` macro
-- **`config`** (optional): A
-  [`LibraryBenchmarkConfig`](https://docs.rs/gungraun/0.17.2/gungraun/struct.LibraryBenchmarkConfig.html)
-  which is applied to all benchmarks within the same group.
+- **`config`** (optional): A [`LibraryBenchmarkConfig`] which is applied to all
+  benchmarks within the same group.
 - **`compare_by_id`** (optional): The default is false. If true, all benches in
   the benchmark functions specified in the `benchmarks` parameter are compared
   with each other as long as the ids (the part after the `::` in
-  `#[bench::id(...)]`) match. See also [Comparing benchmark
-  functions](./compare_by_id.md)
+  `#[bench::id(...)]`) match. See also
+  [Comparing benchmark functions](./compare_by_id.md)
 - **`max_parallel`** (optional): The default is no limit. If set, `0` means no
-  limit (same as not specifying), `1` disables parallel execution for this group,
-  and values `>= 2` limit the maximum number of parallel benchmarks. This option
-  only has an effect when the `--parallel` CLI option is used. See
+  limit (same as not specifying), `1` disables parallel execution for this
+  group, and values `>= 2` limit the maximum number of parallel benchmarks. This
+  option only has an effect when the `--parallel` CLI option is used. See
   [Running Benchmarks in Parallel](../../cli_and_env/parallel.md#limiting-parallelism-per-group)
   for more details.
 - **`setup`** (optional): A setup function or any valid expression which is run
@@ -206,12 +205,10 @@ mentioned attributes.
 
 ## The main! Macro
 
-This macro is the entry point for Gungraun and creates the benchmark
-harness. It accepts the following top-level arguments in this order (separated
-by a comma):
+This macro is the entry point for Gungraun and creates the benchmark harness. It
+accepts the following top-level arguments in this order (separated by a comma):
 
-- **`config`** (optional): Optionally specify a
-  [`LibraryBenchmarkConfig`](https://docs.rs/gungraun/0.17.2/gungraun/struct.LibraryBenchmarkConfig.html)
+- **`config`** (optional): Optionally specify a [`LibraryBenchmarkConfig`]
 - **`setup`** (optional): A setup function or any valid expression which is run
   before all benchmarks
 - **`teardown`** (optional): A setup function or any valid expression which is
@@ -226,3 +223,7 @@ Like the `setup` and `teardown` of the
 parameters accept an expression and are not overridden by the `setup` and
 `teardown` of the `library_benchmark_group`, `#[library_benchmark]`, `#[bench]`
 or `#[benches]` attribute.
+
+[api-docs]: https://docs.rs/gungraun/0.17.2/gungraun/
+[`LibraryBenchmarkConfig`]:
+    https://docs.rs/gungraun/0.17.2/gungraun/struct.LibraryBenchmarkConfig.html

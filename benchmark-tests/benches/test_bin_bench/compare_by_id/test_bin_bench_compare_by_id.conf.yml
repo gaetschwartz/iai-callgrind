@@ -1,8 +1,35 @@
+# Test Case: `test_bin_bench_compare_by_id`
+#
+# Description:
+#   Tests the `compare_by_id` option for comparing benchmarks by ID across
+#   runs. Validates that comparisons work correctly when IDs match and handles
+#   cases where IDs don't match or are missing.
+#
+# Test Steps:
+#   1. Run all benchmarks with different group configurations
+#   2. Run again to compare against previous run
+#
+# Test Inputs:
+#   - Groups with `compare_by_id = true`
+#   - Benchmarks without IDs (comparison should not happen)
+#   - Benchmarks with same IDs in different groups
+#   - Benchmarks with different IDs between runs
+#   - Low-level API benchmarks with IDs
+#   - `#[bench::foo()]` syntax creating benchmarks with IDs
+#
+# Expected Outcomes:
+#   - Comparisons only occur when IDs match between runs
+#   - Groups without `compare_by_id` don't affect comparison
+#   - Output shows correct comparison results
+#   - Benchmarks without ids are not compared
+
 groups:
   - runs:
       - args: []
         expected:
           stdout: expected_stdout.1
+          no_stderr: true
       - args: []
         expected:
           stdout: expected_stdout.2
+          no_stderr: true

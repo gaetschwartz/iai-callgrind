@@ -17,8 +17,8 @@ gungraun = { version = "0.17.2", features = ["client_requests"] }
 ## The Cachegrind Feature
 
 There are two ways to use cachegrind instead of callgrind. The first and easy
-way is to use the `cachegrind` feature, so your `gungraun` spec should
-finally look like this:
+way is to use the `cachegrind` feature, so your `gungraun` spec should finally
+look like this:
 
 ```toml
 [dev-dependencies]
@@ -98,9 +98,9 @@ main!(library_benchmark_groups = my_group);
 ```
 
 Not only the body of the benchmark function changed but also the command-line
-argument `--instr-at-start=no` had to be specified to start the
-instrumentation with the client request and not (what is the default) when
-starting the benchmark executable.
+argument `--instr-at-start=no` had to be specified to start the instrumentation
+with the client request and not (what is the default) when starting the
+benchmark executable.
 
 All of the above is exactly what the `cachegrind` feature does. It adds the
 client requests to the function body, returns the result from the function and

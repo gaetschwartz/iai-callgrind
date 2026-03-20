@@ -1,7 +1,32 @@
-# Test description: `test_lib_bench_output_format_threads`
+# Test Case: `test_lib_bench_output_format_threads`
 #
-# Basically the same procedure as in `test_lib_bench_output_format` but with
-# tests that spawn threads.
+# Description:
+#   Validates output formatting options with multi-threaded benchmarks, ensuring
+#   consistent output when benchmarks spawn threads. This test is separated
+#   from the main test to be able to apply the tolerance and flaky setting
+#   independently.
+#
+# Test Steps:
+#   1. Run with `--nocapture` to verify stdout output (two runs for comparison)
+#   2. Run with `--nosummary` to disable summary output
+#   3. Run with custom CLI metrics (`--callgrind-metrics`, `--dhat-metrics`)
+#   4. Run with `--show-grid` to display comparison grid
+#   5. Run with `--show-intermediate` to show intermediate results
+#   6. Run with `--truncate-description` to test description truncation
+#
+# Test Inputs:
+#   - Multi-threaded benchmarks using `find_primes_multi_thread`
+#   - Various CLI flags controlling output format
+#   - Flaky and tolerance due to thread variations
+#
+# Expected Outcomes:
+#   - Output formats match expected fixtures for threaded benchmarks
+#   - Comparison between runs shows expected differences
+#   - Summary, grid, and intermediate output work correctly with threads
+#
+# Test Environment:
+#   - Excluded on FreeBSD due to lack of `--fair-sched=yes` support
+
 groups:
   - runs_on: "!x86_64-unknown-freebsd"
     runs:

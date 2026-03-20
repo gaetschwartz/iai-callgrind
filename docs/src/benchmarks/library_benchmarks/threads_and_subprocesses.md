@@ -3,12 +3,13 @@
 # Multi-Threaded and Multi-Process Applications
 
 The default is to run Gungraun benchmarks with `--separate-threads=yes`,
-`--trace-children=yes` switched on. This enables Gungraun to trace threads
-and subprocesses, respectively. Note that `--separate-threads=yes` is not
-strictly necessary to be able to trace threads. But, if they are separated,
-Gungraun can collect and display the metrics for each thread. Due to the
-way `callgrind` applies [data collection options] like `--toggle-collect`,
-`--collect-atstart`, ... further configuration is needed in library benchmarks.
+`--trace-children=yes` switched on. This enables Gungraun to trace threads and
+subprocesses, respectively. Note that `--separate-threads=yes` is not strictly
+necessary to be able to trace threads. But, if they are separated, Gungraun can
+collect and display the metrics for each thread. Due to the way `callgrind`
+applies [data collection options][data-collection-options] like
+`--toggle-collect`, `--collect-atstart`, ... further configuration is needed in
+library benchmarks.
 
 To actually see the collected metrics in the terminal output for all threads
 and/or subprocesses you can switch on `OutputFormat::show_intermediate`:
@@ -47,10 +48,10 @@ approaches and try to highlight the pros and cons of each.
 ## Multi-Threaded Applications
 
 `Callgrind` treats each thread and process as a separate unit and it applies
-data collection options to each unit. In library benchmarks the [entry
-point](./custom_entry_point.md) (or the default toggle) for `callgrind` is per
-default set to the benchmark function with the help of the `--toggle-collect`
-option. Setting `--toggle-collect` also automatically sets
+data collection options to each unit. In library benchmarks the
+[entry point](./custom_entry_point.md) (or the default toggle) for `callgrind`
+is per default set to the benchmark function with the help of the
+`--toggle-collect` option. Setting `--toggle-collect` also automatically sets
 `--collect-atstart=no`. If not further customized for a benchmarked
 multi-threaded function, these options cause the metrics for the spawned threads
 to be zero. This happens since each thread is a separate unit with
@@ -203,10 +204,10 @@ fn bench_threads(num_threads: usize) -> Vec<u64> {
 
 This approach may or may not work, depending on whether the compiler inlines the
 target function of the `--toggle-collect` argument or not. This is the same
-problem as with [custom entry
-points](./custom_entry_point.md#pitfall-inlined-functions). As can be seen
-below, the compiler has chosen to inline `find_primes` and the metrics for the
-threads are still zero:
+problem as with
+[custom entry points](./custom_entry_point.md#pitfall-inlined-functions). As can
+be seen below, the compiler has chosen to inline `find_primes` and the metrics
+for the threads are still zero:
 
 <pre><code class="hljs"><span style="color:#0A0">lib_bench_threads::my_group::bench_threads</span> <span style="color:#0AA">two_threads</span><span style="color:#0AA">:</span><b><span style="color:#00A">2</span></b>
 <span style="color:#555">  </span><span style="color:#A50">##</span> <b>pid: 2620776 thread: 1 part: 1</b>        |N/A
@@ -373,11 +374,12 @@ There is another more reliable way as shown below in the next section.
 
 ### Measuring Threads Using Client Requests
 
-The perhaps most reliable and flexible way to measure threads is using [client
-requests](../../client_requests.md). The downside is that you have to put some
-benchmark code into your production code. But, if you followed the installation
-instructions in [client requests](../../client_requests.md), this additional
-code is only compiled in benchmarks, not in your final production-ready library.
+The perhaps most reliable and flexible way to measure threads is using
+[client requests](../../client_requests.md). The downside is that you have to
+put some benchmark code into your production code. But, if you followed the
+installation instructions in [client requests](../../client_requests.md), this
+additional code is only compiled in benchmarks, not in your final
+production-ready library.
 
 Using the callgrind client request, we adjust the threads in the
 `find_primes_multi_thread` function like so:
@@ -452,10 +454,10 @@ threads:
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.49333s</code></pre>
 
 Using the client request toggles is very flexible since you can put the
-`gungraun::client_requests::callgrind::toggle_collect` instructions
-anywhere in the threads. In this example, we just have a single function in the
-thread, but if your threads consist of more than just a single function, you can
-easily exclude uninteresting parts from the final measurements.
+`gungraun::client_requests::callgrind::toggle_collect` instructions anywhere in
+the threads. In this example, we just have a single function in the thread, but
+if your threads consist of more than just a single function, you can easily
+exclude uninteresting parts from the final measurements.
 
 If you want to prevent the code of the main thread from being measured, you can
 use the following:
@@ -528,18 +530,16 @@ Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regression
 
 Measuring multi-process applications is in principal not that different from
 multi-threaded applications since subprocesses are just like threads separate
-units. As for threads, the [data collection options] are applied to subprocesses
-separately from the main process.
+units. As for threads, the [data collection options][data-collection-options]
+are applied to subprocesses separately from the main process.
 
-Note there are multiple [valgrind command-line
-arguments](https://valgrind.org/docs/manual/manual-core.html#manual-core.basicopts)
+Note there are multiple [valgrind command-line arguments][valgrind-cli-args]
 that can disable the collection of metrics for uninteresting subprocesses, for
 example subprocesses that are spawned by your library function but are not part
 of your library/binary crate.
 
 For the following examples suppose the code below is the `cat` binary and part
-of a crate (so we can use
-[`env!("CARGO_BIN_EXE_cat")`](https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-crates)):
+of a crate (so we can use [`env!("CARGO_BIN_EXE_cat")`][cargo-env]):
 
 ```rust
 use std::fs::File;
@@ -812,4 +812,9 @@ Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regression
 As expected, the metrics for the `cat` binary are a little bit lower since we
 skipped measuring the parsing of the command-line arguments.
 
-[data collection options]: https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options.collection
+[cargo-env]:
+    https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-crates
+[data-collection-options]:
+    https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options.collection
+[valgrind-cli-args]:
+    https://valgrind.org/docs/manual/manual-core.html#manual-core.basicopts

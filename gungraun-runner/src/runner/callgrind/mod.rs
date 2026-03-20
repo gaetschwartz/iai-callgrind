@@ -121,7 +121,8 @@ impl CyclesEstimator {
         let total_memory_rw = self.instructions + d_refs;
         let l1_hits = total_memory_rw - ram_hits - l3_hits;
 
-        // Uses Itamar Turner-Trauring's formula from https://pythonspeed.com/articles/consistent-benchmarking-in-ci/
+        // Uses Itamar Turner-Trauring's formula from
+        // <https://pythonspeed.com/articles/consistent-benchmarking-in-ci/>
         let cycles = l1_hits + (l3_hits * 5) + (ram_hits * 35);
 
         let l1_hit_rate = l1_hits.div0(total_memory_rw) * 100;

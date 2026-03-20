@@ -1,14 +1,14 @@
 # Getting Help
 
-Reach out to us on [Github
-Discussions](https://github.com/gungraun/gungraun/discussions) or open
-an [Issue](https://github.com/gungraun/gungraun/issues) in the
-[Gungraun
-Repository](https://github.com/gungraun/gungraun). Check the
-open and closed issues in the issue board, maybe you can already find a solution
-to your problem there.
+Reach out to us on [Github Discussions][github-discussions] or open an
+[Issue][github-issues] in the [Gungraun Repository][github-repo]. Check the open
+and closed issues in the issue board, maybe you can already find a solution to
+your problem there.
 
-The api documentation can be found on
-[docs.rs](https://docs.rs/gungraun/0.17.2/gungraun/) but you might
-also want to check out the `Troubleshooting` section in the sidebar of this
-guide.
+The api documentation can be found on [docs.rs][api-docs] but you might also
+want to check out the `Troubleshooting` section in the sidebar of this guide.
+
+[api-docs]: https://docs.rs/gungraun/0.17.2/gungraun/
+[github-discussions]: https://github.com/gungraun/gungraun/discussions
+[github-issues]: https://github.com/gungraun/gungraun/issues
+[github-repo]: https://github.com/gungraun/gungraun

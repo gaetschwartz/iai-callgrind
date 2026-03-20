@@ -1,3 +1,11 @@
+//! Exits with a specified exit code or panics.
+//!
+//! Used for testing exit code handling and error scenarios in benchmarks.
+//!
+//! # Arguments
+//!
+//! * `<code>` - Either an integer exit code, or the string `panic` to trigger a panic.
+
 fn main() {
     let arg = std::env::args()
         .nth(1)

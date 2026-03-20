@@ -1646,9 +1646,11 @@ impl BinaryBenchmarkGroup {
 impl Command {
     /// Create a new [`Command`] which is run under valgrind.
     ///
-    /// Use
-    /// [`env!("CARGO_BIN_EXE_<name>)`](https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-crates)
+    /// Use [`env!("CARGO_BIN_EXE_<name>)`][env-cargo-exe]
     /// to provide the path to an executable of your project instead of `target/release/<name>`.
+    ///
+    /// [env-cargo-exe]:
+    /// https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-crates
     ///
     /// This `Command` is a builder for the binary which is going to be benchmarked but is not
     /// executed right away. We simply gather all the information to be finally able to execute the

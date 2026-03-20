@@ -1,3 +1,24 @@
+# Test Case: `test_bin_bench_setup_child_exit_with_error`
+#
+# Description:
+#   Tests error handling when a setup child process panics during execution of
+#   `Stdin::Setup(Pipe::Stdout)`. The setup function is designed to panic after
+#   a delay, which should propagate as an error.
+#
+# Test Steps:
+#   1. Run benchmark with `--nocapture`, expecting setup to panic
+#
+# Test Inputs:
+#   - Setup function that panics with "SETUP CHILD PROCESS" message
+#   - `Stdin::Setup(Pipe::Stdout)` configuration
+#
+# Expected Outcomes:
+#   - Exit code 1 (failure)
+#   - Stdout contains panic location information
+#   - Stderr contains panic message (format varies by Rust version)
+#   - Rust version conditions: `<=1.74.1` and `>1.74.1` (slightly different
+#     panic output)
+
 groups:
   - runs:
       - args: ["--nocapture"]

@@ -1,3 +1,29 @@
+# Test Case: `test_bin_bench_main_and_group_setup_and_teardown`
+#
+# Description:
+#   Tests setup and teardown functions executed at main and group levels.
+#   Validates execution order and ensuring setup/teardown are skipped when
+#   loading a baseline.
+#
+# Test Steps:
+#   1. Run with `--nocapture` to see all setup/teardown output
+#   2. Save baseline with `--save-baseline`
+#   3. Load baseline with `--load-baseline` (setup/teardown should not run)
+#
+# Test Inputs:
+#   - `main_setup()` and `main_teardown()` at `main!` level
+#   - `group_setup()` and `group_teardown()` at `binary_benchmark_group!` level
+#   - Group setup creates a file that group teardown removes
+#   - `--save-baseline` to create baseline
+#   - `--load-baseline` to skip actual setup/teardown and benchmark execution
+#
+# Expected Outcomes:
+#   - First run: setup/teardown execute in correct order (main before group)
+#   - `--save-baseline`: creates baseline, setup/teardown run
+#   - `--load-baseline`: setup/teardown/benchmark are skipped, only comparison
+#     runs
+#   - File created by group setup exists during benchmark and cleaned by teardown
+
 groups:
   - runs:
       - args: ["--nocapture"]

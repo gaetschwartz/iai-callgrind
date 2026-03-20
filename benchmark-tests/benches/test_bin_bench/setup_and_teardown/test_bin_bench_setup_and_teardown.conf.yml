@@ -1,3 +1,32 @@
+# Test Case: `test_bin_bench_setup_and_teardown`
+#
+# Description:
+#   Tests setup and teardown functions at the benchmark level, including
+#   function argument passing, inheritance from `#[binary_benchmark]` level,
+#   and override behavior. Also validates skipping setup/teardown when
+#   loading a baseline.
+#
+# Test Steps:
+#   1. Run with `--nocapture` to see all setup/teardown output
+#   2. Save baseline with `--save-baseline`
+#   3. Load baseline with `--load-baseline` (setup/teardown should not run)
+#
+# Test Inputs:
+#   - Setup/teardown functions with and without arguments
+#   - Setup/teardown functions in modules (namespaced)
+#   - Global setup/teardown at `#[binary_benchmark]` level
+#   - Bench-level setup/teardown that override global
+#   - Low-level API (`BinaryBenchmark`, `Bench`) setup/teardown
+#   - `--save-baseline` and `--load-baseline` flags
+#
+# Expected Outcomes:
+#   - Setup functions execute before command, teardown after
+#   - Arguments passed correctly to setup/teardown functions
+#   - Bench-level overrides take precedence over global
+#   - `--load-baseline` skips setup/teardown execution
+#   - Output files created with expected metrics
+#   - Stdout shows correct execution order
+
 groups:
   - runs:
       - args: ["--nocapture"]

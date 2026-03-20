@@ -8,16 +8,14 @@ By default, all terminal output of the benchmark function, `setup` and
 ## Using the Log Level
 
 The most basic possibility to show any captured output, is to use
-[`GUNGRAUN_LOG=info`](./logging.md). This includes a lot of other output,
-too.
+[`GUNGRAUN_LOG=info`](./logging.md). This includes a lot of other output, too.
 
 ## Tell Gungraun to Not Capture the Output
 
-Another nicer possibility is, to tell Gungraun to not capture output with
-the `--nocapture` (env: `GUNGRAUN_NOCAPTURE`) option. This is currently
-restricted to the `callgrind` run to prevent showing the same output multiple
-times. So, any terminal output of [other tool runs](../../tools.md) is still
-captured.
+Another nicer possibility is, to tell Gungraun to not capture output with the
+`--nocapture` (env: `GUNGRAUN_NOCAPTURE`) option. This is currently restricted
+to the `callgrind` run to prevent showing the same output multiple times. So,
+any terminal output of [other tool runs](../../tools.md) is still captured.
 
 The `--nocapture` flag takes the special values `stdout` and `stderr` in
 addition to `true` and `false`:
@@ -59,8 +57,9 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-If the above benchmark is run with `cargo bench --bench my_benchmark --
---nocapture`, the output of Gungraun will look like this:
+If the above benchmark is run with
+`cargo bench --bench my_benchmark -- --nocapture`, the output of Gungraun will
+look like this:
 
 <pre><code class="hljs"><span style="color:#0A0">my_benchmark::my_group::bench_library</span> <span style="color:#0AA">some_id</span><span style="color:#0AA">:</span><b><span style="color:#00A">10</span></b>
 Output to stdout: 20
@@ -82,6 +81,6 @@ indicates your chosen option with `- end of stdout`.
 
 Note that independently of the value of the `--nocapture` option, all logging
 output of a valgrind tool itself is stored in files in the output directory of
-the benchmark. Since Gungraun needs the logging output of valgrind tools
-stored in files, there is no option to disable the creation of these log files.
-But, if anything goes sideways you might be glad to have the log files around.
+the benchmark. Since Gungraun needs the logging output of valgrind tools stored
+in files, there is no option to disable the creation of these log files. But, if
+anything goes sideways you might be glad to have the log files around.

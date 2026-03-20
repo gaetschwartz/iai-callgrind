@@ -2,14 +2,13 @@
 
 # Detecting Performance Regressions
 
-With Gungraun you can define limits for each callgrind/cachegrind event
-kind or dhat metric over which a performance regression can be assumed. Per
-default, Gungraun does not perform regression checks, and you have to
-opt-in with `Callgrind::soft_limits`, `Callgrind::hard_limits`,
-`Cachegrind::soft_limits`, ... at benchmark level in
-`LibraryBenchmarkConfig::tool` or `BinaryBenchmarkConfig::tool` or at a more
-global level with [Command-line arguments or Environment
-variables](./cli_and_env/basics.md), see
+With Gungraun you can define limits for each callgrind/cachegrind event kind or
+dhat metric over which a performance regression can be assumed. Per default,
+Gungraun does not perform regression checks, and you have to opt-in with
+`Callgrind::soft_limits`, `Callgrind::hard_limits`, `Cachegrind::soft_limits`,
+... at benchmark level in `LibraryBenchmarkConfig::tool` or
+`BinaryBenchmarkConfig::tool` or at a more global level with
+[Command-line arguments or Environment variables](./cli_and_env/basics.md), see
 [below](#defining-limits-on-the-command-line).
 
 For a soft limit, a performance regression check consists of an [`EventKind`],
@@ -19,8 +18,8 @@ restrict the `EventKind`, ... by an absolute number.
 
 Note that [comparing baselines](./cli_and_env/baselines.md) also detects
 performance regressions. This can be useful, for example, when setting up
-Gungraun in the [CI](./installation/gungraun.md#in-the-github-ci) to
-cause a PR to fail when comparing to the main branch.
+Gungraun in the [CI](./installation/gungraun.md#in-the-github-ci) to cause a PR
+to fail when comparing to the main branch.
 
 Regressions are considered errors and will cause the benchmark to fail if they
 occur, and Gungraun will exit with error code `3`.
@@ -29,9 +28,9 @@ occur, and Gungraun will exit with error code `3`.
 
 Limits can be defined on the command-line for the following tools with
 `--callgrind-limits` (`GUNGRAUN_CALLGRIND_LIMITS`), `--cachegrind-limits`
-(`GUNGRAUN_CACHEGRIND_LIMITS`) and `--dhat-limits`
-(`GUNGRAUN_DHAT_LIMITS`). Command-line limits overwrite the limits
-specified in the benchmark file (see below).
+(`GUNGRAUN_CACHEGRIND_LIMITS`) and `--dhat-limits` (`GUNGRAUN_DHAT_LIMITS`).
+Command-line limits overwrite the limits specified in the benchmark file (see
+below).
 
 In order to disambiguate between soft and hard limits, soft limits have to be
 suffixed with a `%`. Hard limits are bare numbers. For example to limit the
@@ -131,9 +130,9 @@ event ::= ( "totalunits" | "tun" )
 
 ## Define a Performance Regression Check in a Benchmark
 
-For example, in a [Library
-Benchmark](./benchmarks/library_benchmarks/configuration.md), define a soft
-limit of `+5%` for the `Ir` event kind for all benchmarks of this file:
+For example, in a
+[Library Benchmark](./benchmarks/library_benchmarks/configuration.md), define a
+soft limit of `+5%` for the `Ir` event kind for all benchmarks of this file:
 
 ```rust
 # extern crate gungraun;
@@ -218,22 +217,28 @@ checks.
 
 The ones known to the author of this humble guide are
 
-- [SQLite](https://sqlite.org/cpu.html#performance_measurement): They use mainly
-  cpu instructions to measure performance improvements (and regressions).
-- Also in benchmarks of the [rustc](https://github.com/rust-lang/rustc-perf)
-  compiler and
-  [compiler-builtins](https://github.com/rust-lang/compiler-builtins),
+- [SQLite][sqlite]: They use mainly cpu instructions to measure performance
+  improvements (and regressions).
+- Also in benchmarks of the [rustc] compiler and [compiler-builtins],
   instruction counts play a great role. But, they also use cache metrics and
   cycles.
-- [SpacetimeDB](https://github.com/clockworklabs/SpacetimeDB)
+- [SpacetimeDB][spacetimedb]
 
-If you know of others, please feel free to
-[add](https://github.com/gungraun/gungraun/blob/5bec95ee37330954916ea29e7a7dc40ca62bc454/docs/src/regressions.md)
-them to this list.
+If you know of others, please feel free to [add][github-src-regressions] them to
+this list.
 
 [`EventKind`]: https://docs.rs/gungraun/0.17.2/gungraun/enum.EventKind.html
-[`CallgrindMetrics`]: https://docs.rs/gungraun/0.17.2/gungraun/enum.CallgrindMetrics.html
-[`CachegrindMetric`]: https://docs.rs/gungraun/0.17.2/gungraun/enum.CachegrindMetric.html
-[`CachegrindMetrics`]: https://docs.rs/gungraun/0.17.2/gungraun/enum.CachegrindMetrics.html
+[`CallgrindMetrics`]:
+    https://docs.rs/gungraun/0.17.2/gungraun/enum.CallgrindMetrics.html
+[`CachegrindMetric`]:
+    https://docs.rs/gungraun/0.17.2/gungraun/enum.CachegrindMetric.html
+[`CachegrindMetrics`]:
+    https://docs.rs/gungraun/0.17.2/gungraun/enum.CachegrindMetrics.html
 [`DhatMetric`]: https://docs.rs/gungraun/0.17.2/gungraun/enum.DhatMetric.html
 [`DhatMetrics`]: https://docs.rs/gungraun/0.17.2/gungraun/enum.DhatMetrics.html
+[sqlite]: https://sqlite.org/cpu.html#performance_measurement
+[rustc]: https://github.com/rust-lang/rustc-perf
+[compiler-builtins]: https://github.com/rust-lang/compiler-builtins
+[spacetimedb]: https://github.com/clockworklabs/SpacetimeDB
+[github-src-regressions]:
+    https://github.com/gungraun/gungraun/blob/main/docs/src/regressions.md

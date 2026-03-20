@@ -34,9 +34,8 @@ into a file in `$WORKSPACE_ROOT/benches/binary_benchmark.rs`. Next, replace
 `my-foo` in `env!("CARGO_BIN_EXE_my-foo")` with the name of a binary of your
 crate.
 
-Note the `env!` macro is a [rust](https://doc.rust-lang.org/std/macro.env.html)
-builtin macro and `CARGO_BIN_EXE_<name>` is documented
-[rust stdlib](https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-crates).
+Note the `env!` macro is a [rust] builtin macro and `CARGO_BIN_EXE_<name>` is
+documented in [rust stdlib][cargo-env].
 
 You should always use `env!("CARGO_BIN_EXE_<name>")` to determine the path to
 the binary of your crate. Do not use relative paths like `target/release/my-foo`
@@ -70,9 +69,9 @@ presents you with something like the following:
 
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.49333s</code></pre>
 
-As opposed to library benchmarks, binary benchmarks have access to a [low-level
-api](./low_level.md). Here, pretty much the same as the above high-level usage
-but written in the low-level api:
+As opposed to library benchmarks, binary benchmarks have access to a
+[low-level api](./low_level.md). Here, pretty much the same as the above
+high-level usage but written in the low-level api:
 
 ```rust
 # extern crate gungraun;
@@ -102,3 +101,7 @@ If in doubt, use the high-level api. You can still
 [migrate](./low_level.md#intermixing-high-level-and-low-level-api) to the
 low-level api very easily if you really need to. The other way around is more
 involved.
+
+[rust]: https://doc.rust-lang.org/std/macro.env.html
+[cargo-env]:
+    https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-crates

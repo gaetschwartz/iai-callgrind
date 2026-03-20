@@ -77,9 +77,12 @@ fn bench_subprocess() -> io::Result<Output> {
 #[library_benchmark(
     config = LibraryBenchmarkConfig::default()
         .tool_override(Dhat::default())
-        .tool_override(
+.tool_override(
             Memcheck::with_args([
-                "--leak-check=full", "--errors-for-leak-kinds=all", "--error-exitcode=0", "--time-stamp=yes"
+                "--leak-check=full",
+                "--errors-for-leak-kinds=all",
+                "--error-exitcode=0",
+                "--time-stamp=yes"
             ])
         )
         .tool_override(Massif::default())

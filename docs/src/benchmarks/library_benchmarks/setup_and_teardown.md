@@ -13,9 +13,9 @@ In an ideal world you don't need any setup code, and you can pass arguments to
 the function as they are.
 
 But, for example if a function expects a `File` and not a `&str` with the path
-to the file you need `setup` code. Gungraun has an easy-to-use system in
-place to allow you to run any setup code before the function is executed and
-this `setup` code is not attributed to the metrics of the benchmark.
+to the file you need `setup` code. Gungraun has an easy-to-use system in place
+to allow you to run any setup code before the function is executed and this
+`setup` code is not attributed to the metrics of the benchmark.
 
 If the `setup` parameter is specified, the `setup` function takes the arguments
 from the `#[bench]` (or `#[benches]`) attributes and the benchmark function

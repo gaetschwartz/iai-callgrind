@@ -1,3 +1,27 @@
+# Test Case: `test_lib_bench_main_and_group_setup_and_teardown`
+#
+# Description:
+#   Validates main-level and group-level setup and teardown functions that execute
+#   before/after all benchmarks and benchmark groups respectively.
+#
+# Test Steps:
+#   1. Run to see setup/teardown output (normal run)
+#   2. Run with `--save-baseline` (setup/teardown functions should still run)
+#   3. Run with `--load-baseline` (setup/teardown functions should NOT run)
+#
+# Test Inputs:
+#   - Main setup/teardown functions that print "MAIN SETUP/TEARDOWN"
+#   - Group setup/teardown functions that create/remove files and print "GROUP
+#     SETUP/TEARDOWN"
+#   - Groups with only setup, only teardown, both, or neither
+#   - `--nocapture` flag for output visibility
+#
+# Expected Outcomes:
+#   - Normal run: All setup/teardown functions execute in correct order
+#   - `--save-baseline`: All setup/teardown functions still execute
+#   - `--load-baseline`: No setup/teardown functions execute (benchmarks use
+#     cached results)
+
 groups:
   - runs:
       # A normal benchmark run

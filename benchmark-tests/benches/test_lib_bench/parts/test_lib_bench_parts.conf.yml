@@ -1,3 +1,28 @@
+# Test Case: `test_lib_bench_parts`
+#
+# Description:
+#   Validates Callgrind's dump options (`--dump-every-bb`, `--dump-before`,
+#   `--dump-after`) that create multiple output parts during benchmark
+#   execution.
+#
+# Test Steps:
+#   1. Run benchmarks with `--nocapture` to see output
+#
+# Test Inputs:
+#   - Benchmarks using `--dump-every-bb=90000` (dump every N basic blocks)
+#   - Benchmarks using `--dump-before=*::find_primes` (dump before function)
+#   - Benchmarks using `--dump-after=*::find_primes` (dump after function)
+#   - Benchmarks with multiple threads and subprocesses
+#
+# Expected Outcomes:
+#   - Multiple Callgrind output files (parts) are created correctly
+#   - Output files are sanitized and aggregated correctly
+#   - Benchmarks complete without errors
+#
+# Test Environment:
+#   - Excluded on FreeBSD due to scheduler causing non-deterministic results
+#   - Uses `flaky: 2` for retry tolerance
+
 groups:
   - runs_on: "!x86_64-unknown-freebsd"
     runs:

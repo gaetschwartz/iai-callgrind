@@ -31,9 +31,17 @@ binary_benchmark_group!(
 );
 
 // To be able to test the binary_benchmark_attribute! macro
-#[binary_benchmark(config = BinaryBenchmarkConfig::default().env("BINARY_BENCHMARK_ATTRIBUTE_ENV", "3"))]
-#[bench::case_1(args = ("10"), config = BinaryBenchmarkConfig::default().env("BENCH_IN_ATTRIBUTE_ENV", "10"))]
-#[bench::case_2(args = ("20"), config = BinaryBenchmarkConfig::default().env("BENCH_IN_ATTRIBUTE_ENV", "20"))]
+#[binary_benchmark(
+    config = BinaryBenchmarkConfig::default().env("BINARY_BENCHMARK_ATTRIBUTE_ENV", "3")
+)]
+#[bench::case_1(
+    args = ("10"),
+    config = BinaryBenchmarkConfig::default().env("BENCH_IN_ATTRIBUTE_ENV", "10")
+)]
+#[bench::case_2(
+    args = ("20"),
+    config = BinaryBenchmarkConfig::default().env("BENCH_IN_ATTRIBUTE_ENV", "20")
+)]
 fn bench_attribute(id: &str) -> gungraun::Command {
     gungraun::Command::new(ENV)
         .args([

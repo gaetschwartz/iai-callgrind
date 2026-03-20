@@ -1,3 +1,32 @@
+# Test Case: `test_lib_bench_intro`
+#
+# Description:
+#   Comprehensive introduction demonstrating many Gungraun features including
+#   #[bench] and #[benches] attributes, iter parameter, config at multiple
+#   levels, tools (Callgrind, DHAT, Massif), setup functions, and regression
+#   limits.
+#
+# Test Steps:
+#   1. Run all example benchmarks with various configurations
+#
+# Test Inputs:
+#   - Multiple #[bench] attributes with different argument types
+#   - #[benches] attribute with iter, setup, and config options
+#   - Tools: Callgrind with soft limits, DHAT with custom entry point
+#   - Configuration at main, group, and bench levels
+#   - Setup functions for creating test data (arrays)
+#   - Empty benchmarks and various array sizes
+#   - Fibonacci and bubble sort benchmark examples
+#   - File-based input via benches attribute
+#
+# Expected Outcomes:
+#   - All example benchmarks complete successfully
+#   - Regression limits enforced on EventKind::Ir and EstimatedCycles
+#   - DHAT correctly tracks heap allocations with custom entry point
+#   - Setup costs not attributed to benchmark metrics
+#   - Multiple tools produce separate output files
+#   - Example serves as documentation for Gungraun API usage
+
 groups:
   - runs:
       - args: []

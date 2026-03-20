@@ -1,10 +1,33 @@
-# In this test all callgrind arguments as of valgrind v3.23 are used.
+# Test Case: `test_lib_bench_all_args`
 #
-# The actual functionality of these arguments is tested only basically since
-# callgrind is responsible for the functionality. However, the test verifies if
-# any of these arguments cause unexpected behaviour in Gungraun itself like
-# panics or errors. We also verify that all additional event kinds like Ge,
-# AcLoss etc. are recorded and printed.
+# Description:
+#   Validates that Callgrind command-line arguments work correctly with Gungraun.
+#   Tests all Callgrind arguments available as of valgrind v3.23, verifying they
+#   do not cause unexpected behavior in Gungraun itself.
+#
+# Test Steps:
+#   1. Run benchmarks with various Callgrind argument configurations
+#
+# Test Inputs:
+#   - All Callgrind command-line arguments
+#   - The data collection arguments with and without client requests
+#
+# Test Environment:
+#   - The callgrind data collection options differ for FreeBSD and Linux since
+#     `--collect-systime` does not support the value `nsec` on `FreeBSD`, so we
+#     test slightly differently on FreeBSD and Linux.
+#
+# Expected Outcomes:
+#   - No unexpected behavior from Gungraun for all possible callgrind arguments
+#   - Warnings on `stderr` for unsupported arguments
+#   - Gungraun sets default arguments for callgrind. If supported they should be
+#     overwritten by the manual options in `Callgrind`
+#   - All benchmarks complete successfully without panics or errors
+#   - Additional event kinds (Ge, AcLoss, etc.) are recorded and printed
+#   - Different output on FreeBSD due to platform-specific differences for the
+#     `--collect-systime` argument
+#   - Some cli arguments cause the metrics to be all zero
+
 groups:
   - runs_on: "!x86_64-unknown-freebsd"
     runs:

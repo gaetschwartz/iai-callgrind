@@ -1,14 +1,26 @@
-# Test Description: `test_bin_bench_parallel_threads`
+# Test Case: `test_bin_bench_parallel_threads`
 #
-# Same as `test_bin_bench_parallel_consistency` but this time with threads in a
-# subprocess. The test is separated from `test_bin_bench_parallel_consistency`
-# since the metrics vary between a non-parallel and a parallel run and we need
-# to apply the `tolerance` option.
+# Description:
+#   Tests parallel execution consistency with threads running in subprocess.
+#   Similar to `test_bin_bench_parallel_consistency` but tests threading
+#   variance between serial and parallel runs.
 #
-# Expected Result:
+# Test Steps:
+#   1. Run without `--parallel` to establish baseline metrics
+#   2. Run with `--parallel` and compare metrics (with tolerance for thread variance)
+#   3. Repeat steps 1-2 for `--nocapture` and `--show-intermediate` variants
 #
-# The metrics should match with a tolerance when run serially and in parallel.
-# The rest of the output should match exactly.
+# Test Inputs:
+#   - Benchmarks that spawn threads in subprocess
+#   - `--parallel` flag for parallel execution
+#   - `tolerance: 10` (high tolerance due to thread metric variance)
+#   - `--nocapture` and `--show-intermediate` variants
+#
+# Expected Outcomes:
+#   - Metrics match within tolerance between serial and parallel runs
+#   - Tolerance is higher (10) than non-threaded tests due to thread variance
+#   - Non-metric output matches exactly between runs
+#   - No stderr output (clean execution)
 groups:
   - runs:
       - args: []

@@ -1,3 +1,7 @@
+//! Reads stdin and echoes it back to stdout.
+//!
+//! Reads all content from stdin until EOF, then prints a header followed by the content.
+
 use std::io::{stdin, stdout, Read, Write};
 
 fn main() {

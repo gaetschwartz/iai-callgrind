@@ -1,3 +1,31 @@
+# Test Case: `test_lib_bench_filter`
+#
+# Description:
+#   Validates the command-line positional filter argument for selecting which
+#   benchmarks to run based on wildcard pattern matching against benchmark
+#   module paths.
+#
+# Test Steps:
+#   1. Run with filter matching nothing
+#   2. Run with filter matching entire file
+#   3. Run with filter matching a specific group
+#   4. Run with filter matching a benchmark without id
+#   5. Run with filter matching a benchmark with id
+#
+# Test Inputs:
+#   - Filter "none": matches no benchmarks
+#   - Filter "test_lib_bench_filter::*": matches all benchmarks in file
+#   - Filter "*::group_1::*": matches a specific group
+#   - Filter "*::minimal_bench": matches by benchmark function name
+#   - Filter "*::forty_two": matches by benchmark ID
+#
+# Expected Outcomes:
+#   - This filter matches the module path `file::group::function::id`
+#   - Only matching benchmarks run, others are skipped
+#   - Non-matching filters result in no benchmarks executed but success exit code
+#   - Pattern matching works with wildcards at various positions
+#   - Filter patterns correctly match group names, benchmark names, and IDs
+
 groups:
   - runs:
       - args: ["none"]

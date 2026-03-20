@@ -53,6 +53,7 @@ use crate::error::Error;
 /// The default toggle/frame used by the [`crate::api::EntryPoint::Default`]
 pub const DEFAULT_TOGGLE: &str = "*::__gungraun_wrapper_mod::*";
 
+#[derive(Debug)]
 enum Cli {
     Runner(RunnerArgs),
     Help,
@@ -81,6 +82,7 @@ struct RunnerArgs {
     package_name: String,
 }
 
+#[derive(Debug)]
 struct RunnerArgsIterator(ArgsOs);
 
 impl Cli {

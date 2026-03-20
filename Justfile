@@ -19,7 +19,6 @@ cspell_bin := ```
 schema_path := 'summary.schema.json'
 this_dir := `realpath .`
 book_build_dir := this_dir + "/docs/book"
-args := ''
 msrv := '1.74.1'
 mdbook_version := '0.4.40'
 required_tools := 'valgrind|the essential tool
@@ -114,8 +113,8 @@ lint:
 
 # Run cargo deny check (Uses: 'cargo-deny')
 [group('dependencies')]
-deny +check='all':
-    cargo deny check {{ if args != '' { args } else { '' } }} {{ check }}
+deny +args='all':
+    cargo deny check {{ args }}
 
 # Generate and update Cargo.lock with cargo resolver v3 fallback (Uses: 'cargo +stable')
 [group('dependencies')]
@@ -190,13 +189,13 @@ install-workspace: install-hooks install-toolchains show-tips install-checks
 
 # Build a package with the optional toolchain (Uses: 'cargo')
 [group('build')]
-build package:
-    cargo build -p {{ package }} {{ if args != '' { args } else { '' } }}
+build package *args:
+    cargo build -p {{ package }} {{ args }}
 
 # Build gungraun-runner (uses 'cargo')
 [group('build')]
 build-runner:
-    just args=--release build gungraun-runner
+    just build gungraun-runner --release
 
 # Build the documentation (Uses: 'cargo')
 [group('build')]
@@ -205,23 +204,23 @@ build-docs:
 
 # A thorough build of all packages with `cargo hack` and the feature powerset (Uses: 'cargo-hack')
 [group('build')]
-build-hack build_args='': (build-hack-runner build_args)
-    cargo hack --workspace --feature-powerset --exclude gungraun-runner {{ if args != '' { args } else { '' } }} build {{ build_args }}
+build-hack *args: (build-hack-runner args)
+    cargo hack --workspace --feature-powerset --exclude gungraun-runner build {{ args }}
 
 # A thorough build of the gungraun-runner package (Uses: 'cargo-hack')
 [group('build')]
-build-hack-runner build_args='':
-    cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features --exclude-features api {{ if args != '' { args } else { '' } }} build {{ build_args }}
+build-hack-runner *args:
+    cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features --exclude-features api build {{ args }}
 
 # A build of the tests in all packages with `cargo hack` and the feature powerset (Uses: 'cargo-hack')
 [group('build')]
-build-tests-hack: build-tests-hack-runner
-    cargo hack --workspace --feature-powerset --exclude gungraun-runner test --no-run
+build-tests-hack *args: build-tests-hack-runner
+    cargo hack --workspace --feature-powerset --exclude gungraun-runner test --no-run {{ args}}
 
 # A build of the tests in the gungraun-runner package with `cargo hack` (Uses: 'cargo-hack')
 [group('build')]
-build-tests-hack-runner:
-    cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features --exclude-features api test --no-run
+build-tests-hack-runner *args:
+    cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features --exclude-features api test --no-run {{ args }}
 
 # Delete all gungraun benchmarks (Uses: 'coreutils')
 [group('clean')]
@@ -246,8 +245,8 @@ schema-gen-move: schema-gen
 
 # Run all tests in a package. (Uses: 'cargo')
 [group('test')]
-test package:
-    cargo test --package {{ package }} {{ if args != '' { args } else { '' } }}
+test package *args:
+    cargo test --package {{ package }} {{ args }}
 
 # Run all doc tests (Uses: 'cargo')
 [group('test')]
@@ -285,36 +284,36 @@ reqs-test target:
 
 # Run a single benchmark test (Uses: 'coreutils', 'cargo')
 [group('test')]
-bench-test bench features='': build-runner
-    GUNGRAUN_RUNNER=$(realpath target/release/gungraun-runner) cargo bench -p benchmark-tests --bench {{ bench }} {{ if features != '' { '--features ' + features } else { '' } }} {{ if args != '' { '-- ' + args } else { '' } }}
+bench-test bench *args: build-runner
+    GUNGRAUN_RUNNER=$(realpath target/release/gungraun-runner) cargo bench -p benchmark-tests --bench {{ bench }} {{ args }}
 
 # Run all benchmark tests (Uses: 'coreutils', 'cargo')
 [group('test')]
-bench-test-all: build-runner
-    GUNGRAUN_RUNNER=$(realpath target/release/gungraun-runner) cargo bench -p benchmark-tests {{ if args != '' { '-- ' + args } else { '' } }}
+bench-test-all *args: build-runner
+    GUNGRAUN_RUNNER=$(realpath target/release/gungraun-runner) cargo bench -p benchmark-tests {{ args }}
 
 # Note: A single benchmark may run multiple times depending on the test
 #       configuration. See the `benchmark-tests/benches` folder.
 
 # Run a single benchmark test with the `cargo bench` wrapper verifying the output (Uses: 'cargo')
 [group('test')]
-full-bench-test bench:
-    cargo run --package benchmark-tests --profile=bench --bin bench -- {{ if args != '' { args } else { '' } }} {{ bench }}
+full-bench-test bench *args:
+    cargo run --package benchmark-tests --profile=bench --bin bench -- {{ args }} {{ bench }}
 
 # Run a single benchmark test with the `cargo bench` wrapper overwriting the output (Uses: 'cargo')
 [group('test')]
-full-bench-test-overwrite bench:
-    BENCH_OVERWRITE=yes cargo run --package benchmark-tests --profile=bench --bin bench -- {{ if args != '' { args } else { '' } }} {{ bench }}
+full-bench-test-overwrite bench *args:
+    BENCH_OVERWRITE=yes cargo run --package benchmark-tests --profile=bench --bin bench -- {{ args }} {{ bench }}
 
 # Run all benchmark tests with the `cargo bench` wrapper verifying the output (Uses: 'cargo')
 [group('test')]
-full-bench-test-all *args='':
-    cargo run --package benchmark-tests --profile=bench --bin bench {{ if args != '' { '-- ' + args } else { '' } }}
+full-bench-test-all *args:
+    cargo run --package benchmark-tests --profile=bench --bin bench -- {{ args }}
 
 # Run all benchmark tests with the `cargo bench` wrapper overwriting the output (Uses: 'cargo')
 [group('test')]
-full-bench-test-all-overwrite *args='':
-    BENCH_OVERWRITE=yes cargo run --package benchmark-tests --profile=bench --bin bench {{ if args != '' { '-- ' + args } else { '' } }}
+full-bench-test-all-overwrite *args:
+    BENCH_OVERWRITE=yes cargo run --package benchmark-tests --profile=bench --bin bench -- {{ args }}
 
 # Check minimal version requirements of dependencies. (Uses: 'cargo-minimal-versions')
 [group('dependencies')]
@@ -323,8 +322,8 @@ minimal-versions:
 
 # Install 'mdbook' and 'mdbook-linkcheck' (Uses: 'cargo install' or 'cargo-binstall')
 [group('guide')]
-book-install:
-    if command -V cargo-binstall; then cargo binstall {{ if args != '' { args } else { '' } }} mdbook@{{ mdbook_version }} mdbook-linkcheck; else cargo install {{ if args != '' { args } else { '' } }} mdbook@0.4.40 mdbook-linkcheck; fi
+book-install *args:
+    if command -V cargo-binstall; then cargo binstall {{ args }} mdbook@{{ mdbook_version }} mdbook-linkcheck; else cargo install {{ args }} mdbook@0.4.40 mdbook-linkcheck; fi
 
 [group('guide')]
 book-check-version:
@@ -337,7 +336,7 @@ book-tests: book-check-version
     cargo clean --profile mdbook
     # We need the stable build because mdbook is built with the stable toolchain
     # and to avoid the error `found invalid metadata files for ...`
-    RUSTUP_TOOLCHAIN=stable just args="--all-features --lib --profile=mdbook" build gungraun
+    RUSTUP_TOOLCHAIN=stable just build gungraun --all-features --lib --profile=mdbook
     # The exact values for the environment variables don't matter, we just need
     # them to be present.
     CARGO_MANIFEST_DIR=$(realpath .) CARGO_PKG_NAME="mdbook-tests" mdbook test -L target/mdbook/deps docs/
@@ -407,7 +406,7 @@ bump config part:
     fi
     # We also need the changed version in Cargo.lock. Building gungraun
     # should be enough to also update the runner
-    just args="--all-features --lib" build gungraun
+    just gungraun --all-features --lib
 
 # Generate the base for the expected files of a system test (Uses: bash, coreutils)
 [group('util')]

@@ -11,19 +11,20 @@ use anyhow::{anyhow, Result};
 use either_or_both::EitherOrBoth;
 use indexmap::IndexMap;
 use log::{debug, log_enabled, trace, Level};
-use regex::Regex;
 use which::{which, which_in};
 
 use crate::error::Error;
 use crate::runner::metrics::Metric;
 
 /// The union over two [`IndexMaps`][IndexMap]
+#[derive(Debug)]
 pub struct Union<K, V> {
     primary: IndexMap<K, V>,
     secondary: IndexMap<K, V>,
 }
 
 /// The consuming iterator over the [`Union`] returning owned data by cloning it
+#[derive(Debug)]
 pub struct UnionIterator<'a, K, V> {
     primary_iter: indexmap::map::Iter<'a, K, V>,
     secondary_iter: indexmap::map::Iter<'a, K, V>,
@@ -187,29 +188,6 @@ pub fn factor_diff(new: Metric, old: Metric) -> f64 {
     }
 }
 
-/// Convert a valgrind glob pattern into a [`Regex`]
-///
-/// A valgrind glob pattern is a simpler glob pattern usually used to match function calls for
-/// example in `--toggle-collect`, `--dump-before`, ... as described here
-/// <https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options>
-///
-/// In short, there are `*` and `?` which are converted into `.*` and `.?` respectively.
-pub fn glob_to_regex(input: &str) -> Result<Regex> {
-    let pattern = input.chars().fold(String::new(), |mut acc, c| {
-        if c == '*' {
-            acc.push_str(".*");
-        } else if c == '?' {
-            acc.push_str(".?");
-        } else {
-            acc.push(c);
-        }
-
-        acc
-    });
-
-    Regex::new(&pattern).map_err(Into::into)
-}
-
 /// Make a `path` absolute with the `base_dir` as prefix
 pub fn make_absolute<B, T>(base_dir: B, path: T) -> PathBuf
 where
@@ -266,11 +244,10 @@ where
             debug!("Found '{}': '{}'", binary.to_string_lossy(), path.display());
             Ok(path)
         }
-        Err(error) => Err(
-            anyhow! {"{error}: '{0}' could not be found. Is '{0}' installed, executable and in the PATH?",
-                binary.to_string_lossy()
-            },
-        ),
+        Err(error) => Err(anyhow! {
+            "{error}: '{0}' could not be found. Is '{0}' installed, executable and in the PATH?",
+            binary.to_string_lossy()
+        }),
     }
 }
 

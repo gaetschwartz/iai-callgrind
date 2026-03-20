@@ -1,0 +1,7 @@
+error: You are using an invalid or deprecated syntax of the main! macro to set up benchmarks. See the documentation of this macro, the README (https://github.com/gungraun/gungraun) and docs (https://docs.rs/gungraun/latest/gungraun/) for further details.
+ --> tests/ui/lib_bench/test_main_invalid_library_benchmark_setup_deprecated copy.rs:4:5
+  |
+4 |     main!(run = cmd = "some", id = "id", args = []);
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the macro `main` (in Nightly builds, run with -Z macro-backtrace for more info)

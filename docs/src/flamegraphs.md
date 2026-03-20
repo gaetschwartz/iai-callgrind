@@ -2,8 +2,8 @@
 
 Flamegraphs are opt-in and can be created if you pass a `FlamegraphConfig` to
 the `BinaryBenchmarkConfig` or `LibraryBenchmarkConfig`. Callgrind flamegraphs
-are meant as a complement to valgrind's visualization tools
-`callgrind_annotate` and `kcachegrind`.
+are meant as a complement to valgrind's visualization tools `callgrind_annotate`
+and `kcachegrind`.
 
 For example create all kind of flamegraphs for all benchmarks in a library
 benchmark:

@@ -1,3 +1,39 @@
+# Test Case: `test_lib_bench_flamegraph`
+#
+# Description:
+#   Validates flamegraph file generation with different kinds (Regular,
+#   Differential, All, None) at bench level, group level, and main configuration
+#   level.
+#
+# Test Steps:
+#   1. Run benchmarks three times to create a baseline, then again to compare
+#      against the baseline and a third time to assure there are no differences
+#      between the second and third run.
+#   2. Run benchmarks with --save-baseline the first time to create the named
+#      baseline. Then, a second time to assure there are no differences. Then run
+#      with --baseline to compare a normal run with the named baseline. Then run
+#      a last time with --save-baseline
+#   3. Create two different name baselines in two runs. The run with
+#      --load-baseline and --baseline to compare these baselines. Run again with
+#      --baseline to compare the named baseline with the normal baseline.
+#      Afterwards, run a last time with --save-baseline
+#
+# Test Inputs:
+#   - FlamegraphKind::Regular: generates regular flamegraph only
+#   - FlamegraphKind::Differential: generates differential flamegraph only
+#   - FlamegraphKind::All: generates both regular and differential
+#   - FlamegraphKind::None: generates no flamegraphs
+#   - Configuration at multiple levels (bench, group, main)
+#   - --baseline, --save-baseline and --load-baseline for comparison flamegraphs
+#   - Functions with recursive calls and deep stacks
+#
+# Expected Outcomes:
+#   - Flamegraph files generated with correct kinds
+#   - Configuration inheritance from main > group > bench levels works correctly
+#   - No flamegraphs generated when kind is None
+#   - Differential flamegraphs are generated.
+#   - Differential flamegraphs are cleanup up correctly between runs.
+
 groups:
   - runs:
       - args: []
@@ -8,20 +44,25 @@ groups:
           files: expected_files.1b.yml
       - args: []
         expected:
-          files: expected_files.1c.yml
+          files: expected_files.1b.yml
   - runs:
       - args: ["--save-baseline=foo"]
         expected:
           files: expected_files.2a.yml
       - args: ["--save-baseline=foo"]
         expected:
-          files: expected_files.2b.yml
+          files: expected_files.2a.yml
       - args: ["--baseline=foo"]
         expected:
           files: expected_files.2c.yml
+      # The differential flamegraphs created in the previous run between the
+      # normal baseline and the named baseline should be cleanup up in this run.
       - args: ["--save-baseline=foo"]
         expected:
           files: expected_files.2d.yml
+  # To be able to test --load-baseline we need to run --save-baseline twice with
+  # different named baselines which is a good test on its own and one we haven't
+  # done yet.
   - runs:
       - args: ["--save-baseline=foo"]
         expected:

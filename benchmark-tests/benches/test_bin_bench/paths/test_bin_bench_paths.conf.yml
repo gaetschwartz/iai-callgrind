@@ -1,3 +1,33 @@
+# Test Case: `test_bin_bench_paths`
+#
+# Description:
+#   Tests different path resolution methods for commands in binary benchmarks.
+#   Validates relative paths, absolute paths, `crate_binary`, and `use_path`
+#   configurations.
+#
+# Test Steps:
+#   1. Run benchmarks with `--nocapture` using relative path (`./cat`)
+#   2. Run benchmarks with `--nocapture` using absolute path (`/bin/cat`)
+#
+# Preconditions:
+#   The system `cat` binary must exist at /bin/cat and the PATH variable is
+#   configured to include `/bin`
+#
+# Test Inputs:
+#   - `args = ("./cat")` - relative path to executable
+#   - `args = ("/bin/cat")` - absolute path to system executable
+#   - `crate_binary(env!("CARGO_BIN_EXE_cat"))` - crate's binary
+#   - `use_path("cat")` - PATH lookup for "cat"
+#   - Sandbox enabled for isolation and relative path resolution relative to
+#     sandbox directory
+#   - `Callgrind` configuration with `--trace-children=no`
+#
+# Expected Outcomes:
+#   - All path resolution methods work correctly with and without sandbox
+#   - Expected output files created with correct metrics
+#   - Stdout matches expected format
+#   - No stderr output (clean execution)
+
 groups:
   - runs:
       - args: ["--nocapture"]

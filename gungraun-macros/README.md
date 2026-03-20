@@ -23,8 +23,9 @@
     </a>
 </div>
 
-Gungraun is a benchmarking harness that uses Callgrind to perform extremely precise
-measurements of Rust code.
+Gungraun is a benchmarking harness that uses Callgrind to perform extremely
+precise measurements of Rust code.
 
-This package provides the proc macros needed by the [Gungraun
-library](https://crates.io/crates/gungraun). Please see there for further details.
+This package provides the proc macros needed by the
+[Gungraun library](https://crates.io/crates/gungraun). Please see there for
+further details.

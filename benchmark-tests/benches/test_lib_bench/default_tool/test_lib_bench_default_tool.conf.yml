@@ -1,3 +1,29 @@
+# Test Case: `test_lib_bench_default_tool`
+#
+# Description:
+#   Validates different Valgrind tools as default tool (replacing Callgrind) and
+#   their combinations with additional tools, ensuring all supported tools work
+#   correctly in default mode or not.
+#
+# Test Steps:
+#   1. Run benchmarks with each Valgrind tool as default
+#   2. Run benchmarks with default tool combined with additional tool
+#   3. Run benchmarks with --default-tool, and --tools CLI argument override
+#
+# Test Inputs:
+#   - All Valgrind tools as default tool
+#   - Default tool combined with additional tool (e.g., DHAT as default and
+#     Callgrind as additional tool)
+#   - Default tool with custom tool arguments
+#   - CLI argument --default-tool override
+#   - Tools with subprocess execution in combination with `show_intermediate`
+#
+# Expected Outcomes:
+#   - All tool configurations run successfully
+#   - Output files created for both default and additional tools
+#   - Metrics reported correctly for each tool, either as default tool or not
+#   - Tool-specific output formats are correct
+
 groups:
   # Currently disabled on freebsd due to some differences in the output
   - runs_on: "!x86_64-unknown-freebsd"

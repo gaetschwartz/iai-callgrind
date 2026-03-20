@@ -1,3 +1,37 @@
+# Test Case: `test_lib_bench_output_format`
+#
+# Description:
+#   Validates various output formatting options including metric selection,
+#   summary display, tolerance settings, grid display, intermediate results, and
+#   description truncation.
+#
+# Test Steps:
+#   1. Run with `--nocapture` to verify stdout output format
+#   2. Run with `--nosummary` to disable summary output
+#   3. Run with custom CLI metrics (`--callgrind-metrics`,
+#      `--cachegrind-metrics`, `--dhat-metrics`, etc.)
+#   4. Run with `--tolerance` to test tolerance percentage display
+#   5. Run with `--show-grid` to display a grid on the left
+#   6. Run with `--show-intermediate` to show intermediate threads, subprocess
+#      benchmark results
+#   7. Run with `--truncate-description` to test description truncation
+#
+# Test Inputs:
+#   - Benchmarks with custom Callgrind output formats (cache misses, hit rates,
+#     etc.)
+#   - Benchmarks with Cachegrind, DHAT, Memcheck, DRD, Helgrind tools
+#   - Various CLI flags controlling output format
+#
+# Expected Outcomes:
+#   - Each output format variant produces expected stdout structure
+#   - `--nosummary` omits summary table
+#   - Custom metrics are displayed in specified order
+#   - Tolerance values are displayed correctly
+#   - Grid and intermediate output formats match expected output fixtures
+#
+# Test Environment:
+#   - Excluded on FreeBSD due to lack of `--fair-sched=yes` support
+
 groups:
   - runs_on: "!x86_64-unknown-freebsd"
     runs:

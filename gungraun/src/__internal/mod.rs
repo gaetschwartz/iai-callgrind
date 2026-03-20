@@ -110,11 +110,13 @@ impl std::fmt::Display for ModulePath {
     }
 }
 
+#[derive(Debug)]
 pub enum BenchmarkKind {
     BinaryBenchmark,
     LibraryBenchmark,
 }
 
+#[derive(Debug)]
 pub struct Runner {
     cmd: std::process::Command,
     module_path: String,
@@ -169,11 +171,11 @@ impl Runner {
                     &ModulePath::new(&self.module_path),
                     &format!(
                         "Failed to run benchmarks: {e}.\n\nIs gungraun-runner installed and \
-                         gungraun-runner in your $PATH?.\nYou can set the environment \
-                         variable GUNGRAUN_RUNNER to the absolute path of the \
-                         gungraun-runner executable.\n\nMake sure you have followed the \
-                         installation instructions in the guide:\n\
-                         https://gungraun.github.io/gungraun/latest/html/installation/gungraun.html",
+                        gungraun-runner in your $PATH?.\nYou can set the environment variable \
+                        GUNGRAUN_RUNNER to the absolute path of the gungraun-runner \
+                        executable.\n\nMake sure you have followed the installation \
+                        instructions in the guide:\n\
+                        https://gungraun.github.io/gungraun/latest/html/installation/gungraun.html",
                     ),
                 ));
                 errors

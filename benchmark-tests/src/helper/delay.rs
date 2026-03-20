@@ -1,3 +1,14 @@
+//! Delays execution of a command by a specified duration.
+//!
+//! Waits for the specified number of milliseconds, then executes the given command and forwards its
+//! exit code.
+//!
+//! # Arguments
+//!
+//! * `<delay_ms>` - Number of milliseconds to wait before executing the command.
+//! * `<executable>` - Path to the executable to run after the delay.
+//! * `[args...]` - Additional arguments passed to the executable.
+
 use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;

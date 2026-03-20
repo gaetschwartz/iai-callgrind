@@ -1,3 +1,31 @@
+# Test Case: `test_lib_bench_groups_envs`
+#
+# Description:
+#   Validates environment variable handling at benchmark group and configuration
+#   levels, including env, envs, pass_through_env, pass_through_envs, and
+#   env_clear.
+#
+# Test Steps:
+#   1. Run benchmarks to create a baseline
+#   2. Run benchmarks to compare against the baseline
+#
+# Test Inputs:
+#   - Single environment variable pass-through via pass_through_env
+#   - Multiple environment variables pass-through via pass_through_envs
+#   - Custom environment variable setting via env
+#   - Multiple custom variables via envs
+#   - env_clear with true and false values to isolate environment
+#   - Environment config at bench level overriding group level and main level
+#   - Environment config at group level overriding main level
+#
+# Expected Outcomes:
+#   - Passed-through variables available to benchmark process
+#   - Custom variables set correctly in benchmark environment
+#   - env_clear removes non-passed-through variables from environment
+#   - Configuration inheritance works correctly across levels
+#   - Environment variables printed in output for verification
+
+# TODO: Verify output
 groups:
   - runs:
       - args: []

@@ -33,18 +33,25 @@
 //! - __Regression__: Gungraun reports the difference between benchmark runs to make it easy to spot
 //!   detailed performance regressions and improvements.
 //! - __CPU and Cache Profiling__: Gungraun generates a Callgrind profile of your code while
-//!   benchmarking, so you can use Callgrind-compatible tools like
-//!   [callgrind_annotate](https://valgrind.org/docs/manual/cl-manual.html#cl-manual.callgrind_annotate-options)
-//!   or the visualizer [kcachegrind](https://kcachegrind.github.io/html/Home.html) to analyze the
-//!   results in detail.
-//! - __Memory Profiling__: You can run other Valgrind tools like [DHAT: a dynamic heap analysis tool](https://valgrind.org/docs/manual/dh-manual.html)
-//!   and [Massif: a heap profiler](https://valgrind.org/docs/manual/ms-manual.html) with Gungraun.
-//!   Their profiles are stored next to the callgrind profiles and are ready to be examined with
-//!   analyzing tools like `dh_view.html`, `ms_print` and others.
+//!   benchmarking, so you can use Callgrind-compatible tools like [callgrind_annotate][cl-annotate]
+//!   or the visualizer [kcachegrind][kcachegrind] to analyze the results in detail.
+//!
+//! [cl-annotate]:
+//! https://valgrind.org/docs/manual/cl-manual.html#cl-manual.callgrind_annotate-options
+//! [kcachegrind]: https://kcachegrind.github.io/html/Home.html
+//! - __Memory Profiling__: You can run other Valgrind tools like [DHAT: a dynamic heap analysis
+//!   tool][dhat] and [Massif: a heap profiler][massif] with Gungraun. Their profiles are stored
+//!   next to the callgrind profiles and are ready to be examined with analyzing tools like
+//!   `dh_view.html`, `ms_print` and others.
+//!
+//! [dhat]: https://valgrind.org/docs/manual/dh-manual.html
+//! [massif]: https://valgrind.org/docs/manual/ms-manual.html
 //! - __Visualization__: Gungraun is capable of creating regular and differential flamegraphs from
 //!   the Callgrind output format.
-//! - __Valgrind Client Requests__: Support of zero overhead [Valgrind Client Requests](https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq)
+//! - __Valgrind Client Requests__: Support of zero overhead [Valgrind Client Requests][client-req]
 //!   (compared to native valgrind client requests overhead) on many targets
+//!
+//! [client-req]: https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
 //! - __Stable-compatible__: Benchmark your code without installing nightly Rust
 //!
 //! ## Benchmarking

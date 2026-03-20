@@ -1,14 +1,33 @@
-# Test description: `test_bin_bench_exit_with`
+# Test Case: `test_bin_bench_exit_with`
 #
-# We test the behaviour of the benchmark program if it fails and is not expected
-# to fail, does not fail but is expected to fail ... In gungraun the user can
-# accomplished this with the `ExitWith` configuration option.
+# Description:
+#   Tests the `ExitWith` configuration for handling expected and unexpected
+#   exit codes in benchmarked binaries. Validates that benchmarks pass or fail
+#   appropriately based on exit code configuration, and that error files are
+#   properly transferred from temp directory on unexpected errors.
 #
-# Furthermore we test the behaviour in the presence of unexpected errors. In
-# that case the raw files from valgrind are expected to be transferred from the
-# temporary directory to the benchmark directory. These "error" files are
-# expected to be cleaned up after a benchmark run but before the next data
-# analysis.
+# Test Steps:
+#   1. Run with various `ExitWith` configurations and exit codes
+#   2. Verify expected pass/fail behavior for each configuration
+#   3. Verify error file handling on unexpected failures
+#   4. Run after an error to verify cleanup before next data analysis
+#
+# Test Inputs:
+#   - `ExitWith::Code(0)` - expect exit code 0
+#   - `ExitWith::Success` - expect success (exit code 0)
+#   - `ExitWith::Code(1)` - expect exit code 1
+#   - `ExitWith::Failure` - expect failure (non-zero exit code)
+#   - Actual exit codes: 0 or 1
+#   - Template-generated test cases with varying combinations
+#
+# Expected Outcomes:
+#   - Exit code 0 when expected exit matches actual exit
+#   - Exit code 0 when `ExitWith::Success` and actual exit is 0
+#   - Exit code 0 when `ExitWith::Failure` and actual exit is non-zero
+#   - Exit code 1 on mismatch between expected and actual exit
+#   - Error files transferred from temp directory on unexpected failures
+#   - Error files cleaned up after benchmark run, before next data analysis
+
 template: test_bin_bench_exit_with.rs.j2
 groups:
   - runs:

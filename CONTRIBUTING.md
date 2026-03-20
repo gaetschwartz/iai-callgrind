@@ -7,31 +7,36 @@ Thank you for your interest in contributing to Gungraun!
 ## Feature Requests and Bug reports
 
 Feature requests and bug reports should be reported in the [Issue
-Tracker](https://github.com/gungraun/gungraun/issues). Please have a
-look at existing issues with the
-[enhancement](https://github.com/gungraun/gungraun/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement)
-or
-[bug](https://github.com/gungraun/gungraun/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
-labels.
+Tracker][gungraun-issues]. Please have a look at existing issues with the
+[enhancement][gungraun-issues-enhancement] or [bug][gungraun-issues-bug] labels.
 
 ## Patches / Pull Requests
 
-All patches have to be sent on GitHub as [pull
-requests](https://github.com/gungraun/gungraun/pulls). Before starting
-a pull request, it is best to open an issue first so no efforts are wasted.
+All patches have to be sent on GitHub as [pull requests][gungraun-pull]. Before
+starting a pull request, it is best to open an issue first so no efforts are
+wasted.
 
-If you are looking for a place to start contributing to Gungraun, take a
-look at the [help
-wanted](https://github.com/gungraun/gungraun/labels/help%20wanted) or
-[good first
-issue](https://github.com/gungraun/gungraun/labels/good%20first%20issue)
-issues.
+If you are looking for a place to start contributing to Gungraun, take a look at
+the [help wanted][gungraun-help-wanted] or [good first
+issue][gungraun-issues-first] issues.
 
 The minimum supported version (MSRV) of Gungraun is Rust `1.74.1` and all
 patches are expected to work with the minimum supported version.
 
-All notable changes need to be added to the
-[CHANGELOG](https://github.com/gungraun/gungraun/blob/4f29964c153a2dd20283fb1502db3de630148629/CHANGELOG.md).
+All notable changes need to be added to the [CHANGELOG][changelog].
+
+## Use of AI tools
+
+We adhere to the [rust-analyzer] policy:
+
+AI tool use is not discouraged on the gungraun codebase, as long as it meets our
+quality standards. We kindly ask you to disclose usage of AI tools in your
+contributions. If you used them without disclosing it, we may reject your
+contribution on that basis alone due to the assumption that you have, most
+likely, not reviewed your own submission (so why should we?).
+
+We may still reject AI-assisted contributions if we deem the quality of the
+contribution to be unsatisfactory.
 
 ## How to get started
 
@@ -42,10 +47,9 @@ git clone https://github.com/gungraun/gungraun.git
 cd gungraun
 ```
 
-Working on this project is a piece of cake with
-[just](https://github.com/casey/just) and the `just` shell completions
-installed. Using `just` also ensures that you use the same commands, arguments,
-options as they are used in the ci.
+Working on this project is a piece of cake with [just] and the `just` shell
+completions installed. Using `just` also ensures that you use the same commands,
+arguments, options as they are used in the ci.
 
 Before running any install commands with `just`, it is recommended to first
 inspect it with `--dry-run` and see if you're fine with the changes. Install the
@@ -134,16 +138,16 @@ same:
 
 ## Working on the guide
 
-The main documentation of Gungraun is in the [guide][Guide]. The source
-code lives in the `docs/src` subdirectory of this repo.
+The main documentation of Gungraun is in the [guide]. The source code lives in
+the `docs/src` subdirectory of this repo.
 
 To start working on the guide, ensure you have everything necessary installed
 with `just book-install`. After everything's installed, you need two terminal
-windows. In the first run `just book-watch` and in the second run `just
-book-serve-github`. The second command makes the rendered guide available at
-`http://localhost:4000/gungraun` (this'll redirect you to the
-`index.html`). You can now start making changes to the source code and the
-changes are reflected after a second or two.
+windows. In the first run `just book-watch` and in the second run
+`just book-serve-github`. The second command makes the rendered guide available
+at `http://localhost:4000/gungraun` (this'll redirect you to the `index.html`).
+You can now start making changes to the source code and the changes are
+reflected after a second or two.
 
 Please run `just book-tests` from time to time if you make changes to rust
 codeblocks and especially before pushing to the pr.
@@ -167,14 +171,14 @@ runs through without errors.
 
 The benches in the `benchmark-tests` package are system tests and run the whole
 pipeline. We use a wrapper around `cargo bench` (`benchmark-tests/src/bench`) to
-run the `benchmark-tests`. In order to run a single benchmark-tests use `just
-full-bench-test $BENCHMARK_NAME` or all with `just full-bench-test-all` (This
-might take a while). See the [`README`](./benchmark-tests/DEVELOPERS.md) of the
-benchmark-tests package for more details.
+run the `benchmark-tests`. In order to run a single benchmark-tests use
+`just full-bench-test $BENCHMARK_NAME` or all with `just full-bench-test-all`
+(This might take a while). See the [`README`](./benchmark-tests/DEVELOPERS.md)
+of the benchmark-tests package for more details.
 
-The user interface is tested in `gungraun/tests/ui`. The ui tests error
-fixtures are fixed to the MSRV compiler since the compiler error messages differ
-between the rust toolchains. For example to run the ui tests
+The user interface is tested in `gungraun/tests/ui`. The ui tests error fixtures
+are fixed to the MSRV compiler since the compiler error messages differ between
+the rust toolchains. For example to run the ui tests
 
 ```shell
 just test-ui
@@ -219,8 +223,21 @@ on the test configuration, benchmarks are sometimes run multiple times.
 
 ## Contact
 
-If there are any outstanding questions about contributing to gungraun, they
-can be asked on the [gungraun issue
-tracker](https://github.com/gungraun/gungraun/issues).
+If there are any outstanding questions about contributing to gungraun, they can
+be asked on the [gungraun issue tracker][gungraun-issues].
 
-[Guide]: https://gungraun.github.io/gungraun/
+[changelog]: https://github.com/gungraun/gungraun/blob/main/CHANGELOG.md
+[guide]: https://gungraun.github.io/gungraun/
+[gungraun-help-wanted]:
+    https://github.com/gungraun/gungraun/labels/help%20wanted
+[gungraun-issues]: https://github.com/gungraun/gungraun/issues
+[gungraun-issues-bug]:
+    https://github.com/gungraun/gungraun/issues?q=is%3Aissue+is%3Aopen+label%3Abug
+[gungraun-issues-enhancement]:
+    https://github.com/gungraun/gungraun/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement
+[gungraun-issues-first]:
+    https://github.com/gungraun/gungraun/labels/good%20first%20issue
+[gungraun-pull]: https://github.com/gungraun/gungraun/pulls
+[just]: https://github.com/casey/just
+[rust-analyzer]:
+    https://github.com/rust-lang/rust-analyzer/blob/master/CONTRIBUTING.md

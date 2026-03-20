@@ -11,7 +11,6 @@ use simplematch::DoWild;
 
 use super::model::{Metrics, Positions};
 use crate::api::EventKind;
-use crate::runner::summary::ProfileInfo;
 use crate::runner::tool::parser::ParserOutput;
 use crate::runner::tool::path::ToolOutputPath;
 use crate::runner::DEFAULT_TOGGLE;
@@ -82,26 +81,14 @@ impl CallgrindProperties {
     /// Compare by target ids `pid`, `part` and `thread`
     ///
     /// Highest precedence takes `pid`. Second is `part` and third is `thread` all sorted ascending.
-    /// See also [Callgrind Format](https://valgrind.org/docs/manual/cl-format.html#cl-format.reference.grammar)
+    /// See also [Callgrind
+    /// Format](https://valgrind.org/docs/manual/cl-format.html#cl-format.reference.grammar)
     pub fn compare_target_ids(&self, other: &Self) -> Ordering {
         self.pid.cmp(&other.pid).then_with(|| {
             self.thread
                 .cmp(&other.thread)
                 .then_with(|| self.part.cmp(&other.part))
         })
-    }
-
-    /// Convert into ``ProfileInfo``
-    pub fn into_info(self, path: &Path) -> ProfileInfo {
-        ProfileInfo {
-            command: self.cmd.expect("A command should be present"),
-            pid: self.pid.expect("A pid should be present"),
-            parent_pid: None,
-            details: None,
-            path: path.to_owned(),
-            part: self.part,
-            thread: self.thread,
-        }
     }
 }
 

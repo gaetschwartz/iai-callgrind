@@ -148,7 +148,8 @@ shared state requires careful synchronization.
 
 **This is the most common limitation.**
 
-Valgrind and Gungraun perform disk I/O even if your benchmarks don't. They write:
+Valgrind and Gungraun perform disk I/O even if your benchmarks don't. They
+write:
 
 - Log files for each tool
 - Profile data files
@@ -238,8 +239,8 @@ library_benchmark_group!(
 ```
 
 **Recommendation**: Use unique identifiers for shared resources, or avoid
-parallel execution for such groups (See [Limiting Parallelism Per
-Group](#limiting-parallelism-per-group))
+parallel execution for such groups (See
+[Limiting Parallelism Per Group](#limiting-parallelism-per-group))
 
 ### Benchmarks with Internal Threading
 
@@ -360,7 +361,8 @@ With `--parallel=8` running 8 benchmarks simultaneously:
 Sometimes you may want to run most benchmarks in parallel but need to disable or
 limit parallelism for specific benchmarks. For example, when:
 
-- A group contains benchmarks that conflict with each other (shared files, ports)
+- A group contains benchmarks that conflict with each other (shared files,
+  ports)
 - A group has benchmarks with internal threading that produce variable results
 - You want to isolate problematic benchmarks
 

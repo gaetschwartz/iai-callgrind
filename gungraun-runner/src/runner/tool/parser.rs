@@ -91,7 +91,8 @@ impl ParserOutput {
     /// Same as in [`crate::runner::callgrind::parser::CallgrindProperties::compare_target_ids`]
     ///
     /// Highest precedence takes `pid`. Second is `part` and third is `thread` all sorted ascending.
-    /// See also [Callgrind Format](https://valgrind.org/docs/manual/cl-format.html#cl-format.reference.grammar)
+    /// See also [Callgrind
+    /// Format](https://valgrind.org/docs/manual/cl-format.html#cl-format.reference.grammar)
     pub fn compare_target_ids(&self, other: &Self) -> Ordering {
         self.header.pid.cmp(&other.header.pid).then_with(|| {
             self.header

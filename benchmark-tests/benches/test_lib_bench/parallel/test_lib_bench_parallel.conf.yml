@@ -1,8 +1,33 @@
-# Test Description: `test_lib_bench_parallel`
+# Test Case: `test_lib_bench_parallel`
 #
-# A benchmark run in this file is expected to succeed if the benchmarks in the
-# same group are executed in parallel. If the benchmarks don't run in parallel
-# then `print_parallel` will panic.
+# Description:
+#   Validates parallel benchmark execution using `--parallel` argument and
+#   `max_parallel` group configuration, ensuring benchmarks run concurrently
+#   when configured.
+#
+# Test Steps:
+#   1. Run with `--parallel=2` and `__MAX_PARALLEL=2` (should pass: parallel
+#      execution allowed)
+#   2. Run with `--parallel=2` and `__MAX_PARALLEL=0` (should pass: no limit on
+#      parallel)
+#   3. Run with `--parallel=1` and `__MAX_PARALLEL=2` (should fail: expected
+#      parallel but serial)
+#   4. Run with `--parallel=2` and `__MAX_PARALLEL=1` (should fail: group limits
+#      parallel to 1)
+#
+# Test Inputs:
+#   - `--parallel=N` CLI argument to set parallel execution count
+#   - `__MAX_PARALLEL` environment variable controlling group's `max_parallel`
+#     setting
+#   - Benchmarks that panic if not run in parallel (using file system as
+#     synchronization)
+#
+# Expected Outcomes:
+#   - Runs 1 and 2: Exit code 0, benchmarks execute in parallel successfully
+#   - Runs 3 and 4: Exit code 1, panic occurs because benchmarks executed
+#     serially
+#   - Output files and stdout/stderr match expected fixtures
+
 groups:
   - runs:
       - args: ["--parallel=2"]

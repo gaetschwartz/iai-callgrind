@@ -1,14 +1,27 @@
-# Test Description: `test_bin_bench_parallel`
+# Test Case: `test_bin_bench_parallel_consistency`
 #
-# The intention is to run each benchmark once without parallel and then with
-# parallel to see if the metrics or any output differs. The documentation states
-# valgrind is single core nevertheless this is a general test if valgrind is
-# capable to be run in parallel without influencing each other or changing the
-# metrics.
+# Description:
+#   Validates that metrics and output remain consistent between serial and
+#   parallel execution. Since Valgrind is single-threaded, parallel execution
+#   should not affect measurement accuracy.
 #
-# Expected Result:
+# Test Steps:
+#   1. Run without `--parallel` to establish baseline metrics
+#   2. Run with `--parallel` and compare metrics (with 10% tolerance)
+#   3. Repeat steps 1-2 for `--nocapture` and `--show-intermediate` variants
 #
-# The metrics and output should match exactly when run serially and in parallel.
+# Test Inputs:
+#   - `--parallel` flag for parallel execution
+#   - `--truncate-description=no` for consistent output format
+#   - `--nocapture` to show captured output
+#   - `--show-intermediate` to show intermediate results
+#   - `tolerance: 0.1` (10%) for metric comparison
+#
+# Expected Outcomes:
+#   - Metrics match within 10% tolerance between serial and parallel runs
+#   - Non-metric output (stdout) matches exactly between runs
+#   - No stderr output (clean execution)
+#   - Valgrind's single-threaded nature ensures parallel execution doesn't affect metrics
 groups:
   - runs:
       - args: ["--truncate-description=no"]

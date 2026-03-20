@@ -494,7 +494,9 @@ pub fn library_benchmark(args: TokenStream, input: TokenStream) -> TokenStream {
 /// # impl From<&mut Sandbox> for Sandbox { fn from(value: &mut Sandbox) -> Self {value.clone() }}
 /// # #[derive(Default)]
 /// # pub struct BinaryBenchmarkConfig {}
-/// # impl BinaryBenchmarkConfig { pub fn sandbox<T: Into<Sandbox>>(&mut self, _a: T) -> &mut Self {self}}
+/// # impl BinaryBenchmarkConfig {
+/// #     pub fn sandbox<T: Into<Sandbox>>(&mut self, _a: T) -> &mut Self {self}
+/// # }
 /// # impl From<&mut BinaryBenchmarkConfig> for BinaryBenchmarkConfig
 /// #     { fn from(_value: &mut BinaryBenchmarkConfig) -> Self { BinaryBenchmarkConfig {}}}
 /// # pub mod __internal {
@@ -544,9 +546,16 @@ pub fn library_benchmark(args: TokenStream, input: TokenStream) -> TokenStream {
 /// // First big difference to library benchmarks! `my_setup` is not evaluated right away and the
 /// // return value of `simple_setup` is not used as input for the `bench_foo` function. Instead,
 /// // `simple_setup()` is executed before the execution of the `Command`.
-/// #[bench::with_other_fixture_and_setup(args = ("benches/other_fixture.txt"), setup = simple_setup())]
+/// #[bench::with_other_fixture_and_setup(
+///     args = ("benches/other_fixture.txt"),
+///     setup = simple_setup()
+/// )]
 /// // Here, setup is a function pointer, what tells us to route `args` to `setup` AND `bench_foo`
-/// #[bench::file_from_setup(args = ("file_from_setup_function.txt"), setup = create_file, teardown = teardown())]
+/// #[bench::file_from_setup(
+///     args = ("file_from_setup_function.txt"),
+///     setup = create_file,
+///     teardown = teardown()
+/// )]
 /// // Just an small example for the basic usage of the `#[benches]` attribute
 /// #[benches::multiple("benches/fix_1.txt", "benches/fix_2.txt")]
 /// // We're using a `BinaryBenchmarkConfig` in binary benchmarks to configure these benchmarks to

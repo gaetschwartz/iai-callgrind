@@ -742,8 +742,10 @@ pub fn enable_error_reporting() {
 /// not recognized, `true` otherwise. Note the return value deviates from the original in
 /// `valgrind.h` which returns 1 if the command was not recognized and 0 otherwise.
 ///
-/// See also [Valgrind monitor
-/// commands](https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.valgrind-monitor-commands)
+/// See also [Valgrind monitor commands][valgrind-monitor]
+///
+/// [valgrind-monitor]:
+/// https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.valgrind-monitor-commands
 #[inline(always)]
 pub fn monitor_command<T>(command: T) -> bool
 where

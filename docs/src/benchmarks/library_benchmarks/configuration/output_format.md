@@ -2,10 +2,10 @@
 
 # Output Format
 
-The Gungraun output can be customized with [command-line
-arguments](../../../cli_and_env/output.md). But, the fine-grained terminal
-output format is adjusted in the benchmark itself. For example [truncating
-the description][`OutputFormat.truncate_description`], [showing a
+The Gungraun output can be customized with
+[command-line arguments](../../../cli_and_env/output.md). But, the fine-grained
+terminal output format is adjusted in the benchmark itself. For example
+[truncating the description][`OutputFormat.truncate_description`], [showing a
 grid][`OutputFormat.show_grid`], .... Please read the [docs][`OutputFormat`] for
 further details.
 
@@ -137,8 +137,7 @@ main!(library_benchmark_groups = my_group);
 or by using the command-line argument `--tolerance=0.9` (or
 `GUNGRAUN_TOLERANCE=0.9`).
 
-The second or any following Gungraun run might then show something like
-that:
+The second or any following Gungraun run might then show something like that:
 
 <pre><code class="hljs"><span style="color:#0A0">lib_bench_tolerance::my_group::bench_hash_map</span> <span style="color:#0AA">tolerance</span><span style="color:#0AA">:</span><b><span style="color:#00A">make_hashmap(100)</span></b>
 <span style="color:#555">  </span>Instructions:                       <b>19787</b>|19623                (<span style="color:#555">Tolerance</span>)
@@ -153,8 +152,13 @@ Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regression
 and `Instructions` displays `Tolerance` instead of a difference.
 
 [`Callgrind`]: https://docs.rs/gungraun/0.17.2/gungraun/struct.Callgrind.html
-[`Callgrind.format`]: https://docs.rs/gungraun/0.17.2/gungraun/struct.Callgrind.html#method.format
-[`CallgrindMetrics`]: https://docs.rs/gungraun/0.17.2/gungraun/enum.CallgrindMetrics.html
-[`OutputFormat`]: https://docs.rs/gungraun/0.17.2/gungraun/struct.OutputFormat.html
-[`OutputFormat.show_grid`]: https://docs.rs/gungraun/0.17.2/gungraun/struct.OutputFormat.html#method.show_grid
-[`OutputFormat.truncate_description`]: https://docs.rs/gungraun/0.17.2/gungraun/struct.OutputFormat.html#method.truncate_description
+[`Callgrind.format`]:
+    https://docs.rs/gungraun/0.17.2/gungraun/struct.Callgrind.html#method.format
+[`CallgrindMetrics`]:
+    https://docs.rs/gungraun/0.17.2/gungraun/enum.CallgrindMetrics.html
+[`OutputFormat`]:
+    https://docs.rs/gungraun/0.17.2/gungraun/struct.OutputFormat.html
+[`OutputFormat.show_grid`]:
+    https://docs.rs/gungraun/0.17.2/gungraun/struct.OutputFormat.html#method.show_grid
+[`OutputFormat.truncate_description`]:
+    https://docs.rs/gungraun/0.17.2/gungraun/struct.OutputFormat.html#method.truncate_description

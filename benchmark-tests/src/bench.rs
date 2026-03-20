@@ -55,20 +55,30 @@ lazy_static! {
     // Performance has regressed: Instructions (133 -> 196) regressed by +47.3684% (>+0.00000%)
     // $1<__NUM__>$3<__NUM__>$5<__PERCENT__>$7<__NUM__>$9
     static ref REGRESSION_SOFT_RE: Regex =
-        Regex::new(r"^(Performance has regressed:\s*[^0-9]+\()([0-9]+)(\s*->\s*)([0-9]+)(\)\s*regressed\s*by\s*[+-])([0-9.]+)(%\s*\([><][+-])([0-9.]+)(%\)\s*)$")
-            .expect("Regex should compile");
+        Regex::new(
+            r"(?x)
+                ^(Performance\ has\ regressed:\s*[^0-9]+\()
+                ([0-9]+)(\s*->\s*)([0-9]+)
+                (\)\s*regressed\s*by\s*[+-])
+                ([0-9.]+)(%\s*\([><][+-])([0-9.]+)(%\)\s*)
+              $"
+        )
+        .expect("Regex should compile");
     static ref REGRESSION_HARD_RE: Regex =
-        Regex::new(r"^(Performance has regressed:\s*[^0-9]+\()([0-9]+)(\)\s*exceeds limit by\s*)([0-9.]+)(\s*\([><])([0-9.]+)(\)\s*)$")
-            .expect("Regex should compile");
+        Regex::new(concat!(r"^(Performance has regressed:\s*[^0-9]+\()([0-9]+)",
+            r"(\)\s*exceeds limit by\s*)([0-9.]+)(\s*\([><])([0-9.]+)(\)\s*)$"))
+        .expect("Regex should compile");
     // Instructions (357182 -> 357704): +0.14614% exceeds limit of +0.00000%
     // $1<__NUM__>$3<__NUM__>$5<__PERCENT__>$7<__PERCENT__>$9
     static ref SUMMARY_REGRESSION_SOFT_RE: Regex =
-        Regex::new(r"^(\s*[^0-9]+\()([0-9]+)(\s*->\s*)([0-9]+)(\):\s*[+-])([0-9.]+)(%\s*exceeds limit of [+-])([0-9.]+)(%\s*)$")
-            .expect("Regex should compile");
+        Regex::new(concat!(r"^(\s*[^0-9]+\()([0-9]+)(\s*->\s*)([0-9]+)(\):\s*[+-])",
+            r"([0-9.]+)(%\s*exceeds limit of [+-])([0-9.]+)(%\s*)$"))
+        .expect("Regex should compile");
     // Callgrind: Instructions (70021): 70021 exceeds limit of 200 by 69821
     static ref SUMMARY_REGRESSION_HARD_RE: Regex =
-        Regex::new(r"^(\s*[^0-9]+\()([0-9]+)(\):\s*)([0-9.]+)(\s*exceeds limit of\s*)([0-9.]+)(\s*by\s*)([0-9.]+)(\s*)$")
-            .expect("Regex should compile");
+        Regex::new(concat!(r"^(\s*[^0-9]+\()([0-9]+)(\):\s*)([0-9.]+)",
+            r"(\s*exceeds limit of\s*)([0-9.]+)(\s*by\s*)([0-9.]+)(\s*)$"))
+        .expect("Regex should compile");
     // Command: target/release/deps/test_lib_bench_threads-c2a88f916ff580f9
     static ref COMMAND_RE: Regex =
         Regex::new(r"^(Command:)(\s*target/release/deps/test_(lib|bin)_bench_.+-[a-z0-9]+\s*.*)$")
@@ -84,11 +94,15 @@ lazy_static! {
         Regex::new(r"^(##(?: \S+: \S+)+)(\s*)([|].*)$").expect("Regex should compile");
     static ref ABSOLUTE_PATH_RE: Regex =
         Regex::new(r"(\s+)([/][^/]*)+").expect("Regex should compile");
-    // Gungraun result: Success. 2 completed without regressions; 0 regressed; 0 filtered; 2 benchmarks finished in 0.296s
+    // Gungraun result: Success. 2 completed without regressions; 0 regressed; 0 filtered;
+    // 2 benchmarks finished in 0.296s
     static ref SUMMARY_LINE_RE: Regex =
-        Regex::new(r"^(Gungraun result:.*finished in\s*)([0-9.]+)(s)$").expect("Regex should compile");
+        Regex::new(r"^(Gungraun result:.*finished in\s*)([0-9.]+)(s$)")
+            .expect("Regex should compile");
     static ref THREAD_PANICKED: Regex =
-        Regex::new(r"^(?<start>thread '.*' )(?<pid>\([0-9]+\))?(?<end>\s*panicked at .*)$").expect("Regex should compile");
+        Regex::new(concat!(r"^(?<start>thread '.*' )(?<pid>\([0-9]+\))?",
+            r"(?<end>\s*panicked at .*)$"))
+        .expect("Regex should compile");
     static ref ABSOLUTE_PATH_APOSTROPHE_RE: Regex =
         Regex::new(r"[']([/][^/']+)+[']").expect("Regex should compile");
 }
@@ -366,7 +380,7 @@ impl Benchmark {
         let template = env.get_template(&self.bench_name).unwrap();
 
         let dest = File::create(meta.get_template()).unwrap();
-        template.render_to_write(template_data, dest).unwrap();
+        template.render_captured_to(template_data, dest).unwrap();
 
         self.run_bench(cargo_args, args, envs, capture, tolerance)
     }

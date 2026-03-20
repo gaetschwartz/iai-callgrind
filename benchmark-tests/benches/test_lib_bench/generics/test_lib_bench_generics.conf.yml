@@ -1,3 +1,24 @@
+# Test Case: `test_lib_bench_generics`
+#
+# Description:
+#   Validates that generic benchmark functions compile and run correctly.
+#   Regression test for issue #198 where generic bench arguments caused
+#   compilation failure.
+#
+# Test Steps:
+#   1. Run benchmarks with generic type parameters
+#
+# Test Inputs:
+#   - Generic benchmark function with impl trait parameter (std::fmt::Debug)
+#   - Multiple concrete type inputs for the same generic function
+#   - Types A and B implementing the same trait
+#
+# Expected Outcomes:
+#   - Generic benchmark functions compile successfully
+#   - Each concrete type input creates a separate benchmark run
+#   - No compilation errors for generic types
+#   - Benchmark runs execute correctly with different type parameters
+
 groups:
   - runs:
       - args: []

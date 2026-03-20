@@ -1,16 +1,24 @@
-# Test Description: `test_bin_bench_parallel_cleanup_on_exit`
+# Test Case: `test_bin_bench_parallel_cleanup_on_error`
 #
-# Run the test in parallel with two benchmarks. The first benchmark exits with
-# an error, which should kill all other parallel running benchmarks. In order to
-# verify this, there is a second benchmark `timeout` which would normally wait
-# for a specific time in seconds and then print a message on normal exit. This
-# message is not printed if killed as expected.
+# Description:
+#   Tests cleanup behavior when one benchmark process exits with an error
+#   during parallel execution. Validates that all parallel processes are
+#   terminated and cleaned up, and only the first error is reported.
 #
-# Expected Result:
+# Test Steps:
+#   1. Run with `--parallel=2` where first benchmark exits with error
+#   2. Verify second benchmark (timeout) is killed before completing
 #
-# All parallel running benchmark processes should be killed and cleaned up
-# silently if one of the benchmark processes exits with an error. Only the error
-# message of the first error benchmark process is printed.
+# Test Inputs:
+#   - `--parallel=2` to run two benchmarks simultaneously
+#   - First benchmark exits with error immediately
+#   - Second benchmark would normally wait then print message (but should be killed)
+#
+# Expected Outcomes:
+#   - Exit code 1 (failure from first benchmark)
+#   - Second benchmark process terminated (no completion message)
+#   - Only error output from first failing benchmark in stderr
+#   - All parallel processes cleaned up silently
 groups:
   - runs:
       - args: ["--parallel=2"]

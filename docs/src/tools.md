@@ -11,21 +11,20 @@ useful stats and metrics in the terminal output of Gungraun. But, the output
 files are generated as usual and are ready to be examined with tools like
 `ms_print`.
 
-See also the [Valgrind User
-Manual](https://valgrind.org/docs/manual/manual.html) for all the details about
+See also the [Valgrind User Manual][valgrind-manual] for all the details about
 each tool and their command line arguments.
 
 ## Running Other Valgrind Tools
 
 It's possible to change the default tool `Callgrind` to any other valgrind tool
 with the [command-line argument](./cli_and_env/basics.md)
-`--default-tool=<tool>` or environment variable
-`GUNGRAUN_DEFAULT_TOOL=<tool>`. `<tool>` may be one of `callgrind`,
-`cachegrind`, `dhat`, `massif`, `memcheck`, `helgrind`, `drd`, `exp-bbv`.
+`--default-tool=<tool>` or environment variable `GUNGRAUN_DEFAULT_TOOL=<tool>`.
+`<tool>` may be one of `callgrind`, `cachegrind`, `dhat`, `massif`, `memcheck`,
+`helgrind`, `drd`, `exp-bbv`.
 
 Running tools in addition to the default tool can be achieved with
-`--tools=<tools>` or `GUNGRAUN_TOOLS=<tools>` where `<tools>` is a
-`,`-separated list of one or more of the `<tool>` above.
+`--tools=<tools>` or `GUNGRAUN_TOOLS=<tools>` where `<tools>` is a `,`-separated
+list of one or more of the `<tool>` above.
 
 The tool configurations can be changed in the benchmark file by specifying the
 structs `Callgrind`, `Cachegrind`, ..., `Bbv` in `LibraryBenchmarkConfig::tool`
@@ -62,9 +61,9 @@ main!(
 ```
 
 All tools which produce an `ERROR SUMMARY` `(Memcheck, DRD, Helgrind)` have
-[`--error-exitcode=201`](https://valgrind.org/docs/manual/manual-core.html#manual-core.erropts)
-set, so if there are any errors, the benchmark run fails with `201`. You can
-overwrite this default for example for `Memcheck`
+[`--error-exitcode=201`][valgrind-exit-codes] set, so if there are any errors,
+the benchmark run fails with `201`. You can overwrite this default for example
+for `Memcheck`
 
 ```rust
 # extern crate gungraun;
@@ -74,3 +73,7 @@ Memcheck::with_args(["--error-exitcode=0"]);
 ```
 
 which would restore the default of `0` from valgrind.
+
+[valgrind-exit-codes]:
+    https://valgrind.org/docs/manual/manual-core.html#manual-core.erropts
+[valgrind-manual]: https://valgrind.org/docs/manual/manual.html

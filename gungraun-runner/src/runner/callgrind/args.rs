@@ -100,13 +100,6 @@ impl Args {
         }
         Ok(())
     }
-
-    /// Insert the --toggle-collect argument at the start
-    ///
-    /// This is pure cosmetics, since callgrind doesn't prioritize the toggles by any order
-    pub fn insert_toggle_collect(&mut self, arg: &str) {
-        self.toggle_collect.push_front(arg.to_owned());
-    }
 }
 
 impl Default for Args {

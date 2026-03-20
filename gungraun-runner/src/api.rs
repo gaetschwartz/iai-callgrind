@@ -1,4 +1,49 @@
-//! The api contains all elements which the `runner` can understand
+//! Public API types for benchmark configuration and execution.
+//!
+//! This module defines the data structures that form the interface between the macro layer in
+//! `gungraun` and the benchmark runner. All types usable in `gungraun` are serializable and
+//! deserializable, enabling the benchmark harness to communicate the benchmark configuration to
+//! the runner through a binary encoding.
+//!
+//! # Architecture
+//!
+//! Gungraun follows a two-stage execution model:
+//!
+//! 1. **Compile time**: Procedural macros in `gungraun-macros` parse attribute annotations like
+//!    `#[library_benchmark]` and `#[binary_benchmark]`. The `gungraun` crate assembles these into a
+//!    benchmarking harness and serializes the configuration into a binary format using `bincode`.
+//!
+//! 2. **Runtime**: The runner (`gungraun-runner`) receives this serialized data via stdin,
+//!    deserializes it into the types defined here, and executes the benchmarks according to the
+//!    configuration.
+//!
+//! Library benchmarks create [`LibraryBenchmarkGroups`], and binary benchmarks create
+//! [`BinaryBenchmarkGroups`].
+//!
+//! # Data Contract
+//!
+//! The types in this module constitute a **data contract** between two independently compiled
+//! components: the macro crate and the runner crate. This contract has several implications:
+//!
+//! - **Version coupling**: The macro crate and runner must use compatible versions of these types.
+//!   The runner performs a version check at startup to ensure alignment.
+//! - **Serialization stability**: All types derive `Serialize` and `Deserialize` via serde. The
+//!   binary encoding must remain stable across compatible versions.
+//! - **Feature-gated visibility**: Some implementations are only needed by the runner and are gated
+//!   behind the `runner` feature. Users writing benchmarks do not need this feature enabled.
+//! - **Schema generation**: The `schema` feature enables deriving `JsonSchema` for the json summary
+//!   file validation.
+//!
+//! Because this module serves as a stable interface, users interact with some of these types
+//! indirectly through attribute macros rather than constructing them directly. The macro syntax in
+//! `gungraun` is the stable user-facing API; the types themselves are an implementation detail that
+//! may evolve.
+//!
+//! # Stability
+//!
+//! Changes to this API can be considered breaking if they affect how `gungraun` uses these types.
+//! Since this API facilitates communication between internal components, it does not follow semver.
+//! However, every notable change requires a version bump.
 
 #[cfg(feature = "runner")]
 use std::borrow::Cow;
@@ -929,21 +974,29 @@ pub enum ToolRegressionConfig {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum ValgrindTool {
-    /// [Callgrind: a call-graph generating cache and branch prediction profiler](https://valgrind.org/docs/manual/cl-manual.html)
+    /// Callgrind: a call-graph generating cache and branch prediction profiler
+    /// <https://valgrind.org/docs/manual/cl-manual.html>
     Callgrind,
-    /// [Cachegrind: a high-precision tracing profiler](https://valgrind.org/docs/manual/cg-manual.html)
+    /// Cachegrind: a high-precision tracing profiler
+    /// <https://valgrind.org/docs/manual/cg-manual.html>
     Cachegrind,
-    /// [DHAT: a dynamic heap analysis tool](https://valgrind.org/docs/manual/dh-manual.html)
+    /// DHAT: a dynamic heap analysis tool
+    /// <https://valgrind.org/docs/manual/dh-manual.html>
     DHAT,
-    /// [Memcheck: a memory error detector](https://valgrind.org/docs/manual/mc-manual.html)
+    /// Memcheck: a memory error detector
+    /// <https://valgrind.org/docs/manual/mc-manual.html>
     Memcheck,
-    /// [Helgrind: a thread error detector](https://valgrind.org/docs/manual/hg-manual.html)
+    /// Helgrind: a thread error detector
+    /// <https://valgrind.org/docs/manual/hg-manual.html>
     Helgrind,
-    /// [DRD: a thread error detector](https://valgrind.org/docs/manual/drd-manual.html)
+    /// DRD: a thread error detector
+    /// <https://valgrind.org/docs/manual/drd-manual.html>
     DRD,
-    /// [Massif: a heap profiler](https://valgrind.org/docs/manual/ms-manual.html)
+    /// Massif: a heap profiler
+    /// <https://valgrind.org/docs/manual/ms-manual.html>
     Massif,
-    /// [BBV: an experimental basic block vector generation tool](https://valgrind.org/docs/manual/bbv-manual.html)
+    /// BBV: an experimental basic block vector generation tool
+    /// <https://valgrind.org/docs/manual/bbv-manual.html>
     BBV,
 }
 
@@ -2739,7 +2792,11 @@ mod tests {
     #[case::empty_base(vec![], &["--a=yes"], vec!["--a=yes"])]
     #[case::no_flags(vec![], &["a=yes"], vec!["--a=yes"])]
     #[case::already_exists_single(vec!["--a=yes"], &["--a=yes"], vec!["--a=yes","--a=yes"])]
-    #[case::already_exists_when_multiple(vec!["--a=yes", "--b=yes"], &["--a=yes"], vec!["--a=yes", "--b=yes", "--a=yes"])]
+    #[case::already_exists_when_multiple(
+    vec!["--a=yes", "--b=yes"],
+    &["--a=yes"],
+    vec!["--a=yes", "--b=yes", "--a=yes"]
+)]
     fn test_raw_args_extend_ignore_flags(
         #[case] base: Vec<&str>,
         #[case] data: &[&str],

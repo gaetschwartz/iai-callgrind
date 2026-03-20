@@ -1,3 +1,12 @@
+//! Runs a subprocess with the given arguments.
+//!
+//! Executes the specified binary and waits for it to complete.
+//!
+//! # Arguments
+//!
+//! * `<executable>` - Path to the executable to run.
+//! * `[args...]` - Arguments to pass to the executable.
+
 use std::process::Command;
 
 fn main() {

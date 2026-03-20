@@ -65,9 +65,9 @@ benchmark for example with `just bench-test test_lib_bench_foo`.
 
 ### Configuration
 
-In the current state this new benchmark won't run in the CI or with `just
-full-bench-test`. Adding a yaml file with the same name as the benchmark file
-but with the extension `.conf.yml` is required, too.
+In the current state this new benchmark won't run in the CI or with
+`just full-bench-test`. Adding a yaml file with the same name as the benchmark
+file but with the extension `.conf.yml` is required, too.
 
 For example, if the benchmark file name is
 `benches/test_bin_bench/foo/test_bin_bench_foo.rs`, the configuration file name
@@ -187,8 +187,9 @@ to check if all numbers are 0 which is usually an indicator for something going
 wrong.
 
 The expected stdout is currently also sanitized from factors (the `[1.000000x]`
-part after the percentages `(10.000000%)` and the `L2`, `RAM`, `Estimated
-Cycles` change reports as seen below). Here the second run of the above benchmark
+part after the percentages `(10.000000%)` and the `L2`, `RAM`,
+`Estimated Cycles` change reports as seen below). Here the second run of the
+above benchmark
 
 ```text
 test_bin_bench_foo::group::function id:() -> target/release/echo

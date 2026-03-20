@@ -11,6 +11,7 @@ use gungraun_runner::runner::tool::path::{ToolOutputPath, ToolOutputPathKind};
 use crate::common::Summary;
 
 #[allow(unused)]
+#[derive(Debug)]
 pub struct Assert {
     module_path: ModulePath,
     group: String,
