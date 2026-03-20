@@ -1,6 +1,6 @@
 use rstest::rstest;
 
-use crate::common;
+use crate::util::common;
 
 #[rstest]
 #[case::major("major")]

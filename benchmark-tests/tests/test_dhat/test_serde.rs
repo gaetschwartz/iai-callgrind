@@ -2,7 +2,7 @@ use gungraun_runner::runner::dhat::json_parser::parse;
 use gungraun_runner::runner::dhat::model::{DhatData, Frame, Mode, ProgramPoint};
 use pretty_assertions::assert_eq;
 
-use crate::common::Fixtures;
+use crate::util::common::Fixtures;
 
 fn dhat_data_fixture() -> DhatData {
     DhatData {

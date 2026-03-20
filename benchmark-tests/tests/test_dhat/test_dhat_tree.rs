@@ -6,7 +6,7 @@ use gungraun_runner::runner::metrics::Metrics;
 use gungraun_runner::runner::summary::ToolMetrics;
 use pretty_assertions::assert_eq;
 
-use crate::common::Fixtures;
+use crate::util::common::Fixtures;
 
 fn data_fixture_pps_bench_func() -> Data {
     Data {

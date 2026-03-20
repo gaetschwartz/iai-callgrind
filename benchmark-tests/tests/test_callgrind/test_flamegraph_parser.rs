@@ -3,7 +3,7 @@ use gungraun_runner::runner::callgrind::flamegraph_parser::FlamegraphParser;
 use gungraun_runner::runner::callgrind::parser::{CallgrindParser, Sentinel};
 use rstest::rstest;
 
-use crate::common::{get_project_root, Fixtures};
+use crate::util::common::{get_project_root, Fixtures};
 
 #[rstest]
 #[case::when_entry_point("when_entry_point", Some(Sentinel::new("benchmark_tests_exit::main")))]

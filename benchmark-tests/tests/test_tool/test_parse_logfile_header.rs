@@ -6,7 +6,7 @@ use gungraun_runner::runner::tool::logfile_parser::parse_header;
 use gungraun_runner::runner::tool::parser::Header;
 use rstest::rstest;
 
-use crate::common::Fixtures;
+use crate::util::common::Fixtures;
 
 fn expected_header(command: &str, pid: i32, parent_pid: Option<i32>, desc: Vec<String>) -> Header {
     Header {

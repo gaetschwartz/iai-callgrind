@@ -5,7 +5,7 @@ use gungraun_runner::runner::tool::path::ToolOutputPathKind;
 use pretty_assertions::assert_eq;
 use rstest::rstest;
 
-use crate::common::{assert_parse_error, Fixtures};
+use crate::util::common::{assert_parse_error, Fixtures};
 
 #[test]
 fn test_valid_just_main() {
