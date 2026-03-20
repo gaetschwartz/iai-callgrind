@@ -51,7 +51,7 @@ jobs:
             fi
           done
       - name: Install mdbook
-        run: just args="--no-confirm" book-install
+        run: just book-install --no-confirm
 
       - name: Clean the book if already present
         run: just book-clean
