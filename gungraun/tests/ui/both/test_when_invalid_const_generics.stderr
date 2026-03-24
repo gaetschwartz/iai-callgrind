@@ -1,0 +1,620 @@
+error: Expected 0 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+  --> tests/ui/both/test_when_invalid_const_generics.rs:63:26
+   |
+63 |     #[bench::id(consts = (123))]
+   |                          ^^^^^
+
+error: Expected 0 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+  --> tests/ui/both/test_when_invalid_const_generics.rs:69:26
+   |
+69 |     #[bench::id(consts = (123))]
+   |                          ^^^^^
+
+error: Expected 0 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+  --> tests/ui/both/test_when_invalid_const_generics.rs:75:29
+   |
+75 |     #[benches::id(consts = [123])]
+   |                             ^^^
+
+error: Expected 0 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+  --> tests/ui/both/test_when_invalid_const_generics.rs:81:29
+   |
+81 |     #[benches::id(consts = [123])]
+   |                             ^^^
+
+error: Expected 1 const arguments but found 0
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+  --> tests/ui/both/test_when_invalid_const_generics.rs:87:26
+   |
+87 |     #[bench::id(consts = ())]
+   |                          ^^
+
+error: Expected 1 const arguments but found 0
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+  --> tests/ui/both/test_when_invalid_const_generics.rs:93:26
+   |
+93 |     #[bench::id(consts = ())]
+   |                          ^^
+
+error: Expected the `consts` array to contain an element with 1 argument(s)
+
+         = note: For example if the benchmark function takes a single `const` parameter:
+
+           /* ... */
+           #[benches::id(consts = [123])]
+           fn benchmark_function<const SIZE: usize>() /* ...  */
+
+  --> tests/ui/both/test_when_invalid_const_generics.rs:99:19
+   |
+99 |     #[benches::id(consts = [])]
+   |                   ^^^^^^
+
+error: Expected the `consts` array to contain an element with 1 argument(s)
+
+         = note: For example if the benchmark function takes a single `const` parameter:
+
+           /* ... */
+           #[benches::id(consts = [123])]
+           fn benchmark_function<const SIZE: usize>() /* ...  */
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:105:19
+    |
+105 |     #[benches::id(consts = [])]
+    |                   ^^^^^^
+
+error: Expected 1 const arguments but found 2
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:111:26
+    |
+111 |     #[bench::id(consts = (123, 456))]
+    |                          ^^^^^^^^^^
+
+error: Expected 1 const arguments but found 2
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:117:26
+    |
+117 |     #[bench::id(consts = (123, 456))]
+    |                          ^^^^^^^^^^
+
+error: Expected 1 const arguments but found 2
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:123:29
+    |
+123 |     #[benches::id(consts = [(123, 456)])]
+    |                             ^^^^^^^^^^
+
+error: Expected 1 const arguments but found 2
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:129:29
+    |
+129 |     #[benches::id(consts = [(123, 456)])]
+    |                             ^^^^^^^^^^
+
+error: Expected 2 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:135:26
+    |
+135 |     #[bench::id(consts = (123))]
+    |                          ^^^^^
+
+error: Mismatch between amount of expected generic consts parameters and present parameters
+   --> tests/ui/both/test_when_invalid_const_generics.rs:136:57
+    |
+136 |     fn when_one_provided_two_expected<const NUM: usize, const OTHER: usize>() -> usize {
+    |                                                         ^^^^^^^^^^^^^^^^^^
+
+error: Expected 2 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:141:26
+    |
+141 |     #[bench::id(consts = (123))]
+    |                          ^^^^^
+
+error: Mismatch between amount of expected generic consts parameters and present parameters
+   --> tests/ui/both/test_when_invalid_const_generics.rs:142:64
+    |
+142 |     fn when_binary_one_provided_two_expected<const NUM: usize, const OTHER: usize>() -> Command {
+    |                                                                ^^^^^^^^^^^^^^^^^^
+
+error: Expected 2 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:149:29
+    |
+149 |     #[benches::id(consts = [(123)])]
+    |                             ^^^^^
+
+error: Mismatch between amount of expected generic consts parameters and present parameters
+   --> tests/ui/both/test_when_invalid_const_generics.rs:150:65
+    |
+150 |     fn when_benches_one_provided_two_expected<const NUM: usize, const OTHER: usize>() -> usize {
+    |                                                                 ^^^^^^^^^^^^^^^^^^
+
+error: Expected 2 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:155:29
+    |
+155 |     #[benches::id(consts = [(123)])]
+    |                             ^^^^^
+
+error: Mismatch between amount of expected generic consts parameters and present parameters
+   --> tests/ui/both/test_when_invalid_const_generics.rs:156:72
+    |
+156 |     fn when_binary_benches_one_provided_two_expected<const NUM: usize, const OTHER: usize>(
+    |                                                                        ^^^^^^^^^^^^^^^^^^
+
+error: Duplicate argument: `consts`
+
+         = help: `consts` is allowed only once
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:168:33
+    |
+168 |     #[bench::id(consts = (123), consts = (456))]
+    |                                 ^^^^^^^^^^^^^^
+
+error: Duplicate argument: `consts`
+
+         = help: `consts` is allowed only once
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:174:33
+    |
+174 |     #[bench::id(consts = (123), consts = (456))]
+    |                                 ^^^^^^^^^^^^^^
+
+error: Duplicate argument: `consts`
+
+         = help: `consts` is allowed only once
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:180:35
+    |
+180 |     #[benches::id(consts = [123], consts = [456])]
+    |                                   ^^^^^^^^^^^^^^
+
+error: Duplicate argument: `consts`
+
+         = help: `consts` is allowed only once
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:186:35
+    |
+186 |     #[benches::id(consts = [123], consts = [456])]
+    |                                   ^^^^^^^^^^^^^^
+
+error: The #[benches] attribute can only take exactly one consts element if the iter parameter is present
+
+         = help: #[benches::id(iter = ..., consts = [(123, 456)])]
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:196:33
+    |
+196 |     #[benches::id(iter = 1..10, consts = [(123), (456)])]
+    |                                 ^^^^^^
+
+error: The #[benches] attribute can only take exactly one consts element if the iter parameter is present
+
+         = help: #[benches::id(iter = ..., consts = [(123, 456)])]
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:202:33
+    |
+202 |     #[benches::id(iter = 1..10, consts = [(123), (456)])]
+    |                                 ^^^^^^
+
+error: The #[benches] attribute can only take exactly one consts element if the iter parameter is present
+
+         = help: #[benches::id(iter = ..., consts = [(123, 456)])]
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:210:33
+    |
+210 |     #[benches::id(iter = 1..10, consts = [(123, 456), (789, 012)])]
+    |                                 ^^^^^^
+
+error: The #[benches] attribute can only take exactly one consts element if the iter parameter is present
+
+         = help: #[benches::id(iter = ..., consts = [(123, 456)])]
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:218:33
+    |
+218 |     #[benches::id(iter = 1..10, consts = [(123, 456), (789, 012)])]
+    |                                 ^^^^^^
+
+error: Failed parsing `consts`
+
+         = help: `consts` has to be a tuple/array which elements (expressions)
+                               match the number of parameters of the benchmarking function
+         = note: #[bench::id(consts = (1, 2))] or
+                               #[bench::id(consts = [1, 2]])]
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:232:26
+    |
+232 |     #[bench::id(consts = "invalid")]
+    |                          ^^^^^^^^^
+
+error: Failed parsing `consts`
+
+         = help: `consts` has to be a tuple/array which elements (expressions)
+                               match the number of parameters of the benchmarking function
+         = note: #[bench::id(consts = (1, 2))] or
+                               #[bench::id(consts = [1, 2]])]
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:238:26
+    |
+238 |     #[bench::id(consts = "invalid")]
+    |                          ^^^^^^^^^
+
+error: Failed parsing `consts`
+
+         = help: `consts` has to be a tuple/array which elements (expressions)
+                               match the number of parameters of the benchmarking function
+         = note: #[bench::id(consts = (1, 2))] or
+                               #[bench::id(consts = [1, 2]])]
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:256:26
+    |
+256 |     #[bench::id(consts = some_ident)]
+    |                          ^^^^^^^^^^
+
+error: Failed parsing `consts`
+
+         = help: `consts` has to be a tuple/array which elements (expressions)
+                               match the number of parameters of the benchmarking function
+         = note: #[bench::id(consts = (1, 2))] or
+                               #[bench::id(consts = [1, 2]])]
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:262:26
+    |
+262 |     #[bench::id(consts = some_ident)]
+    |                          ^^^^^^^^^^
+
+error: expected square brackets
+   --> tests/ui/both/test_when_invalid_const_generics.rs:268:28
+    |
+268 |     #[benches::id(consts = some_ident)]
+    |                            ^^^^^^^^^^
+
+error: expected square brackets
+   --> tests/ui/both/test_when_invalid_const_generics.rs:274:28
+    |
+274 |     #[benches::id(consts = some_ident)]
+    |                            ^^^^^^^^^^
+
+error: Expected 0 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:284:38
+    |
+284 |     #[bench::id(args = (1), consts = (123))]
+    |                                      ^^^^^
+
+error: Expected 0 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:290:38
+    |
+290 |     #[bench::id(args = (1), consts = (123))]
+    |                                      ^^^^^
+
+error: Expected 0 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:299:41
+    |
+299 |     #[benches::id(args = [1], consts = [123])]
+    |                                         ^^^
+
+error: Expected 0 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:305:41
+    |
+305 |     #[benches::id(args = [1], consts = [123])]
+    |                                         ^^^
+
+error: Expected 1 const arguments but found 2
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:314:38
+    |
+314 |     #[bench::id(args = (1), consts = (123, 456))]
+    |                                      ^^^^^^^^^^
+
+error: Expected 1 const arguments but found 2
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:320:38
+    |
+320 |     #[bench::id(args = (1), consts = (123, 456))]
+    |                                      ^^^^^^^^^^
+
+error: Expected 1 const arguments but found 0
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:378:38
+    |
+378 |     #[bench::id(args = (1), consts = ())]
+    |                                      ^^
+
+error: Expected 1 const arguments but found 0
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:384:40
+    |
+384 |     #[bench::id(args = ("1"), consts = ())]
+    |                                        ^^
+
+error: Expected the `consts` array to contain an element with 1 argument(s)
+
+         = note: For example if the benchmark function takes a single `const` parameter:
+
+           /* ... */
+           #[benches::id(consts = [123])]
+           fn benchmark_function<const SIZE: usize>() /* ...  */
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:390:33
+    |
+390 |     #[benches::id(args = [(1)], consts = [])]
+    |                                 ^^^^^^
+
+error: Expected the `consts` array to contain an element with 1 argument(s)
+
+         = note: For example if the benchmark function takes a single `const` parameter:
+
+           /* ... */
+           #[benches::id(consts = [123])]
+           fn benchmark_function<const SIZE: usize>() /* ...  */
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:396:33
+    |
+396 |     #[benches::id(args = ["1"], consts = [])]
+    |                                 ^^^^^^
+
+error: Expected 1 arguments but found 0
+
+         = help: This argument is expected to have the same amount of parameters as the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:402:24
+    |
+402 |     #[bench::id(args = (), consts = (123))]
+    |                        ^^
+
+error: Expected 0 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:402:37
+    |
+402 |     #[bench::id(args = (), consts = (123))]
+    |                                     ^^^^^
+
+error: Expected 0 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:408:37
+    |
+408 |     #[bench::id(args = (), consts = (123))]
+    |                                     ^^^^^
+
+error: Expected the `args` array to contain an element with 1 argument(s)
+
+         = note: For example if the benchmark function takes a single parameter:
+
+           /* ... */
+           #[benches::id(args = [123])]
+           fn benchmark_function(arg: usize) /* ...  */
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:414:19
+    |
+414 |     #[benches::id(args = [], consts = [123])]
+    |                   ^^^^
+
+error: Expected 0 const arguments but found 1
+
+         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+
+   --> tests/ui/both/test_when_invalid_const_generics.rs:420:40
+    |
+420 |     #[benches::id(args = [], consts = [123])]
+    |                                        ^^^
+
+error[E0412]: cannot find type `T` in this scope
+   --> tests/ui/both/test_when_invalid_const_generics.rs:351:67
+    |
+351 |     fn when_missing_generic_type_parameter<const NUM: usize>(arg: T) -> T {
+    |                                                                   ^ not found in this scope
+    |
+help: you might be missing a type parameter
+    |
+351 |     fn when_missing_generic_type_parameter<const NUM: usize, T>(arg: T) -> T {
+    |                                                            +++
+
+error[E0412]: cannot find type `T` in this scope
+   --> tests/ui/both/test_when_invalid_const_generics.rs:351:73
+    |
+351 |     fn when_missing_generic_type_parameter<const NUM: usize>(arg: T) -> T {
+    |                                                                         ^ not found in this scope
+    |
+help: you might be missing a type parameter
+    |
+351 |     fn when_missing_generic_type_parameter<const NUM: usize, T>(arg: T) -> T {
+    |                                                            +++
+
+error[E0412]: cannot find type `T` in this scope
+   --> tests/ui/both/test_when_invalid_const_generics.rs:357:74
+    |
+357 |     fn when_binary_missing_generic_type_parameter<const NUM: usize>(arg: T) -> Command {
+    |                                                                          ^ not found in this scope
+    |
+help: you might be missing a type parameter
+    |
+357 |     fn when_binary_missing_generic_type_parameter<const NUM: usize, T>(arg: T) -> Command {
+    |                                                                   +++
+
+error[E0412]: cannot find type `T` in this scope
+   --> tests/ui/both/test_when_invalid_const_generics.rs:363:75
+    |
+363 |     fn when_benches_missing_generic_type_parameter<const NUM: usize>(arg: T) -> T {
+    |                                                                           ^ not found in this scope
+    |
+help: you might be missing a type parameter
+    |
+363 |     fn when_benches_missing_generic_type_parameter<const NUM: usize, T>(arg: T) -> T {
+    |                                                                    +++
+
+error[E0412]: cannot find type `T` in this scope
+   --> tests/ui/both/test_when_invalid_const_generics.rs:363:81
+    |
+363 |     fn when_benches_missing_generic_type_parameter<const NUM: usize>(arg: T) -> T {
+    |                                                                                 ^ not found in this scope
+    |
+help: you might be missing a type parameter
+    |
+363 |     fn when_benches_missing_generic_type_parameter<const NUM: usize, T>(arg: T) -> T {
+    |                                                                    +++
+
+error[E0412]: cannot find type `T` in this scope
+   --> tests/ui/both/test_when_invalid_const_generics.rs:369:82
+    |
+369 |     fn when_binary_benches_missing_generic_type_parameter<const NUM: usize>(arg: T) -> Command {
+    |                                                                                  ^ not found in this scope
+    |
+help: you might be missing a type parameter
+    |
+369 |     fn when_binary_benches_missing_generic_type_parameter<const NUM: usize, T>(arg: T) -> Command {
+    |                                                                           +++
+
+error[E0308]: mismatched types
+   --> tests/ui/both/test_when_invalid_const_generics.rs:244:29
+    |
+244 |     #[benches::id(consts = ["invalid"])]
+    |                             ^^^^^^^^^ expected `usize`, found `&str`
+
+error[E0308]: mismatched types
+   --> tests/ui/both/test_when_invalid_const_generics.rs:250:29
+    |
+250 |     #[benches::id(consts = ["invalid"])]
+    |                             ^^^^^^^^^ expected `usize`, found `&str`
+
+error[E0308]: mismatched types
+ --> tests/ui/both/test_when_invalid_const_generics.rs:7:27
+  |
+7 |     #[bench::id(consts = (123i32))]
+  |                           ^^^^^^ expected `usize`, found `i32`
+  |
+help: change the type of the numeric literal from `i32` to `usize`
+  |
+7 |     #[bench::id(consts = (123usize))]
+  |                              ~~~~~
+
+error[E0308]: mismatched types
+  --> tests/ui/both/test_when_invalid_const_generics.rs:13:27
+   |
+13 |     #[bench::id(consts = (123i32))]
+   |                           ^^^^^^ expected `usize`, found `i32`
+   |
+help: change the type of the numeric literal from `i32` to `usize`
+   |
+13 |     #[bench::id(consts = (123usize))]
+   |                              ~~~~~
+
+error[E0308]: mismatched types
+  --> tests/ui/both/test_when_invalid_const_generics.rs:19:30
+   |
+19 |     #[benches::id(consts = [(123i32)])]
+   |                              ^^^^^^ expected `usize`, found `i32`
+   |
+help: change the type of the numeric literal from `i32` to `usize`
+   |
+19 |     #[benches::id(consts = [(123usize)])]
+   |                                 ~~~~~
+
+error[E0308]: mismatched types
+  --> tests/ui/both/test_when_invalid_const_generics.rs:25:29
+   |
+25 |     #[benches::id(consts = [123i32])]
+   |                             ^^^^^^ expected `usize`, found `i32`
+   |
+help: change the type of the numeric literal from `i32` to `usize`
+   |
+25 |     #[benches::id(consts = [123usize])]
+   |                                ~~~~~
+
+error[E0308]: mismatched types
+  --> tests/ui/both/test_when_invalid_const_generics.rs:31:37
+   |
+31 |     #[bench::id(consts = (123usize, 123i32))]
+   |                                     ^^^^^^ expected `usize`, found `i32`
+   |
+help: change the type of the numeric literal from `i32` to `usize`
+   |
+31 |     #[bench::id(consts = (123usize, 123usize))]
+   |                                        ~~~~~
+
+error[E0308]: mismatched types
+  --> tests/ui/both/test_when_invalid_const_generics.rs:37:37
+   |
+37 |     #[bench::id(consts = (123usize, 123i32))]
+   |                                     ^^^^^^ expected `usize`, found `i32`
+   |
+help: change the type of the numeric literal from `i32` to `usize`
+   |
+37 |     #[bench::id(consts = (123usize, 123usize))]
+   |                                        ~~~~~
+
+error[E0308]: mismatched types
+  --> tests/ui/both/test_when_invalid_const_generics.rs:45:40
+   |
+45 |     #[benches::id(consts = [(123usize, 123i32)])]
+   |                                        ^^^^^^ expected `usize`, found `i32`
+   |
+help: change the type of the numeric literal from `i32` to `usize`
+   |
+45 |     #[benches::id(consts = [(123usize, 123usize)])]
+   |                                           ~~~~~
+
+error[E0308]: mismatched types
+  --> tests/ui/both/test_when_invalid_const_generics.rs:51:40
+   |
+51 |     #[benches::id(consts = [(123usize, 123i32)])]
+   |                                        ^^^^^^ expected `usize`, found `i32`
+   |
+help: change the type of the numeric literal from `i32` to `usize`
+   |
+51 |     #[benches::id(consts = [(123usize, 123usize)])]
+   |                                           ~~~~~

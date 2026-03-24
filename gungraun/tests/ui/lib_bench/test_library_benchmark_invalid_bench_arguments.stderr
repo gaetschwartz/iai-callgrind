@@ -27,16 +27,18 @@ error: Expected 1 arguments but found 0
    |
    = note: this error originates in the attribute macro `library_benchmark` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error: Expected 1 arguments but found 0
+error: Expected the `args` array to contain an element with 1 argument(s)
 
-         = help: This argument is expected to have the same amount of parameters as the benchmark function
+         = note: For example if the benchmark function takes a single parameter:
 
-  --> tests/ui/lib_bench/test_library_benchmark_invalid_bench_arguments.rs:14:1
+           /* ... */
+           #[benches::id(args = [123])]
+           fn benchmark_function(arg: usize) /* ...  */
+
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_bench_arguments.rs:15:18
    |
-14 | #[library_benchmark]
-   | ^^^^^^^^^^^^^^^^^^^^
-   |
-   = note: this error originates in the attribute macro `library_benchmark` (in Nightly builds, run with -Z macro-backtrace for more info)
+15 | #[benches::multi(args = [])]
+   |                  ^^^^
 
 error: Expected 1 arguments but found 2
 

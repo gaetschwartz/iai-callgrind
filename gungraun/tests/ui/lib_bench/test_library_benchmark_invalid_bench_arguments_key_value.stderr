@@ -1,6 +1,6 @@
 error: Invalid argument: invalid
 
-         = help: Valid arguments are: `args`, `config`, `setup`, teardown`
+         = help: Valid arguments are: `args`, `consts`, `config`, `setup`, teardown`
 
  --> tests/ui/lib_bench/test_library_benchmark_invalid_bench_arguments_key_value.rs:4:13
   |
@@ -11,8 +11,7 @@ error: Failed parsing `args`
 
          = help: `args` has to be a tuple/array which elements (expressions)
                                match the number of parameters of the benchmarking function
-         = note: #[bench::id(args = (1, 2))] or
-                               #[bench::id(args = [1, 2]])]
+         = note: #[bench::id(args = (1, 2))] or #[bench::id(args = [1, 2]])]
 
  --> tests/ui/lib_bench/test_library_benchmark_invalid_bench_arguments_key_value.rs:8:20
   |
