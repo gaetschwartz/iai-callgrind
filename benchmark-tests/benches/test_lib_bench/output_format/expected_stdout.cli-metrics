@@ -60,7 +60,7 @@ test_lib_bench_output_format::custom_format::bench_with_custom_format helgrind
 test_lib_bench_output_format::custom_format::bench_with_custom_format drd
   ======= DRD ==========================================================================
   Contexts:                                |N/A                  (*********)
-test_lib_bench_output_format::custom_format::bench_with_tolerance hashmap:make_hashmap(100_000)
+test_lib_bench_output_format::custom_format::bench_with_tolerance hashmap:(make_hashmap(100_000))
   Instructions:                            |N/A                  (*********)
 
 Gungraun result: Ok. 27 without regressions; 0 regressed; 0 filtered; 27 benchmarks finished in <__SECONDS__>s

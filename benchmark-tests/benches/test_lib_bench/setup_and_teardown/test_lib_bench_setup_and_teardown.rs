@@ -61,7 +61,7 @@ fn bench_only_teardown(a: u64, b: u64, c: u64) -> (u64, u64) {
 }
 
 #[library_benchmark]
-#[benches::no_argument(args = [], setup = setup_no_argument)]
+#[benches::no_argument(args = [()], setup = setup_no_argument)]
 #[benches::with_setup_one_argument(
     args = [2,
            setup_one_argument(5),

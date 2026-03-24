@@ -1,4 +1,4 @@
-test_lib_bench_threads::bench_group::bench_find_primes_multi_thread one:1
+test_lib_bench_threads::bench_group::bench_find_primes_multi_thread one:(1)
   ======= CALLGRIND ====================================================================
   ## pid: <__PID__> thread: 1 part: 1      |pid: <__PID__> thread: 1 part: 1
   Command: <__COMMAND__>
@@ -48,7 +48,7 @@ test_lib_bench_threads::bench_group::bench_find_primes_multi_thread one:1
   ======= EXP-BBV ======================================================================
   Command: <__COMMAND__>
   Details: <__DETAILS__>
-test_lib_bench_threads::bench_group::bench_find_primes_multi_thread two:2
+test_lib_bench_threads::bench_group::bench_find_primes_multi_thread two:(2)
   ======= CALLGRIND ====================================================================
   ## pid: <__PID__> thread: 1 part: 1      |pid: <__PID__> thread: 1 part: 1
   Command: <__COMMAND__>
@@ -106,7 +106,7 @@ test_lib_bench_threads::bench_group::bench_find_primes_multi_thread two:2
   ======= EXP-BBV ======================================================================
   Command: <__COMMAND__>
   Details: <__DETAILS__>
-test_lib_bench_threads::bench_group::bench_thread_in_subprocess one:1
+test_lib_bench_threads::bench_group::bench_thread_in_subprocess one:(1)
   ======= CALLGRIND ====================================================================
   ## pid: <__PID__> thread: 1 part: 1      |pid: <__PID__> thread: 1 part: 1
   Command: <__COMMAND__>
@@ -218,7 +218,7 @@ test_lib_bench_threads::bench_group::bench_thread_in_subprocess one:1
   ## pid: <__PID__> ppid: <__PID__>        |pid: <__PID__> ppid: <__PID__>
   Command:             target/release/thread 1
   Details: <__DETAILS__>
-  Comparison with bench_find_primes_multi_thread one:1
+  Comparison with bench_find_primes_multi_thread one:(1)
   ------- CALLGRIND
   Instructions:                            |                     (Tolerance)
   L1 Hits:                                 |                     (         )
@@ -245,7 +245,7 @@ test_lib_bench_threads::bench_group::bench_thread_in_subprocess one:1
   Contexts:                                |                     (Tolerance)
   Suppressed Errors:                       |                     (         )
   Suppressed Contexts:                     |                     (         )
-test_lib_bench_threads::bench_group::bench_thread_in_subprocess two:2
+test_lib_bench_threads::bench_group::bench_thread_in_subprocess two:(2)
   ======= CALLGRIND ====================================================================
   ## pid: <__PID__> thread: 1 part: 1      |pid: <__PID__> thread: 1 part: 1
   Command: <__COMMAND__>
@@ -365,7 +365,7 @@ test_lib_bench_threads::bench_group::bench_thread_in_subprocess two:2
   ## pid: <__PID__> ppid: <__PID__>        |pid: <__PID__> ppid: <__PID__>
   Command:             target/release/thread 2
   Details: <__DETAILS__>
-  Comparison with bench_find_primes_multi_thread two:2
+  Comparison with bench_find_primes_multi_thread two:(2)
   ------- CALLGRIND
   Instructions:                            |                     (Tolerance)
   L1 Hits:                                 |                     (         )

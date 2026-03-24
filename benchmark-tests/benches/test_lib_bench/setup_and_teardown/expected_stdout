@@ -1,4 +1,4 @@
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup no_argument:setup_no_argument()
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup no_argument:(setup_no_argument())
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -6,7 +6,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup no_ar
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup one_argument:setup_one_argument(3)
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup one_argument:(setup_one_argument(3))
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -14,7 +14,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup one_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup two_arguments:setup_two_arguments(3, 6)
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup two_arguments:(setup_two_arguments(3, 6))
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -22,7 +22,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup two_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup expression:setup_one_argument({ let mut result = 0; for i in ...
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup expression:(setup_one_argument({ let mut result = 0; for i in...
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -30,7 +30,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup expre
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup setup_first_then_args:setup_two_arguments(3, 6)
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup setup_first_then_args:(setup_two_arguments(3, 6))
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -38,7 +38,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup setup
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown simple:2, 3, 5
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown simple:(2, 3, 5)
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -46,7 +46,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown si
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown teardown_first_then_args:2, 3, 5
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown teardown_first_then_args:(2, 3, 5)
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -54,7 +54,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown te
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown with_args_expression:2, 3, { let mut result = 0; for i in [2, 3] { resu...
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown with_args_expression:(2, 3, { let mut result = 0; for i in [2, 3] { res...
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -62,7 +62,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown wi
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup no_argument_0:setup_no_argument()
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup no_argument_0:(setup_no_argument())
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -70,7 +70,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup no_
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup with_setup_one_argument_0:setup_one_argument(2)
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup with_setup_one_argument_0:(setup_one_argument(2))
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -78,7 +78,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup wit
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup with_setup_one_argument_1:setup_one_argument(setup_one_argument(5))
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup with_setup_one_argument_1:(setup_one_argument(setup_one_argument(5)))
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -86,7 +86,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup wit
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup with_setup_one_argument_2:setup_one_argument({ let mut result = 0; for i in ...
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup with_setup_one_argument_2:(setup_one_argument({ let mut result = 0; for i in...
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -94,7 +94,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup wit
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown simple_0:2, 3, 5
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown simple_0:(2, 3, 5)
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -102,7 +102,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown 
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown teardown_first_then_args_0:2, 3, 5
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown teardown_first_then_args_0:(2, 3, 5)
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -110,7 +110,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown 
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown with_setup_one_argument_0:2, 3, 5
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown with_setup_one_argument_0:(2, 3, 5)
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -118,7 +118,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown 
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown with_setup_one_argument_1:2, 3, { let mut result = 0; for i in [2, 3] { resu...
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown with_setup_one_argument_1:(2, 3, { let mut result = 0; for i in [2, 3] { res...
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -126,7 +126,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown 
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown simple_0:setup_expected(2, 16)
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown simple_0:(setup_expected(2, 16))
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -134,7 +134,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown simple_1:setup_expected(4, 16 * 16)
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown simple_1:(setup_expected(4, 16 * 16))
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -142,7 +142,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown simple_no_args_parameter_0:setup_expected(2, 16)
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown simple_no_args_parameter_0:(setup_expected(2, 16))
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -150,7 +150,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown simple_no_args_parameter_1:setup_expected(4, 16 * 16)
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown simple_no_args_parameter_1:(setup_expected(4, 16 * 16))
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -158,7 +158,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown overwrite_setup_0:setup_expected_two(2, 3, 36)
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown overwrite_setup_0:(setup_expected_two(2, 3, 36))
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -166,7 +166,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown overwrite_setup_1:setup_expected_two(3, 4, 12 * 12)
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown overwrite_setup_1:(setup_expected_two(3, 4, 12 * 12))
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -174,7 +174,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown overwrite_teardown_0:setup_expected(3, 9 * 9)
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown overwrite_teardown_0:(setup_expected(3, 9 * 9))
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -182,7 +182,7 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown overwrite_teardown_1:setup_expected(5, 25 * 25)
+test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown overwrite_teardown_1:(setup_expected(5, 25 * 25))
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
