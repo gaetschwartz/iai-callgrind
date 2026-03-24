@@ -1,2 +1,2 @@
 Started the timeout program
-test_bin_bench_parallel_cleanup_on_panic::my_group::exit_with_panic () -> target/release/exit-with panic
+test_bin_bench_parallel_cleanup_on_panic::my_group::exit_with_panic :() -> target/release/exit-with panic

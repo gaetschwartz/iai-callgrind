@@ -1,4 +1,4 @@
-test_bin_bench_filter::group_1::minimal_bench () -> target/release/echo minimal
+test_bin_bench_filter::group_1::minimal_bench :() -> target/release/echo minimal
 minimal
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
@@ -7,7 +7,7 @@ minimal
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_bin_bench_filter::group_2::minimal_bench () -> target/release/echo minimal
+test_bin_bench_filter::group_2::minimal_bench :() -> target/release/echo minimal
 minimal
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)

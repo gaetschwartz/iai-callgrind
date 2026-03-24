@@ -1,4 +1,4 @@
-test_bin_bench_setup_child::group::benchmark () -> target/release/pipe
+test_bin_bench_setup_child::group::benchmark :() -> target/release/pipe
 STDIN was:
 SETUP CHILD PROCESS- end of stdout/stderr
   Instructions:                            |N/A                  (*********)

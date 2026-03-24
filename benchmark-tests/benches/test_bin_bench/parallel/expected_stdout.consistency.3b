@@ -18,7 +18,7 @@ TEARDOWN in bench
   RAM Hits:                                |                     (         )
   Total read+write:                        |                     (Tolerance)
   Estimated Cycles:                        |                     (         )
-test_bin_bench_parallel_consistency::my_group::subprocess () -> target/release/subprocess <__ABS_PATH__>/echo BAR
+test_bin_bench_parallel_consistency::my_group::subprocess :() -> target/release/subprocess <__ABS_PATH__>/echo BAR
 BAR
 - end of stdout/stderr
   ## pid: <__PID__> thread: 1 part: 1      |pid: <__PID__> thread: 1 part: 1

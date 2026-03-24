@@ -1,2 +1,2 @@
 Started the timeout program
-test_bin_bench_parallel_cleanup_on_error::my_group::exit_with_error () -> target/release/exit-with 200
+test_bin_bench_parallel_cleanup_on_error::my_group::exit_with_error :() -> target/release/exit-with 200
