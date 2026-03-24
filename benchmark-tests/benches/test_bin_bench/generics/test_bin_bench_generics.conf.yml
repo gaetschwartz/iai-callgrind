@@ -1,0 +1,38 @@
+# Test Case: `test_bin_bench_generics`
+#
+# Description:
+#   Validates generic type parameters and const generics in binary benchmark
+#   functions, testing various combinations of type parameters, const
+#   parameters, and argument attributes. The tests don't need to be as thorough
+#   as the corresponding `test_lib_bench_generics` for library benchmarks since
+#   the implementation for binary and library benchmarks share a lot of code.
+#   However, both expand differently and that's the main focus for these
+#   tests.
+#
+# Test Steps:
+#   1. Run all benchmarks with `--nocapture` flag
+#
+# Test Inputs:
+#   - Type parameters with trait bounds (`T: Into<OsString>` inline and in where
+#     clause)
+#   - Single const generic parameters (`const C: usize`)
+#   - Multiple const generic parameters (`const C: usize, const D: u64`)
+#   - Combined type and const parameters with mixed ordering
+#   - Various bench attribute configurations: `bench::`, `benches::`, with `args`
+#     and `consts`
+#   - Const expressions evaluated at compile time (e.g., `{1 + 20}`)
+#
+# Expected Outcomes:
+#   - All benchmarks complete successfully (exit code 0)
+#   - No stderr output
+#   - Benchmark output correctly include generic const parameters (e.g.,
+#     `<321>`, `<321, 654>`)
+#   - Const expressions are evaluated (e.g., `{ 1 + 20 }` becomes `21`)
+#   - Command arguments passed correctly to echo binary
+
+groups:
+  - runs:
+      - args: ["--nocapture", "--truncate-description=no"]
+        expected:
+          stdout: expected_stdout.1
+          no_stderr: true

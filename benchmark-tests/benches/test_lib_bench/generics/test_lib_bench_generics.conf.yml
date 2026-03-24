@@ -1,26 +1,45 @@
 # Test Case: `test_lib_bench_generics`
 #
 # Description:
-#   Validates that generic benchmark functions compile and run correctly.
-#   Regression test for issue #198 where generic bench arguments caused
-#   compilation failure.
+#   Validates generic parameters (type parameters, const parameters, and
+#   lifetimes) in library benchmarks, ensuring correct compilation and execution
+#   of benchmarks with various generic parameter configurations.
 #
 # Test Steps:
-#   1. Run benchmarks with generic type parameters
+#   1. Run all benchmarks with `--nocapture` flag to capture stdout output
 #
 # Test Inputs:
-#   - Generic benchmark function with impl trait parameter (std::fmt::Debug)
-#   - Multiple concrete type inputs for the same generic function
-#   - Types A and B implementing the same trait
+#   - Type parameters (`<I: std::fmt::Debug>`): single type parameter with
+#     multiple bench cases
+#   - Const parameters: single and multiple const parameters with literal values
+#     and const expressions (e.g., `{ 1 + 20 }`)
+#   - Mixed ordering of generic parameters: const then type, type then const,
+#     lifetimes with const, ...
+#   - Setup/teardown functions with generic type and const parameters
+#   - Various argument configurations: single, multiple (`[...]`), and empty
+#     (`()`) together with `consts` arguments
+#   - Different counts of args vs consts: same count, more args, more consts
 #
 # Expected Outcomes:
-#   - Generic benchmark functions compile successfully
-#   - Each concrete type input creates a separate benchmark run
-#   - No compilation errors for generic types
-#   - Benchmark runs execute correctly with different type parameters
+#   - All benchmarks compile and execute successfully (exit code 0)
+#   - Stdout matches expected output showing correct benchmark names with
+#     generic parameter values in angle brackets (e.g., `<123>`, `<321, 654>`)
+#     and benchmark arguments in parentheses.
+#   - The stdout contains the correct output of the benchmark, setup and
+#     teardown functions.
+#   - const arguments are applied in the correct order with and without type and
+#     lifetimes parameters
+#   - Const expressions are evaluated and displayed correctly (e.g., `{ 1 + 1 }`)
+#   - If there are more benchmark arguments `args` than `consts`, then the last
+#     `consts` argument is used as input for rest of the benchmarks. Conversely,
+#     if there are more consts arguments than benchmark arguments, then the last
+#     `args` argument is used as input for the rest of the benchmarks.
+#   - Setup/teardown output shows correct generic parameter values
+#   - No stderr output
 
 groups:
   - runs:
-      - args: []
+      - args: ["--nocapture", "--truncate-description=no"]
         expected:
-          files: expected_files.1.yml
+          stdout: expected_stdout.1
+          no_stderr: true
