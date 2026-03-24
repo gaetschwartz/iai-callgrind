@@ -1257,7 +1257,7 @@ impl Groups {
                                     let lib_bench = LibBench::new(
                                         library_benchmark_bench.id.clone(),
                                         library_benchmark_bench.args.clone(),
-                                        library_benchmark_bench.consts.clone(),
+                                        library_benchmark_bench.consts_display.clone(),
                                         module_path.clone(),
                                         library_benchmark_bench.function_name.clone(),
                                         meta,
@@ -1279,7 +1279,7 @@ impl Groups {
                         let lib_bench = LibBench::new(
                             library_benchmark_bench.id,
                             library_benchmark_bench.args,
-                            library_benchmark_bench.consts,
+                            library_benchmark_bench.consts_display,
                             module_path,
                             library_benchmark_bench.function_name,
                             meta,

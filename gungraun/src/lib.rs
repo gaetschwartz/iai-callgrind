@@ -152,6 +152,14 @@
 //!     black_box(bubble_sort(black_box(vec![a, b])))
 //! }
 //!
+//! // For functions with const generic parameters, use the `consts` parameter.
+//! #[library_benchmark]
+//! #[bench::small(consts = (100))]
+//! #[bench::large(consts = (1000))]
+//! fn bench_const_generic<const SIZE: usize>() -> Vec<u8> {
+//!     black_box(vec![0u8; SIZE])
+//! }
+//!
 //! // A group in which we can put all our benchmark functions
 //! library_benchmark_group!(
 //!     name = bubble_sort_group,
@@ -219,7 +227,7 @@
 //! the [`#[binary_benchmark]`](`crate::binary_benchmark`) attribute here. See the docs of
 //! [`binary_benchmark_group`] for more details about the low level api. The `#[binary_benchmark]`
 //! attribute works almost the same as the `#[library_benchmark]` attribute. You will find the same
-//! parameters `setup`, `teardown`, `config`, etc. in `#[binary_benchmark]` as in
+//! parameters `setup`, `teardown`, `config`, `consts`, etc. in `#[binary_benchmark]` as in
 //! `#[library_benchmark]` and the inner attributes `#[bench]`, `#[benches]`. But, there are also
 //! substantial (differences)[#differences-to-library-benchmarks].
 //!
