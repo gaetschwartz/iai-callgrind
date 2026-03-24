@@ -209,23 +209,30 @@ impl BinaryBenchmarkHeader {
     pub fn new(meta: &Metadata, bin_bench: &BinBench) -> Self {
         let path = make_relative(&meta.project_root, &bin_bench.command.path);
 
-        let command_args: Vec<String> = bin_bench
-            .command
-            .args
-            .iter()
-            .map(|s| s.to_string_lossy().to_string())
-            .collect();
-        let command_args = shlex::try_join(command_args.iter().map(String::as_str)).unwrap();
+        let consts_display = bin_bench
+            .consts_display
+            .as_ref()
+            .map(|consts| format!("<{consts}>"));
 
-        let description = if command_args.is_empty() {
+        let description = if bin_bench.command.args.is_empty() {
             format!(
-                "({}) -> {}",
+                "{}({}) -> {}",
+                consts_display.as_ref().map_or("", String::as_str),
                 bin_bench.display.as_ref().map_or("", String::as_str),
                 path.display(),
             )
         } else {
+            let command_args: Vec<String> = bin_bench
+                .command
+                .args
+                .iter()
+                .map(|s| s.to_string_lossy().to_string())
+                .collect();
+            let command_args = shlex::try_join(command_args.iter().map(String::as_str)).unwrap();
+
             format!(
-                "({}) -> {} {}",
+                "{}({}) -> {} {}",
+                consts_display.as_ref().map_or("", String::as_str),
                 bin_bench.display.as_ref().map_or("", String::as_str),
                 path.display(),
                 command_args
@@ -409,10 +416,20 @@ impl From<LibraryBenchmarkHeader> for Header {
 impl LibraryBenchmarkHeader {
     /// Creates a new `LibraryBenchmarkHeader`.
     pub fn new(lib_bench: &LibBench) -> Self {
+        let description = match (
+            lib_bench.display.as_ref(),
+            lib_bench.consts_display.as_ref(),
+        ) {
+            (None, None) => None,
+            (None, Some(consts)) => Some(format!("<{consts}>")),
+            (Some(args), None) => Some(format!("({args})")),
+            (Some(args), Some(consts)) => Some(format!("<{consts}>({args})")),
+        };
+
         let header = Header::new(
             &lib_bench.module_path,
             lib_bench.id.clone(),
-            lib_bench.display.clone(),
+            description,
             &lib_bench.output_format,
         );
 

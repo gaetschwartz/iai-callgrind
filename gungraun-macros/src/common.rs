@@ -1,17 +1,19 @@
 //! spell-checker: ignore punct
 
+use std::fmt::Write;
 use std::fs::File as StdFile;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
+use std::vec::Vec;
 
 use proc_macro2::{Span, TokenStream};
 use proc_macro_error2::{abort, emit_error};
-use quote::{format_ident, quote_spanned, ToTokens, TokenStreamExt};
+use quote::{format_ident, quote, quote_spanned, ToTokens, TokenStreamExt};
 use syn::parse::Parse;
 use syn::spanned::Spanned;
 use syn::{
-    parse2, parse_quote_spanned, Expr, ExprArray, ExprPath, Ident, LitStr, MetaList, MetaNameValue,
-    Pat, Token,
+    parse2, parse_quote_spanned, Expr, ExprArray, ExprPath, GenericParam, Generics, Ident, LitStr,
+    MetaList, MetaNameValue, Pat, Token,
 };
 
 use crate::CargoMetadata;
@@ -28,6 +30,7 @@ pub struct Args(Option<(Span, Vec<Expr>)>);
 
 #[derive(Debug, Clone)]
 pub struct Bench {
+    pub consts: Option<Consts>,
     pub id: Ident,
     pub mode: BenchMode,
 }
@@ -38,7 +41,23 @@ pub struct BenchConfig(pub Option<Expr>);
 
 /// This struct stores multiple `Args` as needed by the `#[benches]` attribute
 #[derive(Debug, Clone, Default)]
-pub struct BenchesArgs(pub Option<Vec<Args>>);
+pub struct BenchesArgs {
+    pub expected_size: usize,
+    pub span: Option<Span>,
+    pub values: Option<Vec<Args>>,
+}
+
+/// This struct reflects the `args` parameter of the `#[bench]` attribute
+#[derive(Debug, Default, Clone)]
+pub struct BenchesConsts {
+    pub expected_size: usize,
+    pub span: Option<Span>,
+    pub values: Option<Vec<Consts>>,
+}
+
+/// This struct reflects the `args` parameter of the `#[bench]` attribute
+#[derive(Debug, Default, Clone)]
+pub struct Consts(Option<(Span, Vec<Expr>)>);
 
 /// The `file` parameter of the `#[benches]` attribute
 #[derive(Debug, Default, Clone)]
@@ -94,13 +113,13 @@ impl Args {
                 }
                 Expr::Paren(item) => Self::new(span, vec![(*item.expr).clone()]),
                 _ => {
+                    // FIX: improve error message
                     abort!(
                         expr,
                         "Failed parsing `args`";
                         help = "`args` has to be a tuple/array which elements (expressions)
                         match the number of parameters of the benchmarking function";
-                        note = "#[bench::id(args = (1, 2))] or
-                        #[bench::id(args = [1, 2]])]"
+                        note = "#[bench::id(args = (1, 2))] or #[bench::id(args = [1, 2]])]"
                     );
                 }
             };
@@ -142,13 +161,13 @@ impl Args {
         if !has_setup && actual != expected {
             if let Some(span) = self.span() {
                 emit_error!(
-                span,
-                                    "Expected {} arguments but found {}",
-                                    expected,
-                                    actual;
-                                    help = "This argument is expected to have the same amount of \
-                                    parameters as the benchmark function"
-                                );
+                    span,
+                    "Expected {} arguments but found {}",
+                    expected,
+                    actual;
+                    help = "This argument is expected to have the same amount of \
+                    parameters as the benchmark function"
+                );
             } else {
                 emit_error!(
                     self,
@@ -186,8 +205,8 @@ impl ToTokens for Args {
 }
 
 impl Bench {
-    pub fn new(id: Ident, mode: BenchMode) -> Self {
-        Self { id, mode }
+    pub fn new(id: Ident, mode: BenchMode, consts: Option<Consts>) -> Self {
+        Self { consts, id, mode }
     }
 
     /// Return a vector of [`Bench`] parsing the [`File`] or [`BenchesArgs`] if present
@@ -195,145 +214,127 @@ impl Bench {
     /// # Aborts
     ///
     /// If there are args in [`BenchesArgs`] and a [`File`] present. We can deal with only one them.
-    #[allow(clippy::too_many_arguments)]
     pub(crate) fn from_benches_attribute(
         fn_span: Span,
         id: &Ident,
         args: BenchesArgs,
+        consts: BenchesConsts,
         file: &File,
         iter: &Iter,
         cargo_meta: Option<&CargoMetadata>,
         has_setup: bool,
-        expected_num_args: usize,
     ) -> Vec<Self> {
-        let check_sum =
-            u8::from(file.is_some()) + u8::from(args.is_some()) + u8::from(iter.is_some());
+        let expected_num_args = args.expected_size;
+        let expected_num_consts = consts.expected_size;
 
-        if check_sum >= 2 {
-            abort!(
-                id,
-                "Only one parameter of `file`, `args` or `iter` can be present"
-            );
-        } else if check_sum == 0 {
-            vec![Self {
-                id: id.clone(),
-                mode: BenchMode::Args(Args::default()),
-            }]
-        // check_sum == 1
-        } else if let Some(literal) = file.literal() {
-            if !(expected_num_args == 1 || has_setup) {
+        match (file.is_some(), args.is_some(), iter.is_some()) {
+            (true, true, _) | (true, _, true) | (_, true, true) => {
                 abort!(
-                    literal,
-                    "The benchmark function should take exactly one `String` argument if the file \
-                    parameter is present";
-                    help = "fn benchmark_function(line: String) ..."
-                )
+                    id,
+                    "Only one parameter of `file`, `args` or `iter` can be present"
+                );
             }
 
-            let strings = file.read(cargo_meta);
-            if strings.is_empty() {
-                abort!(literal, "The provided file '{}' was empty", literal.value());
-            }
-
-            let mut benches = vec![];
-            for (index, string) in strings.iter().enumerate() {
-                let id = format_indexed_ident(id, index);
-                let expr = if string.is_empty() {
-                    parse_quote_spanned! { literal.span() => String::new() }
+            // args is present or none are present in which case we default to args without any
+            // elements
+            (false, is_args, false) => {
+                let args = if is_args {
+                    args
                 } else {
-                    parse_quote_spanned! { literal.span() => String::from(#string) }
+                    BenchesArgs::default()
                 };
-                let args = Args::new(literal.span(), vec![expr]);
-                benches.push(Self::new(id, BenchMode::Args(args)));
-            }
 
-            benches
-        } else if let Some(expr) = iter.expr() {
-            if !(expected_num_args == 1 || has_setup) {
-                abort!(
-                    fn_span,
-                    "The benchmark function can only take exactly one argument if the iter \
-                    parameter is present";
-                    help = "fn benchmark_function(arg: String) ...";
-                    note = "If you need more than one argument you can use a tuple as input and
+                // At least 1 element if neither args nor consts are present but at most number of
+                // args or consts depending on which one has more elements.
+                let num_elements = (args.len().max(consts.len())).max(1);
+                args.iter_infinite()
+                    .zip(consts.iter_infinite())
+                    .take(num_elements)
+                    .enumerate()
+                    .map(|(index, (args, consts))| {
+                        args.check_num_arguments(expected_num_args, has_setup);
+                        if let Some(consts) = consts.as_ref() {
+                            consts.check_num_arguments(expected_num_consts);
+                        }
+
+                        let id = format_indexed_ident(id, index);
+                        Self::new(id, BenchMode::Args(args), consts)
+                    })
+                    .collect()
+            }
+            // file is present
+            (true, false, false) => {
+                let literal = file.literal().expect("file is_some was true");
+                if !(expected_num_args == 1 || has_setup) {
+                    abort!(
+                        literal,
+                        "The benchmark function should take exactly one `String` argument if the \
+                        file parameter is present";
+                        help = "fn benchmark_function(line: String) ..."
+                    )
+                }
+
+                let strings = file.read(cargo_meta);
+                if strings.is_empty() {
+                    abort!(literal, "The provided file '{}' was empty", literal.value());
+                }
+
+                let mut benches = vec![];
+                for (index, (string, consts)) in
+                    strings.iter().zip(consts.iter_infinite()).enumerate()
+                {
+                    let id = format_indexed_ident(id, index);
+                    let expr = if string.is_empty() {
+                        parse_quote_spanned! { literal.span() => String::new() }
+                    } else {
+                        parse_quote_spanned! { literal.span() => String::from(#string) }
+                    };
+
+                    if let Some(consts) = &consts {
+                        consts.check_num_arguments(expected_num_consts);
+                    }
+
+                    let args = Args::new(literal.span(), vec![expr]);
+                    benches.push(Self::new(id, BenchMode::Args(args), consts));
+                }
+
+                benches
+            }
+            // iter is present
+            (false, false, true) => {
+                let expr = iter.expr().expect("iter `is_some` should be true");
+                if !(expected_num_args == 1 || has_setup) {
+                    abort!(
+                        fn_span,
+                        "The benchmark function can only take exactly one argument if the iter \
+                        parameter is present";
+                        help = "fn benchmark_function(arg: String) ...";
+                        note = "If you need more than one argument you can use a tuple as input and
     destruct it in the function signature. Example:
 
     #[benches::some_id(iter = vec![(1, 2)])]
     fn benchmark_function((first, second): (u64, u64)) -> usize { ... }"
-                )
-            }
-
-            vec![Self::new(id.clone(), BenchMode::Iter(expr.clone()))]
-        } else {
-            args.finalize()
-                .enumerate()
-                .map(|(index, args)| {
-                    args.check_num_arguments(expected_num_args, has_setup);
-                    let id = format_indexed_ident(id, index);
-                    Self::new(id, BenchMode::Args(args))
-                })
-                .collect()
-        }
-    }
-}
-
-impl BenchesArgs {
-    pub fn is_some(&self) -> bool {
-        self.0.is_some()
-    }
-
-    pub fn parse_pair(&mut self, pair: &MetaNameValue) -> syn::Result<()> {
-        if self.0.is_none() {
-            *self = Self::from_expr(&pair.value)?;
-        } else {
-            abort!(
-                pair, "Duplicate argument: `args`";
-                help = "`args` is allowed only once"
-            );
-        }
-
-        Ok(())
-    }
-
-    pub fn from_expr(expr: &Expr) -> syn::Result<Self> {
-        let expr_array = parse2::<ExprArray>(expr.to_token_stream())?;
-        let mut values: Vec<Args> = vec![];
-        for elem in expr_array.elems {
-            let span = elem.span();
-            let args = match elem {
-                Expr::Tuple(items) => {
-                    let mut args = parse2::<Args>(items.elems.to_token_stream())?;
-                    args.set_span(span);
-                    args
+                    )
+                } else if consts.len() > 1 {
+                    let span = consts.span.as_ref().unwrap_or(&fn_span);
+                    // FIX: better error message
+                    abort!(
+                        span,
+                        "The #[benches] attribute can only take exactly one consts element if the \
+                        iter parameter is present";
+                        help = "#[benches::id(iter = ..., consts = [(123, 456)])]";
+                    )
+                } else {
+                    // do nothing
                 }
-                Expr::Paren(item) => Args::new(span, vec![*item.expr]),
-                _ => Args::new(span, vec![elem]),
-            };
 
-            values.push(args);
-        }
-        Ok(Self(Some(values)))
-    }
+                let first = consts.first(); // There is only one consts or none
+                if let Some(first) = &first {
+                    first.check_num_arguments(expected_num_consts);
+                }
 
-    pub fn from_meta_list(meta: &MetaList) -> syn::Result<Self> {
-        let list = &meta.tokens;
-        let expr = parse2::<Expr>(quote_spanned! { list.span() => [#list] })?;
-        Self::from_expr(&expr)
-    }
-
-    // Make sure there is at least one `Args` present then return an iterator
-    //
-    // `#[benches::id()]`, `#[benches::id(args = [])]` have to result in a single Bench with
-    // an empty Args.
-    pub fn finalize(self) -> impl Iterator<Item = Args> {
-        if let Some(args) = self.0 {
-            if args.is_empty() {
-                vec![Args::default()].into_iter()
-            } else {
-                args.into_iter()
+                vec![Self::new(id.clone(), BenchMode::Iter(expr.clone()), first)]
             }
-        } else {
-            vec![Args::default()].into_iter()
         }
     }
 }
@@ -356,6 +357,355 @@ impl BenchConfig {
 
     pub fn is_some(&self) -> bool {
         self.0.is_some()
+    }
+}
+
+impl BenchesArgs {
+    pub fn is_some(&self) -> bool {
+        self.values.is_some()
+    }
+
+    pub fn len(&self) -> usize {
+        self.values.as_ref().map_or(0, Vec::len)
+    }
+
+    pub fn new(expected_num_args: usize) -> Self {
+        Self {
+            expected_size: expected_num_args,
+            span: None,
+            values: None,
+        }
+    }
+
+    pub fn parse_pair(&mut self, pair: &MetaNameValue) -> syn::Result<()> {
+        if self.values.is_none() {
+            let values = Self::from_expr(&pair.value)?;
+            if values.is_empty() && self.expected_size > 0 {
+                abort!(
+                    pair.span(),
+                    "Expected the `args` array to contain an element with {} argument(s)",
+                    self.expected_size;
+                    note = "For example if the benchmark function takes a single parameter:
+
+    /* ... */
+    #[benches::id(args = [123])]
+    fn benchmark_function(arg: usize) /* ...  */"
+                );
+            }
+            self.span = Some(pair.span());
+            self.values = Some(values);
+        } else {
+            abort!(
+                pair, "Duplicate argument: `args`";
+                help = "`args` is allowed only once"
+            );
+        }
+
+        Ok(())
+    }
+
+    pub fn from_expr(expr: &Expr) -> syn::Result<Vec<Args>> {
+        let expr_array = parse2::<ExprArray>(expr.to_token_stream())?;
+        let mut values: Vec<Args> = vec![];
+        for elem in expr_array.elems {
+            let span = elem.span();
+            let args = match elem {
+                Expr::Tuple(items) => {
+                    let mut args = parse2::<Args>(items.elems.to_token_stream())?;
+                    args.set_span(span);
+                    args
+                }
+                Expr::Paren(item) => Args::new(span, vec![*item.expr]),
+                _ => Args::new(span, vec![elem]),
+            };
+
+            values.push(args);
+        }
+
+        Ok(values)
+    }
+
+    pub fn from_meta_list(meta: &MetaList, expected_num_args: usize) -> syn::Result<Self> {
+        let list = &meta.tokens;
+        let expr = parse2::<Expr>(quote_spanned! { list.span() => [#list] })?;
+
+        let values = Self::from_expr(&expr)?;
+        Ok(Self {
+            expected_size: expected_num_args,
+            span: Some(meta.span()),
+            values: Some(values),
+        })
+    }
+
+    pub fn iter_infinite(self) -> Box<dyn Iterator<Item = Args>> {
+        match self.values {
+            Some(args) if !args.is_empty() => {
+                let last = args
+                    .last()
+                    .cloned()
+                    .expect("There should be a last element");
+                Box::new(args.into_iter().chain(std::iter::repeat(last)))
+            }
+            _ => Box::new(std::iter::repeat(Args::default())),
+        }
+    }
+}
+
+impl BenchesConsts {
+    pub(crate) fn parse_pair(&mut self, pair: &MetaNameValue) -> syn::Result<()> {
+        if self.values.is_none() {
+            let values = Self::from_expr(&pair.value)?;
+            if values.is_empty() && self.expected_size > 0 {
+                abort!(
+                    pair.span(),
+                    "Expected the `consts` array to contain an element with {} argument(s)",
+                    self.expected_size;
+                    note = "For example if the benchmark function takes a single `const` parameter:
+
+    /* ... */
+    #[benches::id(consts = [123])]
+    fn benchmark_function<const SIZE: usize>() /* ...  */"
+                );
+            }
+
+            self.span = Some(pair.span());
+            self.values = Some(values);
+        } else {
+            abort!(
+                pair, "Duplicate argument: `consts`";
+                help = "`consts` is allowed only once"
+            );
+        }
+
+        Ok(())
+    }
+
+    pub fn from_expr(expr: &Expr) -> syn::Result<Vec<Consts>> {
+        let expr_array = parse2::<ExprArray>(expr.to_token_stream())?;
+        let mut values: Vec<Consts> = vec![];
+        for elem in expr_array.elems {
+            let span = elem.span();
+            let consts = match elem {
+                Expr::Tuple(items) => {
+                    let mut consts = parse2::<Consts>(items.elems.to_token_stream())?;
+                    consts.set_span(span);
+                    consts
+                }
+                Expr::Paren(item) => Consts::new(span, vec![*item.expr]),
+                _ => Consts::new(span, vec![elem]),
+            };
+
+            values.push(consts);
+        }
+
+        Ok(values)
+    }
+
+    pub fn iter_infinite(self) -> Box<dyn Iterator<Item = Option<Consts>>> {
+        match self.values {
+            Some(consts) if !consts.is_empty() => {
+                let last = consts.last().cloned();
+                Box::new(consts.into_iter().map(Some).chain(std::iter::repeat(last)))
+            }
+            _ => Box::new(std::iter::repeat(None)),
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.values.as_ref().map_or(0, Vec::len)
+    }
+
+    pub fn new(expected_num_consts: usize) -> Self {
+        Self {
+            span: None,
+            expected_size: expected_num_consts,
+            values: None,
+        }
+    }
+
+    pub fn first(self) -> Option<Consts> {
+        self.values.into_iter().flatten().nth(0)
+    }
+}
+
+impl Consts {
+    pub fn new(span: Span, data: Vec<Expr>) -> Self {
+        Self(Some((span, data)))
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.as_ref().map_or(0, |(_, data)| data.len())
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.as_ref().map_or(true, |(_, data)| data.is_empty())
+    }
+
+    pub fn exprs(&self) -> Vec<Expr> {
+        self.0.as_ref().map_or_else(Vec::new, |(_, v)| v.clone())
+    }
+
+    pub fn maybe_string(&self) -> Option<String> {
+        self.0.as_ref().and_then(|(_, exprs)| {
+            if exprs.is_empty() {
+                None
+            } else {
+                let mut iter = exprs.iter();
+                // The unwrap is safe since we just checked that `exprs` is not empty
+                let first = iter.next().unwrap().to_token_stream().to_string();
+                let string = iter.fold(first, |mut acc, f| {
+                    write!(acc, ", {}", f.to_token_stream()).unwrap();
+                    acc
+                });
+                Some(string)
+            }
+        })
+    }
+
+    pub fn span(&self) -> Option<&Span> {
+        self.0.as_ref().map(|(span, _)| span)
+    }
+
+    pub fn set_span(&mut self, span: Span) {
+        if let Some(data) = self.0.as_mut() {
+            data.0 = span;
+        }
+    }
+
+    pub fn parse_pair(&mut self, pair: &MetaNameValue) -> syn::Result<()> {
+        if self.0.is_none() {
+            let expr = &pair.value;
+            let span = expr.span();
+            let args = match expr {
+                Expr::Array(items) => {
+                    let mut args = parse2::<Self>(items.elems.to_token_stream())?;
+                    // Set span explicitly (again) to overwrite the wrong span from parse2
+                    args.set_span(span);
+                    args
+                }
+                Expr::Tuple(items) => {
+                    let mut args = parse2::<Self>(items.elems.to_token_stream())?;
+                    // Set span explicitly (again) to overwrite the wrong span from parse2
+                    args.set_span(span);
+                    args
+                }
+                Expr::Paren(item) => Self::new(span, vec![(*item.expr).clone()]),
+                _ => {
+                    // FIX: check error messages indentation
+                    abort!(
+                        expr,
+                        "Failed parsing `consts`";
+                        help = "`consts` has to be a tuple/array which elements (expressions)
+                        match the number of parameters of the benchmarking function";
+                        note = "#[bench::id(consts = (1, 2))] or
+                        #[bench::id(consts = [1, 2]])]"
+                    );
+                }
+            };
+
+            *self = args;
+        } else {
+            emit_error!(
+                pair, "Duplicate argument: `consts`";
+                help = "`consts` is allowed only once"
+            );
+        }
+
+        Ok(())
+    }
+
+    /// Emit a compiler error if the number of actual and expected arguments do not match
+    ///
+    /// If there is a setup function present, we do not perform any checks.
+    pub fn check_num_arguments(&self, expected: usize) {
+        let actual = self.len();
+
+        if actual != expected {
+            if let Some(span) = self.span() {
+                emit_error!(
+                    span,
+                    "Expected {} const arguments but found {}",
+                    expected,
+                    actual;
+                    help = "`consts` should have one expression for each const generic \
+                    parameter of the benchmark function"
+                );
+            } else {
+                emit_error!(
+                    self,
+                    "Expected {} const arguments but found {}",
+                    expected,
+                    actual;
+                    help = "`consts` should have one expression for each const generic \
+                    parameter of the benchmark function"
+                );
+            }
+        }
+    }
+
+    pub fn to_function_calls(
+        &self,
+        generics: &Generics,
+        bench_func_name: &Ident,
+        id_func_name: Option<&Ident>,
+    ) -> (TokenStream, TokenStream) {
+        if self.is_empty() {
+            (
+                quote! { #bench_func_name },
+                id_func_name.map_or_else(TokenStream::new, |ident| quote! { #ident }),
+            )
+        } else {
+            let const_exprs = self.exprs();
+            let mut iter_consts = const_exprs.iter();
+            let generics_call = generics
+                .params
+                .iter()
+                .filter_map(|g| match g {
+                    GenericParam::Lifetime(_) => None,
+                    GenericParam::Type(_) => Some(quote! { _ }),
+                    GenericParam::Const(c) => {
+                        if let Some(next) = iter_consts.next() {
+                            Some(next.to_token_stream())
+                        } else {
+                            abort!(
+                                c,
+                                "Mismatch between amount of expected generic consts parameters \
+                                 and present parameters"
+                            );
+                        }
+                    }
+                })
+                .collect::<Vec<TokenStream>>();
+            (
+                quote! { #bench_func_name::<#(#generics_call),*> },
+                id_func_name.map_or_else(
+                    TokenStream::new,
+                    |ident| quote! { #ident::<#(#generics_call),*> },
+                ),
+            )
+        }
+    }
+}
+
+impl Parse for Consts {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let data = input
+            .parse_terminated(Parse::parse, Token![,])?
+            .into_iter()
+            .collect();
+
+        // We set a default span here although it is most likely wrong. It's strongly advised to set
+        // the span with `Args::set_span` to the correct value.
+        Ok(Self::new(input.span(), data))
+    }
+}
+
+impl ToTokens for Consts {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        if let Some((span, exprs)) = self.0.as_ref() {
+            let this_tokens = quote_spanned! { *span => #(#exprs),* };
+            tokens.append_all(this_tokens);
+        }
     }
 }
 

@@ -40,6 +40,8 @@ pub struct BaselineBenchmark {
 pub struct LibBench {
     /// The index of the `#[bench]` in the `#[library_benchmark]`
     pub bench_index: usize,
+    /// The arguments of the `consts` parameter as a single string
+    pub consts_display: Option<String>,
     /// The default [`ValgrindTool`]. If not changed it is `Callgrind`.
     pub default_tool: ValgrindTool,
     /// The arguments of `args` attribute as a single string
@@ -231,6 +233,7 @@ impl LibBench {
     pub fn new(
         id: Option<String>,
         display: Option<String>,
+        consts_display: Option<String>,
         module_path: ModulePath,
         function_name: String,
         meta: &Metadata,
@@ -303,6 +306,7 @@ impl LibBench {
             id,
             function_name,
             display,
+            consts_display,
             run_options: RunOptions {
                 env_clear: config.env_clear.unwrap_or(true),
                 envs,

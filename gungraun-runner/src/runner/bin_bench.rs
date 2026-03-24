@@ -50,9 +50,11 @@ struct BaselineBenchmark {
 pub struct BinBench {
     /// The [`Command`] to execute under valgrind
     pub command: Command,
+    /// The arguments of `consts` parameter as a single string
+    pub consts_display: Option<String>,
     /// The default [`ValgrindTool`]. If not changed it is `Callgrind`.
     pub default_tool: ValgrindTool,
-    /// The arguments of `args` attribute as a single string
+    /// The arguments of `args` parameter as a single string
     pub display: Option<String>,
     /// The name of the annotated function
     pub function_name: String,
@@ -262,6 +264,7 @@ impl BinBench {
     pub fn new(
         id: Option<String>,
         display: Option<String>,
+        consts_display: Option<String>,
         module_path: ModulePath,
         function_name: String,
         has_setup: bool,
@@ -364,6 +367,7 @@ impl BinBench {
         Ok(Some(Self {
             id,
             display,
+            consts_display,
             function_name,
             tools: tool_configs,
             run_options: RunOptions {

@@ -7,9 +7,9 @@ use proc_macro_error2::abort;
 use quote::{format_ident, quote, ToTokens, TokenStreamExt};
 use syn::parse::Parse;
 use syn::punctuated::Punctuated;
-use syn::{parse2, parse_quote, Attribute, Expr, Ident, ItemFn, MetaNameValue, Token};
+use syn::{parse2, parse_quote, Attribute, Expr, Generics, Ident, ItemFn, MetaNameValue, Token};
 
-use crate::common::{self, format_ident, truncate_str_utf8, BenchesArgs, File};
+use crate::common::{self, format_ident, truncate_str_utf8, BenchesArgs, BenchesConsts, File};
 use crate::{defaults, CargoMetadata};
 
 #[derive(Debug)]
@@ -31,6 +31,8 @@ struct AssistantRenderer;
 #[derive(Debug)]
 struct Bench {
     config: BenchConfig,
+    consts: Consts,
+    generics: Generics,
     id: Ident,
     mode: BenchMode,
     setup: Setup,
@@ -58,6 +60,10 @@ struct BinaryBenchmark {
 /// struct with the same name.
 #[derive(Debug, Default, Clone, DerefDerive, DerefMutDerive)]
 struct BinaryBenchmarkConfig(common::BenchConfig);
+
+/// This struct reflects the `consts` parameter of the `#[bench]` attribute
+#[derive(Debug, Default, Clone, DerefDerive, DerefMutDerive)]
+struct Consts(common::Consts);
 
 #[derive(Debug, Clone)]
 struct Iter(Expr);
@@ -154,9 +160,12 @@ impl Bench {
         other_teardown: &Teardown,
     ) -> syn::Result<Self> {
         let expected_num_args = item_fn.sig.inputs.len();
+        let expected_num_consts = item_fn.sig.generics.const_params().count();
+        let generics = item_fn.sig.generics.clone();
         let meta = attr.meta.require_list()?;
 
         let mut args = Args::default();
+        let mut consts = Consts::default();
         let mut config = BenchConfig::default();
         let mut setup = Setup::default();
         let mut teardown = Teardown::default();
@@ -167,6 +176,8 @@ impl Bench {
             for pair in pairs {
                 if pair.path.is_ident("args") {
                     args.parse_pair(&pair)?;
+                } else if pair.path.is_ident("consts") {
+                    consts.parse_pair(&pair)?;
                 } else if pair.path.is_ident("config") {
                     config.parse_pair(&pair);
                 } else if pair.path.is_ident("setup") {
@@ -176,7 +187,7 @@ impl Bench {
                 } else {
                     abort!(
                         pair, "Invalid argument: {}", pair.path.require_ident()?;
-                        help = "Valid arguments are: `args`, `config`, `setup`, teardown`"
+                        help = "Valid arguments are: `args`, `consts`, `config`, `setup`, teardown`"
                     );
                 }
             }
@@ -188,9 +199,12 @@ impl Bench {
         teardown.update(other_teardown);
 
         args.check_num_arguments(expected_num_args, setup.is_some());
+        consts.check_num_arguments(expected_num_consts);
 
         Ok(Self {
             id,
+            consts,
+            generics,
             mode: BenchMode::Args(args),
             config,
             setup,
@@ -207,14 +221,17 @@ impl Bench {
         cargo_meta: Option<&CargoMetadata>,
     ) -> syn::Result<Vec<Self>> {
         let expected_num_args = item_fn.sig.inputs.len();
+        let expected_num_consts = item_fn.sig.generics.const_params().count();
+        let generics = item_fn.sig.generics.clone();
         let meta = attr.meta.require_list()?;
 
         let mut config = BenchConfig::default();
         let mut setup = Setup::default();
         let mut teardown = Teardown::default();
-        let mut args = BenchesArgs::default();
+        let mut args = BenchesArgs::new(expected_num_args);
         let mut file = File::default();
         let mut iter = common::Iter::default();
+        let mut consts = BenchesConsts::new(expected_num_consts);
 
         if let Ok(pairs) =
             meta.parse_args_with(Punctuated::<MetaNameValue, Token![,]>::parse_terminated)
@@ -222,6 +239,8 @@ impl Bench {
             for pair in pairs {
                 if pair.path.is_ident("args") {
                     args.parse_pair(&pair)?;
+                } else if pair.path.is_ident("consts") {
+                    consts.parse_pair(&pair)?;
                 } else if pair.path.is_ident("config") {
                     config.parse_pair(&pair);
                 } else if pair.path.is_ident("setup") {
@@ -235,13 +254,13 @@ impl Bench {
                 } else {
                     abort!(
                         pair, "Invalid argument: {}", pair.path.require_ident()?;
-                        help = "Valid arguments are: `args`, `file`, `iter`, `config`, `setup`, \
-                        `teardown`"
+                        help = "Valid arguments are: `args`, `consts`, `file`, `iter`, `config`,
+                        `setup`, `teardown`"
                     );
                 }
             }
         } else {
-            args = BenchesArgs::from_meta_list(meta)?;
+            args = BenchesArgs::from_meta_list(meta, expected_num_args)?;
         }
 
         setup.update(other_setup);
@@ -251,11 +270,11 @@ impl Bench {
             item_fn.sig.ident.span(),
             id,
             args,
+            consts,
             &file,
             &iter,
             cargo_meta,
             setup.is_some(),
-            expected_num_args,
         )
         .into_iter()
         .map(|b| Self {
@@ -264,6 +283,8 @@ impl Bench {
             config: config.clone(),
             setup: setup.clone(),
             teardown: teardown.clone(),
+            consts: b.consts.map_or_else(Consts::default, Into::into),
+            generics: generics.clone(),
         })
         .collect();
 
@@ -272,6 +293,7 @@ impl Bench {
 
     fn render_as_code(&self, callee: &Ident) -> TokenStream {
         let id = &self.id;
+        let (bench_func_call, _) = self.consts.to_function_calls(&self.generics, callee, None);
         match &self.mode {
             BenchMode::Iter(iter) => {
                 let iter_expr = &iter.0;
@@ -281,7 +303,7 @@ impl Bench {
                         let __iter = #iter_expr;
 
                         #[allow(clippy::useless_conversion)]
-                        __iter.into_iter().map(|__elem| #callee(__elem)).collect()
+                        __iter.into_iter().map(|__elem| #bench_func_call(__elem)).collect()
                     }
                 );
 
@@ -300,7 +322,7 @@ impl Bench {
                 let args_tokens = args.to_tokens_without_black_box();
                 let func = quote!(
                     pub fn #id() -> gungraun::Command {
-                        #callee(#args_tokens)
+                        #bench_func_call(#args_tokens)
                     }
                 );
 
@@ -323,38 +345,46 @@ impl Bench {
         let id_display = self.id.to_string();
         let config = self.config.render_as_member(Some(id));
 
-        match &self.mode {
-            BenchMode::Iter(iter) => {
-                let args_string = self.setup.to_string_with_iter(iter);
-                let args_display = truncate_str_utf8(&args_string, defaults::MAX_BYTES_ARGS);
-                let setup = self.setup.render_as_member(Some(id), Some(iter));
-                let teardown = self.teardown.render_as_member(Some(id), Some(iter));
-                quote! {
-                    gungraun::__internal::InternalMacroBinBench {
-                        id_display: Some(#id_display),
-                        args_display: Some(#args_display),
-                        func: gungraun::__internal::InternalBinFunctionKind::Iter(#id),
-                        config: #config,
-                        setup: #setup,
-                        teardown: #teardown,
-                    }
-                }
-            }
-            BenchMode::Args(args) => {
-                let args_string = self.setup.to_string_with_args(args);
-                let args_display = truncate_str_utf8(&args_string, defaults::MAX_BYTES_ARGS);
-                let setup = self.setup.render_as_member(Some(id), None);
-                let teardown = self.teardown.render_as_member(Some(id), None);
-                quote! {
-                    gungraun::__internal::InternalMacroBinBench {
-                        id_display: Some(#id_display),
-                        args_display: Some(#args_display),
-                        func: gungraun::__internal::InternalBinFunctionKind::Default(#id),
-                        config: #config,
-                        setup: #setup,
-                        teardown: #teardown,
-                    }
-                }
+        let (args_string, func_kind, setup, teardown) = match &self.mode {
+            BenchMode::Iter(iter) => (
+                self.setup.to_string_with_iter(iter),
+                quote! {Iter(#id)},
+                self.setup.render_as_member(Some(id), Some(iter)),
+                self.teardown.render_as_member(Some(id), Some(iter)),
+            ),
+            BenchMode::Args(args) => (
+                self.setup.to_string_with_args(args),
+                quote! {Default(#id)},
+                self.setup.render_as_member(Some(id), None),
+                self.teardown.render_as_member(Some(id), None),
+            ),
+        };
+
+        let func = quote!(gungraun::__internal::InternalBinFunctionKind::#func_kind);
+
+        let args_display = if args_string.is_empty() {
+            quote! {None}
+        } else {
+            let display = truncate_str_utf8(&args_string, defaults::MAX_BYTES_ARGS);
+            quote! {Some(#display)}
+        };
+
+        let consts_display = if let Some(consts_string) = self.consts.maybe_string() {
+            let consts_display = truncate_str_utf8(&consts_string, defaults::MAX_BYTES_ARGS);
+            quote! {Some(#consts_display)}
+        } else {
+            quote! {None}
+        };
+
+        quote! {
+            gungraun::__internal::InternalMacroBinBench {
+                id_display: Some(#id_display),
+                args_display: #args_display,
+                consts_display: #consts_display,
+                func: #func,
+                config: #config,
+                setup: #setup,
+                teardown: #teardown,
             }
         }
     }
@@ -510,6 +540,7 @@ impl BinaryBenchmark {
                     gungraun::__internal::InternalMacroBinBench {
                         id_display: None,
                         args_display: None,
+                        consts_display: None,
                         func: gungraun::__internal::InternalBinFunctionKind::Default(#ident),
                         setup: #setup_member,
                         teardown: #teardown_member,
@@ -614,6 +645,12 @@ impl BinaryBenchmarkConfig {
                 }
             )
         }
+    }
+}
+
+impl From<common::Consts> for Consts {
+    fn from(value: common::Consts) -> Self {
+        Self(value)
     }
 }
 

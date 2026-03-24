@@ -74,6 +74,7 @@ pub enum InternalBinFunctionKind {
 pub struct InternalMacroLibBench {
     pub args_display: Option<&'static str>,
     pub config: Option<fn() -> InternalLibraryBenchmarkConfig>,
+    pub consts_display: Option<&'static str>,
     pub func: InternalLibFunctionKind,
     pub id_display: Option<&'static str>,
 }
@@ -83,6 +84,7 @@ pub struct InternalMacroLibBench {
 pub struct InternalMacroBinBench {
     pub args_display: Option<&'static str>,
     pub config: Option<fn() -> InternalBinaryBenchmarkConfig>,
+    pub consts_display: Option<&'static str>,
     pub func: InternalBinFunctionKind,
     pub id_display: Option<&'static str>,
     pub setup: InternalBinAssistantKind,

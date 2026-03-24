@@ -1031,6 +1031,8 @@ pub struct BinaryBenchmarkBench {
     pub command: CommandKind,
     /// The configuration at `#[bench]` or `#[benches]` level
     pub config: Option<BinaryBenchmarkConfig>,
+    /// The consts arguments for the benchmark function as single string
+    pub consts_display: Option<String>,
     /// The name of the annotated function
     pub function_name: String,
     /// True if there is a `setup` function
@@ -1217,6 +1219,8 @@ pub struct LibraryBenchmarkBench {
     pub args: Option<String>,
     /// The configuration at this level
     pub config: Option<LibraryBenchmarkConfig>,
+    /// The consts for the function
+    pub consts: Option<String>,
     /// The name of the function
     pub function_name: String,
     /// The id of the attribute as in `#[bench::id]`

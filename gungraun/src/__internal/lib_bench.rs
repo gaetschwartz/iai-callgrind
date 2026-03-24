@@ -73,6 +73,7 @@ impl GroupsBuilder {
                 let bench = crate::__internal::InternalLibraryBenchmarkBench {
                     id: macro_lib_bench.id_display.map(ToString::to_string),
                     args: macro_lib_bench.args_display.map(ToString::to_string),
+                    consts: macro_lib_bench.consts_display.map(ToString::to_string),
                     function_name: (*function_name).to_owned(),
                     config: macro_lib_bench.config.map(|f| f()),
                     iter_count: match macro_lib_bench.func {
