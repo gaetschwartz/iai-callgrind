@@ -381,7 +381,7 @@ impl Display for Header {
                     f.write_fmt(format_args!(
                         " {}{}{}",
                         id.cyan(),
-                        ":".cyan(),
+                        ":",
                         description.bold().blue(),
                     ))?;
                 }
@@ -390,13 +390,8 @@ impl Display for Header {
                 }
                 _ => {}
             }
-        } else if let Some(description) = &self.description {
-            if !description.is_empty() {
-                f.write_fmt(format_args!(" {}", description.bold().blue()))?;
-            }
-        } else {
-            // do nothing
         }
+
         Ok(())
     }
 }
