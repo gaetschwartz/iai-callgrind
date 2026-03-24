@@ -91,6 +91,13 @@ accepts the following parameters:
 - `args`: A tuple with a list of arguments which are passed to the benchmark
   function. The parentheses also need to be present if there is only a single
   argument (`#[bench::my_id(args = (10))]`).
+- `consts`: A tuple with const expressions for const generic parameters of the
+  benchmark function. The number and order must match the const generics in the
+  function signature. Otherwise, the function signature may contain other
+  parameters in any order like lifetimes and type parameters. Parentheses are
+  required: `consts = (321)` for a single const generic, `consts = (321, 654)`
+  for multiple. Const expressions like `consts = ({ 1 + 20 })` are also
+  supported.
 - `config`: Accepts a [`LibraryBenchmarkConfig`]
 - `setup`: A function which takes the arguments specified in the `args`
   parameter and passes its return value to the benchmark function.
@@ -135,9 +142,9 @@ main!(library_benchmark_groups = bubble_sort_group);
 
 This attribute is used to specify multiple benchmarks. It accepts the same
 parameters as the [`#[bench]`](#the-bench-attribute) attribute: `args`,
-`config`, `setup` and `teardown` and additionally the `iter` and `file`
+`config`, `setup`, `teardown`, `consts` and additionally the `iter` and `file`
 parameters which are explained in full detail in
-[Specifying multiple benchmarks at once](./multiple_benches.md). In contrast to
+[Specifying Multiple Benchmarks at Once](./multiple_benches.md). In contrast to
 the `args` parameter in [`#[bench]`](#the-bench-attribute), `args` takes an
 array of arguments.
 
@@ -165,6 +172,37 @@ fn bench_bubble_sort(value: Vec<i32>) -> Vec<i32> {
 library_benchmark_group!(name = bubble_sort_group, benchmarks = bench_bubble_sort);
 # fn main() {
 main!(library_benchmark_groups = bubble_sort_group);
+# }
+```
+
+Similarly, `consts` takes an array of const expressions. If the amount of `args`
+and `consts` elements don't match then the last element of the parameter with
+the lower amount of elements is repeated:
+
+```rust
+# extern crate gungraun;
+# mod my_lib {
+#   pub fn create_buffer<const SIZE: usize, T>(_: T) -> Vec<Vec<u8>> {
+#       Vec::with_capacity(SIZE)
+#   }
+# }
+use gungraun::{library_benchmark, library_benchmark_group, main};
+use std::hint::black_box;
+
+#[library_benchmark]
+// This creates three benchmarks with args "foo" repeated and the three consts
+#[benches::small(args = ["foo"], consts = (10, 50, 100))]
+// This creates two benchmarks with args "foo" and "baz" and the consts `10000`
+// repeated
+#[benches::big(args = ["bar", "baz"], consts = (10000))]
+fn bench_buffer<const SIZE: usize, T>(arg_t: T) -> Vec<Vec<u8>>
+where T: std::fmt::Display {
+    black_box(my_lib::create_buffer::<SIZE, T>(arg_t))
+}
+
+library_benchmark_group!(name = my_group, benchmarks = bench_buffer);
+# fn main() {
+main!(library_benchmark_groups = my_group);
 # }
 ```
 
