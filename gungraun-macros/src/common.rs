@@ -113,13 +113,14 @@ impl Args {
                 }
                 Expr::Paren(item) => Self::new(span, vec![(*item.expr).clone()]),
                 _ => {
-                    // FIX: improve error message
+                    #[rustfmt::skip]
                     abort!(
                         expr,
-                        "Failed parsing `args`";
-                        help = "`args` has to be a tuple/array which elements (expressions)
-                        match the number of parameters of the benchmarking function";
-                        note = "#[bench::id(args = (1, 2))] or #[bench::id(args = [1, 2]])]"
+                        "Invalid value for `args`";
+                        help = "`args` must be a tuple or array whose elements match the \
+                        benchmark function's parameters";
+                        note = "#[bench::id(args = (1, 2))]  // tuple
+          #[bench::id(args = [1, 2])]  // array"
                     );
                 }
             };
@@ -317,12 +318,13 @@ impl Bench {
                     )
                 } else if consts.len() > 1 {
                     let span = consts.span.as_ref().unwrap_or(&fn_span);
-                    // FIX: better error message
                     abort!(
                         span,
-                        "The #[benches] attribute can only take exactly one consts element if the \
-                        iter parameter is present";
-                        help = "#[benches::id(iter = ..., consts = [(123, 456)])]";
+                        "`iter` requires exactly one `consts` element";
+                        help = "`iter` creates multiple benchmarks at runtime, but `consts` \
+                        applies const generics at compile time";
+                        note = "Use a single consts group: \
+                        #[benches::id(iter = ..., consts = [(123, 456)])]"
                     )
                 } else {
                     // do nothing
@@ -591,14 +593,14 @@ impl Consts {
                 }
                 Expr::Paren(item) => Self::new(span, vec![(*item.expr).clone()]),
                 _ => {
-                    // FIX: check error messages indentation
+                    #[rustfmt::skip]
                     abort!(
                         expr,
-                        "Failed parsing `consts`";
-                        help = "`consts` has to be a tuple/array which elements (expressions)
-                        match the number of parameters of the benchmarking function";
-                        note = "#[bench::id(consts = (1, 2))] or
-                        #[bench::id(consts = [1, 2]])]"
+                        "Invalid value for `consts`";
+                        help = "`consts` must be a tuple or array whose elements match the \
+                        benchmark function's const parameters";
+                        note = "#[bench::id(consts = (1, 2))]  // tuple
+          #[bench::id(consts = [1, 2])]  // array"
                     );
                 }
             };

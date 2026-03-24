@@ -210,84 +210,84 @@ error: Duplicate argument: `consts`
 186 |     #[benches::id(consts = [123], consts = [456])]
     |                                   ^^^^^^^^^^^^^^
 
-error: The #[benches] attribute can only take exactly one consts element if the iter parameter is present
+error: `iter` requires exactly one `consts` element
 
-         = help: #[benches::id(iter = ..., consts = [(123, 456)])]
+         = help: `iter` creates multiple benchmarks at runtime, but `consts` applies const generics at compile time
+         = note: Use a single consts group: #[benches::id(iter = ..., consts = [(123, 456)])]
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:196:33
     |
 196 |     #[benches::id(iter = 1..10, consts = [(123), (456)])]
     |                                 ^^^^^^
 
-error: The #[benches] attribute can only take exactly one consts element if the iter parameter is present
+error: `iter` requires exactly one `consts` element
 
-         = help: #[benches::id(iter = ..., consts = [(123, 456)])]
+         = help: `iter` creates multiple benchmarks at runtime, but `consts` applies const generics at compile time
+         = note: Use a single consts group: #[benches::id(iter = ..., consts = [(123, 456)])]
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:202:33
     |
 202 |     #[benches::id(iter = 1..10, consts = [(123), (456)])]
     |                                 ^^^^^^
 
-error: The #[benches] attribute can only take exactly one consts element if the iter parameter is present
+error: `iter` requires exactly one `consts` element
 
-         = help: #[benches::id(iter = ..., consts = [(123, 456)])]
+         = help: `iter` creates multiple benchmarks at runtime, but `consts` applies const generics at compile time
+         = note: Use a single consts group: #[benches::id(iter = ..., consts = [(123, 456)])]
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:210:33
     |
 210 |     #[benches::id(iter = 1..10, consts = [(123, 456), (789, 012)])]
     |                                 ^^^^^^
 
-error: The #[benches] attribute can only take exactly one consts element if the iter parameter is present
+error: `iter` requires exactly one `consts` element
 
-         = help: #[benches::id(iter = ..., consts = [(123, 456)])]
+         = help: `iter` creates multiple benchmarks at runtime, but `consts` applies const generics at compile time
+         = note: Use a single consts group: #[benches::id(iter = ..., consts = [(123, 456)])]
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:218:33
     |
 218 |     #[benches::id(iter = 1..10, consts = [(123, 456), (789, 012)])]
     |                                 ^^^^^^
 
-error: Failed parsing `consts`
+error: Invalid value for `consts`
 
-         = help: `consts` has to be a tuple/array which elements (expressions)
-                               match the number of parameters of the benchmarking function
-         = note: #[bench::id(consts = (1, 2))] or
-                               #[bench::id(consts = [1, 2]])]
+         = help: `consts` must be a tuple or array whose elements match the benchmark function's const parameters
+         = note: #[bench::id(consts = (1, 2))]  // tuple
+                 #[bench::id(consts = [1, 2])]  // array
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:232:26
     |
 232 |     #[bench::id(consts = "invalid")]
     |                          ^^^^^^^^^
 
-error: Failed parsing `consts`
+error: Invalid value for `consts`
 
-         = help: `consts` has to be a tuple/array which elements (expressions)
-                               match the number of parameters of the benchmarking function
-         = note: #[bench::id(consts = (1, 2))] or
-                               #[bench::id(consts = [1, 2]])]
+         = help: `consts` must be a tuple or array whose elements match the benchmark function's const parameters
+         = note: #[bench::id(consts = (1, 2))]  // tuple
+                 #[bench::id(consts = [1, 2])]  // array
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:238:26
     |
 238 |     #[bench::id(consts = "invalid")]
     |                          ^^^^^^^^^
 
-error: Failed parsing `consts`
+error: Invalid value for `consts`
 
-         = help: `consts` has to be a tuple/array which elements (expressions)
-                               match the number of parameters of the benchmarking function
-         = note: #[bench::id(consts = (1, 2))] or
-                               #[bench::id(consts = [1, 2]])]
+         = help: `consts` must be a tuple or array whose elements match the benchmark function's const parameters
+         = note: #[bench::id(consts = (1, 2))]  // tuple
+                 #[bench::id(consts = [1, 2])]  // array
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:256:26
     |
 256 |     #[bench::id(consts = some_ident)]
     |                          ^^^^^^^^^^
 
-error: Failed parsing `consts`
+error: Invalid value for `consts`
 
-         = help: `consts` has to be a tuple/array which elements (expressions)
-                               match the number of parameters of the benchmarking function
-         = note: #[bench::id(consts = (1, 2))] or
-                               #[bench::id(consts = [1, 2]])]
+         = help: `consts` must be a tuple or array whose elements match the benchmark function's const parameters
+         = note: #[bench::id(consts = (1, 2))]  // tuple
+                 #[bench::id(consts = [1, 2])]  // array
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:262:26
     |
