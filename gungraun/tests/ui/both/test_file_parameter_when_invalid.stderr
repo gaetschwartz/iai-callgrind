@@ -48,7 +48,7 @@ error: Only one parameter of `file`, `args` or `iter` can be present
 
 error: Invalid value for `file`
 
-         = help: The `file` argument needs a literal string containing the path to an existing file at compile time
+         = help: The `file` parameter needs a literal string containing the path to an existing file at compile time
          = note: file = "benches/some_fixture"
 
   --> tests/ui/both/test_file_parameter_when_invalid.rs:93:29
@@ -58,7 +58,7 @@ error: Invalid value for `file`
 
 error: Invalid value for `file`
 
-         = help: The `file` argument needs a literal string containing the path to an existing file at compile time
+         = help: The `file` parameter needs a literal string containing the path to an existing file at compile time
          = note: file = "benches/some_fixture"
 
   --> tests/ui/both/test_file_parameter_when_invalid.rs:99:29
@@ -68,7 +68,7 @@ error: Invalid value for `file`
 
 error: Invalid value for `file`
 
-         = help: The `file` argument needs a literal string containing the path to an existing file at compile time
+         = help: The `file` parameter needs a literal string containing the path to an existing file at compile time
          = note: file = "benches/some_fixture"
 
    --> tests/ui/both/test_file_parameter_when_invalid.rs:109:29
@@ -78,7 +78,7 @@ error: Invalid value for `file`
 
 error: Invalid value for `file`
 
-         = help: The `file` argument needs a literal string containing the path to an existing file at compile time
+         = help: The `file` parameter needs a literal string containing the path to an existing file at compile time
          = note: file = "benches/some_fixture"
 
    --> tests/ui/both/test_file_parameter_when_invalid.rs:115:29

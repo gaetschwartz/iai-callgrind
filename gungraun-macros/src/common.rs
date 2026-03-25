@@ -128,7 +128,7 @@ impl Args {
             *self = args;
         } else {
             emit_error!(
-                pair, "Duplicate argument: `args`";
+                pair, "Duplicate parameter: `args`";
                 help = "`args` is allowed only once"
             );
         }
@@ -349,7 +349,7 @@ impl BenchConfig {
             self.0 = Some(pair.value.clone());
         } else {
             emit_error!(
-                pair, "Duplicate argument: `config`";
+                pair, "Duplicate parameter: `config`";
                 help = "`config` is allowed only once"
             );
         }
@@ -397,7 +397,7 @@ impl BenchesArgs {
             self.values = Some(values);
         } else {
             abort!(
-                pair, "Duplicate argument: `args`";
+                pair, "Duplicate parameter: `args`";
                 help = "`args` is allowed only once"
             );
         }
@@ -474,7 +474,7 @@ impl BenchesConsts {
             self.values = Some(values);
         } else {
             abort!(
-                pair, "Duplicate argument: `consts`";
+                pair, "Duplicate parameter: `consts`";
                 help = "`consts` is allowed only once"
             );
         }
@@ -608,7 +608,7 @@ impl Consts {
             *self = args;
         } else {
             emit_error!(
-                pair, "Duplicate argument: `consts`";
+                pair, "Duplicate parameter: `consts`";
                 help = "`consts` is allowed only once"
             );
         }
@@ -727,14 +727,14 @@ impl File {
             } else {
                 abort!(
                     pair.value, "Invalid value for `file`";
-                    help = "The `file` argument needs a literal string containing the path to an \
+                    help = "The `file` parameter needs a literal string containing the path to an \
                     existing file at compile time";
                     note = r#"file = "benches/some_fixture""#
                 );
             }
         } else {
             emit_error!(
-                pair, "Duplicate argument: `file`";
+                pair, "Duplicate parameter: `file`";
                 help = "`file` is allowed only once"
             );
         }
@@ -797,7 +797,7 @@ impl Iter {
             self.0 = Some(pair.value.clone());
         } else {
             emit_error!(
-                pair, "Duplicate argument: `iter`";
+                pair, "Duplicate parameter: `iter`";
                 help = "`iter` is allowed only once"
             );
         }
@@ -813,14 +813,14 @@ impl Setup {
             } else {
                 abort!(
                     expr, "Invalid value for `setup`";
-                    help = "The `setup` argument needs a path to an existing function \
+                    help = "The `setup` parameter needs a path to an existing function \
                     in a reachable scope";
                     note = "`setup = my_setup` or `setup = my::setup::function`"
                 );
             }
         } else {
             abort!(
-                pair, "Duplicate argument: `setup`";
+                pair, "Duplicate parameter: `setup`";
                 help = "`setup` is allowed only once"
             );
         }
@@ -861,14 +861,14 @@ impl Teardown {
             } else {
                 abort!(
                     expr, "Invalid value for `teardown`";
-                    help = "The `teardown` argument needs a path to an existing function \
+                    help = "The `teardown` parameter needs a path to an existing function \
                     in a reachable scope";
                     note = "`teardown = my_teardown` or `teardown = my::teardown::function`"
                 );
             }
         } else {
             abort!(
-                pair, "Duplicate argument: `teardown`";
+                pair, "Duplicate parameter: `teardown`";
                 help = "`teardown` is allowed only once"
             );
         }

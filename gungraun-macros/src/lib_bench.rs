@@ -123,8 +123,8 @@ impl Bench {
                     teardown.parse_pair(&pair);
                 } else {
                     abort!(
-                        pair, "Invalid argument: {}", pair.path.require_ident()?;
-                        help = "Valid arguments are: `args`, `consts`, `config`, \
+                        pair, "Invalid parameter: {}", pair.path.require_ident()?;
+                        help = "Valid parameters are: `args`, `consts`, `config`, \
                         `setup`, `teardown`"
                     );
                 }
@@ -191,8 +191,8 @@ impl Bench {
                     iter.parse_pair(&pair);
                 } else {
                     abort!(
-                        pair, "Invalid argument: {}", pair.path.require_ident()?;
-                        help = "Valid arguments are: `args`, `consts`, `file`, `iter`, `config`, \
+                        pair, "Invalid parameter: {}", pair.path.require_ident()?;
+                        help = "Valid parameters are: `args`, `consts`, `file`, `iter`, `config`, \
                         `setup`, `teardown`"
                     );
                 }
@@ -797,8 +797,8 @@ impl Parse for LibraryBenchmark {
                     teardown.parse_pair(&pair);
                 } else {
                     abort!(
-                        pair, "Invalid argument: {}", pair.path.require_ident()?;
-                        help = "Valid arguments are: `config`, `setup`, `teardown`"
+                        pair, "Invalid parameter: {}", pair.path.require_ident()?;
+                        help = "Valid parameters are: `config`, `setup`, `teardown`"
                     );
                 }
             }

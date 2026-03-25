@@ -186,7 +186,7 @@ error: Missing const generic argument
 156 |     fn when_binary_benches_one_provided_two_expected<const NUM: usize, const OTHER: usize>(
     |                                                                        ^^^^^^^^^^^^^^^^^^
 
-error: Duplicate argument: `consts`
+error: Duplicate parameter: `consts`
 
          = help: `consts` is allowed only once
 
@@ -195,7 +195,7 @@ error: Duplicate argument: `consts`
 168 |     #[bench::id(consts = (123), consts = (456))]
     |                                 ^^^^^^^^^^^^^^
 
-error: Duplicate argument: `consts`
+error: Duplicate parameter: `consts`
 
          = help: `consts` is allowed only once
 
@@ -204,7 +204,7 @@ error: Duplicate argument: `consts`
 174 |     #[bench::id(consts = (123), consts = (456))]
     |                                 ^^^^^^^^^^^^^^
 
-error: Duplicate argument: `consts`
+error: Duplicate parameter: `consts`
 
          = help: `consts` is allowed only once
 
@@ -213,7 +213,7 @@ error: Duplicate argument: `consts`
 180 |     #[benches::id(consts = [123], consts = [456])]
     |                                   ^^^^^^^^^^^^^^
 
-error: Duplicate argument: `consts`
+error: Duplicate parameter: `consts`
 
          = help: `consts` is allowed only once
 

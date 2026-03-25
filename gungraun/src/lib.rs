@@ -129,10 +129,10 @@
 //! // attributes.
 //! #[library_benchmark]
 //! // This is the simple form. Each `,`-separated element is another benchmark run and is
-//! // passed to the benchmarking function as parameter. So, this is the same as specifying
+//! // passed to the benchmarking function as an argument. So, this is the same as specifying
 //! // two `#[bench]` attributes #[bench::multiple_0(vec![1])] and #[bench::multiple_1(vec![5])].
 //! #[benches::multiple(vec![1], vec![5])]
-//! // You can also use the `args` argument to achieve the same. Using `args` is necessary if you
+//! // You can also use the `args` parameter to achieve the same. Using `args` is necessary if you
 //! // also want to specify a `config` or `setup` function.
 //! #[benches::with_args(args = [vec![1], vec![5]], config = LibraryBenchmarkConfig::default())]
 //! // Usually, each element in `args` is passed directly to the benchmarking function. You can
@@ -310,7 +310,7 @@
 //! before the [`Command`] is executed has to go into the `setup`. And, into `teardown` for code you
 //! want to run after the execution of the [`Command`].
 //!
-//! In library benchmarks the `setup` argument only takes a path to a function, more specifically
+//! In library benchmarks the `setup` parameter only takes a path to a function, more specifically
 //! the function pointer. In binary benchmarks however, the `setup` (and `teardown`) parameters of
 //! the [`#[binary_benchmark]`](crate::binary_benchmark), `#[bench]` and `#[benches]` attribute
 //! take expressions which includes function calls for example `setup = my_setup()`. Only in the
@@ -327,8 +327,9 @@
 //!
 //! Much like the configuration of library benchmarks (See above) it's possible to configure binary
 //! benchmarks at top-level in the `main!` macro and at group-level in the
-//! `binary_benchmark_groups!` with the `config = ...;` argument. In contrast to library benchmarks,
-//! binary benchmarks can be also configured at a lower and last level in [`Command`] directly.
+//! `binary_benchmark_groups!` with the `config = ...;` parameter. In contrast to library
+//! benchmarks, binary benchmarks can be also configured at a lower and last level in [`Command`]
+//! directly.
 //!
 //! For further details see the section about binary benchmarks of the [`crate::main`] docs the docs
 //! of [`crate::binary_benchmark_group`] and [`Command`]. The [guide][Guide] of this crate includes

@@ -1,6 +1,6 @@
-error: Invalid argument: wrong
+error: Invalid parameter: wrong
 
-         = help: Valid arguments are: `config`, `setup`, `teardown`
+         = help: Valid parameters are: `config`, `setup`, `teardown`
 
  --> tests/ui/lib_bench/test_library_benchmark_invalid_arguments.rs:3:21
   |

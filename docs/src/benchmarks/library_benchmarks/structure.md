@@ -48,7 +48,7 @@ attribute is an inner attribute of the `#[library_benchmark]` attribute. It
 consists of a mandatory id (the `ID` part in `#[bench::ID(/* ... */)]`) and in
 its most basic form, an optional list of arguments which are passed to the
 benchmark function as parameters. Naturally, the parameters of the benchmark
-function must match the argument list of the `#[bench]` attribute. It is always
+function must match the parameter list of the `#[bench]` attribute. It is always
 a good idea to return something from the benchmark function, here it is the
 computed `u64` value from the `fibonacci` function wrapped in a `black_box`. See
 the docs of [`std::hint::black_box`][rust-black-box] for more information about

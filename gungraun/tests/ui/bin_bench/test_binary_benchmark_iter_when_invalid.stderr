@@ -4,7 +4,7 @@ error: Only one parameter of `file`, `args` or `iter` can be present
 7 |     #[benches::some(iter = 1..=2, args = [0, 1])]
   |                ^^^^
 
-error: Duplicate argument: `iter`
+error: Duplicate parameter: `iter`
 
          = help: `iter` is allowed only once
 
