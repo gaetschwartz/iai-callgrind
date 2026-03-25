@@ -283,6 +283,13 @@ main() {
     ncurses-base"${ncurses}" \
     "zlib1g:${arch}"
 
+  if [[ "$arch" == "riscv64" ]]; then
+    apt-get -d --no-install-recommends download \
+      "linux-base-${kernel}:${arch}" \
+      "linux-binary-${kernel}:${arch}" \
+      "linux-modules-${kernel}:${arch}"
+  fi
+
   if [[ "${arch}" != "${dpkg_arch}" ]]; then
     apt-get -d --no-install-recommends download "${libgcc_packages[@]}"
   else
