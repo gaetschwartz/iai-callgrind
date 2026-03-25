@@ -1,6 +1,6 @@
 error: Expected 0 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
   --> tests/ui/both/test_when_invalid_const_generics.rs:63:26
    |
@@ -9,7 +9,7 @@ error: Expected 0 const arguments but found 1
 
 error: Expected 0 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
   --> tests/ui/both/test_when_invalid_const_generics.rs:69:26
    |
@@ -18,7 +18,7 @@ error: Expected 0 const arguments but found 1
 
 error: Expected 0 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
   --> tests/ui/both/test_when_invalid_const_generics.rs:75:29
    |
@@ -27,7 +27,7 @@ error: Expected 0 const arguments but found 1
 
 error: Expected 0 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
   --> tests/ui/both/test_when_invalid_const_generics.rs:81:29
    |
@@ -36,7 +36,7 @@ error: Expected 0 const arguments but found 1
 
 error: Expected 1 const arguments but found 0
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
   --> tests/ui/both/test_when_invalid_const_generics.rs:87:26
    |
@@ -45,7 +45,7 @@ error: Expected 1 const arguments but found 0
 
 error: Expected 1 const arguments but found 0
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
   --> tests/ui/both/test_when_invalid_const_generics.rs:93:26
    |
@@ -80,7 +80,7 @@ error: Expected the `consts` array to contain an element with 1 argument(s)
 
 error: Expected 1 const arguments but found 2
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:111:26
     |
@@ -89,7 +89,7 @@ error: Expected 1 const arguments but found 2
 
 error: Expected 1 const arguments but found 2
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:117:26
     |
@@ -98,7 +98,7 @@ error: Expected 1 const arguments but found 2
 
 error: Expected 1 const arguments but found 2
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:123:29
     |
@@ -107,7 +107,7 @@ error: Expected 1 const arguments but found 2
 
 error: Expected 1 const arguments but found 2
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:129:29
     |
@@ -116,14 +116,17 @@ error: Expected 1 const arguments but found 2
 
 error: Expected 2 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:135:26
     |
 135 |     #[bench::id(consts = (123))]
     |                          ^^^^^
 
-error: Mismatch between amount of expected generic consts parameters and present parameters
+error: Missing const generic argument
+
+         = help: Provide a const expression for each const generic parameter
+
    --> tests/ui/both/test_when_invalid_const_generics.rs:136:57
     |
 136 |     fn when_one_provided_two_expected<const NUM: usize, const OTHER: usize>() -> usize {
@@ -131,14 +134,17 @@ error: Mismatch between amount of expected generic consts parameters and present
 
 error: Expected 2 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:141:26
     |
 141 |     #[bench::id(consts = (123))]
     |                          ^^^^^
 
-error: Mismatch between amount of expected generic consts parameters and present parameters
+error: Missing const generic argument
+
+         = help: Provide a const expression for each const generic parameter
+
    --> tests/ui/both/test_when_invalid_const_generics.rs:142:64
     |
 142 |     fn when_binary_one_provided_two_expected<const NUM: usize, const OTHER: usize>() -> Command {
@@ -146,14 +152,17 @@ error: Mismatch between amount of expected generic consts parameters and present
 
 error: Expected 2 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:149:29
     |
 149 |     #[benches::id(consts = [(123)])]
     |                             ^^^^^
 
-error: Mismatch between amount of expected generic consts parameters and present parameters
+error: Missing const generic argument
+
+         = help: Provide a const expression for each const generic parameter
+
    --> tests/ui/both/test_when_invalid_const_generics.rs:150:65
     |
 150 |     fn when_benches_one_provided_two_expected<const NUM: usize, const OTHER: usize>() -> usize {
@@ -161,14 +170,17 @@ error: Mismatch between amount of expected generic consts parameters and present
 
 error: Expected 2 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:155:29
     |
 155 |     #[benches::id(consts = [(123)])]
     |                             ^^^^^
 
-error: Mismatch between amount of expected generic consts parameters and present parameters
+error: Missing const generic argument
+
+         = help: Provide a const expression for each const generic parameter
+
    --> tests/ui/both/test_when_invalid_const_generics.rs:156:72
     |
 156 |     fn when_binary_benches_one_provided_two_expected<const NUM: usize, const OTHER: usize>(
@@ -308,7 +320,7 @@ error: expected square brackets
 
 error: Expected 0 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:284:38
     |
@@ -317,7 +329,7 @@ error: Expected 0 const arguments but found 1
 
 error: Expected 0 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:290:38
     |
@@ -326,7 +338,7 @@ error: Expected 0 const arguments but found 1
 
 error: Expected 0 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:299:41
     |
@@ -335,7 +347,7 @@ error: Expected 0 const arguments but found 1
 
 error: Expected 0 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:305:41
     |
@@ -344,7 +356,7 @@ error: Expected 0 const arguments but found 1
 
 error: Expected 1 const arguments but found 2
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:314:38
     |
@@ -353,7 +365,7 @@ error: Expected 1 const arguments but found 2
 
 error: Expected 1 const arguments but found 2
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:320:38
     |
@@ -362,7 +374,7 @@ error: Expected 1 const arguments but found 2
 
 error: Expected 1 const arguments but found 0
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:378:38
     |
@@ -371,7 +383,7 @@ error: Expected 1 const arguments but found 0
 
 error: Expected 1 const arguments but found 0
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:384:40
     |
@@ -406,7 +418,7 @@ error: Expected the `consts` array to contain an element with 1 argument(s)
 
 error: Expected 1 arguments but found 0
 
-         = help: This argument is expected to have the same amount of parameters as the benchmark function
+         = help: Number of arguments must match the benchmark function's parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:402:24
     |
@@ -415,7 +427,7 @@ error: Expected 1 arguments but found 0
 
 error: Expected 0 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:402:37
     |
@@ -424,7 +436,7 @@ error: Expected 0 const arguments but found 1
 
 error: Expected 0 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:408:37
     |
@@ -446,7 +458,7 @@ error: Expected the `args` array to contain an element with 1 argument(s)
 
 error: Expected 0 const arguments but found 1
 
-         = help: `consts` should have one expression for each const generic parameter of the benchmark function
+         = help: Number of const expressions must match the benchmark function's const generic parameters
 
    --> tests/ui/both/test_when_invalid_const_generics.rs:420:40
     |

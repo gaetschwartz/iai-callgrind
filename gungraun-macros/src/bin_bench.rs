@@ -187,7 +187,7 @@ impl Bench {
                 } else {
                     abort!(
                         pair, "Invalid argument: {}", pair.path.require_ident()?;
-                        help = "Valid arguments are: `args`, `consts`, `config`, `setup`, teardown`"
+                        help = "Valid arguments are: `args`, `consts`, `config`, `setup`, `teardown`"
                     );
                 }
             }
@@ -254,7 +254,7 @@ impl Bench {
                 } else {
                     abort!(
                         pair, "Invalid argument: {}", pair.path.require_ident()?;
-                        help = "Valid arguments are: `args`, `consts`, `file`, `iter`, `config`,
+                        help = "Valid arguments are: `args`, `consts`, `file`, `iter`, `config`, \
                         `setup`, `teardown`"
                     );
                 }
@@ -441,17 +441,18 @@ impl BinaryBenchmark {
             match path_segments.next() {
                 Some(segment) if segment == &bench => {
                     if attr.path().segments.len() > 2 {
+                        #[rustfmt::skip]
                         abort!(
-                            attr, "Only one id is allowed";
-                            help = "bench followed by :: and a single unique id";
+                            attr, "Only one id is allowed per attribute";
+                            help = "Use `#[bench::id]` with a single identifier after `::`";
                             note = r#"#[bench::my_id()] or #[bench::my_id("with", "args")]
-                        or #[bench::my_id(args = (arg1, ...), config = ...)]"#
+    or #[bench::my_id(args = (arg1, ...), config = ...)]"#
                         );
                     }
                     let Some(id) = path_segments.next().map(|p| p.ident.clone()) else {
                         abort!(
                             attr, "An id is required";
-                            help = "bench followed by :: and an unique id";
+                            help = "Use `#[bench::id]` with a unique identifier";
                             note = "#[bench::my_id(...)]"
                         );
                     };
@@ -465,17 +466,18 @@ impl BinaryBenchmark {
                 }
                 Some(segment) if segment == &benches => {
                     if attr.path().segments.len() > 2 {
+                        #[rustfmt::skip]
                         abort!(
-                            attr, "Only one id is allowed";
-                            help = "benches followed by :: and a single unique id";
+                            attr, "Only one id is allowed per attribute";
+                            help = "Use `#[benches::id]` with a single identifier after `::`";
                             note = r#"#[benches::my_id("with", "args")]
-                        or #[benches::my_id(args = [arg1, ...]]"#
+    or #[benches::my_id(args = [arg1, ...]]"#
                         );
                     }
                     let Some(id) = path_segments.next().map(|p| p.ident.clone()) else {
                         abort!(
                             attr, "An id is required";
-                            help = "benches followed by :: and an unique id";
+                            help = "Use `#[benches::id]` with a unique identifier";
                             note = "#[benches::my_id(...)]"
                         );
                     };
@@ -489,11 +491,12 @@ impl BinaryBenchmark {
                     )?);
                 }
                 Some(segment) => {
+                    #[rustfmt::skip]
                     abort!(
                         attr, "Invalid attribute: '{}'", segment.ident;
                         help = "Only the `bench` and the `benches` attribute are allowed";
                         note = r#"#[bench::my_id("with", "args")]
-                    or #[benches::my_id(args = [("with", "args"), ...])]"#
+    or #[benches::my_id(args = [("with", "args"), ...])]"#
                     );
                 }
                 None => {

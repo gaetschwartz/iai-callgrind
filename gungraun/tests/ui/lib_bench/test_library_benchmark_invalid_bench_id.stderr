@@ -1,6 +1,6 @@
 error: An id is required
 
-         = help: bench followed by :: and an unique id
+         = help: Use `#[bench::id]` with a unique identifier
          = note: #[bench::my_id(...)]
 
  --> tests/ui/lib_bench/test_library_benchmark_invalid_bench_id.rs:5:1

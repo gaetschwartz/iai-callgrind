@@ -166,8 +166,7 @@ impl Args {
                     "Expected {} arguments but found {}",
                     expected,
                     actual;
-                    help = "This argument is expected to have the same amount of \
-                    parameters as the benchmark function"
+                    help = "Number of arguments must match the benchmark function's parameters"
                 );
             } else {
                 emit_error!(
@@ -175,8 +174,7 @@ impl Args {
                     "Expected {} arguments but found {}",
                     expected,
                     actual;
-                    help = "This argument is expected to have the same amount of parameters as \
-                    the benchmark function"
+                    help = "Number of arguments must match the benchmark function's parameters"
                 );
             }
         }
@@ -383,6 +381,7 @@ impl BenchesArgs {
         if self.values.is_none() {
             let values = Self::from_expr(&pair.value)?;
             if values.is_empty() && self.expected_size > 0 {
+                #[rustfmt::skip]
                 abort!(
                     pair.span(),
                     "Expected the `args` array to contain an element with {} argument(s)",
@@ -458,6 +457,7 @@ impl BenchesConsts {
         if self.values.is_none() {
             let values = Self::from_expr(&pair.value)?;
             if values.is_empty() && self.expected_size > 0 {
+                #[rustfmt::skip]
                 abort!(
                     pair.span(),
                     "Expected the `consts` array to contain an element with {} argument(s)",
@@ -629,8 +629,8 @@ impl Consts {
                     "Expected {} const arguments but found {}",
                     expected,
                     actual;
-                    help = "`consts` should have one expression for each const generic \
-                    parameter of the benchmark function"
+                    help = "Number of const expressions must match the benchmark function's \
+                    const generic parameters"
                 );
             } else {
                 emit_error!(
@@ -638,8 +638,8 @@ impl Consts {
                     "Expected {} const arguments but found {}",
                     expected,
                     actual;
-                    help = "`consts` should have one expression for each const generic \
-                    parameter of the benchmark function"
+                    help = "Number of const expressions must match the benchmark function's \
+                    const generic parameters"
                 );
             }
         }
@@ -671,8 +671,8 @@ impl Consts {
                         } else {
                             abort!(
                                 c,
-                                "Mismatch between amount of expected generic consts parameters \
-                                 and present parameters"
+                                "Missing const generic argument";
+                                help = "Provide a const expression for each const generic parameter"
                             );
                         }
                     }
@@ -729,7 +729,7 @@ impl File {
                     pair.value, "Invalid value for `file`";
                     help = "The `file` argument needs a literal string containing the path to an \
                     existing file at compile time";
-                    note = "`file = \"benches/some_fixture\"`"
+                    note = r#"file = "benches/some_fixture""#
                 );
             }
         } else {
@@ -813,7 +813,7 @@ impl Setup {
             } else {
                 abort!(
                     expr, "Invalid value for `setup`";
-                    help = "The `setup` argument needs a path to an existing function
+                    help = "The `setup` argument needs a path to an existing function \
                     in a reachable scope";
                     note = "`setup = my_setup` or `setup = my::setup::function`"
                 );
@@ -861,7 +861,7 @@ impl Teardown {
             } else {
                 abort!(
                     expr, "Invalid value for `teardown`";
-                    help = "The `teardown` argument needs a path to an existing function
+                    help = "The `teardown` argument needs a path to an existing function \
                     in a reachable scope";
                     note = "`teardown = my_teardown` or `teardown = my::teardown::function`"
                 );
