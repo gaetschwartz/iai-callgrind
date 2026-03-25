@@ -150,7 +150,7 @@ pub fn get_data_collections_options_yes() -> LibraryBenchmarkConfig {
         ]))
 )]
 fn bench_library() -> u64 {
-    black_box(benchmark_tests::fibonacci(10))
+    black_box(benchmark_tests::fibonacci(black_box(10)))
 }
 
 #[library_benchmark]
@@ -170,7 +170,7 @@ fn bench_library() -> u64 {
 fn bench_with_client_request() -> u64 {
     gungraun::client_requests::callgrind::start_instrumentation();
     gungraun::client_requests::callgrind::toggle_collect();
-    black_box(benchmark_tests::fibonacci(10))
+    black_box(benchmark_tests::fibonacci(black_box(10)))
 }
 
 #[library_benchmark(
@@ -192,7 +192,7 @@ fn bench_with_client_request() -> u64 {
         ]))
 )]
 fn bench_multi_threads() -> Vec<u64> {
-    black_box(benchmark_tests::find_primes_multi_thread_with_instrumentation(2))
+    black_box(benchmark_tests::find_primes_multi_thread_with_instrumentation(black_box(2)))
 }
 
 library_benchmark_group!(
