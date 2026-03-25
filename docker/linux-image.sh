@@ -92,7 +92,7 @@ max_kernel_version() {
 main() {
   # arch in the rust target
   local arch="${1}" \
-    kversion=5.10.0-34
+    kversion='5.10.0-39'
 
   local debsource="deb http://http.debian.net/debian/ bullseye main"
   debsource="${debsource}\ndeb http://security.debian.org/ bullseye-security main"
@@ -282,6 +282,13 @@ main() {
     "linux-image-${kernel}:${arch}" \
     ncurses-base"${ncurses}" \
     "zlib1g:${arch}"
+
+  if [[ "$arch" == "riscv64" ]]; then
+    apt-get -d --no-install-recommends download \
+      "linux-base-${kernel}:${arch}" \
+      "linux-binary-${kernel}:${arch}" \
+      "linux-modules-${kernel}:${arch}"
+  fi
 
   if [[ "${arch}" != "${dpkg_arch}" ]]; then
     apt-get -d --no-install-recommends download "${libgcc_packages[@]}"

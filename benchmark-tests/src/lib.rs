@@ -8,6 +8,8 @@ use std::io;
 use std::process::Output;
 use std::rc::Rc;
 
+use gungraun::client_requests;
+
 struct Left(Option<Rc<Right>>);
 #[allow(dead_code)]
 struct Right(Option<Rc<RefCell<Left>>>);
@@ -63,9 +65,10 @@ pub fn find_primes_multi_thread_with_instrumentation(num_threads: usize) -> Vec<
         (num, num + 10000)
     }) {
         let handle = std::thread::spawn(move || {
-            gungraun::client_requests::callgrind::start_instrumentation();
+            client_requests::callgrind::start_instrumentation();
+            client_requests::callgrind::toggle_collect();
             let result = find_primes(from, to);
-            gungraun::client_requests::callgrind::stop_instrumentation();
+            client_requests::callgrind::stop_instrumentation();
             result
         });
         handles.push(handle);
@@ -90,10 +93,11 @@ pub fn thread_in_thread_with_instrumentation() -> Vec<u64> {
     let low = 0;
     let high = 10000;
     let handle = std::thread::spawn(move || {
-        gungraun::client_requests::callgrind::start_instrumentation();
+        client_requests::callgrind::start_instrumentation();
+        client_requests::callgrind::toggle_collect();
         let handle = std::thread::spawn(move || find_primes(low, high));
         let joined = handle.join().unwrap();
-        gungraun::client_requests::callgrind::stop_instrumentation();
+        client_requests::callgrind::stop_instrumentation();
         joined
     });
     let primes = handle.join().unwrap();

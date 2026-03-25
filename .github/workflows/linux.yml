@@ -106,8 +106,7 @@ jobs:
           - i686-unknown-linux-gnu
           - aarch64-unknown-linux-gnu
           - armv7-unknown-linux-gnueabihf
-          # FIX: Temporarily switched off due to error in build script
-          # - riscv64gc-unknown-linux-gnu
+          - riscv64gc-unknown-linux-gnu
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
