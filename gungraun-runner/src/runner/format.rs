@@ -1390,7 +1390,7 @@ mod tests {
     #[case::simple("some::module", Some("id"), Some("1, 2"), "some::module id:1, 2")]
     #[case::id_but_no_description("some::module", Some("id"), None, "some::module id")]
     #[case::id_but_empty_description("some::module", Some("id"), Some(""), "some::module id")]
-    #[case::no_id_but_description("some::module", None, Some("1, 2, 3"), "some::module 1, 2, 3")]
+    #[case::no_id_but_description("some::module", None, Some("1, 2, 3"), "some::module :1, 2, 3")]
     #[case::no_id_no_description("some::module", None, None, "some::module")]
     #[case::no_id_empty_description("some::module", None, Some(""), "some::module")]
     #[case::length_is_greater_than_default(
