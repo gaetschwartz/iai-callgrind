@@ -1,4 +1,5 @@
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup no_argument:(setup_no_argument())
+test_bin_bench_generics::type_parameter_group::single_param foo:("foo") -> target/release/echo foo
+foo
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -6,7 +7,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup no_ar
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup one_argument:(setup_one_argument(3))
+test_bin_bench_generics::type_parameter_group::single_param args_foo:("foo") -> target/release/echo foo
+foo
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -14,7 +16,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup one_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup two_arguments:(setup_two_arguments(3, 6))
+test_bin_bench_generics::type_parameter_group::single_param args_foo_bar_0:("foo") -> target/release/echo foo
+foo
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -22,7 +25,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup two_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup expression:(setup_one_argument({ let mut result = 0; for i in...
+test_bin_bench_generics::type_parameter_group::single_param args_foo_bar_1:("bar") -> target/release/echo bar
+bar
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -30,7 +34,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup expre
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup setup_first_then_args:(setup_two_arguments(3, 6))
+test_bin_bench_generics::type_parameter_group::single_param_in_where_clause foo:("foo") -> target/release/echo foo
+foo
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -38,7 +43,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_setup setup
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown simple:(2, 3, 5)
+test_bin_bench_generics::type_parameter_group::single_param_in_where_clause args_foo:("foo") -> target/release/echo foo
+foo
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -46,7 +52,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown si
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown teardown_first_then_args:(2, 3, 5)
+test_bin_bench_generics::type_parameter_group::single_param_in_where_clause foo_bar_0:("foo") -> target/release/echo foo
+foo
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -54,7 +61,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown te
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown with_args_expression:(2, 3, { let mut result = 0; for i in [2, 3] { res...
+test_bin_bench_generics::type_parameter_group::single_param_in_where_clause foo_bar_1:("bar") -> target/release/echo bar
+bar
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -62,7 +70,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::bench_only_teardown wi
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup no_argument_0:(setup_no_argument())
+test_bin_bench_generics::type_parameter_group::single_param_in_where_clause args_foo_bar_0:("foo") -> target/release/echo foo
+foo
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -70,7 +79,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup no_
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup with_setup_one_argument_0:(setup_one_argument(2))
+test_bin_bench_generics::type_parameter_group::single_param_in_where_clause args_foo_bar_1:("bar") -> target/release/echo bar
+bar
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -78,7 +88,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup wit
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup with_setup_one_argument_1:(setup_one_argument(setup_one_argument(5)))
+test_bin_bench_generics::consts_group::single_consts_parameters_without_args just_consts:<321>() -> target/release/echo 321
+321
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -86,7 +97,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup wit
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup with_setup_one_argument_2:(setup_one_argument({ let mut result = 0; for i in...
+test_bin_bench_generics::consts_group::single_consts_parameters_without_args just_consts_expression:<{ 1 + 20 }>() -> target/release/echo 21
+21
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -94,7 +106,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_setup wit
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown simple_0:(2, 3, 5)
+test_bin_bench_generics::consts_group::single_consts_parameters_without_args empty_args:<321>() -> target/release/echo 321
+321
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -102,7 +115,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown 
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown teardown_first_then_args_0:(2, 3, 5)
+test_bin_bench_generics::consts_group::single_consts_parameters_without_args multiple_consts_0:<321>() -> target/release/echo 321
+321
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -110,7 +124,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown 
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown with_setup_one_argument_0:(2, 3, 5)
+test_bin_bench_generics::consts_group::single_consts_parameters_without_args multiple_consts_1:<654>() -> target/release/echo 654
+654
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -118,7 +133,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown 
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown with_setup_one_argument_1:(2, 3, { let mut result = 0; for i in [2, 3] { res...
+test_bin_bench_generics::consts_group::single_consts_parameters_without_args multiple_consts_expression_0:<{ 1 + 20 }>() -> target/release/echo 21
+21
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -126,7 +142,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_only_teardown 
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown simple_0:(setup_expected(2, 16))
+test_bin_bench_generics::consts_group::single_consts_parameters_without_args multiple_consts_expression_1:<{ 2 + 20 }>() -> target/release/echo 22
+22
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -134,7 +151,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown simple_1:(setup_expected(4, 16 * 16))
+test_bin_bench_generics::consts_group::single_consts_parameters_without_args multiple_consts_empty_args_0:<321>() -> target/release/echo 321
+321
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -142,7 +160,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown simple_no_args_parameter_0:(setup_expected(2, 16))
+test_bin_bench_generics::consts_group::single_consts_parameters_without_args multiple_consts_empty_args_1:<654>() -> target/release/echo 654
+654
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -150,7 +169,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown simple_no_args_parameter_1:(setup_expected(4, 16 * 16))
+test_bin_bench_generics::consts_group::multiple_consts_parameter_without_args just_consts:<321, 654>() -> target/release/echo 321 654
+321 654
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -158,7 +178,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown overwrite_setup_0:(setup_expected_two(2, 3, 36))
+test_bin_bench_generics::consts_group::multiple_consts_parameter_without_args empty_args:<321, 654>() -> target/release/echo 321 654
+321 654
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -166,7 +187,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown overwrite_setup_1:(setup_expected_two(3, 4, 12 * 12))
+test_bin_bench_generics::consts_group::multiple_consts_parameter_without_args multiple_consts_0:<321, 654>() -> target/release/echo 321 654
+321 654
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -174,7 +196,8 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown overwrite_teardown_0:(setup_expected(3, 9 * 9))
+test_bin_bench_generics::consts_group::multiple_consts_parameter_without_args multiple_consts_1:<654, 987>() -> target/release/echo 654 987
+654 987
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -182,7 +205,80 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_and_teardown overwrite_teardown_1:(setup_expected(5, 25 * 25))
+test_bin_bench_generics::consts_group::multiple_consts_parameter_without_args multiple_consts_empty_args_0:<321, 654>() -> target/release/echo 321 654
+321 654
+- end of stdout/stderr
+  Instructions:                            |N/A                  (*********)
+  L1 Hits:                                 |N/A                  (*********)
+  LL Hits:                                 |N/A                  (*********)
+  RAM Hits:                                |N/A                  (*********)
+  Total read+write:                        |N/A                  (*********)
+  Estimated Cycles:                        |N/A                  (*********)
+test_bin_bench_generics::consts_group::multiple_consts_parameter_without_args multiple_consts_empty_args_1:<654, 987>() -> target/release/echo 654 987
+654 987
+- end of stdout/stderr
+  Instructions:                            |N/A                  (*********)
+  L1 Hits:                                 |N/A                  (*********)
+  LL Hits:                                 |N/A                  (*********)
+  RAM Hits:                                |N/A                  (*********)
+  Total read+write:                        |N/A                  (*********)
+  Estimated Cycles:                        |N/A                  (*********)
+test_bin_bench_generics::consts_group::multiple_consts_and_type_param args_and_consts:<321, 654>(123) -> target/release/echo 321 654 123
+321 654 123
+- end of stdout/stderr
+  Instructions:                            |N/A                  (*********)
+  L1 Hits:                                 |N/A                  (*********)
+  LL Hits:                                 |N/A                  (*********)
+  RAM Hits:                                |N/A                  (*********)
+  Total read+write:                        |N/A                  (*********)
+  Estimated Cycles:                        |N/A                  (*********)
+test_bin_bench_generics::consts_group::multiple_consts_and_type_param args_and_consts_same_count_0:<321, 654>(123) -> target/release/echo 321 654 123
+321 654 123
+- end of stdout/stderr
+  Instructions:                            |N/A                  (*********)
+  L1 Hits:                                 |N/A                  (*********)
+  LL Hits:                                 |N/A                  (*********)
+  RAM Hits:                                |N/A                  (*********)
+  Total read+write:                        |N/A                  (*********)
+  Estimated Cycles:                        |N/A                  (*********)
+test_bin_bench_generics::consts_group::multiple_consts_and_type_param args_and_consts_same_count_1:<654, 987>(456) -> target/release/echo 654 987 456
+654 987 456
+- end of stdout/stderr
+  Instructions:                            |N/A                  (*********)
+  L1 Hits:                                 |N/A                  (*********)
+  LL Hits:                                 |N/A                  (*********)
+  RAM Hits:                                |N/A                  (*********)
+  Total read+write:                        |N/A                  (*********)
+  Estimated Cycles:                        |N/A                  (*********)
+test_bin_bench_generics::consts_group::multiple_consts_and_type_param more_args_than_consts_0:<321, 654>(123) -> target/release/echo 321 654 123
+321 654 123
+- end of stdout/stderr
+  Instructions:                            |N/A                  (*********)
+  L1 Hits:                                 |N/A                  (*********)
+  LL Hits:                                 |N/A                  (*********)
+  RAM Hits:                                |N/A                  (*********)
+  Total read+write:                        |N/A                  (*********)
+  Estimated Cycles:                        |N/A                  (*********)
+test_bin_bench_generics::consts_group::multiple_consts_and_type_param more_args_than_consts_1:<321, 654>(456) -> target/release/echo 321 654 456
+321 654 456
+- end of stdout/stderr
+  Instructions:                            |N/A                  (*********)
+  L1 Hits:                                 |N/A                  (*********)
+  LL Hits:                                 |N/A                  (*********)
+  RAM Hits:                                |N/A                  (*********)
+  Total read+write:                        |N/A                  (*********)
+  Estimated Cycles:                        |N/A                  (*********)
+test_bin_bench_generics::consts_group::multiple_consts_and_type_param more_consts_than_args_0:<321, 654>(123) -> target/release/echo 321 654 123
+321 654 123
+- end of stdout/stderr
+  Instructions:                            |N/A                  (*********)
+  L1 Hits:                                 |N/A                  (*********)
+  LL Hits:                                 |N/A                  (*********)
+  RAM Hits:                                |N/A                  (*********)
+  Total read+write:                        |N/A                  (*********)
+  Estimated Cycles:                        |N/A                  (*********)
+test_bin_bench_generics::consts_group::multiple_consts_and_type_param more_consts_than_args_1:<645, 987>(123) -> target/release/echo 645 987 123
+645 987 123
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
@@ -191,4 +287,4 @@ test_lib_bench_setup_and_teardown::bench_fibonacci_group::benches_global_setup_a
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
 
-Gungraun result: Ok. 24 without regressions; 0 regressed; 0 filtered; 24 benchmarks finished in <__SECONDS__>s
+Gungraun result: Ok. 32 without regressions; 0 regressed; 0 filtered; 32 benchmarks finished in <__SECONDS__>s

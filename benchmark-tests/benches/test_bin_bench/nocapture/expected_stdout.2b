@@ -46,7 +46,7 @@ test_bin_bench_nocapture::simple::bench_echo both_file_when_not_exists:(Stdio ::
   RAM Hits:                                |N/A                  (*********)
   Total read+write:                        |N/A                  (*********)
   Estimated Cycles:                        |N/A                  (*********)
-test_bin_bench_nocapture::simple::bench_pipe () -> target/release/pipe
+test_bin_bench_nocapture::simple::bench_pipe :() -> target/release/pipe
 STDIN was:
 Something- end of stdout/stderr
   ======= CALLGRIND ====================================================================

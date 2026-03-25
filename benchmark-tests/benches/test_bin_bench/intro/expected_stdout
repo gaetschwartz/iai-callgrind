@@ -1,4 +1,4 @@
-test_bin_bench_intro::echo_group::simple_bench () -> target/release/echo
+test_bin_bench_intro::echo_group::simple_bench :() -> target/release/echo
 
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)

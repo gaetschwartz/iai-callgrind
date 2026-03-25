@@ -157,6 +157,7 @@ impl GroupsBuilder {
                 let bench = InternalBinaryBenchmarkBench {
                     id: macro_bin_bench.id_display.map(ToString::to_string),
                     args: macro_bin_bench.args_display.map(ToString::to_string),
+                    consts_display: macro_bin_bench.consts_display.map(ToString::to_string),
                     function_name: (*function_name).to_owned(),
                     command: match macro_bin_bench.func {
                         crate::__internal::InternalBinFunctionKind::Iter(func) => {
@@ -234,6 +235,7 @@ impl GroupsBuilder {
                         let internal_bench = InternalBinaryBenchmarkBench {
                             id: Some(bench.id.into()),
                             args: None,
+                            consts_display: None,
                             function_name: binary_benchmark.id.clone().into(),
                             command: command.clone(),
                             config: bench.config.clone(),
@@ -261,6 +263,7 @@ impl GroupsBuilder {
                                         Some(format!("nth of {UNKNOWN_ARGS}"))
                                     }
                                 },
+                                consts_display: None,
                                 function_name: binary_benchmark.id.to_string(),
                                 command: command.clone(),
                                 config: bench.config.clone(),

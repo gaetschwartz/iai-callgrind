@@ -14,15 +14,23 @@ pub fn render_into_inner(input_stream: TokenStream) -> syn::Result<TokenStream> 
                 .map(|pair| pair.into_value().clone())
                 .collect();
             match unnamed.as_slice() {
-                [] => abort!(input, "Tuple struct must have a single field"),
+                [] => abort!(input, "Tuple struct must have exactly one field";
+                    help = "Add a field to the tuple struct"
+                ),
                 [field] => field.clone(),
-                _ => abort!(input, "Only tuple structs with a single field are allowed"),
+                _ => abort!(input, "Tuple struct must have exactly one field";
+                    help = "Use a tuple struct with a single field: `struct Name(Field);`"
+                ),
             }
         } else {
-            abort!(input, "Only tuple structs with unnamed fields are allowed")
+            abort!(input, "Only tuple structs with unnamed fields are allowed";
+                help = "Use a tuple struct: `struct Name(Field);`"
+            )
         }
     } else {
-        abort!(input, "Only structs are allowed");
+        abort!(input, "Only structs are allowed";
+            help = "Use a struct definition instead of an enum, union, or other item"
+        );
     };
 
     let expanded = quote! {

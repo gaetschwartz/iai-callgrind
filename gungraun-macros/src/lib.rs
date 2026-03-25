@@ -54,6 +54,7 @@ impl CargoMetadata {
 /// # pub struct InternalMacroLibBench {
 /// #   pub id_display: Option<&'static str>,
 /// #   pub args_display: Option<&'static str>,
+/// #   pub consts_display: Option<&'static str>,
 /// #   pub func: InternalLibFunctionKind,
 /// #   pub config: Option<fn() -> InternalLibraryBenchmarkConfig>
 /// # }
@@ -103,6 +104,10 @@ impl CargoMetadata {
 /// * __`setup`__: A function which takes the arguments specified in the `args` parameter and passes
 ///   its return value to the benchmark function.
 /// * __`teardown`__: A function which takes the return value of the benchmark function.
+/// * __`consts`__: A tuple with const expressions for const generic parameters of the benchmark
+///   function. The number and order must match the const generics in the function signature.
+///   Parentheses are required: `consts = (321)` for a single const generic, `consts = (321, 654)`
+///   for multiple. Const expressions like `consts = ({ 1 + 20 })` are also supported.
 ///
 /// If no other parameters besides `args` are present you can simply pass the arguments as a list of
 /// values. Instead of `#[bench::my_id(args = (10, 20))]`, you could also use the shorter
@@ -121,6 +126,7 @@ impl CargoMetadata {
 /// # pub struct InternalMacroLibBench {
 /// #   pub id_display: Option<&'static str>,
 /// #   pub args_display: Option<&'static str>,
+/// #   pub consts_display: Option<&'static str>,
 /// #   pub func: InternalLibFunctionKind,
 /// #   pub config: Option<fn() -> InternalLibraryBenchmarkConfig>
 /// # }
@@ -143,10 +149,11 @@ impl CargoMetadata {
 /// # The `#[benches]` attribute
 ///
 /// The `#[benches]` attribute lets you define multiple benchmarks in one go. This attribute accepts
-/// the same parameters as the [`#[bench]`][bench] attribute: `args`, `config`, `setup` and
-/// `teardown` and additionally the `iter` and `file` parameter. In contrast to the `args` parameter
-/// in [`#[bench]`][bench], `args` takes an array of arguments. The id (`#[benches::id(*/ parameters
-/// */)]`) is getting suffixed with the index of the current element of the `args` array.
+/// the same parameters as the [`#[bench]`][bench] attribute: `args`, `config`, `setup`, `teardown`,
+/// `consts` and additionally the `iter` and `file` parameter. In contrast to the `args` parameter
+/// in [`#[bench]`][bench], `args` takes an array of arguments. Similarly, `consts` takes an array
+/// of const expressions. The id (`#[benches::id(/* parameters */)]`) is getting suffixed with the
+/// index of the current element of the `args` array.
 ///
 /// ```rust
 /// # use gungraun_macros::library_benchmark;
@@ -162,6 +169,7 @@ impl CargoMetadata {
 /// # pub struct InternalMacroLibBench {
 /// #   pub id_display: Option<&'static str>,
 /// #   pub args_display: Option<&'static str>,
+/// #   pub consts_display: Option<&'static str>,
 /// #   pub func: InternalLibFunctionKind,
 /// #   pub config: Option<fn() -> InternalLibraryBenchmarkConfig>
 /// # }
@@ -205,6 +213,7 @@ impl CargoMetadata {
 /// # pub struct InternalMacroLibBench {
 /// #   pub id_display: Option<&'static str>,
 /// #   pub args_display: Option<&'static str>,
+/// #   pub consts_display: Option<&'static str>,
 /// #   pub func: InternalLibFunctionKind,
 /// #   pub config: Option<fn() -> InternalLibraryBenchmarkConfig>
 /// # }
@@ -245,6 +254,7 @@ impl CargoMetadata {
 /// # pub struct InternalMacroLibBench {
 /// #   pub id_display: Option<&'static str>,
 /// #   pub args_display: Option<&'static str>,
+/// #   pub consts_display: Option<&'static str>,
 /// #   pub func: InternalLibFunctionKind,
 /// #   pub config: Option<fn() -> InternalLibraryBenchmarkConfig>
 /// # }
@@ -287,6 +297,7 @@ impl CargoMetadata {
 /// # pub struct InternalMacroLibBench {
 /// #   pub id_display: Option<&'static str>,
 /// #   pub args_display: Option<&'static str>,
+/// #   pub consts_display: Option<&'static str>,
 /// #   pub func: InternalLibFunctionKind,
 /// #   pub config: Option<fn() -> InternalLibraryBenchmarkConfig>
 /// # }
@@ -314,6 +325,7 @@ impl CargoMetadata {
 /// # pub struct InternalMacroLibBench {
 /// #   pub id_display: Option<&'static str>,
 /// #   pub args_display: Option<&'static str>,
+/// #   pub consts_display: Option<&'static str>,
 /// #   pub func: InternalLibFunctionKind,
 /// #   pub config: Option<fn() -> InternalLibraryBenchmarkConfig>
 /// # }
@@ -347,6 +359,7 @@ impl CargoMetadata {
 /// # pub struct InternalMacroLibBench {
 /// #   pub id_display: Option<&'static str>,
 /// #   pub args_display: Option<&'static str>,
+/// #   pub consts_display: Option<&'static str>,
 /// #   pub func: InternalLibFunctionKind,
 /// #   pub config: Option<fn() -> InternalLibraryBenchmarkConfig>
 /// # }
@@ -384,6 +397,7 @@ impl CargoMetadata {
 /// # pub struct InternalMacroLibBench {
 /// #   pub id_display: Option<&'static str>,
 /// #   pub args_display: Option<&'static str>,
+/// #   pub consts_display: Option<&'static str>,
 /// #   pub func: InternalLibFunctionKind,
 /// #   pub config: Option<fn() -> InternalLibraryBenchmarkConfig>
 /// # }
@@ -507,6 +521,7 @@ pub fn library_benchmark(args: TokenStream, input: TokenStream) -> TokenStream {
 /// # pub struct InternalMacroBinBench {
 /// #   pub id_display: Option<&'static str>,
 /// #   pub args_display: Option<&'static str>,
+/// #   pub consts_display: Option<&'static str>,
 /// #   pub func: InternalBinFunctionKind,
 /// #   pub config: Option<fn() -> InternalBinaryBenchmarkConfig>,
 /// #   pub setup: InternalBinAssistantKind,

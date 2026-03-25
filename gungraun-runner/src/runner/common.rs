@@ -1097,6 +1097,7 @@ impl Groups {
                             let bin_bench = BinBench::new(
                                 binary_benchmark_bench.id,
                                 binary_benchmark_bench.args,
+                                binary_benchmark_bench.consts_display,
                                 module_path,
                                 binary_benchmark_bench.function_name,
                                 binary_benchmark_bench.has_setup,
@@ -1137,6 +1138,7 @@ impl Groups {
                                         let bin_bench = BinBench::new(
                                             binary_benchmark_bench.id.clone(),
                                             binary_benchmark_bench.args.clone(),
+                                            binary_benchmark_bench.consts_display.clone(),
                                             module_path.clone(),
                                             binary_benchmark_bench.function_name.clone(),
                                             binary_benchmark_bench.has_setup,
@@ -1255,6 +1257,7 @@ impl Groups {
                                     let lib_bench = LibBench::new(
                                         library_benchmark_bench.id.clone(),
                                         library_benchmark_bench.args.clone(),
+                                        library_benchmark_bench.consts_display.clone(),
                                         module_path.clone(),
                                         library_benchmark_bench.function_name.clone(),
                                         meta,
@@ -1276,6 +1279,7 @@ impl Groups {
                         let lib_bench = LibBench::new(
                             library_benchmark_bench.id,
                             library_benchmark_bench.args,
+                            library_benchmark_bench.consts_display,
                             module_path,
                             library_benchmark_bench.function_name,
                             meta,

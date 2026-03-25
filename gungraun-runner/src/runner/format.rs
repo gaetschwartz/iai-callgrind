@@ -209,23 +209,30 @@ impl BinaryBenchmarkHeader {
     pub fn new(meta: &Metadata, bin_bench: &BinBench) -> Self {
         let path = make_relative(&meta.project_root, &bin_bench.command.path);
 
-        let command_args: Vec<String> = bin_bench
-            .command
-            .args
-            .iter()
-            .map(|s| s.to_string_lossy().to_string())
-            .collect();
-        let command_args = shlex::try_join(command_args.iter().map(String::as_str)).unwrap();
+        let consts_display = bin_bench
+            .consts_display
+            .as_ref()
+            .map(|consts| format!("<{consts}>"));
 
-        let description = if command_args.is_empty() {
+        let description = if bin_bench.command.args.is_empty() {
             format!(
-                "({}) -> {}",
+                "{}({}) -> {}",
+                consts_display.as_ref().map_or("", String::as_str),
                 bin_bench.display.as_ref().map_or("", String::as_str),
                 path.display(),
             )
         } else {
+            let command_args: Vec<String> = bin_bench
+                .command
+                .args
+                .iter()
+                .map(|s| s.to_string_lossy().to_string())
+                .collect();
+            let command_args = shlex::try_join(command_args.iter().map(String::as_str)).unwrap();
+
             format!(
-                "({}) -> {} {}",
+                "{}({}) -> {} {}",
+                consts_display.as_ref().map_or("", String::as_str),
                 bin_bench.display.as_ref().map_or("", String::as_str),
                 path.display(),
                 command_args
@@ -371,12 +378,7 @@ impl Display for Header {
         if let Some(id) = &self.id {
             match &self.description {
                 Some(description) if !description.is_empty() => {
-                    f.write_fmt(format_args!(
-                        " {}{}{}",
-                        id.cyan(),
-                        ":".cyan(),
-                        description.bold().blue(),
-                    ))?;
+                    f.write_fmt(format_args!(" {}:{}", id.cyan(), description.bold().blue(),))?;
                 }
                 _ if !id.is_empty() => {
                     f.write_fmt(format_args!(" {}", id.cyan()))?;
@@ -385,11 +387,12 @@ impl Display for Header {
             }
         } else if let Some(description) = &self.description {
             if !description.is_empty() {
-                f.write_fmt(format_args!(" {}", description.bold().blue()))?;
+                f.write_fmt(format_args!(" :{}", description.bold().blue()))?;
             }
         } else {
             // do nothing
         }
+
         Ok(())
     }
 }
@@ -409,10 +412,20 @@ impl From<LibraryBenchmarkHeader> for Header {
 impl LibraryBenchmarkHeader {
     /// Creates a new `LibraryBenchmarkHeader`.
     pub fn new(lib_bench: &LibBench) -> Self {
+        let description = match (
+            lib_bench.display.as_ref(),
+            lib_bench.consts_display.as_ref(),
+        ) {
+            (None, None) => None,
+            (None, Some(consts)) => Some(format!("<{consts}>")),
+            (Some(args), None) => Some(format!("({args})")),
+            (Some(args), Some(consts)) => Some(format!("<{consts}>({args})")),
+        };
+
         let header = Header::new(
             &lib_bench.module_path,
             lib_bench.id.clone(),
-            lib_bench.display.clone(),
+            description,
             &lib_bench.output_format,
         );
 
@@ -1377,7 +1390,7 @@ mod tests {
     #[case::simple("some::module", Some("id"), Some("1, 2"), "some::module id:1, 2")]
     #[case::id_but_no_description("some::module", Some("id"), None, "some::module id")]
     #[case::id_but_empty_description("some::module", Some("id"), Some(""), "some::module id")]
-    #[case::no_id_but_description("some::module", None, Some("1, 2, 3"), "some::module 1, 2, 3")]
+    #[case::no_id_but_description("some::module", None, Some("1, 2, 3"), "some::module :1, 2, 3")]
     #[case::no_id_no_description("some::module", None, None, "some::module")]
     #[case::no_id_empty_description("some::module", None, Some(""), "some::module")]
     #[case::length_is_greater_than_default(

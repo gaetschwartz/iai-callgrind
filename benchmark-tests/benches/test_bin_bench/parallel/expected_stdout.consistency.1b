@@ -12,7 +12,7 @@ test_bin_bench_parallel_consistency::my_group::with_output_in_command setup_and_
   RAM Hits:                                |                     (         )
   Total read+write:                        |                     (Tolerance)
   Estimated Cycles:                        |                     (         )
-test_bin_bench_parallel_consistency::my_group::subprocess () -> target/release/subprocess <__ABS_PATH__>/echo BAR
+test_bin_bench_parallel_consistency::my_group::subprocess :() -> target/release/subprocess <__ABS_PATH__>/echo BAR
   Instructions:                            |                     (Tolerance)
   L1 Hits:                                 |                     (         )
   LL Hits:                                 |                     (         )

@@ -1,4 +1,4 @@
-test_bin_bench_filter::group_1::minimal_bench () -> target/release/echo minimal
+test_bin_bench_filter::group_1::minimal_bench :() -> target/release/echo minimal
 minimal
 - end of stdout/stderr
   Instructions:                            |N/A                  (*********)

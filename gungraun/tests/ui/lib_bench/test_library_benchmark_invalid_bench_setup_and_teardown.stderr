@@ -161,3 +161,18 @@ note: function defined here
    |
 15 | fn teardown_unit(_: ()) {}
    |    ^^^^^^^^^^^^^ -----
+
+error[E0308]: mismatched types
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_bench_setup_and_teardown.rs:84:26
+   |
+84 | #[benches::id(teardown = teardown_unit)]
+   |                          ^^^^^^^^^^^^^
+   |                          |
+   |                          expected `()`, found `u64`
+   |                          arguments to this function are incorrect
+   |
+note: function defined here
+  --> tests/ui/lib_bench/test_library_benchmark_invalid_bench_setup_and_teardown.rs:15:4
+   |
+15 | fn teardown_unit(_: ()) {}
+   |    ^^^^^^^^^^^^^ -----

@@ -72,20 +72,34 @@ pub enum InternalBinFunctionKind {
 /// Used in gungraun-macros to store the essential information about a library benchmark
 #[derive(Debug, Clone)]
 pub struct InternalMacroLibBench {
+    /// The arguments as a display string for output purposes
     pub args_display: Option<&'static str>,
+    /// The configuration at `#[bench]` level
     pub config: Option<fn() -> InternalLibraryBenchmarkConfig>,
+    /// The const generic arguments as a display string for output purposes
+    pub consts_display: Option<&'static str>,
+    /// The kind of function (Default or Iter)
     pub func: InternalLibFunctionKind,
+    /// The id of the benchmark as a display string
     pub id_display: Option<&'static str>,
 }
 
 /// Used in gungraun-macros to store the essential information about a binary benchmark
 #[derive(Debug, Clone)]
 pub struct InternalMacroBinBench {
+    /// The arguments as a display string for output purposes
     pub args_display: Option<&'static str>,
+    /// The configuration at `#[bench]` level
     pub config: Option<fn() -> InternalBinaryBenchmarkConfig>,
+    /// The const generic arguments as a display string for output purposes
+    pub consts_display: Option<&'static str>,
+    /// The kind of function (Default or Iter)
     pub func: InternalBinFunctionKind,
+    /// The id of the benchmark as a display string
     pub id_display: Option<&'static str>,
+    /// The setup function kind
     pub setup: InternalBinAssistantKind,
+    /// The teardown function kind
     pub teardown: InternalBinAssistantKind,
 }
 

@@ -75,8 +75,8 @@ but a lot more concise especially if a lot of values are passed to the same
 
 ### The `iter` parameter
 
-Specifying a lot of benchmarks with args (`args = [1, 2, 3, 4, 5, 6, 7]` and so)
-on can be cumbersome. Gungraun supports creating multiple benchmarks from an
+Specifying a lot of benchmarks with args (`args = [1, 2, 3, 4, 5, 6, 7]` and so
+on) can be cumbersome. Gungraun supports creating multiple benchmarks from an
 iterator, more precisely anything that implements [`IntoIterator`] from the
 standard library. Each element of the iterator creates a separate benchmark
 case. For example creating multiple benchmarks from a range:
@@ -229,5 +229,57 @@ library_benchmark_group!(name = my_group, benchmarks = some_bench);
 main!(library_benchmark_groups = my_group);
 # }
 ```
+
+### The `consts` parameter
+
+When benchmarking functions with const generic parameters, use the `consts`
+parameter to specify the const values. With `#[benches]`, multiple const values
+can specified the same way as the `args` parameter:
+
+```rust
+# extern crate gungraun;
+# mod my_lib { pub fn create_buffer(_: usize) -> Vec<u8> { vec![] } }
+use gungraun::{library_benchmark, library_benchmark_group, main};
+use std::hint::black_box;
+
+#[library_benchmark]
+#[benches::sizes(consts = [256, 512, 1024, 2048])]
+fn bench_multiple_sizes<const SIZE: usize>() -> Vec<u8> {
+    black_box(my_lib::create_buffer(SIZE))
+}
+
+library_benchmark_group!(name = my_group, benchmarks = bench_multiple_sizes);
+# fn main() {
+main!(library_benchmark_groups = my_group);
+# }
+```
+
+You can combine `args` and `consts`. When `args` has more elements than
+`consts`, the last `consts` value repeats. Conversely when `consts` has more
+elements the last `args` value repeats:
+
+```rust
+# extern crate gungraun;
+# mod my_lib { pub fn process(_: i32, _: usize) -> i32 { 0 } }
+use gungraun::{library_benchmark, library_benchmark_group, main};
+use std::hint::black_box;
+
+#[library_benchmark]
+#[benches::combined(args = [1, 2, 3], consts = [256, 512])]
+fn bench_args_and_const<const SIZE: usize>(value: i32) -> i32 {
+    // Creates:
+    // - (SIZE=256, value=1)
+    // - (SIZE=512, value=2)
+    // - (SIZE=512, value=3)  <- last consts repeats
+    black_box(my_lib::process(value, SIZE))
+}
+
+library_benchmark_group!(name = my_group, benchmarks = bench_args_and_const);
+# fn main() {
+main!(library_benchmark_groups = my_group);
+# }
+```
+
+Const expressions are also supported, so `consts = ({ 1 + 20 })` works.
 
 [`IntoIterator`]: https://doc.rust-lang.org/std/iter/trait.IntoIterator.html

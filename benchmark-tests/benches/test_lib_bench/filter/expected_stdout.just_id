@@ -1,4 +1,4 @@
-test_lib_bench_filter::group_2::benches_with_id forty_two:42
+test_lib_bench_filter::group_2::benches_with_id forty_two:(42)
   Instructions:                            |N/A                  (*********)
   L1 Hits:                                 |N/A                  (*********)
   LL Hits:                                 |N/A                  (*********)

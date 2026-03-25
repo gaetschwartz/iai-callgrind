@@ -183,6 +183,11 @@ path = "benches/test_bin_bench/filter/test_bin_bench_filter.rs"
 
 [[bench]]
 harness = false
+name = "test_bin_bench_generics"
+path = "benches/test_bin_bench/generics/test_bin_bench_generics.rs"
+
+[[bench]]
+harness = false
 name = "test_bin_bench_intro"
 path = "benches/test_bin_bench/intro/test_bin_bench_intro.rs"
 

@@ -80,10 +80,10 @@ fn bench40() -> u64 {
 }
 
 // global correct teardown is overwritten with wrong teardown
-// #[library_benchmark(teardown = teardown_u64)]
-// #[benches::id(teardown = teardown_unit)]
-// fn bench41() -> u64 {
-//     42
-// }
+#[library_benchmark(teardown = teardown_u64)]
+#[benches::id(teardown = teardown_unit)]
+fn bench41() -> u64 {
+    42
+}
 
 fn main() {}

@@ -1,4 +1,4 @@
-test_bin_bench_setup_child_exit_with_error::group::benchmark () -> target/release/pipe
+test_bin_bench_setup_child_exit_with_error::group::benchmark :() -> target/release/pipe
 
 thread 'main' (<__PID__>) panicked at benchmark-tests/benches/test_bin_bench/setup_child_exit_with_error/test_bin_bench_setup_child_exit_with_error.rs:10:5:
 SETUP CHILD PROCESS

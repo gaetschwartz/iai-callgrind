@@ -3,7 +3,8 @@
 Benchmark functions can be generic. And `setup` and `teardown` functions, too.
 There's actually not much more to say about it since generic benchmark (`setup`
 and `teardown`) functions behave exactly the same way as you would expect it
-from any other generic function.
+from any other generic function apart from `const` parameters which are
+explained in [Const Generic Parameters](#const-generic-parameters) below.
 
 However, there is a common pitfall. If you have a function
 `count_lines_in_file_fast` which expects as parameter a `PathBuf` and although
@@ -61,3 +62,90 @@ main!(library_benchmark_groups = my_group);
 That way you can still enjoy the convenience to use string literals instead of
 `PathBuf` in your `#[bench]` (or `#[benches]`) arguments and have clean
 benchmark metrics.
+
+## Const Generic Parameters
+
+For benchmark functions with const generic parameters, use the `consts`
+parameter in `#[bench]` and `#[benches]` to specify the const values. The syntax
+is the same as for the `args` parameter:
+
+```rust
+# extern crate gungraun;
+# mod my_lib { pub fn create_buffer(_: usize) -> Vec<u8> { vec![] } }
+use gungraun::{library_benchmark, library_benchmark_group, main};
+use std::hint::black_box;
+
+#[library_benchmark]
+#[bench::small(consts = (100))]
+#[bench::medium(consts = (1000))]
+#[bench::large(consts = (10000))]
+// or multiple consts
+#[benches::multiple(consts = [200, 2000, 20000])]
+fn bench_buffer<const SIZE: usize>() -> Vec<u8> {
+    black_box(my_lib::create_buffer(SIZE))
+}
+
+library_benchmark_group!(
+    name = my_group,
+    benchmarks = [bench_buffer]
+);
+# fn main() {
+main!(library_benchmark_groups = my_group);
+# }
+```
+
+For functions with multiple const generics:
+
+```rust
+# extern crate gungraun;
+# mod my_lib { pub fn create_matrix(_: usize, _: usize) -> Vec<Vec<u8>> {
+#     vec![] }
+# }
+use gungraun::{library_benchmark, library_benchmark_group, main};
+use std::hint::black_box;
+
+#[library_benchmark]
+#[bench::small_matrix(consts = (10, 10))]
+#[bench::wide_matrix(consts = (5, 20))]
+fn bench_matrix<const ROWS: usize, const COLS: usize>() -> Vec<Vec<u8>> {
+    black_box(my_lib::create_matrix(ROWS, COLS))
+}
+
+library_benchmark_group!(name = my_group, benchmarks = bench_matrix);
+# fn main() {
+main!(library_benchmark_groups = my_group);
+# }
+```
+
+Const expressions like `consts = ({ 1 + 20 })` are also supported. You can
+combine `args` and `consts` to benchmark with both regular arguments and const
+generics. See
+[Specifying Multiple Benches at Once](./multiple_benches.md#the-consts-parameter)
+for more details.
+
+`const` parameters can be combined freely in any order with lifetime and type
+parameters in the benchmark function signature:
+
+```rust
+# extern crate gungraun;
+# mod my_lib {
+#   pub fn create_buffer<const SIZE: usize, T>(_: T) -> Vec<Vec<u8>> {
+#       Vec::with_capacity(SIZE)
+#   }
+# }
+use gungraun::{library_benchmark, library_benchmark_group, main};
+use std::hint::black_box;
+
+#[library_benchmark]
+#[bench::small(args = ("foo"), consts = (10))]
+#[bench::big(args = ("bar"), consts = (10000))]
+fn bench_buffer<const SIZE: usize, T>(arg_t: T) -> Vec<Vec<u8>>
+where T: std::fmt::Display {
+    black_box(my_lib::create_buffer::<SIZE, T>(arg_t))
+}
+
+library_benchmark_group!(name = my_group, benchmarks = bench_buffer);
+# fn main() {
+main!(library_benchmark_groups = my_group);
+# }
+```

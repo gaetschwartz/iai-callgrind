@@ -722,6 +722,7 @@ mod tests {
         let bench = lib_bench::LibBench::new(
             None,
             None,
+            None,
             ModulePath::new("hello::world"),
             "function".to_owned(),
             &meta,
