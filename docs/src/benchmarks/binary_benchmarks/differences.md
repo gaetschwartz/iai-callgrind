@@ -4,7 +4,7 @@ In this section we're going through the differences to
 [library benchmarks](../library_benchmarks.md). This assumes that you already
 know how to set up library benchmarks, and it is recommended to learn the very
 basics about library benchmarks, starting with
-[Quickstart](../binary_benchmarks/quickstart.md),
+[Quickstart](../library_benchmarks/quickstart.md),
 [Structure of a library benchmark](../library_benchmarks/structure.md) and
 [The macros in more detail](../library_benchmarks/macros.md). Then come back to
 this section.

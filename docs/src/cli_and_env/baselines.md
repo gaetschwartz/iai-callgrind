@@ -29,7 +29,7 @@ git checkout main
 cargo bench --bench <benchmark> -- --save-baseline=main
 git checkout feature
 # ... HACK ... HACK
-cargo bench --bench <benchmark> -- --baseline main
+cargo bench --bench <benchmark> -- --baseline=main
 ```
 
 Sticking to the above execution sequence,

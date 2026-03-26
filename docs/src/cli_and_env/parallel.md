@@ -412,9 +412,9 @@ library_benchmark_group!(
 
 ### Important Notes
 
-- **Only effective with `--parallel`**: The `max_parallel` parameter has no
-  effect if you don't use the `--parallel` CLI option. Benchmarks run serially
-  by default.
+- **Only effective with parallel execution enabled**: The `max_parallel`
+  parameter has no effect unless parallel execution is enabled via `--parallel`
+  or `GUNGRAUN_PARALLEL`. Benchmarks run serially by default.
 - **Per-group setting**: Each group can have its own `max_parallel` value,
   allowing fine-grained control.
 - **Groups still run sequentially**: Even with `max_parallel`, groups themselves

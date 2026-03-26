@@ -223,7 +223,8 @@ order and separated by a comma):
 - **`max_parallel`** (optional): The default is no limit. If set, `0` means no
   limit (same as not specifying), `1` disables parallel execution for this
   group, and values `>= 2` limit the maximum number of parallel benchmarks. This
-  option only has an effect when the `--parallel` CLI option is used. See
+  option only has an effect when parallel execution is enabled via `--parallel`
+  or `GUNGRAUN_PARALLEL`. See
   [Running Benchmarks in Parallel](../../cli_and_env/parallel.md#limiting-parallelism-per-group)
   for more details.
 - **`setup`** (optional): A setup function or any valid expression which is run

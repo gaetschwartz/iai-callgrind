@@ -49,10 +49,10 @@ soft limits and hard limits in one go with the `|`-operator (e.g.
 For a list of all allowed callgrind metrics (like `ir`) see the docs of
 [`EventKind`], for cachegrind metrics [`CachegrindMetric`] and for dhat metrics
 [`DhatMetric`]. It is sometimes more convenient to define limits for whole
-groups with the `@`-operator: `--callgrind-metrics='@all=5%'`. All allowed
-groups and their members for callgrind metrics can be found in
-[`CallgrindMetrics`], for cachegrind metrics in [`CachegrindMetrics`] and dhat
-metrics in [`DhatMetrics`].
+groups with the `@`-operator: `--callgrind-limits='@all=5%'`. All allowed groups
+and their members for callgrind metrics can be found in [`CallgrindMetrics`],
+for cachegrind metrics in [`CachegrindMetrics`] and dhat metrics in
+[`DhatMetrics`].
 
 Multiple specifications of the same `EventKind`, ... overwrite the previous one
 until the last one wins. This is useful for example to specify a limit for all

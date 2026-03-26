@@ -106,7 +106,7 @@ main!(binary_benchmark_groups = low_level);
 As shown above, there's no need to transcribe the function `attribute_benchmark`
 with the `#[binary_benchmark]` attribute into the low-level API structures. Just
 keep it as it is and add it to a the `group` with
-`group.binary_benchmark(binary_benchmark_attribute(attribute_benchmark))`.
+`group.binary_benchmark(binary_benchmark_attribute!(attribute_benchmark))`.
 That's it! You can continue hacking on your benchmarks in the low-level API.
 
 [api-docs]: https://docs.rs/gungraun/0.17.2/gungraun/index.html

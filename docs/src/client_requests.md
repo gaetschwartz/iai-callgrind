@@ -170,9 +170,9 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-As the standard toggle is now switched off and the option `--collect-atstart=no`
-is also omitted, you must specify `--collect-atstart=no` manually in
-`LibraryBenchmarkConfig::raw_callgrind_args`.
+When the standard toggle is switched off with `EntryPoint::None`, make sure
+`--collect-atstart=no` is set in the Callgrind arguments, for example via
+`Callgrind::with_args(["--collect-atstart=no"])` as shown above.
 
 Please see the [`docs`][api-docs] for more details!
 

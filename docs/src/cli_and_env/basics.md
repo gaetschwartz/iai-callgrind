@@ -344,7 +344,7 @@ Options:
           description for --callgrind-args for more details and restrictions.
 
           Examples:
-            * --cachegrind-args=--intr-at-start=no
+            * --cachegrind-args=--instr-at-start=no
             * --cachegrind-args='--branch-sim=yes --instr-at-start=no'
 
           [env: GUNGRAUN_CACHEGRIND_ARGS=]
