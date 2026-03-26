@@ -52,10 +52,9 @@ function must match the parameter list of the `#[bench]` attribute. It is always
 a good idea to return something from the benchmark function, here it is the
 computed `u64` value from the `fibonacci` function wrapped in a `black_box`. See
 the docs of [`std::hint::black_box`][rust-black-box] for more information about
-its usage. Simply put, _all_ values and variables in the benchmarking function
-(but not in your library function) need to be wrapped in a `black_box` except
-for the input parameters (here `value`) because Gungraun already does that. But,
-it is no error to `black_box` the `value` again.
+its usage. Simply put, _all_ input and output values in the benchmarking
+function (but _not_ in your library function) need to be wrapped in a
+`black_box`.
 
 The `bench` attribute takes any expression which includes function calls. The
 following would have worked too and is one way to avoid the costs of the setup

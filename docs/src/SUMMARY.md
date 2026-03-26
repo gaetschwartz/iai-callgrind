@@ -13,6 +13,7 @@
 # Benchmarks
 
 - [Overview](./benchmarks/overview.md)
+- [Benchmarking Best Practices](./best_practices.md)
 - [Library Benchmarks](./benchmarks/library_benchmarks.md)
     - [Important Default Behaviour](./benchmarks/library_benchmarks/important.md)
     - [Quickstart](./benchmarks/library_benchmarks/quickstart.md)

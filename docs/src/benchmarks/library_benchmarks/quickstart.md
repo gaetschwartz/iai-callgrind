@@ -2,7 +2,10 @@
 
 # Quickstart
 
-Create a file `$WORKSPACE_ROOT/benches/library_benchmark.rs` and add
+Create a file `$WORKSPACE_ROOT/benches/library_benchmark.rs` (or for best
+results use
+[Use a Separate Workspace Member for Benchmarks](../../best_practices.md#use-a-separate-workspace-member-for-benchmarks))
+and add
 
 ```toml
 [[bench]]

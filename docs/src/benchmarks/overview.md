@@ -12,7 +12,8 @@ supported.
 Head over to the [Quickstart](./library_benchmarks/quickstart.md) section of
 library benchmarks if you want to start benchmarking your library functions or
 to the [Quickstart](./binary_benchmarks/quickstart.md) section of binary
-benchmarks if you want to start benchmarking your crate's binary (binaries).
+benchmarks if you want to start benchmarking your crate's binary (binaries) and
+see also [Benchmarking Best Practices](../best_practices.md).
 
 ## Binary Benchmarks vs Library Benchmarks
 
