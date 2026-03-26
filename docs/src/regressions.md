@@ -177,8 +177,8 @@ following output:
 
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.14477s</code></pre>
 
-Let's assume there's a change in `my_lib::bubble_sort` with a negative impact on
-the performance, then running the benchmark again results in an output something
+Assume there is a change in `my_lib::bubble_sort` with a negative impact on the
+performance, then running the benchmark again results in an output something
 similar to this:
 
 <pre><code class="hljs"><span style="color:#0A0">lib_bench_regression::my_group::bench_library</span> <span style="color:#0AA">worst_case</span><span style="color:#0AA">:</span><b><span style="color:#00A">vec! [3, 2, 1]</span></b>

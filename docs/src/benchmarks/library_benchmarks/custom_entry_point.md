@@ -8,8 +8,8 @@ This section is dedicated to the entry point of `Callgrind`.
 very similar there are differences which are fully described in the
 [Dhat](../../dhat.md) chapter.
 
-To understand custom entry points let's take a small detour into how [Callgrind]
-and Gungraun work under the hood.
+To understand custom entry points, take a small detour into how [Callgrind] and
+Gungraun work under the hood.
 
 ## Gungraun Under the Hood
 

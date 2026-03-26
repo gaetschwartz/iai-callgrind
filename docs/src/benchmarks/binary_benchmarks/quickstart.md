@@ -4,7 +4,7 @@
 
 Suppose the crate's binary is called `my-foo` and this binary takes a file path
 as positional argument. This first example shows the basic usage of the
-high-level api with the `#[binary_benchmark]` attribute:
+high-level API with the `#[binary_benchmark]` attribute:
 
 ```rust
 # extern crate gungraun;
@@ -70,8 +70,8 @@ presents you with something like the following:
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.49333s</code></pre>
 
 As opposed to library benchmarks, binary benchmarks have access to a
-[low-level api](./low_level.md). Here, pretty much the same as the above
-high-level usage but written in the low-level api:
+[low-level API](./low_level.md). Here is roughly the same setup as above,
+written with the low-level API:
 
 ```rust
 # extern crate gungraun;
@@ -97,10 +97,9 @@ main!(binary_benchmark_groups = my_group);
 # }
 ```
 
-If in doubt, use the high-level api. You can still
+If in doubt, use the high-level API. You can still
 [migrate](./low_level.md#intermixing-high-level-and-low-level-api) to the
-low-level api very easily if you really need to. The other way around is more
-involved.
+low-level API easily if you need to. The other way around is more involved.
 
 [rust]: https://doc.rust-lang.org/std/macro.env.html
 [cargo-env]:

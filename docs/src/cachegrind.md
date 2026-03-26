@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-In order to use `Cachegrind` instead of `Callgrind` you need valgrind version
+In order to use `Cachegrind` instead of `Callgrind` you need Valgrind version
 `3.22` or above installed (which you can look up with `valgrind --version`). In
 this version Valgrind introduced the two [Client requests](./client_requests.md)
 `start_instrumentation()` and `stop_instrumentation()`. In order to use client
@@ -32,9 +32,9 @@ change has implications which are better understood by showing the second way.
 
 ## The Second Way
 
-There are actually multiple second ways to run Cachegrind as default tool (see
-also command-line arguments) but they have the same principle in common. For
-example in the benchmark file run a specific benchmark function with Cachegrind:
+There are multiple ways to run Cachegrind as the default tool (see also
+command-line arguments), but they follow the same principle. For example in the
+benchmark file run a specific benchmark function with Cachegrind:
 
 ```rust
 # extern crate gungraun;
@@ -62,8 +62,8 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-However, this is not enough to get correct measurements. Only choosing
-`Cachegrind` as default tool will measure everything including setup and
+However, this alone is not enough for correct measurements. Choosing
+`Cachegrind` as the default tool measures everything including setup and
 teardown, ... For this reason we need client requests to tell `Cachegrind` when
 to start and stop the instrumentation:
 
@@ -104,11 +104,11 @@ benchmark executable.
 
 All of the above is exactly what the `cachegrind` feature does. It adds the
 client requests to the function body, returns the result from the function and
-start cachegrind with `--instr-at-start=no`. The consequence and a disadvantage
-of cachegrind is that the function body had to be altered a little bit. It's not
-much but running other tools tools like `Callgrind` on the same benchmark
-function like `Cachegrind` would show small differences because the client
-requests add `10` - `20` instructions to the function body.
+starts Cachegrind with `--instr-at-start=no`. The consequence and a disadvantage
+of Cachegrind is that the function body has to be altered a little bit. It's not
+much but running other tools like `Callgrind` on the same benchmark function
+like `Cachegrind` would show small differences because the client requests add
+`10` - `20` instructions to the function body.
 
 ## When to Use Cachegrind
 

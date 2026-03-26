@@ -17,7 +17,7 @@ Gungraun Pros:
 
 - Gungraun can work reliably in noisy environments especially in CI environments
   from providers like GitHub Actions or Travis-CI, where Criterion-rs cannot.
-- The benchmark api of Gungraun is simple, intuitive and allows for a much more
+- The benchmark API of Gungraun is simple, intuitive and allows for a much more
   concise and clearer structure of benchmarks.
 - Gungraun can benchmark functions in binary crates.
 - Gungraun can benchmark private functions.

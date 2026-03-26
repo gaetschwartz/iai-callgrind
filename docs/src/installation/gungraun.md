@@ -45,7 +45,7 @@ GUNGRAUN_RUNNER=/tmp/bin/gungraun-runner cargo bench --bench my-bench
 ### Binstall
 
 The `gungraun-runner` binary is [pre-built] for most platforms supported by
-valgrind and easily installable with [binstall]
+Valgrind and easily installable with [binstall]
 
 ```shell
 cargo binstall gungraun-runner@0.17.2
@@ -57,11 +57,11 @@ When updating the `gungraun` library, you'll also need to update
 `gungraun-runner` and vice-versa or else the benchmark runner will exit with an
 error.
 
-### In the Github CI
+### In the GitHub CI
 
-Since the `gungraun-runner` version must match the `gungraun` library version
-it's best to automate this step in the CI. A job step in the github actions CI
-could look like this
+Since the `gungraun-runner` version must match the `gungraun` library version,
+it's best to automate this step in CI. A job step in the GitHub Actions CI could
+look like this
 
 ```yaml
 - name: Install gungraun-runner

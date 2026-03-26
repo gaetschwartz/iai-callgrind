@@ -87,8 +87,8 @@ main!(
 
 ## Usage on the Command-Line
 
-Running DHAT instead of or in addition to Callgrind is pretty straight-forward
-and not different to any [other tool](./tools.md):
+Running DHAT instead of or in addition to Callgrind is straightforward and no
+different from any [other tool](./tools.md):
 
 Either use
 [command-line arguments or environment variables](./cli_and_env/basics.md):
@@ -406,9 +406,9 @@ Running this benchmark results in:
 
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.45178s</code></pre>
 
-To verify our setup, let's compare these numbers with the data of the program
-point with the thread of the `dh_view.html` output shown above. Eventually,
-these are the same metrics:
+To verify the setup, compare these numbers with the data of the program point
+with the thread of the `dh_view.html` output shown above. Eventually, these are
+the same metrics:
 
 ```text
   │   ├── PP 1.1.1/12 {

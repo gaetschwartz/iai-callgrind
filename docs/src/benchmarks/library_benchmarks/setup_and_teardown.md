@@ -2,10 +2,9 @@
 
 # Setup and Teardown
 
-`setup` and `teardown` are your bread and butter in library benchmarks. The
-benchmark functions need to be as clean as possible and almost always only
-contain the function call to the function of your library which you want to
-benchmark.
+`setup` and `teardown` are fundamental in library benchmarks. The benchmark
+functions need to be as clean as possible and almost always only contain the
+call to the function from your library that you want to benchmark.
 
 ## Setup
 
@@ -47,15 +46,14 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-You can actually see the effect of using a setup function in the output of the
-benchmark. Let's assume the above benchmark is in a file
-`benches/my_benchmark.rs`, then running
+You can see the effect of using a setup function in the output of the benchmark.
+Assume the above benchmark is in a file `benches/my_benchmark.rs`, then running
 
 ```shell
 GUNGRAUN_NOCAPTURE=true cargo bench
 ```
 
-result in the benchmark output like below.
+results in the benchmark output like below.
 
 <pre><code class="hljs"><span style="color:#0A0">my_benchmark::my_group::count_bytes_fast</span> <span style="color:#0AA">first</span><span style="color:#0AA">:</span><b><span style="color:#00A">open_file("path/to/file")</span></b>
   Instructions:     <b>        1630162</b>|N/A             (<span style="color:#555">*********</span>)
@@ -153,10 +151,10 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-Note Gungraun captures all output per default. In order to actually see the
-output of the benchmark, `setup` and `teardown` functions, it is required to run
-the benchmarks with the flag `--nocapture` or set the environment variable
-`GUNGRAUN_NOCAPTURE=true`. Let's assume the above benchmark is in a file
+Note Gungraun captures all output by default. To see the output of the
+benchmark, `setup` and `teardown` functions, it is required to run the
+benchmarks with the flag `--nocapture` or set the environment variable
+`GUNGRAUN_NOCAPTURE=true`. Assume the above benchmark is in a file
 `benches/my_benchmark.rs`, then running
 
 ```shell

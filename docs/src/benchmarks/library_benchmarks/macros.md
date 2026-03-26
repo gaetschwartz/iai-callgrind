@@ -2,8 +2,8 @@
 
 This section is a brief reference to all the macros available in library
 benchmarks. Feel free to come back here from other sections if you need a
-reference. For the complete documentation of each macro see the [api
-Documentation][api-docs].
+reference. For the complete documentation of each macro see the [API
+documentation][api-docs].
 
 For the following examples it is assumed that there is a file `lib.rs` in a
 crate named `my_lib` with the following content:

@@ -5,7 +5,7 @@
 As in library benchmarks, the environment variables are cleared before running a
 binary benchmark. Have a look at the [Configuration](./configuration.md) section
 if you want to change this behavior. Gungraun sometimes deviates from the
-valgrind defaults which are:
+Valgrind defaults which are:
 
 | Gungraun                 | Valgrind (v3.23)        |
 | ------------------------ | ----------------------- |
@@ -14,7 +14,7 @@ valgrind defaults which are:
 | `--separate-threads=yes` | `--separate-threads=no` |
 | `--cache-sim=yes`        | `--cache-sim=no`        |
 
-As show in the table above, the benchmarks run with cache simulation switched
+As shown in the table above, the benchmarks run with cache simulation switched
 on. This adds run time for each benchmark. If you don't need the cache metrics
 and estimation of cycles, you can easily switch cache simulation off for example
 with

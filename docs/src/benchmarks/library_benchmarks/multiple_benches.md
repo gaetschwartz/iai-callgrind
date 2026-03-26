@@ -5,7 +5,7 @@ Multiple benches can be specified at once with the
 
 ## The `#[benches]` Attribute in More Detail
 
-Let's start with an example:
+Start with an example:
 
 ```rust
 # extern crate gungraun;
@@ -38,7 +38,7 @@ main!(library_benchmark_groups = my_group);
 Usually the `arguments` are passed directly to the benchmarking function as it
 can be seen in the `#[benches::multiple(/* arguments */)]` case. In
 `#[benches::with_setup(/* ... */)]`, the arguments are passed to the `setup`
-function instead. The above `#[library_benchmark]` is pretty much the same as
+function instead. The above `#[library_benchmark]` is roughly the same as
 
 ```rust
 # extern crate gungraun;

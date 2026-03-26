@@ -102,11 +102,10 @@ section.
 
 ## The Group
 
-The name of the benchmark functions, here the only benchmark function
-`bench_fibonacci`, which should be benchmarked need to be specified in a
-`library_benchmark_group!` in the `benchmarks` parameter. You can create as many
-groups as you like, and you can use it to organize related benchmarks. Each
-group needs a unique `name`.
+The benchmark functions to run, in this case only `bench_fibonacci`, need to be
+specified in a `library_benchmark_group!` in the `benchmarks` parameter. You can
+create as many groups as you like, and you can use it to organize related
+benchmarks. Each group needs a unique `name`.
 
 ## The `main!` Macro
 

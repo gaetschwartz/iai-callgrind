@@ -38,7 +38,7 @@ benchmark harness of `rust`. Gungraun is a profiling framework that can quickly
 and reliably detect performance regressions and optimizations even in noisy
 environments with a precision that is impossible to achieve with wall-clock time
 based benchmarks. At the same time, we want to abstract the complicated parts
-and repetitive tasks away and provide an easy to use and intuitive api. Gungraun
+and repetitive tasks away and provide an easy to use and intuitive API. Gungraun
 tries to stay out of your way so you can focus more on profiling and your code!
 
 ## When Not to Use Gungraun
@@ -54,7 +54,7 @@ not a good fit.
 
 ## Pronunciation and Origin of the Word Gungraun
 
-Like `valgrind`, the name has its roots in old norse mythology and is a
+Like `Valgrind`, the name has its roots in old norse mythology and is a
 composition of two words. The first is `gungnir`, Odin's legendary spear, in the
 sense of one shot (benchmark execution) and one hit never missing its target.
 The second word is `raun` which simply means test.
@@ -65,7 +65,7 @@ silent. The last syllable `raun` can be pronounced like the english word `rain`.
 ## Improving Gungraun
 
 You want to improve the guide? You have an idea for a new feature, are missing a
-functionality or have found a bug? We would love to here about it. You want to
+functionality or have found a bug? We would love to hear about it. You want to
 contribute and hack on Gungraun?
 
 Please don't hesitate to [open an issue][open-an-issue].
