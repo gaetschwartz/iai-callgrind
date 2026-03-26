@@ -19,7 +19,7 @@ use std::hint::black_box;
 
 #[library_benchmark]
 fn bench_library() -> Vec<i32> {
-    black_box(my_lib::bubble_sort(vec![3, 2, 1]))
+    black_box(my_lib::bubble_sort(black_box(vec![3, 2, 1])))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_library);

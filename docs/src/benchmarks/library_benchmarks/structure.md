@@ -19,7 +19,7 @@ fn fibonacci(n: u64) -> u64 {
 #[bench::short(10)]
 #[bench::long(30)]
 fn bench_fibonacci(value: u64) -> u64 {
-    black_box(fibonacci(value))
+    black_box(fibonacci(black_box(value)))
 }
 
 library_benchmark_group!(
@@ -52,9 +52,8 @@ function must match the parameter list of the `#[bench]` attribute. It is always
 a good idea to return something from the benchmark function, here it is the
 computed `u64` value from the `fibonacci` function wrapped in a `black_box`. See
 the docs of [`std::hint::black_box`][rust-black-box] for more information about
-its usage. Simply put, _all_ input and output values in the benchmarking
-function (but _not_ in your library function) need to be wrapped in a
-`black_box`.
+its usage. Wrap both input and output values in `black_box` to prevent the
+compiler from optimizing away computations.
 
 The `bench` attribute takes any expression which includes function calls. The
 following would have worked too and is one way to avoid the costs of the setup
@@ -82,7 +81,7 @@ fn fibonacci(n: u64) -> u64 {
 // Note the usage of the `some_setup_func` in the argument list of this #[bench]
 #[bench::long(some_setup_func(20))]
 fn bench_fibonacci(value: u64) -> u64 {
-    black_box(fibonacci(value))
+    black_box(fibonacci(black_box(value)))
 }
 
 library_benchmark_group!(

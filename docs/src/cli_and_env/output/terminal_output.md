@@ -48,7 +48,7 @@ fn add_10_and_print(value: u64) -> u64 {
 #[library_benchmark]
 #[bench::some_id(args = (10), teardown = print_to_stderr)]
 fn bench_library(value: u64) -> u64 {
-    black_box(add_10_and_print(value))
+    black_box(add_10_and_print(black_box(value)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_library);

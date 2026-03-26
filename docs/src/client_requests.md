@@ -110,7 +110,7 @@ pub mod my_lib {
 #[bench::small(vec![3, 2, 1])]
 #[bench::bigger(vec![5, 4, 3, 2, 1])]
 fn bench_function(array: Vec<i32>) -> Vec<i32> {
-    black_box(my_lib::pre_bubble_sort(array))
+    black_box(my_lib::pre_bubble_sort(black_box(array)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_function);
@@ -161,7 +161,7 @@ pub mod my_lib {
 #[bench::small(vec![3, 2, 1])]
 #[bench::bigger(vec![5, 4, 3, 2, 1])]
 fn bench_function(array: Vec<i32>) -> Vec<i32> {
-    black_box(my_lib::pre_bubble_sort(array))
+    black_box(my_lib::pre_bubble_sort(black_box(array)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_function);

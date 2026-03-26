@@ -38,7 +38,7 @@ fn open_file(path: &str) -> File {
 #[library_benchmark]
 #[bench::first(args = ("path/to/file"), setup = open_file)]
 fn count_bytes_fast(file: File) -> u64 {
-    black_box(my_lib::count_bytes_fast(file))
+    black_box(my_lib::count_bytes_fast(black_box(file)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = count_bytes_fast);
@@ -99,7 +99,7 @@ fn open_file_with_offset(path: &str, offset: u64) -> File {
 #[bench::big("path/to/big")]
 #[bench::with_offset(args = ("path/to/big", 100), setup = open_file_with_offset)]
 fn count_bytes_fast(file: File) -> u64 {
-    black_box(my_lib::count_bytes_fast(file))
+    black_box(my_lib::count_bytes_fast(black_box(file)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = count_bytes_fast);
@@ -144,7 +144,7 @@ fn print_bytes_read(num_bytes: u64) {
     teardown = print_bytes_read
 )]
 fn count_bytes_fast(file: File) -> u64 {
-    black_box(my_lib::count_bytes_fast(file))
+    black_box(my_lib::count_bytes_fast(black_box(file)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = count_bytes_fast);

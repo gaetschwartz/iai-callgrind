@@ -36,6 +36,8 @@
 //!   benchmarking, so you can use Callgrind-compatible tools like [callgrind_annotate][cl-annotate]
 //!   or the visualizer [kcachegrind][kcachegrind] to analyze the results in detail.
 //!
+//! FIX: place all links at the bottom
+//!
 //! [cl-annotate]:
 //! https://valgrind.org/docs/manual/cl-manual.html#cl-manual.callgrind_annotate-options
 //! [kcachegrind]: https://kcachegrind.github.io/html/Home.html
@@ -120,8 +122,8 @@
 //! // The argument of the benchmark function defines the type of the argument from the
 //! // `bench` cases.
 //! fn bench_bubble_sort(array: Vec<i32>) -> Vec<i32> {
-//!     // Note `array` is not put in a `black_box` because that's already done for you.
-//!     black_box(bubble_sort(array))
+//!     // Wrap input and output in `black_box` to prevent the compiler from eliminating code.
+//!     black_box(bubble_sort(black_box(array)))
 //! }
 //!
 //! // You can use the `benches` attribute to specify multiple benchmark runs in one go. You can
@@ -136,12 +138,12 @@
 //! // also want to specify a `config` or `setup` function.
 //! #[benches::with_args(args = [vec![1], vec![5]], config = LibraryBenchmarkConfig::default())]
 //! // Usually, each element in `args` is passed directly to the benchmarking function. You can
-//! // instead reroute them to a `setup` function. In that case the (black boxed) return value of
-//! // the setup function is passed as parameter to the benchmarking function.
+//! // instead reroute them to a `setup` function. In that case, the return value of the setup
+//! // function is passed as parameter to the benchmarking function.
 //! #[benches::with_setup(args = [1, 5], setup = setup_worst_case_array)]
 //! #[benches::with_iter(iter = 1..4, setup = setup_worst_case_array)]
 //! fn bench_bubble_sort_with_benches_attribute(input: Vec<i32>) -> Vec<i32> {
-//!     black_box(bubble_sort(input))
+//!     black_box(bubble_sort(black_box(input)))
 //! }
 //!
 //! // A benchmarking function with multiple parameters requires the elements to be specified as

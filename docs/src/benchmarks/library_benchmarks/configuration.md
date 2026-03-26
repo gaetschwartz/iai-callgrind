@@ -56,7 +56,6 @@ main!(library_benchmark_groups = my_group);
 use gungraun::{
     main, LibraryBenchmarkConfig, library_benchmark_group, library_benchmark
 };
-use std::hint::black_box;
 
 #[library_benchmark(config = LibraryBenchmarkConfig::default())]
 fn bench() {
@@ -82,7 +81,6 @@ main!(library_benchmark_groups = my_group);
 use gungraun::{
     main, LibraryBenchmarkConfig, library_benchmark_group, library_benchmark
 };
-use std::hint::black_box;
 
 #[library_benchmark]
 #[bench::some_id(args = (1, 2), config = LibraryBenchmarkConfig::default())]

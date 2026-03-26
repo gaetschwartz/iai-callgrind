@@ -50,7 +50,7 @@ fn convert_to_pathbuf<T>(path: T) -> PathBuf where T: Into<PathBuf> {
 #[library_benchmark]
 #[bench::first(args = ("path/to/file"), setup = convert_to_pathbuf)]
 fn not_generic_anymore(path: PathBuf) -> u64 {
-    black_box(my_lib::count_lines_in_file_fast(path))
+    black_box(my_lib::count_lines_in_file_fast(black_box(path)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = not_generic_anymore);
@@ -82,7 +82,7 @@ use std::hint::black_box;
 // or multiple consts
 #[benches::multiple(consts = [200, 2000, 20000])]
 fn bench_buffer<const SIZE: usize>() -> Vec<u8> {
-    black_box(my_lib::create_buffer(SIZE))
+    black_box(my_lib::create_buffer(black_box(SIZE)))
 }
 
 library_benchmark_group!(
@@ -108,7 +108,7 @@ use std::hint::black_box;
 #[bench::small_matrix(consts = (10, 10))]
 #[bench::wide_matrix(consts = (5, 20))]
 fn bench_matrix<const ROWS: usize, const COLS: usize>() -> Vec<Vec<u8>> {
-    black_box(my_lib::create_matrix(ROWS, COLS))
+    black_box(my_lib::create_matrix(black_box(ROWS), black_box(COLS)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_matrix);
@@ -141,7 +141,7 @@ use std::hint::black_box;
 #[bench::big(args = ("bar"), consts = (10000))]
 fn bench_buffer<const SIZE: usize, T>(arg_t: T) -> Vec<Vec<u8>>
 where T: std::fmt::Display {
-    black_box(my_lib::create_buffer::<SIZE, T>(arg_t))
+    black_box(my_lib::create_buffer::<SIZE, T>(black_box(arg_t)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_buffer);

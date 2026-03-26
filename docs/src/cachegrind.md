@@ -53,7 +53,7 @@ use std::hint::black_box;
 #[bench::small(vec![3, 2, 1])]
 #[bench::bigger(vec![5, 4, 3, 2, 1])]
 fn bench_function(array: Vec<i32>) -> Vec<i32> {
-    black_box(my_lib::bubble_sort(array))
+    black_box(my_lib::bubble_sort(black_box(array)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_function);
@@ -86,7 +86,7 @@ use std::hint::black_box;
 #[bench::bigger(vec![5, 4, 3, 2, 1])]
 fn bench_function(array: Vec<i32>) -> Vec<i32> {
     client_requests::cachegrind::start_instrumentation();
-    let r = black_box(my_lib::bubble_sort(array));
+    let r = black_box(my_lib::bubble_sort(black_box(array)));
     client_requests::cachegrind::stop_instrumentation();
     r
 }

@@ -25,7 +25,7 @@ use std::hint::black_box;
 
 #[library_benchmark]
 fn bench_threads() -> Vec<u64> {
-    black_box(my_lib::find_primes_multi_thread(2))
+    black_box(my_lib::find_primes_multi_thread(black_box(2)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_threads);
@@ -118,7 +118,7 @@ pub mod my_lib {
 #[library_benchmark]
 #[bench::two_threads(2)]
 fn bench_threads(num_threads: usize) -> Vec<u64> {
-    black_box(my_lib::find_primes_multi_thread(num_threads))
+    black_box(my_lib::find_primes_multi_thread(black_box(num_threads)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_threads);
@@ -194,7 +194,7 @@ use std::hint::black_box;
 )]
 #[bench::two_threads(2)]
 fn bench_threads(num_threads: usize) -> Vec<u64> {
-    black_box(my_lib::find_primes_multi_thread(num_threads))
+    black_box(my_lib::find_primes_multi_thread(black_box(num_threads)))
 }
 # library_benchmark_group!(name = my_group, benchmarks = bench_threads);
 # fn main() {
@@ -319,7 +319,7 @@ use std::hint::black_box;
 )]
 #[bench::two_threads(2)]
 fn bench_threads(num_threads: usize) -> Vec<u64> {
-    black_box(my_lib::find_primes_multi_thread(num_threads))
+    black_box(my_lib::find_primes_multi_thread(black_box(num_threads)))
 }
 # library_benchmark_group!(name = my_group, benchmarks = bench_threads);
 # fn main() {
@@ -479,7 +479,7 @@ use std::hint::black_box;
 )]
 #[bench::two_threads(2)]
 fn bench_threads(num_threads: usize) -> Vec<u64> {
-    black_box(my_lib::find_primes_multi_thread(num_threads))
+    black_box(my_lib::find_primes_multi_thread(black_box(num_threads)))
 }
 # library_benchmark_group!(name = my_group, benchmarks = bench_threads);
 # fn main() {
@@ -604,7 +604,7 @@ fn create_file() -> PathBuf {
 #[library_benchmark]
 #[bench::some(setup = create_file)]
 fn bench_subprocess(path: PathBuf) -> io::Result<ExitStatus> {
-    black_box(my_lib::cat(&path))
+    black_box(my_lib::cat(black_box(&path)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_subprocess);
@@ -681,7 +681,7 @@ benchmark will just work:
 )]
 #[bench::some(setup = create_file)]
 fn bench_subprocess(path: PathBuf) -> io::Result<ExitStatus> {
-    black_box(my_lib::cat(&path))
+    black_box(my_lib::cat(black_box(&path)))
 }
 # library_benchmark_group!(name = my_group, benchmarks = bench_subprocess);
 # fn main() {
@@ -772,7 +772,7 @@ without the toggle:
 #[library_benchmark]
 #[bench::some(setup = create_file)]
 fn bench_subprocess(path: PathBuf) -> io::Result<ExitStatus> {
-    black_box(my_lib::cat(&path))
+    black_box(my_lib::cat(black_box(&path)))
 }
 # library_benchmark_group!(name = my_group, benchmarks = bench_subprocess);
 # fn main() {

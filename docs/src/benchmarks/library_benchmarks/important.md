@@ -42,7 +42,7 @@ use std::hint::black_box;
 
 #[library_benchmark]
 fn bench_fibonacci() -> u64 {
-    black_box(my_lib::fibonacci(10))
+    black_box(my_lib::fibonacci(black_box(10)))
 }
 
 library_benchmark_group!(name = fibonacci_group, benchmarks = bench_fibonacci);

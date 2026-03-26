@@ -53,12 +53,12 @@ fn bench_bubble_sort_empty() -> Vec<i32> {
 //
 // The `bench` attribute consist of the attribute name itself, a unique id after `::` and
 // optionally arguments with expressions which are passed to the benchmark function as parameter.
-// Here we pass a single argument with `Vec<i32>` type to the benchmark. All arguments are already
-// wrapped in a black box and don't need to be put in a `black_box` again.
+// Here we pass a single argument with `Vec<i32>` type to the benchmark. Wrap both input and
+// output values in `black_box` to prevent the compiler from optimizing away computations.
 #[library_benchmark]
 // This bench is setting up the same benchmark case as above in the `bench_bubble_sort_empty` with
 // the advantage that the setup costs for creating a vector (even if it is empty) aren't attributed
-// to the benchmark and that the `array` is already wrapped in a black_box.
+// to the benchmark.
 #[bench::empty(vec![])]
 // Some other use cases to play around with
 #[bench::worst_case_6(vec![6, 5, 4, 3, 2, 1])]
@@ -69,8 +69,8 @@ fn bench_bubble_sort_empty() -> Vec<i32> {
 #[bench::best_case_4000(setup_best_case_array(4000))]
 // The argument of the benchmark function defines the type of the argument from the `bench` cases.
 fn bench_bubble_sort(array: Vec<i32>) -> Vec<i32> {
-    // Note `array` is not put in a `black_box` because that's already done for you.
-    black_box(bubble_sort(array))
+    // Wrap both input and output in `black_box`.
+    black_box(bubble_sort(black_box(array)))
 }
 
 // This benchmark serves as an example for a benchmark function having more than one argument
@@ -80,7 +80,7 @@ fn bench_bubble_sort(array: Vec<i32>) -> Vec<i32> {
 #[bench::fib_5_plus_fib_10(255 - 250, 10)]
 #[bench::fib_30_plus_fib_20(30, 20)]
 fn bench_fibonacci_sum(first: u64, second: u64) -> u64 {
-    black_box(black_box(fibonacci(first)) + black_box(fibonacci(second)))
+    black_box(fibonacci(black_box(first)) + fibonacci(black_box(second)))
 }
 
 // You can use the `benches` attribute to specify multiple benchmark runs in one go. You can specify
@@ -94,11 +94,11 @@ fn bench_fibonacci_sum(first: u64, second: u64) -> u64 {
 // want to specify a `config` or `setup` function.
 #[benches::with_args(args = [vec![1], vec![5]], config = LibraryBenchmarkConfig::default())]
 // Usually, each element in `args` is passed directly to the benchmarking function. You can instead
-// reroute them to a `setup` function. In that case the (black boxed) return value of the setup
-// function is passed as parameter to the benchmarking function.
+// reroute them to a `setup` function. In that case the return value of the setup function is passed
+// as parameter to the benchmarking function.
 #[benches::with_setup(args = [1, 5], setup = setup_worst_case_array)]
 fn bench_bubble_sort_with_benches_attribute(input: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(input))
+    black_box(bubble_sort(black_box(input)))
 }
 
 /// Read the content of a file and produce an iterable vector with valid `u64` numbers as elements
@@ -117,7 +117,7 @@ fn read_file(path: &str) -> Vec<u64> {
 // iterator element.
 #[benches::from_file(iter = read_file("benches/fixtures/with_empty_line.fix"))]
 fn bench_fibonacci_with_iter(a: u64) -> u64 {
-    black_box(fibonacci(a))
+    black_box(fibonacci(black_box(a)))
 }
 
 // A benchmarking function with multiple parameters requires the elements to be specified as tuples.
@@ -153,7 +153,7 @@ fn bench_fibonacci_with_config() -> u64 {
         .tool_override(Massif::default())
 )]
 fn bench_fibonacci_with_config_at_bench_level(first: u64, second: u64) -> u64 {
-    black_box(fibonacci(black_box(first + second)))
+    black_box(fibonacci(black_box(first) + black_box(second)))
 }
 
 // Use the `benchmarks` argument of the `library_benchmark_group!` macro to collect all benchmarks
