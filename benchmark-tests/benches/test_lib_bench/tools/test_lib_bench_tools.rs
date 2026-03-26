@@ -40,7 +40,7 @@ fn setup_worst_case_array(start: i32) -> Vec<i32> {
     setup = setup_worst_case_array
 )]
 fn bench_bubble_sort(array: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(array))
+    black_box(bubble_sort(black_box(array)))
 }
 
 #[library_benchmark]

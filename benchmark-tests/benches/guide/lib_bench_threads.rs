@@ -56,7 +56,7 @@ pub mod my_lib {
 )]
 #[bench::two_threads(2)]
 fn bench_threads(num_threads: usize) -> Vec<u64> {
-    black_box(my_lib::find_primes_multi_thread(num_threads))
+    black_box(my_lib::find_primes_multi_thread(black_box(num_threads)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_threads);

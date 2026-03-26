@@ -316,6 +316,7 @@ impl Bench {
                 let (bench_id_func, pats) = callee.to_caller_signature(&elem_ident, bench_id);
                 let call_bench_func = quote_spanned! { callee_ident.span() =>
                         std::hint::black_box(
+                            // FIX: use std::hint::black_box
                             __gungraun_wrapper_mod::#bench_func_call(#(#pats),*)
                         )
                 };

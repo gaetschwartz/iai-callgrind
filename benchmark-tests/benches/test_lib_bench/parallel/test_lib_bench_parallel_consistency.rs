@@ -33,7 +33,7 @@ fn teardown_with_output(inputs: Vec<i32>) -> Vec<i32> {
     teardown = teardown_with_output
 )]
 fn with_output_in_bench(array: Vec<i32>) -> Vec<i32> {
-    let result = black_box(bubble_sort(array));
+    let result = black_box(bubble_sort(black_box(array)));
     println!("last number of sorted array: {}", result.last().unwrap());
     result
 }
@@ -60,7 +60,7 @@ fn with_output_in_bench(array: Vec<i32>) -> Vec<i32> {
     teardown = teardown_with_output
 )]
 fn multiple_tools(array: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(array))
+    black_box(bubble_sort(black_box(array)))
 }
 
 library_benchmark_group!(

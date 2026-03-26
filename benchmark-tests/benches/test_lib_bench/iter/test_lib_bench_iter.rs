@@ -33,14 +33,14 @@ fn teardown(num: u64) -> Result<u64, String> {
 #[library_benchmark]
 #[benches::empty(iter = vec![])]
 fn bench_empty(num: u64) -> u64 {
-    black_box(fibonacci(num))
+    black_box(fibonacci(black_box(num)))
 }
 
 #[library_benchmark]
 #[benches::one(iter = vec![(1, 2)])]
 #[benches::two(iter = vec![(1, 2), (2, 3)])]
 fn bench_when_tuple((a, b): (u64, u64)) -> u64 {
-    black_box(fibonacci(a + b))
+    black_box(fibonacci(black_box(a) + black_box(b)))
 }
 
 #[library_benchmark]
@@ -48,7 +48,7 @@ fn bench_when_tuple((a, b): (u64, u64)) -> u64 {
 #[benches::range(iter = 1..=2)]
 #[benches::with_teardown(iter = vec![1, 2], teardown = teardown)]
 fn bench_single(num: u64) -> u64 {
-    black_box(fibonacci(num))
+    black_box(fibonacci(black_box(num)))
 }
 
 // Bubble sort doesn't allocate heap memory by itself but makes reads and writes. The reads and
@@ -88,7 +88,7 @@ fn bench_single(num: u64) -> u64 {
     setup = setup_with_print_and_alloc
 )]
 fn bench_allocation(inputs: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(inputs))
+    black_box(bubble_sort(black_box(inputs)))
 }
 
 #[library_benchmark]
@@ -97,7 +97,7 @@ fn bench_generic<T>(num: T) -> u64
 where
     T: Into<u64>,
 {
-    black_box(fibonacci(num.into()))
+    black_box(fibonacci(black_box(num).into()))
 }
 
 library_benchmark_group!(

@@ -31,7 +31,7 @@ fn create_file() -> PathBuf {
 #[library_benchmark]
 #[bench::some(setup = create_file)]
 fn bench_subprocess(path: PathBuf) -> io::Result<ExitStatus> {
-    black_box(my_lib::cat(&path))
+    black_box(my_lib::cat(black_box(&path)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_subprocess);

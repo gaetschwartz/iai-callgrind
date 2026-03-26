@@ -30,7 +30,7 @@ use gungraun::{
         .tool_override(Cachegrind::with_args(["cache-sim=no"]))
 )]
 fn test_config_overwrite(array: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(array))
+    black_box(bubble_sort(black_box(array)))
 }
 
 #[library_benchmark]
@@ -46,7 +46,7 @@ fn test_config_overwrite(array: Vec<i32>) -> Vec<i32> {
         .tool(Callgrind::with_args(["cache-sim=no"]))
 )]
 fn bench_default_tool(array: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(array))
+    black_box(bubble_sort(black_box(array)))
 }
 
 #[library_benchmark]
@@ -57,7 +57,7 @@ fn bench_default_tool(array: Vec<i32>) -> Vec<i32> {
 )]
 fn manual_cachegrind_setup(array: Vec<i32>) -> Vec<i32> {
     gungraun::client_requests::cachegrind::start_instrumentation();
-    let r = black_box(bubble_sort(array));
+    let r = black_box(bubble_sort(black_box(array)));
     gungraun::client_requests::cachegrind::stop_instrumentation();
     r
 }

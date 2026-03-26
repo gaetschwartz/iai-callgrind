@@ -19,7 +19,7 @@ fn setup_worst_case_array(start: i32) -> Vec<i32> {
 )]
 #[bench::with_10(setup_worst_case_array(10))]
 fn bench_with_cache_sim(value: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(value))
+    black_box(bubble_sort(black_box(value)))
 }
 
 #[library_benchmark(config = LibraryBenchmarkConfig::default()
@@ -27,7 +27,7 @@ fn bench_with_cache_sim(value: Vec<i32>) -> Vec<i32> {
 )]
 #[bench::with_10(setup_worst_case_array(10))]
 fn bench_without_cache_sim(value: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(value))
+    black_box(bubble_sort(black_box(value)))
 }
 
 library_benchmark_group!(

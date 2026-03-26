@@ -8,7 +8,7 @@ use gungraun::{
 #[library_benchmark]
 #[bench::worst_case(vec![3, 2, 1])]
 fn bench_library(data: Vec<i32>) -> Vec<i32> {
-    black_box(my_lib::bubble_sort(data))
+    black_box(my_lib::bubble_sort(black_box(data)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_library);

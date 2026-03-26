@@ -11,7 +11,7 @@ use gungraun::{
 #[library_benchmark]
 #[bench::worst_case_3(setup_worst_case_array(3))]
 fn bench_library(array: Vec<i32>) -> Vec<i32> {
-    black_box(my_lib::bubble_sort(array))
+    black_box(my_lib::bubble_sort(black_box(array)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_library);

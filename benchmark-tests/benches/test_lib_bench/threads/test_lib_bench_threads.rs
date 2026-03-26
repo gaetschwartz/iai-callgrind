@@ -17,7 +17,7 @@ use gungraun::{
 #[bench::one(1)]
 #[bench::two(2)]
 fn bench_find_primes_multi_thread(num_threads: usize) -> Vec<u64> {
-    black_box(find_primes_multi_thread(num_threads))
+    black_box(find_primes_multi_thread(black_box(num_threads)))
 }
 
 #[library_benchmark(
