@@ -407,10 +407,10 @@ impl CargoMetadata {
 /// #   pub args_display: Option<&'static str>,
 /// #   pub consts_display: Option<&'static str>,
 /// #   pub func: InternalLibFunctionKind,
-/// #   pub config: Option<fn() -> InternalLibraryBenchmarkConfig}
+/// #   pub config: Option<fn() -> InternalLibraryBenchmarkConfig>
 /// # }
 /// # pub struct InternalLibraryBenchmarkConfig {}
-/// # }
+/// # }}
 /// use std::hint::black_box;
 ///
 /// // Our function we want to test
@@ -452,8 +452,7 @@ impl CargoMetadata {
 /// fn bench_using_the_benches_attribute(array: Vec<i32>) -> Vec<i32> {
 ///     black_box(some_func_with_array(black_box(array)))
 /// }
-/// # fn main() {
-/// # }
+/// # fn main() { }
 /// ```
 ///
 /// [bench]: #the-bench-attribute

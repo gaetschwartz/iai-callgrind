@@ -1,10 +1,7 @@
-//! Gungraun is a one-shot benchmarking harness and framework which uses Valgrind's [
-//! Callgrind](https://valgrind.org/docs/manual/cl-manual.html),
-//! [Cachegrind](https://valgrind.org/docs/manual/cg-manual.html), and
-//! [DHAT](https://valgrind.org/docs/manual/dh-manual.html) to provide extremely accurate and
-//! consistent measurements of Rust code, making it perfectly suited to run in environments like a
-//! CI. Its flexibility allows you to access all Valgrind tools, even `Memcheck`, and utilize
-//! [Valgrind client requests](./client_requests.md) effortlessly.
+//! Gungraun is a one-shot benchmarking harness and framework which uses Valgrind's [Callgrind],
+//! [Cachegrind], and [DHAT] to provide extremely accurate and consistent measurements of Rust code,
+//! making it perfectly suited to run in environments like a CI. Its flexibility allows you to
+//! access all Valgrind tools, even [Memcheck], and utilize [`client_requests`] effortlessly.
 //!
 //! The [online guide][Guide] contains all the details to start profiling with Gungraun.
 //!
@@ -34,26 +31,15 @@
 //!   detailed performance regressions and improvements.
 //! - __CPU and Cache Profiling__: Gungraun generates a Callgrind profile of your code while
 //!   benchmarking, so you can use Callgrind-compatible tools like [callgrind_annotate][cl-annotate]
-//!   or the visualizer [kcachegrind][kcachegrind] to analyze the results in detail.
-//!
-//! FIX: place all links at the bottom
-//!
-//! [cl-annotate]:
-//! https://valgrind.org/docs/manual/cl-manual.html#cl-manual.callgrind_annotate-options
-//! [kcachegrind]: https://kcachegrind.github.io/html/Home.html
+//!   or the visualizer [kcachegrind] to analyze the results in detail.
 //! - __Memory Profiling__: You can run other Valgrind tools like [DHAT: a dynamic heap analysis
-//!   tool][dhat] and [Massif: a heap profiler][massif] with Gungraun. Their profiles are stored
+//!   tool][DHAT] and [Massif: a heap profiler][massif] with Gungraun. Their profiles are stored
 //!   next to the callgrind profiles and are ready to be examined with analyzing tools like
 //!   `dh_view.html`, `ms_print` and others.
-//!
-//! [dhat]: https://valgrind.org/docs/manual/dh-manual.html
-//! [massif]: https://valgrind.org/docs/manual/ms-manual.html
 //! - __Visualization__: Gungraun is capable of creating regular and differential flamegraphs from
 //!   the Callgrind output format.
 //! - __Valgrind Client Requests__: Support of zero overhead [Valgrind Client Requests][client-req]
-//!   (compared to native valgrind client requests overhead) on many targets
-//!
-//! [client-req]: https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
+//!   on many targets
 //! - __Stable-compatible__: Benchmark your code without installing nightly Rust
 //!
 //! ## Benchmarking
@@ -231,7 +217,7 @@
 //! attribute works almost the same as the `#[library_benchmark]` attribute. You will find the same
 //! parameters `setup`, `teardown`, `config`, `consts`, etc. in `#[binary_benchmark]` as in
 //! `#[library_benchmark]` and the inner attributes `#[bench]`, `#[benches]`. But, there are also
-//! substantial (differences)[#differences-to-library-benchmarks].
+//! substantial [differences][#differences-to-library-benchmarks].
 //!
 //! Suppose your crate's binaries are named `my-foo` and `my-bar`
 //!
@@ -340,10 +326,10 @@
 //! ## Valgrind Tools
 //!
 //! In addition to or instead of the default Callgrind tool, you can use the Gungraun framework
-//! to run other Valgrind profiling tools like `DHAT`, `Massif`, the experimental `BBV` and even
-//! `Cachegrind`. But, also `Memcheck`, `Helgrind` and `DRD` if you need to check memory and thread
-//! safety of benchmarked code. See the [Valgrind User
-//! Manual](https://valgrind.org/docs/manual/manual.html) for details and command line arguments.
+//! to run other Valgrind profiling tools like [DHAT], [Massif], the experimental `BBV` and even
+//! `Cachegrind`. But, also [Memcheck], [Helgrind] and [DRD] if you need to check memory and
+//! thread safety of benchmarked code. See the [Valgrind User Manual] for details and command line
+//! arguments.
 //! The additional tools can be specified in [`LibraryBenchmarkConfig::tool`],
 //! [`BinaryBenchmarkConfig::tool`]. For example to run `DHAT` for all library benchmarks:
 //!
@@ -397,7 +383,19 @@
 //! The produced flamegraph svg files are located next to the respective callgrind output file in
 //! the `target/gungraun` directory.
 //!
+//! [Cachegrind]: https://valgrind.org/docs/manual/cg-manual.html
+//! [Callgrind]: https://valgrind.org/docs/manual/cl-manual.html
+//! [cl-annotate]:
+//!   https://valgrind.org/docs/manual/cl-manual.html#cl-manual.callgrind_annotate-options
+//! [client-req]: https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
+//! [DHAT]: https://valgrind.org/docs/manual/dh-manual.html
+//! [DRD]: https://valgrind.org/docs/manual/drd-manual.html
 //! [Guide]: https://gungraun.github.io/gungraun/latest/html/intro.html
+//! [Helgrind]: https://valgrind.org/docs/manual/hg-manual.html
+//! [kcachegrind]: https://kcachegrind.github.io/html/Home.html
+//! [massif]: https://valgrind.org/docs/manual/ms-manual.html
+//! [Memcheck]: https://valgrind.org/docs/manual/mc-manual.html
+//! [Valgrind User Manual]: https://valgrind.org/docs/manual/manual.html
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc(test(attr(warn(unused))))]
