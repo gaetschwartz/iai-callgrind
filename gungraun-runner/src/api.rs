@@ -1301,6 +1301,7 @@ pub struct OutputFormat {
     pub truncate_description: Option<Option<usize>>,
 }
 
+// TODO: RENAME to ValgrindToolArgs
 /// The raw arguments to pass to a valgrind tool
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RawArgs(pub Vec<String>);

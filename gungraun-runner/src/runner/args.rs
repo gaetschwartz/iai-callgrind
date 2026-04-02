@@ -1,15 +1,18 @@
 // spell-checker: ignore totalbytes totalblocks writeback writebackbehaviour
 //! The command-line arguments of cargo bench as in ARGS of `cargo bench -- ARGS`
 
+use std::ffi::{OsStr, OsString};
 use std::fmt::Display;
 use std::hash::Hash;
+use std::os::unix::ffi::{OsStrExt, OsStringExt};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 
 use anyhow::Result;
-use clap::builder::BoolishValueParser;
-use clap::{ArgAction, Parser};
+use clap::builder::{BoolishValueParser, OsStringValueParser, TypedValueParser};
+use clap::error::{ContextKind, ContextValue, ErrorKind};
+use clap::{value_parser, ArgAction, Parser};
 use indexmap::{indexset, IndexMap, IndexSet};
 use simplematch::{DoWild, Options};
 use strum::IntoEnumIterator;
@@ -26,6 +29,7 @@ use crate::api::{
     EventKind, RawArgs, ValgrindTool,
 };
 use crate::runner::common::CapturedOutput;
+use crate::util;
 
 const DOWILD_OPTIONS: Options<u8> = Options::new().enable_escape(true).enable_classes(true);
 
@@ -770,6 +774,7 @@ pub struct CommandLineArgs {
     )]
     pub memcheck_metrics: Option<IndexSet<ErrorMetric>>,
 
+    // FIX: Add alias
     #[rustfmt::skip]
     /// Don't capture terminal output of benchmarks
     ///
@@ -1099,7 +1104,34 @@ pub struct CommandLineArgs {
         display_order = 500
     )]
     pub valgrind_args: Option<RawArgs>,
+
+    #[rustfmt::skip]
+    /// TODO: DOCS
+    #[arg(
+        long = "valgrind-runner",
+        value_parser = ValgrindRunnerParser,
+        num_args = 1,
+        verbatim_doc_comment,
+        env = "GUNGRAUN_VALGRIND_RUNNER",
+        display_order = 500
+    )]
+    pub valgrind_runner: Option<PathBuf>,
+
+    #[rustfmt::skip]
+    /// TODO: DOCS
+    #[arg(
+        long = "valgrind-runner-args",
+        value_parser = parse_args,
+        num_args = 1,
+        verbatim_doc_comment,
+        env = "GUNGRAUN_VALGRIND_RUNNER_ARGS",
+        display_order = 500
+    )]
+    pub valgrind_runner_args: Option<RawArgs>,
 }
+
+#[derive(Clone, Debug)]
+struct ValgrindRunnerParser;
 
 impl BenchmarkFilter {
     /// Return `true` if the filter matches the haystack
@@ -1173,6 +1205,31 @@ impl From<TruncateDescription> for Option<usize> {
     }
 }
 
+// TODO: use parse_runner with a PathBuf value parser?
+impl TypedValueParser for ValgrindRunnerParser {
+    type Value = PathBuf;
+
+    fn parse_ref(
+        &self,
+        cmd: &clap::Command,
+        arg: Option<&clap::Arg>,
+        value: &OsStr,
+    ) -> Result<Self::Value, clap::Error> {
+        util::resolve_binary_path(value, None).map_err(|_| {
+            let mut err = clap::Error::new(ErrorKind::ValueValidation).with_cmd(cmd);
+            err.insert(
+                ContextKind::InvalidArg,
+                ContextValue::String(format!("--{}", arg.unwrap().get_id())),
+            );
+            err.insert(
+                ContextKind::InvalidValue,
+                ContextValue::String(format!("{}", value.to_string_lossy())),
+            );
+            err
+        })
+    }
+}
+
 // Convert the `metric` if it is present
 //
 // Used for example for hard limits to convert u64 values to f64 values if required.
@@ -1198,6 +1255,14 @@ fn convert_metric<T: Display + TypeChecker + Copy>(
 
 /// This function parses a space separated list of raw argument strings into [`crate::api::RawArgs`]
 fn parse_args(value: &str) -> Result<RawArgs, String> {
+    let value = if value.len() >= 2 {
+        match (&value.as_bytes()[0], &value.as_bytes()[value.len() - 1]) {
+            (b'\'', b'\'') | (b'"', b'"') => &value[1..value.len() - 1],
+            _ => value,
+        }
+    } else {
+        value
+    };
     shlex::split(value)
         .ok_or_else(|| "Failed to split args".to_owned())
         .map(RawArgs::new)
@@ -1462,7 +1527,11 @@ fn parse_truncate_description(value: &str) -> Result<TruncateDescription, String
 
 #[cfg(test)]
 mod tests {
+    use std::fs::Permissions;
+    use std::os::unix::fs::PermissionsExt;
+
     use rstest::rstest;
+    use tempfile::{tempdir, NamedTempFile};
 
     use super::*;
     use crate::api::EventKind::*;
@@ -2054,5 +2123,72 @@ mod tests {
         std::env::set_var("GUNGRAUN_TRUNCATE_DESCRIPTION", "no");
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(result.truncate_description, Some(TruncateDescription::None));
+    }
+
+    #[test]
+    fn test_arg_valgrind_runner() {
+        let file = tempfile::Builder::new()
+            .permissions(Permissions::from_mode(0o755))
+            .tempfile()
+            .unwrap();
+        let result = CommandLineArgs::try_parse_from([format!(
+            "--valgrind-runner={}",
+            file.path().display()
+        )])
+        .unwrap();
+
+        assert_eq!(result.valgrind_runner, Some(file.path().to_path_buf()));
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_arg_valgrind_runner_when_env() {
+        let file = tempfile::Builder::new()
+            .permissions(Permissions::from_mode(0o755))
+            .tempfile()
+            .unwrap();
+        std::env::set_var("GUNGRAUN_VALGRIND_RUNNER", file.path());
+        let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
+
+        assert_eq!(result.valgrind_runner, Some(file.path().to_path_buf()));
+    }
+
+    #[test]
+    fn test_arg_valgrind_runner_when_directory_then_error() {
+        let dir = tempdir().unwrap();
+        let result = CommandLineArgs::try_parse_from([format!(
+            "--valgrind-runner='{}'",
+            dir.path().display()
+        )]);
+        result.unwrap_err();
+    }
+
+    #[test]
+    fn test_arg_valgrind_runner_when_not_executable_then_error() {
+        let file = NamedTempFile::new().unwrap();
+        let result = CommandLineArgs::try_parse_from([format!(
+            "--valgrind-runner={}",
+            file.path().display()
+        )]);
+        result.unwrap_err();
+    }
+
+    #[rstest]
+    #[case::positional_one(&["--valgrind-runner-args=foo"], &["foo"])]
+    #[case::positional_one_with_quotes(&["--valgrind-runner-args='foo'"], &["foo"])]
+    #[case::flag_one(&["--valgrind-runner-args=--foo"], &["--foo"])]
+    #[case::flag_one_with_quotes(&["--valgrind-runner-args='--foo'"], &["--foo"])]
+    #[case::flag_one_with_equals(&["--valgrind-runner-args=--foo=some"], &["--foo=some"])]
+    #[case::flag_two(&["--valgrind-runner-args='--foo --bar'"], &["--foo", "--bar"])]
+    #[case::twice(
+        &["--valgrind-runner-args='--foo'", "--valgrind-runner-args='--bar'"],
+        &["--foo", "--bar"]
+    )]
+    fn test_valgrind_runner_args(#[case] input: &[&str], #[case] expected: &[&str]) {
+        let result = CommandLineArgs::try_parse_from(input).unwrap();
+        assert_eq!(
+            result.valgrind_runner_args,
+            Some(RawArgs::new(expected.iter().map(ToOwned::to_owned)))
+        );
     }
 }
