@@ -15,7 +15,7 @@ use super::parser::parser_factory;
 use super::path::ToolOutputPath;
 use super::regression::ToolRegressionConfig;
 use super::run::{RunOptions, ToolCommand};
-use crate::api::{self, EntryPoint, RawArgs, Tool, Tools, ValgrindTool};
+use crate::api::{self, EntryPoint, RawToolArgs, Tool, Tools, ValgrindTool};
 use crate::runner::callgrind::flamegraph::Config as FlamegraphConfig;
 use crate::runner::common::{Analyzer, CapturedOutput, Config, ModulePath, Sandbox};
 use crate::runner::format::OutputFormat;
@@ -62,7 +62,7 @@ struct ToolConfigBuilder {
     is_default: bool,
     is_enabled: bool,
     kind: ValgrindTool,
-    raw_args: RawArgs,
+    raw_tool_args: RawToolArgs,
     regression_config: ToolRegressionConfig,
     tool: Option<Tool>,
 }
@@ -100,12 +100,12 @@ impl ToolConfigBuilder {
     fn build(self) -> Result<ToolConfig> {
         let args = match self.kind {
             ValgrindTool::Callgrind => {
-                callgrind::args::Args::try_from_raw_args(&[&self.raw_args])?.into()
+                callgrind::args::Args::try_from_raw_tool_args(&[&self.raw_tool_args])?.into()
             }
             ValgrindTool::Cachegrind => {
-                cachegrind::args::Args::try_from_raw_args(&[&self.raw_args])?.into()
+                cachegrind::args::Args::try_from_raw_tool_args(&[&self.raw_tool_args])?.into()
             }
-            _ => ToolArgs::try_from_raw_args(self.kind, &[&self.raw_args])?,
+            _ => ToolArgs::try_from_raw_tool_args(self.kind, &[&self.raw_tool_args])?,
         };
 
         Ok(ToolConfig::new(
@@ -141,11 +141,11 @@ impl ToolConfigBuilder {
                 match &entry_point {
                     EntryPoint::None => {}
                     EntryPoint::Default => {
-                        self.raw_args
+                        self.raw_tool_args
                             .extend_ignore_flag(&[format!("toggle-collect={DEFAULT_TOGGLE}")]);
                     }
                     EntryPoint::Custom(custom) => {
-                        self.raw_args
+                        self.raw_tool_args
                             .extend_ignore_flag(&[format!("toggle-collect={custom}")]);
                     }
                 }
@@ -199,7 +199,7 @@ impl ToolConfigBuilder {
     }
 
     fn meta_args(&mut self, meta: &Metadata) {
-        let raw_args = match self.kind {
+        let raw_tool_args = match self.kind {
             ValgrindTool::Callgrind => &meta.args.callgrind_args,
             ValgrindTool::Cachegrind => &meta.args.cachegrind_args,
             ValgrindTool::DHAT => &meta.args.dhat_args,
@@ -210,8 +210,8 @@ impl ToolConfigBuilder {
             ValgrindTool::BBV => &meta.args.bbv_args,
         };
 
-        if let Some(args) = raw_args {
-            self.raw_args.update(args);
+        if let Some(args) = raw_tool_args {
+            self.raw_tool_args.update(args);
         }
     }
 
@@ -219,11 +219,11 @@ impl ToolConfigBuilder {
         valgrind_tool: ValgrindTool,
         tool: Option<Tool>,
         is_default: bool,
-        default_args: &HashMap<ValgrindTool, RawArgs>,
+        default_args: &HashMap<ValgrindTool, RawToolArgs>,
         module_path: &ModulePath,
         id: Option<&String>,
         meta: &Metadata,
-        valgrind_args: &RawArgs,
+        valgrind_args: &RawToolArgs,
         default_entry_point: &EntryPoint,
     ) -> Result<Self> {
         let (is_enabled, frames) = if let Some(tool) = tool.as_ref() {
@@ -242,7 +242,7 @@ impl ToolConfigBuilder {
             entry_point: Option::default(),
             flamegraph_config: ToolFlamegraphConfig::None,
             is_default,
-            raw_args: default_args
+            raw_tool_args: default_args
                 .get(&valgrind_tool)
                 .cloned()
                 .unwrap_or_default(),
@@ -303,12 +303,12 @@ impl ToolConfigBuilder {
 
     fn tool_args(&mut self) {
         if let Some(tool) = self.tool.as_ref() {
-            self.raw_args.update(&tool.raw_args);
+            self.raw_tool_args.update(&tool.raw_tool_args);
         }
     }
 
-    fn valgrind_args(&mut self, valgrind_args: &RawArgs) {
-        self.raw_args.update(valgrind_args);
+    fn valgrind_args(&mut self, valgrind_args: &RawToolArgs) {
+        self.raw_tool_args.update(valgrind_args);
     }
 }
 
@@ -337,8 +337,8 @@ impl ToolConfigs {
         meta: &Metadata,
         default_tool: ValgrindTool,
         default_entry_point: &EntryPoint,
-        valgrind_args: &RawArgs,
-        default_args: &HashMap<ValgrindTool, RawArgs>,
+        valgrind_args: &RawToolArgs,
+        default_args: &HashMap<ValgrindTool, RawToolArgs>,
     ) -> Result<Self> {
         let extracted_tool = tools.consume(default_tool);
 

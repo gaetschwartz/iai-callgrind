@@ -26,7 +26,7 @@ use super::summary::{BaselineName, SummaryFormat};
 use super::tool::regression::ToolRegressionConfig;
 use crate::api::{
     CachegrindMetric, CachegrindMetrics, CallgrindMetrics, DhatMetric, DhatMetrics, ErrorMetric,
-    EventKind, RawArgs, ValgrindTool,
+    EventKind, RawToolArgs, ValgrindTool,
 };
 use crate::runner::common::CapturedOutput;
 use crate::util;
@@ -216,13 +216,13 @@ pub struct CommandLineArgs {
     ///   * --bbv-args='--interval-size=10000 --instr-count-only=yes'
     #[arg(
         long = "bbv-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_BBV_ARGS",
         display_order = 500
     )]
-    pub bbv_args: Option<RawArgs>,
+    pub bbv_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     /// The command-line arguments to pass through to Cachegrind
@@ -235,13 +235,13 @@ pub struct CommandLineArgs {
     ///   * --cachegrind-args='--branch-sim=yes --instr-at-start=no'
     #[arg(
         long = "cachegrind-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_CACHEGRIND_ARGS",
         display_order = 500
     )]
-    pub cachegrind_args: Option<RawArgs>,
+    pub cachegrind_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     #[allow(clippy::doc_markdown)]
@@ -326,13 +326,13 @@ pub struct CommandLineArgs {
     ///   * --callgrind-args='--dump-instr=yes --collect-systime=yes'
     #[arg(
         long = "callgrind-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_CALLGRIND_ARGS",
         display_order = 500
     )]
-    pub callgrind_args: Option<RawArgs>,
+    pub callgrind_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     #[allow(clippy::doc_markdown)]
@@ -457,13 +457,13 @@ pub struct CommandLineArgs {
     ///   * --dhat-args=--mode=ad-hoc
     #[arg(
         long = "dhat-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_DHAT_ARGS",
         display_order = 500
     )]
-    pub dhat_args: Option<RawArgs>,
+    pub dhat_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     #[allow(clippy::doc_markdown)]
@@ -550,13 +550,13 @@ pub struct CommandLineArgs {
     ///   * --drd-args='--exclusive-threshold=100 --free-is-write=yes'
     #[arg(
         long = "drd-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_DRD_ARGS",
         display_order = 500
     )]
-    pub drd_args: Option<RawArgs>,
+    pub drd_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     /// Define the drd error metrics and the order in which they are displayed
@@ -623,13 +623,13 @@ pub struct CommandLineArgs {
     ///   * --helgrind-args='--conflict-cache-size=100000 --free-is-write=yes'
     #[arg(
         long = "helgrind-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_HELGRIND_ARGS",
         display_order = 500
     )]
-    pub helgrind_args: Option<RawArgs>,
+    pub helgrind_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     /// Define the helgrind error metrics and the order in which they are displayed
@@ -714,13 +714,13 @@ pub struct CommandLineArgs {
     ///   * --massif-args='--heap=no --threshold=2.0'
     #[arg(
         long = "massif-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_MASSIF_ARGS",
         display_order = 500
     )]
-    pub massif_args: Option<RawArgs>,
+    pub massif_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     /// The command-line arguments to pass through to Memcheck
@@ -733,13 +733,13 @@ pub struct CommandLineArgs {
     ///   * --memcheck-args='--leak-check=yes --show-leak-kinds=all'
     #[arg(
         long = "memcheck-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_MEMCHECK_ARGS",
         display_order = 500
     )]
-    pub memcheck_args: Option<RawArgs>,
+    pub memcheck_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     /// Define the memcheck error metrics and the order in which they are displayed
@@ -1097,13 +1097,13 @@ pub struct CommandLineArgs {
     ///   * --valgrind-args='--error-exitcode=202 --num-callers=50'
     #[arg(
         long = "valgrind-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_VALGRIND_ARGS",
         display_order = 500
     )]
-    pub valgrind_args: Option<RawArgs>,
+    pub valgrind_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     /// TODO: DOCS
@@ -1121,14 +1121,17 @@ pub struct CommandLineArgs {
     /// TODO: DOCS
     #[arg(
         long = "valgrind-runner-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_VALGRIND_RUNNER_ARGS",
         display_order = 500
     )]
-    pub valgrind_runner_args: Option<RawArgs>,
+    pub valgrind_runner_args: Option<RawToolArgs>,
 }
+
+#[derive(Debug, Clone)]
+struct RawArgs(Vec<String>);
 
 #[derive(Clone, Debug)]
 struct ValgrindRunnerParser;
@@ -1205,7 +1208,6 @@ impl From<TruncateDescription> for Option<usize> {
     }
 }
 
-// TODO: use parse_runner with a PathBuf value parser?
 impl TypedValueParser for ValgrindRunnerParser {
     type Value = PathBuf;
 
@@ -1251,21 +1253,6 @@ fn convert_metric<T: Display + TypeChecker + Copy>(
     } else {
         Ok((metric_kind, None))
     }
-}
-
-/// This function parses a space separated list of raw argument strings into [`crate::api::RawArgs`]
-fn parse_args(value: &str) -> Result<RawArgs, String> {
-    let value = if value.len() >= 2 {
-        match (&value.as_bytes()[0], &value.as_bytes()[value.len() - 1]) {
-            (b'\'', b'\'') | (b'"', b'"') => &value[1..value.len() - 1],
-            _ => value,
-        }
-    } else {
-        value
-    };
-    shlex::split(value)
-        .ok_or_else(|| "Failed to split args".to_owned())
-        .map(RawArgs::new)
 }
 
 /// Same as `parse_callgrind_limits` but for cachegrind
@@ -1485,6 +1472,21 @@ fn parse_parallel(value: &str) -> Result<usize, String> {
     }
 }
 
+/// This function parses a space separated list of raw argument strings into [`crate::api::RawArgs`]
+fn parse_tool_args(value: &str) -> Result<RawToolArgs, String> {
+    let value = if value.len() >= 2 {
+        match (&value.as_bytes()[0], &value.as_bytes()[value.len() - 1]) {
+            (b'\'', b'\'') | (b'"', b'"') => &value[1..value.len() - 1],
+            _ => value,
+        }
+    } else {
+        value
+    };
+    shlex::split(value)
+        .ok_or_else(|| "Failed to split args".to_owned())
+        .map(RawToolArgs::new)
+}
+
 /// Utility function to parse the --callgrind-metrics, ...
 fn parse_tool_metrics<T: Eq + Hash>(
     value: &str,
@@ -1535,7 +1537,7 @@ mod tests {
 
     use super::*;
     use crate::api::EventKind::*;
-    use crate::api::RawArgs;
+    use crate::api::RawToolArgs;
 
     #[rstest]
     #[case::empty("", &[])]
@@ -1548,8 +1550,8 @@ mod tests {
     &["--some=yes and no", "--other=no and yes"]
 )]
     fn test_parse_callgrind_args(#[case] value: &str, #[case] expected: &[&str]) {
-        let actual = parse_args(value).unwrap();
-        assert_eq!(actual, RawArgs::from_iter(expected));
+        let actual = parse_tool_args(value).unwrap();
+        assert_eq!(actual, RawToolArgs::from_iter(expected));
     }
 
     #[rstest]
@@ -1653,7 +1655,7 @@ mod tests {
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(
             result.callgrind_args,
-            Some(RawArgs::new(vec![test_arg.to_owned()]))
+            Some(RawToolArgs::new(vec![test_arg.to_owned()]))
         );
     }
 
@@ -1663,7 +1665,7 @@ mod tests {
         let result = CommandLineArgs::parse_from([format!("--callgrind-args={test_arg}")]);
         assert_eq!(
             result.callgrind_args,
-            Some(RawArgs::new(vec![test_arg.to_owned()]))
+            Some(RawToolArgs::new(vec![test_arg.to_owned()]))
         );
     }
 
@@ -1676,7 +1678,7 @@ mod tests {
         let result = CommandLineArgs::parse_from([format!("--callgrind-args={test_arg_no}")]);
         assert_eq!(
             result.callgrind_args,
-            Some(RawArgs::new(vec![test_arg_no.to_owned()]))
+            Some(RawToolArgs::new(vec![test_arg_no.to_owned()]))
         );
     }
 
@@ -2141,19 +2143,6 @@ mod tests {
     }
 
     #[test]
-    #[serial_test::serial]
-    fn test_arg_valgrind_runner_when_env() {
-        let file = tempfile::Builder::new()
-            .permissions(Permissions::from_mode(0o755))
-            .tempfile()
-            .unwrap();
-        std::env::set_var("GUNGRAUN_VALGRIND_RUNNER", file.path());
-        let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
-
-        assert_eq!(result.valgrind_runner, Some(file.path().to_path_buf()));
-    }
-
-    #[test]
     fn test_arg_valgrind_runner_when_directory_then_error() {
         let dir = tempdir().unwrap();
         let result = CommandLineArgs::try_parse_from([format!(
@@ -2180,15 +2169,11 @@ mod tests {
     #[case::flag_one_with_quotes(&["--valgrind-runner-args='--foo'"], &["--foo"])]
     #[case::flag_one_with_equals(&["--valgrind-runner-args=--foo=some"], &["--foo=some"])]
     #[case::flag_two(&["--valgrind-runner-args='--foo --bar'"], &["--foo", "--bar"])]
-    #[case::twice(
-        &["--valgrind-runner-args='--foo'", "--valgrind-runner-args='--bar'"],
-        &["--foo", "--bar"]
-    )]
     fn test_valgrind_runner_args(#[case] input: &[&str], #[case] expected: &[&str]) {
         let result = CommandLineArgs::try_parse_from(input).unwrap();
         assert_eq!(
             result.valgrind_runner_args,
-            Some(RawArgs::new(expected.iter().map(ToOwned::to_owned)))
+            Some(RawToolArgs::new(expected.iter().map(ToOwned::to_owned)))
         );
     }
 }

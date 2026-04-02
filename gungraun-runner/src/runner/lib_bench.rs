@@ -19,7 +19,7 @@ use super::tool::config::ToolConfigs;
 use super::tool::path::{ToolOutputPath, ToolOutputPathKind};
 use super::tool::run::RunOptions;
 use crate::api::{
-    EntryPoint, LibraryBenchmarkConfig, LibraryBenchmarkGroups, RawArgs, ValgrindTool,
+    EntryPoint, LibraryBenchmarkConfig, LibraryBenchmarkGroups, RawToolArgs, ValgrindTool,
 };
 use crate::error::Error;
 use crate::runner::common::{
@@ -273,7 +273,7 @@ impl LibBench {
             if default_tool == ValgrindTool::Cachegrind {
                 default_args.insert(
                     ValgrindTool::Cachegrind,
-                    RawArgs::new(["--instr-at-start=no"]),
+                    RawToolArgs::new(["--instr-at-start=no"]),
                 );
             }
             config.default_tool.unwrap_or(default_tool)

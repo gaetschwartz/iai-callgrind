@@ -5,7 +5,7 @@ use std::str::FromStr;
 use anyhow::Result;
 use log::{log_enabled, warn};
 
-use crate::api::{RawArgs, ValgrindTool};
+use crate::api::{RawToolArgs, ValgrindTool};
 use crate::error::Error;
 use crate::runner::tool::args::{
     defaults, is_ignored_argument, is_ignored_outfile_argument, FairSched, ToolArgs,
@@ -28,7 +28,7 @@ pub struct Args {
 
 impl Args {
     /// Try to create new `Args` from multiple [`RawArgs`]
-    pub fn try_from_raw_args(args: &[&RawArgs]) -> Result<Self> {
+    pub fn try_from_raw_tool_args(args: &[&RawToolArgs]) -> Result<Self> {
         let mut default = Self::default();
         default.try_update(args.iter().flat_map(|s| &s.0))?;
         Ok(default)

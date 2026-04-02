@@ -49,7 +49,7 @@ use anyhow::{anyhow, Result};
 use log::warn;
 
 use super::path::ToolOutputPath;
-use crate::api::{RawArgs, ValgrindTool};
+use crate::api::{RawToolArgs, ValgrindTool};
 use crate::error::Error;
 use crate::util::{bool_to_yesno, yesno_to_bool};
 
@@ -117,7 +117,10 @@ impl FromStr for FairSched {
 
 impl ToolArgs {
     /// Try to create a new `ToolArgs` from multiple `RawArgs`
-    pub fn try_from_raw_args(tool: ValgrindTool, raw_args: &[&RawArgs]) -> Result<Self> {
+    pub fn try_from_raw_tool_args(
+        tool: ValgrindTool,
+        raw_tool_args: &[&RawToolArgs],
+    ) -> Result<Self> {
         let mut tool_args = Self {
             tool,
             output_paths: Vec::default(),
@@ -140,7 +143,7 @@ impl ToolArgs {
             fair_sched: defaults::FAIR_SCHED,
         };
 
-        for args in raw_args {
+        for args in raw_tool_args {
             for arg in &args.0 {
                 let arg = arg.trim();
                 match arg.split_once('=').map(|(k, v)| (k.trim(), v.trim())) {

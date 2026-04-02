@@ -1070,7 +1070,7 @@ pub struct BinaryBenchmarkConfig {
     /// The tool override at this configuration level
     pub tools_override: Option<Tools>,
     /// The arguments to pass to all tools
-    pub valgrind_args: RawArgs,
+    pub valgrind_args: RawToolArgs,
 }
 
 /// The model for the `binary_benchmark_group` macro
@@ -1248,7 +1248,7 @@ pub struct LibraryBenchmarkConfig {
     /// The tool override at this configuration level
     pub tools_override: Option<Tools>,
     /// The arguments to pass to all tools
-    pub valgrind_args: RawArgs,
+    pub valgrind_args: RawToolArgs,
 }
 
 /// The model for the `library_benchmark_group` macro
@@ -1304,7 +1304,7 @@ pub struct OutputFormat {
 // TODO: RENAME to ValgrindToolArgs
 /// The raw arguments to pass to a valgrind tool
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RawArgs(pub Vec<String>);
+pub struct RawToolArgs(pub Vec<String>);
 
 /// The sandbox to run the benchmarks in
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -1333,7 +1333,7 @@ pub struct Tool {
     /// The configuration of the output format
     pub output_format: Option<ToolOutputFormat>,
     /// The arguments to pass to the tool
-    pub raw_args: RawArgs,
+    pub raw_tool_args: RawToolArgs,
     /// The configuration for regression checks of tools which perform regression checks
     pub regression_config: Option<ToolRegressionConfig>,
     /// If true show the logging output of Valgrind (not Gungraun)
@@ -2187,7 +2187,7 @@ impl From<u64> for Limit {
     }
 }
 
-impl RawArgs {
+impl RawToolArgs {
     /// Creates new arguments for a valgrind tool.
     pub fn new<I, T>(args: T) -> Self
     where
@@ -2237,7 +2237,7 @@ impl RawArgs {
     }
 }
 
-impl<I> FromIterator<I> for RawArgs
+impl<I> FromIterator<I> for RawToolArgs
 where
     I: AsRef<str>,
 {
@@ -2511,7 +2511,7 @@ impl Tool {
         Self {
             kind,
             enable: None,
-            raw_args: RawArgs::default(),
+            raw_tool_args: RawToolArgs::default(),
             show_log: None,
             regression_config: None,
             flamegraph_config: None,
@@ -2528,7 +2528,7 @@ impl Tool {
         T: IntoIterator<Item = I>,
     {
         let mut this = Self::new(kind);
-        this.raw_args = RawArgs::from_iter(args);
+        this.raw_tool_args = RawToolArgs::from_iter(args);
         this
     }
 
@@ -2545,7 +2545,8 @@ impl Tool {
             self.entry_point = update_option(&self.entry_point, &other.entry_point);
             self.frames = update_option(&self.frames, &other.frames);
 
-            self.raw_args.extend_ignore_flag(other.raw_args.0.iter());
+            self.raw_tool_args
+                .extend_ignore_flag(other.raw_tool_args.0.iter());
         }
     }
 }
@@ -2704,12 +2705,12 @@ mod tests {
         let base = LibraryBenchmarkConfig::default();
         let other = LibraryBenchmarkConfig {
             env_clear: Some(true),
-            valgrind_args: RawArgs(vec!["--valgrind-arg=yes".to_owned()]),
+            valgrind_args: RawToolArgs(vec!["--valgrind-arg=yes".to_owned()]),
             envs: vec![(OsString::from("MY_ENV"), Some(OsString::from("value")))],
             tools: Tools(vec![Tool {
                 kind: ValgrindTool::DHAT,
                 enable: None,
-                raw_args: RawArgs(vec![]),
+                raw_tool_args: RawToolArgs(vec![]),
                 show_log: None,
                 regression_config: Some(ToolRegressionConfig::Callgrind(
                     CallgrindRegressionConfig::default(),
@@ -2734,12 +2735,12 @@ mod tests {
         let base = LibraryBenchmarkConfig::default();
         let other = LibraryBenchmarkConfig {
             env_clear: Some(true),
-            valgrind_args: RawArgs(vec!["--valgrind-arg=yes".to_owned()]),
+            valgrind_args: RawToolArgs(vec!["--valgrind-arg=yes".to_owned()]),
             envs: vec![(OsString::from("MY_ENV"), Some(OsString::from("value")))],
             tools: Tools(vec![Tool {
                 kind: ValgrindTool::DHAT,
                 enable: None,
-                raw_args: RawArgs(vec![]),
+                raw_tool_args: RawToolArgs(vec![]),
                 show_log: None,
                 regression_config: Some(ToolRegressionConfig::Callgrind(
                     CallgrindRegressionConfig::default(),
@@ -2802,12 +2803,12 @@ mod tests {
     &["--a=yes"],
     vec!["--a=yes", "--b=yes", "--a=yes"]
 )]
-    fn test_raw_args_extend_ignore_flags(
+    fn test_raw_tool_args_extend_ignore_flags(
         #[case] base: Vec<&str>,
         #[case] data: &[&str],
         #[case] expected: Vec<&str>,
     ) {
-        let mut base = RawArgs(base.iter().map(std::string::ToString::to_string).collect());
+        let mut base = RawToolArgs(base.iter().map(std::string::ToString::to_string).collect());
         base.extend_ignore_flag(data.iter().map(std::string::ToString::to_string));
 
         assert_eq!(base.0.into_iter().collect::<Vec<String>>(), expected);
@@ -2895,14 +2896,14 @@ mod tests {
     #[case::initial_empty(&[], &["--some"], &["--some"])]
     #[case::both_same_arg(&["--some"], &["--some"], &["--some", "--some"])]
     #[case::both_different_arg(&["--some"], &["--other"], &["--other", "--some"])]
-    fn test_raw_args_prepend(
+    fn test_raw_tool_args_prepend(
         #[case] raw_args: &[&str],
         #[case] other: &[&str],
         #[case] expected: &[&str],
     ) {
-        let mut raw_args = RawArgs::new(raw_args.iter().map(ToOwned::to_owned));
-        let other = RawArgs::new(other.iter().map(ToOwned::to_owned));
-        let expected = RawArgs::new(expected.iter().map(ToOwned::to_owned));
+        let mut raw_args = RawToolArgs::new(raw_args.iter().map(ToOwned::to_owned));
+        let other = RawToolArgs::new(other.iter().map(ToOwned::to_owned));
+        let expected = RawToolArgs::new(expected.iter().map(ToOwned::to_owned));
 
         raw_args.prepend(&other);
         assert_eq!(raw_args, expected);
@@ -2914,7 +2915,7 @@ mod tests {
         let other = Tool {
             kind: ValgrindTool::Callgrind,
             enable: Some(true),
-            raw_args: RawArgs::new(["--some"]),
+            raw_tool_args: RawToolArgs::new(["--some"]),
             show_log: Some(false),
             regression_config: Some(ToolRegressionConfig::None),
             flamegraph_config: Some(ToolFlamegraphConfig::None),
@@ -2933,7 +2934,7 @@ mod tests {
         let other = Tool {
             kind: ValgrindTool::DRD,
             enable: Some(true),
-            raw_args: RawArgs::new(["--some"]),
+            raw_tool_args: RawToolArgs::new(["--some"]),
             show_log: Some(false),
             regression_config: Some(ToolRegressionConfig::None),
             flamegraph_config: Some(ToolFlamegraphConfig::None),

@@ -34,7 +34,7 @@ pub use gungraun_runner::api::{
     LibraryBenchmarkConfig as InternalLibraryBenchmarkConfig,
     LibraryBenchmarkGroup as InternalLibraryBenchmarkGroup,
     LibraryBenchmarkGroups as InternalLibraryBenchmarkGroups, OutputFormat as InternalOutputFormat,
-    RawArgs as InternalRawArgs, Sandbox as InternalSandbox, Tool as InternalTool,
+    RawToolArgs as InternalRawArgs, Sandbox as InternalSandbox, Tool as InternalTool,
     ToolFlamegraphConfig as InternalToolFlamegraphConfig,
     ToolOutputFormat as InternalToolOutputFormat,
     ToolRegressionConfig as InternalToolRegressionConfig, Tools as InternalTools,

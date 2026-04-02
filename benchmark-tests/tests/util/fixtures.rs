@@ -214,7 +214,7 @@ pub fn tool_config(tool: Option<ValgrindTool>, is_default: Option<bool>) -> Tool
     ToolConfig::new(
         tool,
         true,
-        ToolArgs::try_from_raw_args(tool, &[]).unwrap(),
+        ToolArgs::try_from_raw_tool_args(tool, &[]).unwrap(),
         ToolRegressionConfig::None,
         ToolFlamegraphConfig::None,
         EntryPoint::None,

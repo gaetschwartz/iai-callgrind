@@ -310,7 +310,7 @@ impl Bbv {
         I: AsRef<str>,
         T: IntoIterator<Item = I>,
     {
-        self.0.raw_args.extend_ignore_flag(args);
+        self.0.raw_tool_args.extend_ignore_flag(args);
         self
     }
 
@@ -379,7 +379,7 @@ impl Cachegrind {
         I: AsRef<str>,
         T: IntoIterator<Item = I>,
     {
-        self.0.raw_args.extend_ignore_flag(args);
+        self.0.raw_tool_args.extend_ignore_flag(args);
         self
     }
 
@@ -613,7 +613,7 @@ impl Callgrind {
         I: AsRef<str>,
         T: IntoIterator<Item = I>,
     {
-        self.0.raw_args.extend_ignore_flag(args);
+        self.0.raw_tool_args.extend_ignore_flag(args);
         self
     }
 
@@ -1047,7 +1047,7 @@ impl Dhat {
         I: AsRef<str>,
         T: IntoIterator<Item = I>,
     {
-        self.0.raw_args.extend_ignore_flag(args);
+        self.0.raw_tool_args.extend_ignore_flag(args);
         self
     }
 
@@ -1448,7 +1448,7 @@ impl Drd {
         I: AsRef<str>,
         T: IntoIterator<Item = I>,
     {
-        self.0.raw_args.extend_ignore_flag(args);
+        self.0.raw_tool_args.extend_ignore_flag(args);
         self
     }
 
@@ -1722,7 +1722,7 @@ impl Helgrind {
         I: AsRef<str>,
         T: IntoIterator<Item = I>,
     {
-        self.0.raw_args.extend_ignore_flag(args);
+        self.0.raw_tool_args.extend_ignore_flag(args);
         self
     }
 
@@ -1821,7 +1821,7 @@ impl Massif {
         I: AsRef<str>,
         T: IntoIterator<Item = I>,
     {
-        self.0.raw_args.extend_ignore_flag(args);
+        self.0.raw_tool_args.extend_ignore_flag(args);
         self
     }
 
@@ -1892,7 +1892,7 @@ impl Memcheck {
         I: AsRef<str>,
         T: IntoIterator<Item = I>,
     {
-        self.0.raw_args.extend_ignore_flag(args);
+        self.0.raw_tool_args.extend_ignore_flag(args);
         self
     }
 
