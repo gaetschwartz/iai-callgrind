@@ -229,6 +229,10 @@ struct RunConfig {
     env: HashMap<String, String>,
     #[serde(default)]
     tolerance: Option<f64>,
+    #[serde(default)]
+    setup: Option<String>,
+    #[serde(default)]
+    teardown: Option<String>,
 }
 
 impl Benchmark {
@@ -295,6 +299,7 @@ impl Benchmark {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn run_bench(
         &self,
         cargo_args: &[String],
@@ -302,6 +307,8 @@ impl Benchmark {
         envs: &HashMap<String, String>,
         capture: bool,
         tolerance: Option<f64>,
+        setup: Option<&str>,
+        teardown: Option<&str>,
     ) -> BenchmarkOutput {
         let stdio = if capture {
             std::env::set_var("GUNGRAUN_COLOR", "never");
@@ -310,6 +317,30 @@ impl Benchmark {
             std::env::set_var("GUNGRAUN_COLOR", "auto");
             Stdio::inherit
         };
+
+        let dir = tempdir().expect(
+            "Creating a temporary directory for setup and teardown
+            should succeed",
+        );
+
+        if let Some(setup) = setup {
+            let setup_path = dir.path().join("setup");
+            std::fs::write(&setup_path, setup)
+                .expect("Preparing the file with the setup content should succeed");
+            print_info("Running setup:");
+            let status = std::process::Command::new("bash")
+                .args(["-ex"])
+                .arg(setup_path)
+                .status()
+                .expect(
+                    "Spawning
+                    the setup process should succeed",
+                );
+
+            if !status.success() {
+                panic!("Running setup failed with {status:?}");
+            }
+        }
 
         let mut command = std::process::Command::new(env!("CARGO"));
         command.args(["bench", "--package", PACKAGE, "--bench", &self.bench_name]);
@@ -350,6 +381,25 @@ impl Benchmark {
             .output()
             .expect("Launching benchmark should succeed");
 
+        if let Some(teardown) = teardown {
+            let teardown_path = dir.path().join("teardown");
+            std::fs::write(&teardown_path, teardown)
+                .expect("Preparing the file with the teardown content should succeed");
+            print_info("Running setup:");
+            let status = std::process::Command::new("bash")
+                .args(["-eux"])
+                .arg(teardown_path)
+                .status()
+                .expect(
+                    "Spawning
+                    the teardown process should succeed",
+                );
+
+            if !status.success() {
+                panic!("Running teardown failed with {status:?}");
+            }
+        }
+
         BenchmarkOutput {
             output,
             is_tolerance: tolerance.is_some(),
@@ -367,6 +417,8 @@ impl Benchmark {
         meta: &Metadata,
         capture: bool,
         tolerance: Option<f64>,
+        setup: Option<&str>,
+        teardown: Option<&str>,
     ) -> BenchmarkOutput {
         let mut template_string = String::new();
         File::open(self.dir.join(template_path))
@@ -382,7 +434,7 @@ impl Benchmark {
         let dest = File::create(meta.get_template()).unwrap();
         template.render_captured_to(template_data, dest).unwrap();
 
-        self.run_bench(cargo_args, args, envs, capture, tolerance)
+        self.run_bench(cargo_args, args, envs, capture, tolerance, setup, teardown)
     }
 
     pub fn run(
@@ -464,11 +516,21 @@ impl Benchmark {
                         meta,
                         capture,
                         run.tolerance,
+                        run.setup.as_deref(),
+                        run.teardown.as_deref(),
                     );
                     self.reset_template(meta);
                     output
                 } else {
-                    self.run_bench(&run.cargo_args, &run.args, &run.env, capture, run.tolerance)
+                    self.run_bench(
+                        &run.cargo_args,
+                        &run.args,
+                        &run.env,
+                        capture,
+                        run.tolerance,
+                        run.setup.as_deref(),
+                        run.teardown.as_deref(),
+                    )
                 };
 
                 if tries < max_tries {
