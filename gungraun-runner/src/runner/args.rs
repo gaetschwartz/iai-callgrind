@@ -1,18 +1,17 @@
 // spell-checker: ignore totalbytes totalblocks writeback writebackbehaviour
 //! The command-line arguments of cargo bench as in ARGS of `cargo bench -- ARGS`
 
-use std::ffi::{OsStr, OsString};
+use std::ffi::OsStr;
 use std::fmt::Display;
 use std::hash::Hash;
-use std::os::unix::ffi::{OsStrExt, OsStringExt};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 
 use anyhow::Result;
-use clap::builder::{BoolishValueParser, OsStringValueParser, TypedValueParser};
+use clap::builder::{BoolishValueParser, TypedValueParser};
 use clap::error::{ContextKind, ContextValue, ErrorKind};
-use clap::{value_parser, ArgAction, Parser};
+use clap::{ArgAction, Parser};
 use indexmap::{indexset, IndexMap, IndexSet};
 use simplematch::{DoWild, Options};
 use strum::IntoEnumIterator;
@@ -1121,19 +1120,27 @@ pub struct CommandLineArgs {
     /// TODO: DOCS
     #[arg(
         long = "valgrind-runner-args",
-        value_parser = parse_tool_args,
+        value_parser = parse_raw_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_VALGRIND_RUNNER_ARGS",
         display_order = 500
     )]
-    pub valgrind_runner_args: Option<RawToolArgs>,
+    pub valgrind_runner_args: Option<RawArgs>,
+}
+
+/// TODO: DOCS
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RawArgs(Vec<String>);
+
+impl RawArgs {
+    /// TODO: DOCS
+    pub fn as_slice(&self) -> &[String] {
+        &self.0
+    }
 }
 
 #[derive(Debug, Clone)]
-struct RawArgs(Vec<String>);
-
-#[derive(Clone, Debug)]
 struct ValgrindRunnerParser;
 
 impl BenchmarkFilter {
@@ -1472,8 +1479,8 @@ fn parse_parallel(value: &str) -> Result<usize, String> {
     }
 }
 
-/// This function parses a space separated list of raw argument strings into [`crate::api::RawArgs`]
-fn parse_tool_args(value: &str) -> Result<RawToolArgs, String> {
+/// This function parses a space separated list of raw argument strings into [`RawArgs`]
+fn parse_raw_args(value: &str) -> Result<RawArgs, String> {
     let value = if value.len() >= 2 {
         match (&value.as_bytes()[0], &value.as_bytes()[value.len() - 1]) {
             (b'\'', b'\'') | (b'"', b'"') => &value[1..value.len() - 1],
@@ -1482,9 +1489,16 @@ fn parse_tool_args(value: &str) -> Result<RawToolArgs, String> {
     } else {
         value
     };
+
     shlex::split(value)
         .ok_or_else(|| "Failed to split args".to_owned())
-        .map(RawToolArgs::new)
+        .map(RawArgs)
+}
+
+/// This function parses a space separated list of raw argument strings into
+/// [`crate::api::RawToolArgs`]
+fn parse_tool_args(value: &str) -> Result<RawToolArgs, String> {
+    parse_raw_args(value).map(|r| RawToolArgs::new(r.0))
 }
 
 /// Utility function to parse the --callgrind-metrics, ...
@@ -1659,13 +1673,19 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_callgrind_args_not_env() {
-        let test_arg = "--just-testing=yes";
-        let result = CommandLineArgs::parse_from([format!("--callgrind-args={test_arg}")]);
+    #[rstest]
+    #[case::without_flag("--callgrind-args=foo", &["--foo"])]
+    #[case::with_flag("--callgrind-args=--foo", &["--foo"])]
+    #[case::without_flag_and_quotes("--callgrind-args='foo'", &["--foo"])]
+    #[case::with_flag_and_quotes("--callgrind-args='--foo'", &["--foo"])]
+    #[case::with_equals("--callgrind-args=--foo=bar", &["--foo=bar"])]
+    #[case::two_flags("--callgrind-args='--foo=bar --bar=baz'", &["--foo=bar", "--bar=baz"])]
+    #[case::two_without_flags("--callgrind-args='foo=bar bar=baz'", &["--foo=bar", "--bar=baz"])]
+    fn test_callgrind_args_not_env(#[case] input: &str, #[case] expected: &[&str]) {
+        let result = CommandLineArgs::try_parse_from([input]).unwrap();
         assert_eq!(
             result.callgrind_args,
-            Some(RawToolArgs::new(vec![test_arg.to_owned()]))
+            Some(RawToolArgs::new(expected.iter().map(ToOwned::to_owned)))
         );
     }
 
@@ -2173,7 +2193,16 @@ mod tests {
         let result = CommandLineArgs::try_parse_from(input).unwrap();
         assert_eq!(
             result.valgrind_runner_args,
-            Some(RawToolArgs::new(expected.iter().map(ToOwned::to_owned)))
+            Some(RawArgs(expected.iter().map(ToString::to_string).collect()))
         );
+    }
+
+    #[test]
+    fn test_valgrind_runner_args_when_twice_then_error() {
+        CommandLineArgs::try_parse_from([
+            "--valgrind-runner-args=--foo",
+            "--valgrind-runner-args=--bar",
+        ])
+        .unwrap_err();
     }
 }

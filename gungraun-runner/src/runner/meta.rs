@@ -11,7 +11,7 @@ use log::debug;
 
 use super::args::CommandLineArgs;
 use super::envs;
-use crate::util::resolve_binary_path;
+use crate::util::{bool_to_yesno, resolve_binary_path};
 
 /// The basic commands (like valgrind) to be executed with default arguments
 #[derive(Debug, Clone)]
@@ -121,51 +121,79 @@ impl Metadata {
 
         debug!("Detected target directory: '{}'", target_dir.display());
 
-        // Invoke Valgrind, disabling ASLR if possible because ASLR could noise up the results a bit
-        let valgrind_path = resolve_binary_path("valgrind", None)?;
-        let valgrind_wrapper = if args.allow_aslr.unwrap_or_default() {
-            debug!("Running with ASLR enabled");
-            None
-        } else if cfg!(target_os = "linux") {
-            debug!("Trying to run with ASLR disabled: Using 'setarch'");
+        let (valgrind_path, valgrind_args, valgrind_wrapper) = if let Some(runner) =
+            args.valgrind_runner.as_ref()
+        {
+            debug!("Using valgrind runner: '{}'", runner.display());
+            let mut valgrind_args = vec![OsString::from(format!(
+                "--allow-aslr={}",
+                bool_to_yesno(args.allow_aslr.unwrap_or_default())
+            ))];
+            valgrind_args.extend(
+                args.valgrind_runner_args
+                    .iter()
+                    .flat_map(|r| r.as_slice().iter().map(OsString::from)),
+            );
+            valgrind_args.push(OsString::from("--"));
+            let valgrind_path =
+                resolve_binary_path("valgrind", None).unwrap_or_else(|_| PathBuf::from("valgrind"));
+            valgrind_args.push(valgrind_path.into_os_string());
 
-            if let Ok(set_arch) = resolve_binary_path("setarch", None) {
-                Some(Cmd {
-                    bin: set_arch,
-                    args: vec![
-                        OsString::from(&arch),
-                        OsString::from("-R"),
-                        OsString::from(&valgrind_path),
-                    ],
-                })
-            } else {
-                debug!("Failed to switch ASLR off: 'setarch' not found. Running with ASLR enabled");
+            (runner.clone(), valgrind_args, None)
+        } else {
+            let valgrind_path = resolve_binary_path("valgrind", None)?;
+            // Invoke Valgrind, disabling ASLR if possible because ASLR could noise up the results a
+            // bit
+            let valgrind_wrapper = if args.allow_aslr.unwrap_or_default() {
+                debug!("Running with ASLR enabled");
                 None
-            }
-        } else if cfg!(target_os = "freebsd") {
-            debug!("Trying to run with ASLR disabled: Using 'proccontrol'");
+            } else if cfg!(target_os = "linux") {
+                debug!("Trying to run with ASLR disabled: Using 'setarch'");
 
-            if let Ok(proc_control) = resolve_binary_path("proccontrol", None) {
-                Some(Cmd {
-                    bin: proc_control,
-                    args: vec![
-                        OsString::from("-m"),
-                        OsString::from("aslr"),
-                        OsString::from("-s"),
-                        OsString::from("disable"),
-                        OsString::from(&valgrind_path),
-                    ],
-                })
+                if let Ok(set_arch) = resolve_binary_path("setarch", None) {
+                    Some(Cmd {
+                        bin: set_arch,
+                        args: vec![
+                            OsString::from(&arch),
+                            OsString::from("-R"),
+                            OsString::from(&valgrind_path),
+                        ],
+                    })
+                } else {
+                    debug!(
+                        "Failed to switch ASLR off: 'setarch' not found. Running with ASLR enabled"
+                    );
+                    None
+                }
+            } else if cfg!(target_os = "freebsd") {
+                debug!("Trying to run with ASLR disabled: Using 'proccontrol'");
+
+                if let Ok(proc_control) = resolve_binary_path("proccontrol", None) {
+                    Some(Cmd {
+                        bin: proc_control,
+                        args: vec![
+                            OsString::from("-m"),
+                            OsString::from("aslr"),
+                            OsString::from("-s"),
+                            OsString::from("disable"),
+                            OsString::from(&valgrind_path),
+                        ],
+                    })
+                } else {
+                    debug!(
+                        " Failed to switch ASLR off: 'proccontrol' not found. Running with ASLR \
+                         enabled"
+                    );
+                    None
+                }
             } else {
                 debug!(
-                    " Failed to switch ASLR off: 'proccontrol' not found. Running with ASLR \
-                     enabled"
+                    "Failed to switch ASLR off. No utility available. Running with ASLR enabled"
                 );
                 None
-            }
-        } else {
-            debug!("Failed to switch ASLR off. No utility available. Running with ASLR enabled");
-            None
+            };
+
+            (valgrind_path, Vec::default(), valgrind_wrapper)
         };
 
         Ok(Self {
@@ -173,7 +201,7 @@ impl Metadata {
             target_dir,
             valgrind: Cmd {
                 bin: valgrind_path,
-                args: vec![],
+                args: valgrind_args,
             },
             valgrind_wrapper,
             project_root,
