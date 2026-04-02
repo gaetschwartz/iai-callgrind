@@ -2187,7 +2187,7 @@ impl From<u64> for Limit {
 }
 
 impl RawToolArgs {
-    /// TODO: DOCS
+    /// Returns a slice of the underlying argument strings
     pub fn as_slice(&self) -> &[String] {
         &self.0
     }

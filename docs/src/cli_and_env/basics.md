@@ -123,9 +123,9 @@ Options:
       --home <HOME>
           Specify the home directory of gungraun benchmark output files
 
-          All output files are by default stored under the `$PROJECT_ROOT/target/gungraun`
-          directory. This option lets you customize this home directory, and it will be created if it
-          doesn't exist.
+          All output files are by default stored under the `$PROJECT_ROOT/target/gungraun` directory.
+          This option lets you customize this home directory, and it will be created if it doesn't
+          exist.
 
           [env: GUNGRAUN_HOME=]
 
@@ -436,6 +436,42 @@ Options:
             * --valgrind-args='--error-exitcode=202 --num-callers=50'
 
           [env: GUNGRAUN_VALGRIND_ARGS=]
+
+      --valgrind-runner <VALGRIND_RUNNER>
+          Specify an alternative executable to run valgrind
+
+          By default, gungraun runs the benchmark executable with valgrind directly. This option
+          allows specifying an alternative runner executable that will be invoked instead, with
+          valgrind passed as an argument to the runner.
+
+          When specified, the runner is invoked as:
+          `<RUNNER> --allow-aslr=yes|no [RUNNER_ARGS...] -- /path/to/valgrind [VALGRIND_ARGS...]`
+
+          This is useful for running benchmarks in containers or other environments where valgrind is
+          not available on the host. The `--allow-aslr` flag reflects the `--allow-aslr` command-line
+          option. Additional runner arguments can be specified with `--valgrind-runner-args`.
+          `/path/to/valgrind` is the path to the valgrind binary if present on the host. If it wasn't
+          found the path is set to `valgrind`.
+
+          Since the runner receives `--allow-aslr` and other gungraun-specific arguments, you
+          typically need a wrapper script. See the online guide for detailed examples.
+
+          Examples:
+            * --valgrind-runner=/path/to/docker-valgrind-wrapper
+
+          [env: GUNGRAUN_VALGRIND_RUNNER=]
+
+      --valgrind-runner-args <VALGRIND_RUNNER_ARGS>
+          Additional arguments to pass to the valgrind runner executable
+
+          This option is only effective when `--valgrind-runner` is specified. The arguments are
+          passed to the runner executable before the `--` separator and valgrind invocation.
+
+          Examples:
+            * --valgrind-runner=sudo --valgrind-runner-args='--user=foo'
+            * --valgrind-runner=/path/to/wrapper --valgrind-runner-args='--some-flag --other-flag'
+
+          [env: GUNGRAUN_VALGRIND_RUNNER_ARGS=]
 
       --cachegrind-limits <CACHEGRIND_LIMITS>
           Set performance regression limits for specific cachegrind metrics

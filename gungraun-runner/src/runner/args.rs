@@ -230,7 +230,7 @@ pub struct CommandLineArgs {
     /// description for --callgrind-args for more details and restrictions.
     ///
     /// Examples:
-    ///   * --cachegrind-args=--intr-at-start=no
+    ///   * --cachegrind-args=--instr-at-start=no
     ///   * --cachegrind-args='--branch-sim=yes --instr-at-start=no'
     #[arg(
         long = "cachegrind-args",
@@ -658,7 +658,7 @@ pub struct CommandLineArgs {
     #[rustfmt::skip]
     /// Specify the home directory of gungraun benchmark output files
     ///
-    /// All output files are per default stored under the `$PROJECT_ROOT/target/gungraun` directory.
+    /// All output files are by default stored under the `$PROJECT_ROOT/target/gungraun` directory.
     /// This option lets you customize this home directory, and it will be created if it doesn't
     /// exist.
     #[arg(
@@ -1059,7 +1059,7 @@ pub struct CommandLineArgs {
     /// value disables the truncation entirely and a value will truncate the description to the
     /// given amount of characters excluding the ellipsis.
     ///
-    /// To clearify which part of the output is meant by `DESCRIPTION`:
+    /// To clarify which part of the output is meant by `DESCRIPTION`:
     ///
     /// ```text
     /// benchmark_file::group_name::function_name id:DESCRIPTION
@@ -1105,7 +1105,26 @@ pub struct CommandLineArgs {
     pub valgrind_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
-    /// TODO: DOCS
+    /// Specify an alternative executable to run valgrind
+    ///
+    /// By default, gungraun runs the benchmark executable with valgrind directly. This option
+    /// allows specifying an alternative runner executable that will be invoked instead, with
+    /// valgrind passed as an argument to the runner.
+    ///
+    /// When specified, the runner is invoked as:
+    /// `<RUNNER> --allow-aslr=yes|no [RUNNER_ARGS...] -- /path/to/valgrind [VALGRIND_ARGS...]`
+    ///
+    /// This is useful for running benchmarks in containers or other environments where valgrind is
+    /// not available on the host. The `--allow-aslr` flag reflects the `--allow-aslr` command-line
+    /// option. Additional runner arguments can be specified with `--valgrind-runner-args`.
+    /// `/path/to/valgrind` is the path to the valgrind binary if present on the host. If it wasn't
+    /// found the path is set to `valgrind`.
+    ///
+    /// Since the runner receives `--allow-aslr` and other gungraun-specific arguments, you
+    /// typically need a wrapper script. See the online guide for detailed examples.
+    ///
+    /// Examples:
+    ///   * --valgrind-runner=/path/to/docker-valgrind-wrapper
     #[arg(
         long = "valgrind-runner",
         value_parser = ValgrindRunnerParser,
@@ -1117,7 +1136,14 @@ pub struct CommandLineArgs {
     pub valgrind_runner: Option<PathBuf>,
 
     #[rustfmt::skip]
-    /// TODO: DOCS
+    /// Additional arguments to pass to the valgrind runner executable
+    ///
+    /// This option is only effective when `--valgrind-runner` is specified. The arguments are
+    /// passed to the runner executable before the `--` separator and valgrind invocation.
+    ///
+    /// Examples:
+    ///   * --valgrind-runner=sudo --valgrind-runner-args='--user=foo'
+    ///   * --valgrind-runner=/path/to/wrapper --valgrind-runner-args='--some-flag --other-flag'
     #[arg(
         long = "valgrind-runner-args",
         value_parser = parse_raw_args,
@@ -1129,12 +1155,16 @@ pub struct CommandLineArgs {
     pub valgrind_runner_args: Option<RawArgs>,
 }
 
-/// TODO: DOCS
+/// A wrapper type for raw command-line arguments
+///
+/// Stores a list of raw string arguments without special processing or validation. Used for
+/// arguments passed through to external executables without modification, particularly for
+/// `--valgrind-runner-args`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RawArgs(Vec<String>);
 
 impl RawArgs {
-    /// TODO: DOCS
+    /// Returns a slice of the underlying argument strings
     pub fn as_slice(&self) -> &[String] {
         &self.0
     }
