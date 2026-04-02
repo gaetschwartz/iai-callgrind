@@ -19,14 +19,14 @@ use std::hint::black_box;
 #[bench::case_3(vec![1, 2, 3])]
 #[benches::multiple(args = [vec![1, 2], vec![1, 2, 3, 4]])]
 fn bench_bubble_sort_best_case(input: Vec<i32>) -> Vec<i32> {
-    black_box(my_lib::bubble_sort(input))
+    black_box(my_lib::bubble_sort(black_box(input)))
 }
 
 #[library_benchmark]
 #[bench::case_3(vec![3, 2, 1])]
 #[benches::multiple(args = [vec![2, 1], vec![4, 3, 2, 1]])]
 fn bench_bubble_sort_worst_case(input: Vec<i32>) -> Vec<i32> {
-    black_box(my_lib::bubble_sort(input))
+    black_box(my_lib::bubble_sort(black_box(input)))
 }
 
 library_benchmark_group!(

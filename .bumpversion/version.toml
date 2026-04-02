@@ -3,6 +3,9 @@ current_version = "0.17.2"
 commit = true
 message = "Bump version v{current_version} -> v{new_version}"
 
+# The guide in `docs/src `is not updated here but instead in the Justfile with
+# `just bump`
+
 [[tool.bumpversion.files]]
 filename = "Cargo.toml"
 search = "version = \"{current_version}\""

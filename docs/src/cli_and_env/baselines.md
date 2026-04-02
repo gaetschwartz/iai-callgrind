@@ -29,7 +29,7 @@ git checkout main
 cargo bench --bench <benchmark> -- --save-baseline=main
 git checkout feature
 # ... HACK ... HACK
-cargo bench --bench <benchmark> -- --baseline main
+cargo bench --bench <benchmark> -- --baseline=main
 ```
 
 Sticking to the above execution sequence,
@@ -54,7 +54,7 @@ Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regression
 After you've made some changes to your code, running
 
 ```shell
-cargo bench --bench my_benchmark -- --baseline=main`
+cargo bench --bench my_benchmark -- --baseline=main
 ```
 
 prints something like the following:

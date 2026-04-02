@@ -123,8 +123,8 @@ impl Bench {
                     teardown.parse_pair(&pair);
                 } else {
                     abort!(
-                        pair, "Invalid argument: {}", pair.path.require_ident()?;
-                        help = "Valid arguments are: `args`, `consts`, `config`, \
+                        pair, "Invalid parameter: {}", pair.path.require_ident()?;
+                        help = "Valid parameters are: `args`, `consts`, `config`, \
                         `setup`, `teardown`"
                     );
                 }
@@ -191,8 +191,8 @@ impl Bench {
                     iter.parse_pair(&pair);
                 } else {
                     abort!(
-                        pair, "Invalid argument: {}", pair.path.require_ident()?;
-                        help = "Valid arguments are: `args`, `consts`, `file`, `iter`, `config`, \
+                        pair, "Invalid parameter: {}", pair.path.require_ident()?;
+                        help = "Valid parameters are: `args`, `consts`, `file`, `iter`, `config`, \
                         `setup`, `teardown`"
                     );
                 }
@@ -259,7 +259,9 @@ impl Bench {
                 };
 
                 let call_bench_id = self.teardown.render_as_code(quote_spanned! {
-                    bench_id.span() => #bench_id_mod::#bench_id_call(#elem_ident)
+                    bench_id.span() => std::hint::black_box(
+                        #bench_id_mod::#bench_id_call(#elem_ident)
+                    )
                 });
 
                 quote!(
@@ -797,8 +799,8 @@ impl Parse for LibraryBenchmark {
                     teardown.parse_pair(&pair);
                 } else {
                     abort!(
-                        pair, "Invalid argument: {}", pair.path.require_ident()?;
-                        help = "Valid arguments are: `config`, `setup`, `teardown`"
+                        pair, "Invalid parameter: {}", pair.path.require_ident()?;
+                        help = "Valid parameters are: `config`, `setup`, `teardown`"
                     );
                 }
             }

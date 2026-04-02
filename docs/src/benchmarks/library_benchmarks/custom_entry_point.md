@@ -8,8 +8,8 @@ This section is dedicated to the entry point of `Callgrind`.
 very similar there are differences which are fully described in the
 [Dhat](../../dhat.md) chapter.
 
-To understand custom entry points let's take a small detour into how [Callgrind]
-and Gungraun work under the hood.
+To understand custom entry points, take a small detour into how [Callgrind] and
+Gungraun work under the hood.
 
 ## Gungraun Under the Hood
 
@@ -33,7 +33,7 @@ use std::hint::black_box;
 
 #[library_benchmark]
 fn bench() -> Vec<i32> { // <-- DEFAULT ENTRY POINT starts collecting events
-    black_box(my_lib::bubble_sort(vec![3, 2, 1]))
+    black_box(my_lib::bubble_sort(black_box(vec![3, 2, 1])))
 } // <-- stop collecting events
 
 library_benchmark_group!( name = my_group, benchmarks = bench);
@@ -90,7 +90,7 @@ mod my_lib {
 #[bench::small(vec![3, 2, 1])]
 #[bench::bigger(vec![5, 4, 3, 2, 1])]
 fn bench_private(array: Vec<i32>) -> Vec<i32> {
-    black_box(my_lib::access_point(array))
+    black_box(my_lib::access_point(black_box(array)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_private);

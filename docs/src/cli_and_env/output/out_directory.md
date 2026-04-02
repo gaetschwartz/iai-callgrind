@@ -44,7 +44,7 @@ use std::hint::black_box;
 #[library_benchmark]
 #[bench::short(vec![4, 3, 2, 1])]
 fn bench_bubble_sort(values: Vec<i32>) -> Vec<i32> {
-    black_box(my_lib::bubble_sort(values))
+    black_box(my_lib::bubble_sort(black_box(values)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_bubble_sort);

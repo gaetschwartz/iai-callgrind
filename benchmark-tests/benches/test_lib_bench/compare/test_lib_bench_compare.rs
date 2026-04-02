@@ -7,21 +7,21 @@ use gungraun::{library_benchmark, library_benchmark_group, main, Dhat, LibraryBe
 #[bench::case_3(vec![1, 2, 3])]
 #[benches::multiple(args = [vec![1, 2], vec![1, 2, 3, 4]])]
 fn bench_bubble_sort_best_case(input: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(input))
+    black_box(bubble_sort(black_box(input)))
 }
 
 #[library_benchmark]
 #[bench::case_3(vec![3, 2, 1])]
 #[benches::multiple(args = [vec![2, 1], vec![4, 3, 2, 1]])]
 fn bench_bubble_sort_worst_case(input: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(input))
+    black_box(bubble_sort(black_box(input)))
 }
 
 #[library_benchmark]
 #[bench::case_3(vec![2, 3, 1])]
 #[benches::no_compare_multiple(args = [vec![2, 1], vec![2, 4, 3, 1]])]
 fn bench_bubble_sort_mixed_case(input: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(input))
+    black_box(bubble_sort(black_box(input)))
 }
 
 #[library_benchmark(
@@ -30,7 +30,7 @@ fn bench_bubble_sort_mixed_case(input: Vec<i32>) -> Vec<i32> {
 )]
 #[bench::case_3(setup_worst_case_array(3))]
 fn bench_bubble_sort_dhat(input: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(input))
+    black_box(bubble_sort(black_box(input)))
 }
 
 #[library_benchmark(
@@ -39,7 +39,7 @@ fn bench_bubble_sort_dhat(input: Vec<i32>) -> Vec<i32> {
 )]
 #[bench::case_3(setup_best_case_array(3))]
 fn bench_bubble_sort_dhat_other(input: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(input))
+    black_box(bubble_sort(black_box(input)))
 }
 
 library_benchmark_group!(

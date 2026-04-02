@@ -4,7 +4,7 @@ In this section we're going through the differences to
 [library benchmarks](../library_benchmarks.md). This assumes that you already
 know how to set up library benchmarks, and it is recommended to learn the very
 basics about library benchmarks, starting with
-[Quickstart](../binary_benchmarks/quickstart.md),
+[Quickstart](../library_benchmarks/quickstart.md),
 [Structure of a library benchmark](../library_benchmarks/structure.md) and
 [The macros in more detail](../library_benchmarks/macros.md). Then come back to
 this section.
@@ -30,7 +30,7 @@ A quick reference of available macros in binary benchmarks:
   for more details.
 - `binary_benchmark_attribute!`: An additional macro if you intend to
   [migrate](./low_level.md#intermixing-high-level-and-low-level-api) from the
-  high-level to the low-level api
+  high-level to the low-level API
 - `main!`: The same macro as in library benchmarks but the name of the
   `library_benchmark_groups` parameter changed to `binary_benchmark_groups`.
 
@@ -38,11 +38,11 @@ To see all macros in action have a look at the example below.
 
 ## The Return Value of the Benchmark Function
 
-The maybe most important difference is, that the `#[binary_benchmark]` annotated
-function always needs to return an `gungraun::Command`. Note this function
-builds the command which is going to be benchmarked but doesn't execute it, yet.
-So, the code in this function does not attribute to the event counts of the
-actual benchmark.
+Maybe the most important difference is that the `#[binary_benchmark]`-annotated
+function always needs to return a `gungraun::Command`. Note this function builds
+the command which is going to be benchmarked but doesn't execute it, yet. So,
+the code in this function does not attribute to the event counts of the actual
+benchmark.
 
 ```rust
 # extern crate gungraun;

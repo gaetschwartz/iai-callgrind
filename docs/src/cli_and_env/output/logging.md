@@ -7,7 +7,7 @@ different, set the environment variable `GUNGRAUN_LOG` for example to
 
 `error`, `warn` (default), `info`, `debug`, `trace`.
 
-The logging output is colored per default but follows the
+The logging output is colored by default but follows the
 [Color settings](./color.md).
 
 See also the [documentation](https://docs.rs/env_logger/latest/env_logger/) of

@@ -4,7 +4,7 @@
 
 The environment variables are cleared before running a library benchmark. Have a
 look into the [Configuration](./configuration.md) section if you need to change
-that behavior. Gungraun sometimes deviates from the valgrind defaults which are:
+that behavior. Gungraun sometimes deviates from the Valgrind defaults which are:
 
 | Gungraun                 | Valgrind (v3.23)        |
 | ------------------------ | ----------------------- |
@@ -13,12 +13,12 @@ that behavior. Gungraun sometimes deviates from the valgrind defaults which are:
 | `--separate-threads=yes` | `--separate-threads=no` |
 | `--cache-sim=yes`        | `--cache-sim=no`        |
 
-The thread and subprocess specific valgrind options enable tracing threads and
+The thread and subprocess specific Valgrind options enable tracing threads and
 subprocesses basically but there's usually some additional configuration
 necessary to
 [trace the metrics of threads and subprocesses](./threads_and_subprocesses.md).
 
-As show in the table above, the benchmarks run with cache simulation switched
+As shown in the table above, the benchmarks run with cache simulation switched
 on. This adds run time. If you don't need the cache metrics and estimation of
 cycles, you can easily switch cache simulation off for example with:
 
@@ -42,7 +42,7 @@ use std::hint::black_box;
 
 #[library_benchmark]
 fn bench_fibonacci() -> u64 {
-    black_box(my_lib::fibonacci(10))
+    black_box(my_lib::fibonacci(black_box(10)))
 }
 
 library_benchmark_group!(name = fibonacci_group, benchmarks = bench_fibonacci);

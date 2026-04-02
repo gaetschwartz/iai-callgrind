@@ -19,7 +19,7 @@ fn fibonacci(n: u64) -> u64 {
 #[bench::short(10)]
 #[bench::long(30)]
 fn bench_fibonacci(value: u64) -> u64 {
-    black_box(fibonacci(value))
+    black_box(fibonacci(black_box(value)))
 }
 
 library_benchmark_group!(
@@ -48,14 +48,12 @@ attribute is an inner attribute of the `#[library_benchmark]` attribute. It
 consists of a mandatory id (the `ID` part in `#[bench::ID(/* ... */)]`) and in
 its most basic form, an optional list of arguments which are passed to the
 benchmark function as parameters. Naturally, the parameters of the benchmark
-function must match the argument list of the `#[bench]` attribute. It is always
+function must match the parameter list of the `#[bench]` attribute. It is always
 a good idea to return something from the benchmark function, here it is the
 computed `u64` value from the `fibonacci` function wrapped in a `black_box`. See
 the docs of [`std::hint::black_box`][rust-black-box] for more information about
-its usage. Simply put, _all_ values and variables in the benchmarking function
-(but not in your library function) need to be wrapped in a `black_box` except
-for the input parameters (here `value`) because Gungraun already does that. But,
-it is no error to `black_box` the `value` again.
+its usage. Wrap both input and output values in `black_box` to prevent the
+compiler from optimizing away computations.
 
 The `bench` attribute takes any expression which includes function calls. The
 following would have worked too and is one way to avoid the costs of the setup
@@ -83,7 +81,7 @@ fn fibonacci(n: u64) -> u64 {
 // Note the usage of the `some_setup_func` in the argument list of this #[bench]
 #[bench::long(some_setup_func(20))]
 fn bench_fibonacci(value: u64) -> u64 {
-    black_box(fibonacci(value))
+    black_box(fibonacci(black_box(value)))
 }
 
 library_benchmark_group!(
@@ -104,11 +102,10 @@ section.
 
 ## The Group
 
-The name of the benchmark functions, here the only benchmark function
-`bench_fibonacci`, which should be benchmarked need to be specified in a
-`library_benchmark_group!` in the `benchmarks` parameter. You can create as many
-groups as you like, and you can use it to organize related benchmarks. Each
-group needs a unique `name`.
+The benchmark functions to run, in this case only `bench_fibonacci`, need to be
+specified in a `library_benchmark_group!` in the `benchmarks` parameter. You can
+create as many groups as you like, and you can use it to organize related
+benchmarks. Each group needs a unique `name`.
 
 ## The `main!` Macro
 

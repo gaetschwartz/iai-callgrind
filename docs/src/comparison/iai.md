@@ -9,7 +9,7 @@ Gungraun Pros:
 
 - Gungraun is actively maintained.
 
-- The user interface and benchmarking api of Gungraun is simple, intuitive and
+- The user interface and benchmarking API of Gungraun is simple, intuitive and
   allows for a much more concise and clearer structure of benchmarks.
 
 - Gungraun excludes setup code from the metrics of interest natively. The

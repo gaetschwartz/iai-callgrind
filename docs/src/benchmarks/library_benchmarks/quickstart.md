@@ -2,7 +2,10 @@
 
 # Quickstart
 
-Create a file `$WORKSPACE_ROOT/benches/library_benchmark.rs` and add
+Create a file `$WORKSPACE_ROOT/benches/library_benchmark.rs` (or for best
+results use
+[Use a Separate Workspace Member for Benchmarks](../../best_practices.md#use-a-separate-workspace-member-for-benchmarks))
+and add
 
 ```toml
 [[bench]]
@@ -33,7 +36,7 @@ fn fibonacci(n: u64) -> u64 {
 #[bench::short(10)]
 #[bench::long(30)]
 fn bench_fibonacci(value: u64) -> u64 {
-    black_box(fibonacci(value))
+    black_box(fibonacci(black_box(value)))
 }
 
 library_benchmark_group!(

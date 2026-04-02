@@ -42,7 +42,7 @@ fn teardown(mut data: Vec<i32>) {
     teardown = teardown
 )]
 fn heap(data: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(data))
+    black_box(bubble_sort(black_box(data)))
 }
 
 #[library_benchmark]
@@ -102,7 +102,7 @@ fn copy(mut src: Vec<i32>) -> (Vec<i32>, Vec<i32>) {
 )]
 fn ad_hoc(data: Vec<i32>) -> Vec<i32> {
     gungraun::client_requests::dhat::ad_hoc_event(15);
-    black_box(bubble_sort(data))
+    black_box(bubble_sort(black_box(data)))
 }
 
 // This test also shows that dhat compiles differently and the default toggle matching

@@ -111,8 +111,8 @@ environment variable `_WORKSPACE_ROOT` in `setup` and `teardown`. Suppose, there
 is a fixture located in `/home/the_project/foo_crate/benches/fixtures/foo.txt`
 with `the_project` being the workspace root and `foo_crate` a workspace member
 with the `my-foo` executable. If the command is expected to create a file
-`bar.json`, which needs further inspection after the benchmarks have run, let's
-copy it into a temporary directory `tmp` (which may or may not exist) in
+`bar.json`, which needs further inspection after the benchmarks have run, you
+can copy it into a temporary directory `tmp` (which may or may not exist) in
 `foo_crate`:
 
 ```rust

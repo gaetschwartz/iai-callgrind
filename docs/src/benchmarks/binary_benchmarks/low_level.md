@@ -1,11 +1,11 @@
 # Low-Level API
 
-I'm not going into full detail of the low-level api here since it is fully
-documented in the [api Documentation][api-docs].
+This section does not go into full detail of the low-level API since it is fully
+documented in the [API documentation][api-docs].
 
 ## The Basic Structure
 
-The entry point of the low-level api is the `binary_benchmark_group`
+The entry point of the low-level API is the `binary_benchmark_group`
 
 ```rust
 # extern crate gungraun;
@@ -34,12 +34,12 @@ main!(binary_benchmark_groups = my_group);
 # }
 ```
 
-The low-level api mirrors the high-level api, "structifying" the macros.
+The low-level API mirrors the high-level API, "structifying" the macros.
 
 The `binary_benchmark_group!` is also a struct now, the `BinaryBenchmarkGroup`.
 It cannot be instantiated. Instead, it is passed as argument to the expression
 of the `benchmarks` parameter in a `binary_benchmark_group`. You can choose any
-name instead of `group`, we just have used `group` throughout the examples.
+name instead of `group`; `group` is used throughout the examples.
 
 There's the shorter `benchmarks = |group| /* ... */` instead of
 `benchmarks = |group: &mut BinaryBenchmarkGroup| /* ... */`. We use the more
@@ -59,8 +59,8 @@ attribute. So, the `file` parameter of `#[benches]` is a part of
 
 ## Intermixing High-Level and Low-Level API
 
-It is recommended to start with the high-level api using the
-`#[binary_benchmark]` attribute, since you can fall back to the low-level api in
+It is recommended to start with the high-level API using the
+`#[binary_benchmark]` attribute, since you can fall back to the low-level API in
 a few steps with the `binary_benchmark_attribute!` macro as shown below. The
 other way around is much more involved.
 
@@ -104,9 +104,9 @@ main!(binary_benchmark_groups = low_level);
 ```
 
 As shown above, there's no need to transcribe the function `attribute_benchmark`
-with the `#[binary_benchmark]` attribute into the low-level api structures. Just
+with the `#[binary_benchmark]` attribute into the low-level API structures. Just
 keep it as it is and add it to a the `group` with
-`group.binary_benchmark(binary_benchmark_attribute(attribute_benchmark))`.
-That's it! You can continue hacking on your benchmarks in the low-level api.
+`group.binary_benchmark(binary_benchmark_attribute!(attribute_benchmark))`.
+That's it! You can continue hacking on your benchmarks in the low-level API.
 
 [api-docs]: https://docs.rs/gungraun/0.17.2/gungraun/index.html

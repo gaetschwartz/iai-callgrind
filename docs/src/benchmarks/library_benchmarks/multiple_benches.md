@@ -5,7 +5,7 @@ Multiple benches can be specified at once with the
 
 ## The `#[benches]` Attribute in More Detail
 
-Let's start with an example:
+Start with an example:
 
 ```rust
 # extern crate gungraun;
@@ -26,7 +26,7 @@ fn setup_worst_case_array(start: i32) -> Vec<i32> {
 #[benches::multiple(vec![1], vec![5])]
 #[benches::with_setup(args = [1, 5], setup = setup_worst_case_array)]
 fn bench_bubble_sort_with_benches_attribute(input: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(input))
+    black_box(bubble_sort(black_box(input)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_bubble_sort_with_benches_attribute);
@@ -38,7 +38,7 @@ main!(library_benchmark_groups = my_group);
 Usually the `arguments` are passed directly to the benchmarking function as it
 can be seen in the `#[benches::multiple(/* arguments */)]` case. In
 `#[benches::with_setup(/* ... */)]`, the arguments are passed to the `setup`
-function instead. The above `#[library_benchmark]` is pretty much the same as
+function instead. The above `#[library_benchmark]` is roughly the same as
 
 ```rust
 # extern crate gungraun;
@@ -61,7 +61,7 @@ fn setup_worst_case_array(start: i32) -> Vec<i32> {
 #[bench::with_setup_0(setup_worst_case_array(1))]
 #[bench::with_setup_1(setup_worst_case_array(5))]
 fn bench_bubble_sort_with_benches_attribute(input: Vec<i32>) -> Vec<i32> {
-    black_box(bubble_sort(input))
+    black_box(bubble_sort(black_box(input)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_bubble_sort_with_benches_attribute);
@@ -90,7 +90,7 @@ use std::hint::black_box;
 #[library_benchmark]
 #[benches::from_iter(iter = 0..10)]
 fn some_bench(input: u64) -> String {
-    black_box(my_lib::u64_to_string(input))
+    black_box(my_lib::u64_to_string(black_box(input)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = some_bench);
@@ -120,7 +120,7 @@ fn read_dir() -> Vec<PathBuf> {
 #[library_benchmark]
 #[benches::from_iter(iter = read_dir())]
 fn bench_count_lines_fast(path: PathBuf) -> usize {
-    black_box(my_lib::count_lines_fast(path))
+    black_box(my_lib::count_lines_fast(black_box(path)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_count_lines_fast);
@@ -159,7 +159,7 @@ use std::hint::black_box;
 #[library_benchmark]
 #[benches::from_file(file = "benches/inputs")]
 fn some_bench(line: String) -> Result<u64, String> {
-    black_box(my_lib::string_to_u64(line))
+    black_box(my_lib::string_to_u64(black_box(line)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = some_bench);
@@ -179,7 +179,7 @@ use std::hint::black_box;
 #[library_benchmark]
 #[benches::from_args(args = [1.to_string(), 11.to_string(), 111.to_string()])]
 fn some_bench(line: String) -> Result<u64, String> {
-    black_box(my_lib::string_to_u64(line))
+    black_box(my_lib::string_to_u64(black_box(line)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = some_bench);
@@ -245,7 +245,7 @@ use std::hint::black_box;
 #[library_benchmark]
 #[benches::sizes(consts = [256, 512, 1024, 2048])]
 fn bench_multiple_sizes<const SIZE: usize>() -> Vec<u8> {
-    black_box(my_lib::create_buffer(SIZE))
+    black_box(my_lib::create_buffer(black_box(SIZE)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_multiple_sizes);
@@ -271,7 +271,7 @@ fn bench_args_and_const<const SIZE: usize>(value: i32) -> i32 {
     // - (SIZE=256, value=1)
     // - (SIZE=512, value=2)
     // - (SIZE=512, value=3)  <- last consts repeats
-    black_box(my_lib::process(value, SIZE))
+    black_box(my_lib::process(black_box(value), black_box(SIZE)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_args_and_const);

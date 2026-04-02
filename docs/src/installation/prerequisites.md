@@ -22,7 +22,7 @@ Now, all benchmarks which are run with `cargo bench` include the debug symbols.
 (See also [Cargo Profiles][cargo-profiles] and [Cargo Config][cargo-config]).
 
 It's required that settings like `strip = true` or other configuration options
-stripping the debug symbols need to be disabled explicitly for the `bench`
+stripping the debug symbols need to be disabled explicitly in the `bench`
 profile if you have changed this option for the `release` profile. For example:
 
 ```toml
@@ -51,8 +51,8 @@ Gungraun is intentionally independent of a specific version of valgrind.
 However, Gungraun was only tested with versions of valgrind >= `3.20.0`. It is
 therefore highly recommended to use a recent version of valgrind. Also, if you
 want or need to, [building valgrind from source][valgrind-source] is usually a
-straight-forward process. Just make sure the `valgrind` binary is in your
-`$PATH` so that Gungraun can find it.
+straightforward process. Just make sure the `valgrind` binary is in your `$PATH`
+so that Gungraun can find it.
 
 ### Installation of Valgrind with Your Package Manager
 

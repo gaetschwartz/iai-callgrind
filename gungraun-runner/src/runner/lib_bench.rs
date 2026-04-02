@@ -324,6 +324,8 @@ impl LibBench {
     ///
     /// The name is used to identify a benchmark run within the same [`Group`] and has therefore to
     /// be unique within the same [`Group`]
+    ///
+    /// [`Group`]: [crate::runner::common::Group]
     fn name(&self) -> String {
         if let Some(bench_id) = &self.id {
             format!("{}.{}", &self.function_name, bench_id)

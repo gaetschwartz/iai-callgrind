@@ -1,6 +1,6 @@
 # Even More Examples
 
-I'm referring here to the [github repository][github-repo]. We test the library
+This section refers to the [GitHub repository][github-repo]. We test the library
 benchmarks functionality of Gungraun with system tests in the private
 [benchmark-tests] package.
 

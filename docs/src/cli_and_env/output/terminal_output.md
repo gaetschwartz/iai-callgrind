@@ -27,7 +27,7 @@ and shown during the benchmark run but output to `stderr` is discarded.
 Likewise, `--nocapture=stderr` shows terminal output to `stderr` but discards
 output to `stdout`.
 
-Let's take as example a library benchmark `benches/my_benchmark.rs`
+Consider the following library benchmark in `benches/my_benchmark.rs`
 
 ```rust
 # extern crate gungraun;
@@ -48,7 +48,7 @@ fn add_10_and_print(value: u64) -> u64 {
 #[library_benchmark]
 #[bench::some_id(args = (10), teardown = print_to_stderr)]
 fn bench_library(value: u64) -> u64 {
-    black_box(add_10_and_print(value))
+    black_box(add_10_and_print(black_box(value)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_library);
@@ -80,7 +80,7 @@ options you have given. For example in the `--nocapture=stdout` case this line
 indicates your chosen option with `- end of stdout`.
 
 Note that independently of the value of the `--nocapture` option, all logging
-output of a valgrind tool itself is stored in files in the output directory of
-the benchmark. Since Gungraun needs the logging output of valgrind tools stored
-in files, there is no option to disable the creation of these log files. But, if
-anything goes sideways you might be glad to have the log files around.
+output of a Valgrind tool itself is stored in files in the output directory of
+the benchmark. Since Gungraun needs the logging output of Valgrind tools stored
+in files, there is no option to disable the creation of these log files. If
+anything goes wrong, those log files can be useful.

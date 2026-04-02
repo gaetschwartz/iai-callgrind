@@ -134,7 +134,7 @@ macro_rules! binary_benchmark_attribute {
 /// #[bench::short(10)]
 /// #[bench::long(30)]
 /// fn bench_fibonacci(value: u64) -> u64 {
-///     black_box(fibonacci(value))
+///     black_box(fibonacci(black_box(value)))
 /// }
 ///
 /// library_benchmark_group!(name = bench_fibonacci_group, benchmarks = bench_fibonacci);

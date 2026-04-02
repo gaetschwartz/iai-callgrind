@@ -23,7 +23,7 @@ have a corresponding command-line argument are:
 
 ## The Command-Line Arguments
 
-For an update-to-date list run `cargo bench` with `--help` as described above.
+For an up-to-date list run `cargo bench` with `--help` as described above.
 
 ````text
 High-precision, one-shot and consistent benchmarking framework/harness for Rust
@@ -123,7 +123,7 @@ Options:
       --home <HOME>
           Specify the home directory of gungraun benchmark output files
 
-          All output files are per default stored under the `$PROJECT_ROOT/target/gungraun`
+          All output files are by default stored under the `$PROJECT_ROOT/target/gungraun`
           directory. This option lets you customize this home directory, and it will be created if it
           doesn't exist.
 
@@ -310,7 +310,7 @@ Options:
           value disables the truncation entirely and a value will truncate the description to the
           given amount of characters excluding the ellipsis.
 
-          To clearify which part of the output is meant by `DESCRIPTION`:
+          To clarify which part of the output is meant by `DESCRIPTION`:
 
           ```text
           benchmark_file::group_name::function_name id:DESCRIPTION
@@ -344,7 +344,7 @@ Options:
           description for --callgrind-args for more details and restrictions.
 
           Examples:
-            * --cachegrind-args=--intr-at-start=no
+            * --cachegrind-args=--instr-at-start=no
             * --cachegrind-args='--branch-sim=yes --instr-at-start=no'
 
           [env: GUNGRAUN_CACHEGRIND_ARGS=]

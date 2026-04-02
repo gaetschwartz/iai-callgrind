@@ -19,7 +19,7 @@ fn read_dir() -> Vec<PathBuf> {
 #[library_benchmark]
 #[benches::from_iter(iter = read_dir())]
 fn bench_count_lines_fast(path: PathBuf) -> usize {
-    black_box(my_lib::count_lines_fast(path))
+    black_box(my_lib::count_lines_fast(black_box(path)))
 }
 
 library_benchmark_group!(name = my_group; benchmarks = bench_count_lines_fast);

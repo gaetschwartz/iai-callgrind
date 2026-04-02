@@ -62,7 +62,7 @@ where
 #[bench::a(input_a())]
 #[bench::b(input_b())]
 fn single_param<I: std::fmt::Debug>(input: I) -> usize {
-    black_box(print_debug(input))
+    black_box(print_debug(black_box(input)))
 }
 
 #[library_benchmark]
@@ -72,7 +72,7 @@ fn single_param_in_where_clause<I>(input: I) -> usize
 where
     I: std::fmt::Debug,
 {
-    black_box(print_debug(input))
+    black_box(print_debug(black_box(input)))
 }
 
 #[library_benchmark]
@@ -81,7 +81,7 @@ where
 #[benches::multiple_consts(consts = [321, 654])]
 #[benches::multiple_consts_empty_args(args = [], consts = [321, 654])]
 fn single_consts_parameter_without_args<const C: usize>() -> usize {
-    black_box(print_debug(C))
+    black_box(print_debug(black_box(C)))
 }
 
 #[library_benchmark]
@@ -111,7 +111,7 @@ fn single_consts_parameter_without_args<const C: usize>() -> usize {
     consts = [{ 1 + 20 }, { 2 + 20 }]
 )]
 fn single_consts_parameter_with_args<const C: usize>(arg: i32) -> usize {
-    black_box(print_debug(C + arg as usize))
+    black_box(print_debug(black_box(C + arg as usize)))
 }
 
 #[library_benchmark]
@@ -132,7 +132,7 @@ fn const_then_type_parameter<const C: usize, T>(arg: T) -> usize
 where
     T: std::fmt::Debug,
 {
-    black_box(print_debug(C) + print_debug(arg))
+    black_box(print_debug(black_box(C)) + print_debug(black_box(arg)))
 }
 
 #[library_benchmark]
@@ -144,7 +144,7 @@ fn type_parameter_then_const<T, const C: usize>(arg: T) -> usize
 where
     T: std::fmt::Debug,
 {
-    black_box(print_debug(C) + print_debug(arg))
+    black_box(print_debug(black_box(C)) + print_debug(black_box(arg)))
 }
 
 #[library_benchmark]
@@ -160,7 +160,9 @@ where
     T: std::fmt::Debug,
     U: std::fmt::Debug,
 {
-    black_box(print_debug(C) + print_debug(arg_t) + print_debug(arg_u))
+    black_box(
+        print_debug(black_box(C)) + print_debug(black_box(arg_t)) + print_debug(black_box(arg_u)),
+    )
 }
 
 #[library_benchmark]
@@ -182,7 +184,7 @@ fn lifetimes_then_const<'a, 'b, const C: usize>(
     print_debug(arg_t);
     print_debug(arg_u);
 
-    black_box((arg_t, arg_u))
+    black_box((black_box(arg_t), black_box(arg_u)))
 }
 
 #[library_benchmark]
@@ -204,7 +206,7 @@ fn const_then_lifetimes<const C: usize, 'a, 'b>(
     print_debug(arg_t);
     print_debug(arg_u);
 
-    black_box((arg_t, arg_u))
+    black_box((black_box(arg_t), black_box(arg_u)))
 }
 
 #[library_benchmark]
@@ -226,7 +228,7 @@ fn mixed_const_and_lifetimes<'b, const C: usize, 'a>(
     print_debug(arg_t);
     print_debug(arg_u);
 
-    black_box((arg_t, arg_u))
+    black_box((black_box(arg_t), black_box(arg_u)))
 }
 
 #[library_benchmark]
@@ -252,7 +254,7 @@ where
     print_debug(arg_t);
     print_debug(arg_u);
 
-    black_box((arg_t, arg_u))
+    black_box((black_box(arg_t), black_box(arg_u)))
 }
 
 #[library_benchmark]
@@ -274,7 +276,7 @@ where
     setup = setup_with_const_parameter::<{ 1 + 20 }>
 )]
 fn with_setup_when_type_and_const_parameter(arg: usize) -> usize {
-    black_box(print_debug(arg))
+    black_box(print_debug(black_box(arg)))
 }
 
 #[library_benchmark]
@@ -302,7 +304,7 @@ fn with_setup_when_type_and_const_parameter(arg: usize) -> usize {
     teardown = teardown_with_const_parameter::<{ 1 + 20 }, usize>
 )]
 fn with_teardown_when_type_and_const_parameter(arg: u64) -> usize {
-    black_box(arg as usize)
+    black_box(black_box(arg) as usize)
 }
 
 library_benchmark_group!(

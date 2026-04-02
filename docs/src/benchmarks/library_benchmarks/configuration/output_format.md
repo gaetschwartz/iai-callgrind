@@ -123,7 +123,8 @@ fn make_hashmap(num: usize) -> HashMap<String, usize> {
 #[bench::tolerance(make_hashmap(100))]
 fn bench_hash_map(map: HashMap<String, usize>) -> Option<usize> {
     black_box(
-        map.iter()
+        black_box(map)
+            .iter()
             .find_map(|(key, value)| (key == "element: 12345").then_some(*value)),
     )
 }

@@ -133,6 +133,8 @@ impl CargoMetadata {
 /// # pub struct InternalLibraryBenchmarkConfig {}
 /// # }
 /// # }
+/// use std::hint::black_box;
+///
 /// // Assume this is a function in your library which you want to benchmark
 /// fn some_func(value: u64) -> u64 {
 ///     42
@@ -141,7 +143,7 @@ impl CargoMetadata {
 /// #[library_benchmark]
 /// #[bench::some_id(42)]
 /// fn bench_some_func(value: u64) -> u64 {
-///     std::hint::black_box(some_func(value))
+///     black_box(some_func(black_box(value)))
 /// }
 /// # fn main() {}
 /// ```
@@ -190,7 +192,7 @@ impl CargoMetadata {
 /// #[benches::multiple(vec![1], vec![5])]
 /// #[benches::with_setup(args = [1, 5], setup = setup_worst_case_array)]
 /// fn bench_bubble_sort_with_benches_attribute(input: Vec<i32>) -> Vec<i32> {
-///     black_box(my_lib::bubble_sort(input))
+///     black_box(my_lib::bubble_sort(black_box(input)))
 /// }
 /// # fn main() {}
 /// ```
@@ -230,7 +232,7 @@ impl CargoMetadata {
 /// #[bench::with_setup_0(setup_worst_case_array(1))]
 /// #[bench::with_setup_1(setup_worst_case_array(5))]
 /// fn bench_bubble_sort_with_benches_attribute(input: Vec<i32>) -> Vec<i32> {
-///     black_box(bubble_sort(input))
+///     black_box(bubble_sort(black_box(input)))
 /// }
 /// # fn main() {}
 /// ```
@@ -263,10 +265,11 @@ impl CargoMetadata {
 /// # }
 /// # mod my_lib { pub fn u64_to_string(_: u64) -> String { "0".to_owned() } }
 /// use std::hint::black_box;
+///
 /// #[library_benchmark]
 /// #[benches::from_iter(iter = 0..3)]
 /// fn some_bench(num: u64) -> String {
-///     black_box(my_lib::u64_to_string(num))
+///     black_box(my_lib::u64_to_string(black_box(num)))
 /// }
 /// # fn main() {}
 /// ```
@@ -306,10 +309,11 @@ impl CargoMetadata {
 /// # }
 /// # mod my_lib { pub fn string_to_u64(_line: String) -> Result<u64, String> { Ok(0) } }
 /// use std::hint::black_box;
+///
 /// #[library_benchmark]
 /// #[benches::by_file(file = "gungraun-macros/fixtures/inputs")]
 /// fn some_bench(line: String) -> Result<u64, String> {
-///     black_box(my_lib::string_to_u64(line))
+///     black_box(my_lib::string_to_u64(black_box(line)))
 /// }
 /// # fn main() {}
 /// ```
@@ -334,10 +338,11 @@ impl CargoMetadata {
 /// # }
 /// # mod my_lib { pub fn string_to_u64(_line: String) -> Result<u64, String> { Ok(0) } }
 /// use std::hint::black_box;
+///
 /// #[library_benchmark]
 /// #[benches::by_file(args = [1.to_string(), 11.to_string(), 111.to_string()])]
 /// fn some_bench(line: String) -> Result<u64, String> {
-///     black_box(my_lib::string_to_u64(line))
+///     black_box(my_lib::string_to_u64(black_box(line)))
 /// }
 /// # fn main() {}
 /// ```
@@ -366,6 +371,8 @@ impl CargoMetadata {
 /// # pub struct InternalLibraryBenchmarkConfig {}
 /// # }
 /// # }
+/// use std::hint::black_box;
+///
 /// fn some_func() -> u64 {
 ///     42
 /// }
@@ -375,14 +382,15 @@ impl CargoMetadata {
 /// fn bench_my_library_function() -> u64 {
 ///     // The `black_box` is needed to tell the compiler to not optimize what's inside the
 ///     // black_box or else the benchmarks might return inaccurate results.
-///     std::hint::black_box(some_func())
+///     black_box(some_func())
 /// }
 /// # fn main() {
 /// # }
 /// ```
 ///
-/// In the following example we pass a single argument with `Vec<i32>` type to the benchmark. All
-/// arguments are already wrapped in a black box and don't need to be put in a `black_box` again.
+/// In the following example we pass a single argument with `Vec<i32>` type to the
+/// benchmark. Wrap both input and output values in `black_box` to prevent the
+/// compiler from optimizing away computations.
 ///
 /// ```rust
 /// # use gungraun_macros::library_benchmark;
@@ -402,8 +410,9 @@ impl CargoMetadata {
 /// #   pub config: Option<fn() -> InternalLibraryBenchmarkConfig>
 /// # }
 /// # pub struct InternalLibraryBenchmarkConfig {}
-/// # }
-/// # }
+/// # }}
+/// use std::hint::black_box;
+///
 /// // Our function we want to test
 /// fn some_func_with_array(array: Vec<i32>) -> Vec<i32> {
 ///     // do something with the array and return a new array
@@ -420,8 +429,7 @@ impl CargoMetadata {
 /// }
 ///
 /// // This benchmark is setting up multiple benchmark cases with the advantage that the setup
-/// // costs for creating a vector (even if it is empty) aren't attributed to the benchmark and
-/// // that the `array` is already wrapped in a black_box.
+/// // costs for creating a vector (even if it is empty) aren't attributed to the benchmark.
 /// #[library_benchmark]
 /// #[bench::empty(vec![])]
 /// #[bench::worst_case_6(vec![6, 5, 4, 3, 2, 1])]
@@ -430,9 +438,8 @@ impl CargoMetadata {
 /// // The argument of the benchmark function defines the type of the argument from the `bench`
 /// // cases.
 /// fn bench_some_func_with_array(array: Vec<i32>) -> Vec<i32> {
-///     // Note `array` does not need to be put in a `black_box` because that's already done for
-///     // you.
-///     std::hint::black_box(some_func_with_array(array))
+///     // Wrap both input and output in `black_box`.
+///     black_box(some_func_with_array(black_box(array)))
 /// }
 ///
 /// // The following benchmark uses the `#[benches]` attribute to setup multiple benchmark cases
@@ -443,10 +450,9 @@ impl CargoMetadata {
 /// // input for the benchmarking function
 /// #[benches::with_setup(args = [1, 5], setup = setup_worst_case_array)]
 /// fn bench_using_the_benches_attribute(array: Vec<i32>) -> Vec<i32> {
-///     std::hint::black_box(some_func_with_array(array))
+///     black_box(some_func_with_array(black_box(array)))
 /// }
-/// # fn main() {
-/// # }
+/// # fn main() { }
 /// ```
 ///
 /// [bench]: #the-bench-attribute

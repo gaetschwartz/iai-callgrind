@@ -2,8 +2,8 @@
 
 This section is a brief reference to all the macros available in library
 benchmarks. Feel free to come back here from other sections if you need a
-reference. For the complete documentation of each macro see the [api
-Documentation][api-docs].
+reference. For the complete documentation of each macro see the [API
+documentation][api-docs].
 
 For the following examples it is assumed that there is a file `lib.rs` in a
 crate named `my_lib` with the following content:
@@ -39,7 +39,7 @@ use std::hint::black_box;
 #[bench::one(vec![1])]
 #[benches::multiple(vec![1, 2], vec![1, 2, 3], vec![1, 2, 3, 4])]
 fn bench_bubble_sort(values: Vec<i32>) -> Vec<i32> {
-    black_box(my_lib::bubble_sort(values))
+    black_box(my_lib::bubble_sort(black_box(values)))
 }
 
 library_benchmark_group!(name = bubble_sort_group, benchmarks = bench_bubble_sort);
@@ -73,7 +73,7 @@ use std::hint::black_box;
 )]
 #[bench::one(vec![1])]
 fn bench_bubble_sort(values: Vec<i32>) -> Vec<i32> {
-    black_box(my_lib::bubble_sort(values))
+    black_box(my_lib::bubble_sort(black_box(values)))
 }
 
 library_benchmark_group!(name = bubble_sort_group, benchmarks = bench_bubble_sort);
@@ -129,7 +129,7 @@ pub fn worst_case(start: i32) -> Vec<i32> {
 #[bench::worst_two(args = (vec![2, 1]))]
 #[bench::worst_four(args = (4), setup = worst_case)]
 fn bench_bubble_sort(value: Vec<i32>) -> Vec<i32> {
-    black_box(my_lib::bubble_sort(value))
+    black_box(my_lib::bubble_sort(black_box(value)))
 }
 
 library_benchmark_group!(name = bubble_sort_group, benchmarks = bench_bubble_sort);
@@ -166,7 +166,7 @@ pub fn worst_case(start: i32) -> Vec<i32> {
 #[benches::worst_two_and_three(args = [vec![2, 1], vec![3, 2, 1]])]
 #[benches::worst_four_to_nine(args = [4, 5, 6, 7, 8, 9], setup = worst_case)]
 fn bench_bubble_sort(value: Vec<i32>) -> Vec<i32> {
-    black_box(my_lib::bubble_sort(value))
+    black_box(my_lib::bubble_sort(black_box(value)))
 }
 
 library_benchmark_group!(name = bubble_sort_group, benchmarks = bench_bubble_sort);
@@ -197,7 +197,7 @@ use std::hint::black_box;
 #[benches::big(args = ["bar", "baz"], consts = (10000))]
 fn bench_buffer<const SIZE: usize, T>(arg_t: T) -> Vec<Vec<u8>>
 where T: std::fmt::Display {
-    black_box(my_lib::create_buffer::<SIZE, T>(arg_t))
+    black_box(my_lib::create_buffer::<SIZE, T>(black_box(arg_t)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_buffer);
@@ -223,7 +223,8 @@ order and separated by a comma):
 - **`max_parallel`** (optional): The default is no limit. If set, `0` means no
   limit (same as not specifying), `1` disables parallel execution for this
   group, and values `>= 2` limit the maximum number of parallel benchmarks. This
-  option only has an effect when the `--parallel` CLI option is used. See
+  option only has an effect when parallel execution is enabled via `--parallel`
+  or `GUNGRAUN_PARALLEL`. See
   [Running Benchmarks in Parallel](../../cli_and_env/parallel.md#limiting-parallelism-per-group)
   for more details.
 - **`setup`** (optional): A setup function or any valid expression which is run

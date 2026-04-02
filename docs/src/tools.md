@@ -16,7 +16,7 @@ each tool and their command line arguments.
 
 ## Running Other Valgrind Tools
 
-It's possible to change the default tool `Callgrind` to any other valgrind tool
+It's possible to change the default tool `Callgrind` to any other Valgrind tool
 with the [command-line argument](./cli_and_env/basics.md)
 `--default-tool=<tool>` or environment variable `GUNGRAUN_DEFAULT_TOOL=<tool>`.
 `<tool>` may be one of `callgrind`, `cachegrind`, `dhat`, `massif`, `memcheck`,
@@ -46,7 +46,7 @@ use std::hint::black_box;
 
 #[library_benchmark]
 fn bench_library() -> Vec<i32> {
-    black_box(my_lib::bubble_sort(vec![3, 2, 1]))
+    black_box(my_lib::bubble_sort(black_box(vec![3, 2, 1])))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_library);
@@ -72,7 +72,7 @@ use gungraun::{Memcheck, ValgrindTool};
 Memcheck::with_args(["--error-exitcode=0"]);
 ```
 
-which would restore the default of `0` from valgrind.
+which would restore the default of `0` from Valgrind.
 
 [valgrind-exit-codes]:
     https://valgrind.org/docs/manual/manual-core.html#manual-core.erropts

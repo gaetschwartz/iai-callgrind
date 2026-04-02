@@ -1,6 +1,6 @@
 # Changing the Color Output
 
-The terminal output is colored per default but follows the value for the
+The terminal output is colored by default but follows the value for the
 `GUNGRAUN_COLOR` environment variable. If `GUNGRAUN_COLOR` is not set,
 `CARGO_TERM_COLOR` is also tried. Accepted values are:
 

@@ -25,7 +25,7 @@ use std::hint::black_box;
 
 #[library_benchmark]
 fn bench_threads() -> Vec<u64> {
-    black_box(my_lib::find_primes_multi_thread(2))
+    black_box(my_lib::find_primes_multi_thread(black_box(2)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_threads);
@@ -50,7 +50,7 @@ approaches and try to highlight the pros and cons of each.
 `Callgrind` treats each thread and process as a separate unit and it applies
 data collection options to each unit. In library benchmarks the
 [entry point](./custom_entry_point.md) (or the default toggle) for `callgrind`
-is per default set to the benchmark function with the help of the
+is by default set to the benchmark function with the help of the
 `--toggle-collect` option. Setting `--toggle-collect` also automatically sets
 `--collect-atstart=no`. If not further customized for a benchmarked
 multi-threaded function, these options cause the metrics for the spawned threads
@@ -118,7 +118,7 @@ pub mod my_lib {
 #[library_benchmark]
 #[bench::two_threads(2)]
 fn bench_threads(num_threads: usize) -> Vec<u64> {
-    black_box(my_lib::find_primes_multi_thread(num_threads))
+    black_box(my_lib::find_primes_multi_thread(black_box(num_threads)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_threads);
@@ -194,7 +194,7 @@ use std::hint::black_box;
 )]
 #[bench::two_threads(2)]
 fn bench_threads(num_threads: usize) -> Vec<u64> {
-    black_box(my_lib::find_primes_multi_thread(num_threads))
+    black_box(my_lib::find_primes_multi_thread(black_box(num_threads)))
 }
 # library_benchmark_group!(name = my_group, benchmarks = bench_threads);
 # fn main() {
@@ -319,7 +319,7 @@ use std::hint::black_box;
 )]
 #[bench::two_threads(2)]
 fn bench_threads(num_threads: usize) -> Vec<u64> {
-    black_box(my_lib::find_primes_multi_thread(num_threads))
+    black_box(my_lib::find_primes_multi_thread(black_box(num_threads)))
 }
 # library_benchmark_group!(name = my_group, benchmarks = bench_threads);
 # fn main() {
@@ -479,7 +479,7 @@ use std::hint::black_box;
 )]
 #[bench::two_threads(2)]
 fn bench_threads(num_threads: usize) -> Vec<u64> {
-    black_box(my_lib::find_primes_multi_thread(num_threads))
+    black_box(my_lib::find_primes_multi_thread(black_box(num_threads)))
 }
 # library_benchmark_group!(name = my_group, benchmarks = bench_threads);
 # fn main() {
@@ -528,7 +528,7 @@ Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regression
 
 ## Multi-Process Applications
 
-Measuring multi-process applications is in principal not that different from
+Measuring multi-process applications is in principle not that different from
 multi-threaded applications since subprocesses are just like threads separate
 units. As for threads, the [data collection options][data-collection-options]
 are applied to subprocesses separately from the main process.
@@ -604,7 +604,7 @@ fn create_file() -> PathBuf {
 #[library_benchmark]
 #[bench::some(setup = create_file)]
 fn bench_subprocess(path: PathBuf) -> io::Result<ExitStatus> {
-    black_box(my_lib::cat(&path))
+    black_box(my_lib::cat(black_box(&path)))
 }
 
 library_benchmark_group!(name = my_group, benchmarks = bench_subprocess);
@@ -681,7 +681,7 @@ benchmark will just work:
 )]
 #[bench::some(setup = create_file)]
 fn bench_subprocess(path: PathBuf) -> io::Result<ExitStatus> {
-    black_box(my_lib::cat(&path))
+    black_box(my_lib::cat(black_box(&path)))
 }
 # library_benchmark_group!(name = my_group, benchmarks = bench_subprocess);
 # fn main() {
@@ -772,7 +772,7 @@ without the toggle:
 #[library_benchmark]
 #[bench::some(setup = create_file)]
 fn bench_subprocess(path: PathBuf) -> io::Result<ExitStatus> {
-    black_box(my_lib::cat(&path))
+    black_box(my_lib::cat(black_box(&path)))
 }
 # library_benchmark_group!(name = my_group, benchmarks = bench_subprocess);
 # fn main() {
