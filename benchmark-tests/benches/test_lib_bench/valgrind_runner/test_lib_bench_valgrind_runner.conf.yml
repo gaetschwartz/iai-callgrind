@@ -1,0 +1,44 @@
+groups:
+  - runs:
+      # without extra arguments
+      - args:
+          [
+            "--valgrind-runner=/tmp/gungraun_test_lib_bench_valgrind_runner",
+            "--nocapture",
+          ]
+        setup: |
+          cat <<'EOF' >/tmp/gungraun_test_lib_bench_valgrind_runner
+          #!/usr/bin/env bash
+
+          echo "I am a valgrind runner running with arguments:"
+          while [[ $# -gt 0 && "$1" != "--" ]]; do echo "$1"; shift; done
+          [[ "$1" == "--" ]] && shift
+          exec "$@"
+          EOF
+
+          chmod +x /tmp/gungraun_test_lib_bench_valgrind_runner
+        expected:
+          stdout: expected_stdout.1
+          no_stderr: true
+  - runs:
+      # with extra arguments
+      - args:
+          [
+            "--valgrind-runner=/tmp/gungraun_test_lib_bench_valgrind_runner",
+            "--valgrind-runner-args=--just=test",
+            "--nocapture",
+          ]
+        setup: |
+          cat <<'EOF' >/tmp/gungraun_test_lib_bench_valgrind_runner
+          #!/usr/bin/env bash
+
+          echo "I am a valgrind runner running with arguments:"
+          while [[ $# -gt 0 && "$1" != "--" ]]; do echo "$1"; shift; done
+          [[ "$1" == "--" ]] && shift
+          exec "$@"
+          EOF
+
+          chmod +x /tmp/gungraun_test_lib_bench_valgrind_runner
+        expected:
+          stdout: expected_stdout.2
+          no_stderr: true

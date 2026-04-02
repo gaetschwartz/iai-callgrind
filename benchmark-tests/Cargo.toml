@@ -418,5 +418,10 @@ path = "benches/test_lib_bench/tools/test_lib_bench_tools.rs"
 
 [[bench]]
 harness = false
+name = "test_lib_bench_valgrind_runner"
+path = "benches/test_lib_bench/valgrind_runner/test_lib_bench_valgrind_runner.rs"
+
+[[bench]]
+harness = false
 name = "test_lib_bench_xtree"
 path = "benches/test_lib_bench/xtree/test_lib_bench_xtree.rs"
