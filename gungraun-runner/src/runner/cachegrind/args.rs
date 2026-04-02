@@ -30,7 +30,7 @@ impl Args {
     /// Try to create new `Args` from multiple [`RawArgs`]
     pub fn try_from_raw_tool_args(args: &[&RawToolArgs]) -> Result<Self> {
         let mut default = Self::default();
-        default.try_update(args.iter().flat_map(|s| &s.0))?;
+        default.try_update(args.iter().flat_map(|s| s.as_slice()))?;
         Ok(default)
     }
 

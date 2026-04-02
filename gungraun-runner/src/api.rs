@@ -1301,10 +1301,9 @@ pub struct OutputFormat {
     pub truncate_description: Option<Option<usize>>,
 }
 
-// TODO: RENAME to ValgrindToolArgs
 /// The raw arguments to pass to a valgrind tool
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RawToolArgs(pub Vec<String>);
+pub struct RawToolArgs(Vec<String>);
 
 /// The sandbox to run the benchmarks in
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -2188,13 +2187,18 @@ impl From<u64> for Limit {
 }
 
 impl RawToolArgs {
+    /// TODO: DOCS
+    pub fn as_slice(&self) -> &[String] {
+        &self.0
+    }
+
     /// Creates new arguments for a valgrind tool.
     pub fn new<I, T>(args: T) -> Self
     where
         I: Into<String>,
         T: IntoIterator<Item = I>,
     {
-        Self(args.into_iter().map(Into::into).collect())
+        args.into_iter().map(Into::into).collect()
     }
 
     /// Extends the arguments with the contents of an iterator.

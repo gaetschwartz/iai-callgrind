@@ -144,7 +144,7 @@ impl ToolArgs {
         };
 
         for args in raw_tool_args {
-            for arg in &args.0 {
+            for arg in args.as_slice() {
                 let arg = arg.trim();
                 match arg.split_once('=').map(|(k, v)| (k.trim(), v.trim())) {
                     Some(("--error-exitcode", value)) => {
