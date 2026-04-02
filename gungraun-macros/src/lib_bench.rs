@@ -259,7 +259,9 @@ impl Bench {
                 };
 
                 let call_bench_id = self.teardown.render_as_code(quote_spanned! {
-                    bench_id.span() => #bench_id_mod::#bench_id_call(#elem_ident)
+                    bench_id.span() => std::hint::black_box(
+                        #bench_id_mod::#bench_id_call(#elem_ident)
+                    )
                 });
 
                 quote!(
@@ -316,7 +318,6 @@ impl Bench {
                 let (bench_id_func, pats) = callee.to_caller_signature(&elem_ident, bench_id);
                 let call_bench_func = quote_spanned! { callee_ident.span() =>
                         std::hint::black_box(
-                            // FIX: use std::hint::black_box
                             __gungraun_wrapper_mod::#bench_func_call(#(#pats),*)
                         )
                 };
