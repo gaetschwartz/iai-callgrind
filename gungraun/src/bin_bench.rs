@@ -1649,9 +1649,6 @@ impl Command {
     /// Use [`env!("CARGO_BIN_EXE_<name>)`][env-cargo-exe]
     /// to provide the path to an executable of your project instead of `target/release/<name>`.
     ///
-    /// [env-cargo-exe]:
-    /// https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-crates
-    ///
     /// This `Command` is a builder for the binary which is going to be benchmarked but is not
     /// executed right away. We simply gather all the information to be finally able to execute the
     /// command under valgrind, later (after we collected all the commands in this benchmark file).
@@ -1686,6 +1683,9 @@ impl Command {
     ///
     /// let command = Command::new("echo").arg("foo").build();
     /// ```
+    ///
+    /// [env-cargo-exe]:
+    /// https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-crates
     pub fn new<T>(path: T) -> Self
     where
         T: AsRef<OsStr>,
