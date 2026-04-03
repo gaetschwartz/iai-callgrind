@@ -130,6 +130,7 @@ impl ToolCommand {
         child: Option<&mut Child>,
         captured_output: Option<&CapturedOutput>,
         sandbox_dir: Option<&Path>,
+        valgrind_runner_dest: Option<&Path>,
     ) -> Result<ToolCommandChild> {
         debug!(
             "{}: Running with executable '{}'",
@@ -169,10 +170,10 @@ impl ToolCommand {
         }
 
         let mut tool_args = config.args;
-        tool_args.set_output_arg(output_path);
-        tool_args.set_log_arg(output_path);
-        tool_args.set_xtree_arg(output_path);
-        tool_args.set_xleak_arg(output_path);
+        tool_args.set_output_arg(output_path, valgrind_runner_dest);
+        tool_args.set_log_arg(output_path, valgrind_runner_dest);
+        tool_args.set_xtree_arg(output_path, valgrind_runner_dest);
+        tool_args.set_xleak_arg(output_path, valgrind_runner_dest);
 
         let executable = resolve_binary_path(executable, sandbox_dir)?;
         let args = tool_args.to_vec();

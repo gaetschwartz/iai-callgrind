@@ -584,6 +584,7 @@ pub struct CommandLineArgs {
     )]
     pub drd_metrics: Option<IndexSet<ErrorMetric>>,
 
+    // TODO: Add envs and passthrough envs
     #[rustfmt::skip]
     /// If specified, only run benchmarks matching this wildcard pattern
     ///
@@ -669,6 +670,7 @@ pub struct CommandLineArgs {
     )]
     pub home: Option<PathBuf>,
 
+    // FIX: should be exclusive
     #[rustfmt::skip]
     /// Print a list of all benchmarks. With this argument no benchmarks are executed.
     ///
@@ -773,7 +775,7 @@ pub struct CommandLineArgs {
     )]
     pub memcheck_metrics: Option<IndexSet<ErrorMetric>>,
 
-    // FIX: Add alias
+    // FIX: Add alias --no-capture
     #[rustfmt::skip]
     /// Don't capture terminal output of benchmarks
     ///
@@ -1105,6 +1107,17 @@ pub struct CommandLineArgs {
     pub valgrind_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
+    /// TODO: DOCS
+    #[arg(
+        long = "valgrind-path",
+        num_args = 1,
+        verbatim_doc_comment,
+        env = "GUNGRAUN_VALGRIND_PATH",
+        display_order = 500
+    )]
+    pub valgrind_path: Option<PathBuf>,
+
+    #[rustfmt::skip]
     /// Specify an alternative executable to run valgrind
     ///
     /// By default, gungraun runs the benchmark executable with valgrind directly. This option
@@ -1114,6 +1127,7 @@ pub struct CommandLineArgs {
     /// When specified, the runner is invoked as:
     /// `<RUNNER> --allow-aslr=yes|no [RUNNER_ARGS...] -- /path/to/valgrind [VALGRIND_ARGS...]`
     ///
+    /// TODO: update docs, --allow-aslr and any custom args will be removed
     /// This is useful for running benchmarks in containers or other environments where valgrind is
     /// not available on the host. The `--allow-aslr` flag reflects the `--allow-aslr` command-line
     /// option. Additional runner arguments can be specified with `--valgrind-runner-args`.
@@ -1147,12 +1161,27 @@ pub struct CommandLineArgs {
     #[arg(
         long = "valgrind-runner-args",
         value_parser = parse_raw_args,
+        // TODO: test this
+        requires = "valgrind-runner",
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_VALGRIND_RUNNER_ARGS",
         display_order = 500
     )]
     pub valgrind_runner_args: Option<RawArgs>,
+
+    #[rustfmt::skip]
+    /// TODO: DOCS, only effective with the `valgrind_runner` variable, responsibility of user that
+    /// this directory exists
+    #[arg(
+        long = "valgrind-runner-dest",
+        num_args = 1,
+        requires = "valgrind-runner",
+        verbatim_doc_comment,
+        env = "GUNGRAUN_VALGRIND_RUNNER_DEST",
+        display_order = 500
+    )]
+    pub valgrind_runner_dest: Option<PathBuf>,
 }
 
 /// A wrapper type for raw command-line arguments
@@ -1162,13 +1191,6 @@ pub struct CommandLineArgs {
 /// `--valgrind-runner-args`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RawArgs(Vec<String>);
-
-impl RawArgs {
-    /// Returns a slice of the underlying argument strings
-    pub fn as_slice(&self) -> &[String] {
-        &self.0
-    }
-}
 
 #[derive(Debug, Clone)]
 struct ValgrindRunnerParser;
@@ -1242,6 +1264,13 @@ impl From<TruncateDescription> for Option<usize> {
             TruncateDescription::To(to) => Some(to),
             TruncateDescription::None => None,
         }
+    }
+}
+
+impl RawArgs {
+    /// Returns a slice of the underlying argument strings
+    pub fn as_slice(&self) -> &[String] {
+        &self.0
     }
 }
 

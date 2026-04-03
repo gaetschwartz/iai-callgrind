@@ -705,7 +705,12 @@ impl ToolOutputPath {
     /// modifiers like `%p`. Use [`Self::real_paths`] to get the real and existing (possibly
     /// multiple) paths to the output files of the respective tool.
     pub fn to_path(&self) -> PathBuf {
-        self.dest_dir().join(format!(
+        self.dest_dir().join(self.file_name())
+    }
+
+    /// TODO: DOCS
+    pub fn file_name(&self) -> PathBuf {
+        PathBuf::from(format!(
             "{}.{}.{}",
             self.tool.id(),
             self.name,

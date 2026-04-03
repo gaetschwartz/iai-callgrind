@@ -515,6 +515,7 @@ impl ToolConfigs {
                     &output_path,
                     module_path,
                     captured_output,
+                    config.meta.args.valgrind_runner_dest.as_deref(),
                 )
                 .and_then(|()| process_handler.wait_or_shutdown())?;
 

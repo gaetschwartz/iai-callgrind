@@ -23,6 +23,9 @@ When a custom runner is specified, Gungraun invokes it as follows:
 <RUNNER> --allow-aslr=yes|no [RUNNER_ARGS...] -- /path/to/valgrind [VALGRIND_ARGS...] <BENCHMARK> <BENCHMARK_ARGS>
 ```
 
+<!-- TODO: environment variables, interpolation -->
+<!-- TODO: or just valgrind or GUNGRAUN_VALGRIND_PATH -->
+
 Key points:
 
 - `--allow-aslr` reflects the `--allow-aslr` command-line option (ASLR is
@@ -52,6 +55,8 @@ need a wrapper script that handles these arguments appropriately for your
 container runtime.
 
 ### Docker/Podman Example
+
+<!-- TODO: add target dir mount -->
 
 Create a wrapper script `~/bin/docker-valgrind`:
 

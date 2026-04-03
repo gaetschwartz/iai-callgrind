@@ -11,7 +11,7 @@ use log::debug;
 
 use super::args::CommandLineArgs;
 use super::envs;
-use crate::util::{bool_to_yesno, resolve_binary_path};
+use crate::util::resolve_binary_path;
 
 /// The basic commands (like valgrind) to be executed with default arguments
 #[derive(Debug, Clone)]
@@ -20,6 +20,8 @@ pub struct Cmd {
     pub args: Vec<OsString>,
     /// The path to the executable
     pub bin: PathBuf,
+    /// TODO: DOCS
+    pub envs: Vec<(OsString, OsString)>,
 }
 
 /// `Metadata` contains all information that needs to be collected from cargo and the environment
@@ -121,26 +123,37 @@ impl Metadata {
 
         debug!("Detected target directory: '{}'", target_dir.display());
 
-        let (valgrind_path, valgrind_args, valgrind_wrapper) = if let Some(runner) =
+        let (valgrind_path, valgrind_args, valgrind_envs, valgrind_wrapper) = if let Some(runner) =
             args.valgrind_runner.as_ref()
         {
             debug!("Using valgrind runner: '{}'", runner.display());
-            let mut valgrind_args = vec![OsString::from(format!(
-                "--allow-aslr={}",
-                bool_to_yesno(args.allow_aslr.unwrap_or_default())
-            ))];
-            valgrind_args.extend(
-                args.valgrind_runner_args
-                    .iter()
-                    .flat_map(|r| r.as_slice().iter().map(OsString::from)),
-            );
+            // TODO: INTERPOLATION or later so i have GUNGRAUN_VR_DEST_DIR
+            let mut valgrind_args = args
+                .valgrind_runner_args
+                .iter()
+                .flat_map(|r| r.as_slice().iter().map(OsString::from))
+                .collect::<Vec<OsString>>();
             valgrind_args.push(OsString::from("--"));
-            let valgrind_path =
-                resolve_binary_path("valgrind", None).unwrap_or_else(|_| PathBuf::from("valgrind"));
+
+            // TODO: Document that args.valgrind_path is not checked for existence
+            let valgrind_path = args
+                .valgrind_path
+                .clone()
+                .or_else(|| resolve_binary_path("valgrind", None).ok())
+                .unwrap_or_else(|| PathBuf::from("valgrind"));
+
             valgrind_args.push(valgrind_path.into_os_string());
 
-            (runner.clone(), valgrind_args, None)
+            let valgrind_envs = std::env::vars()
+                .filter_map(|(k, v)| {
+                    k.starts_with("GUNGRAUN_")
+                        .then(|| (OsString::from(k), OsString::from(v)))
+                })
+                .collect::<Vec<(OsString, OsString)>>();
+
+            (runner.clone(), valgrind_args, valgrind_envs, None)
         } else {
+            // FIX: use args.valgrind_path
             let valgrind_path = resolve_binary_path("valgrind", None)?;
             // Invoke Valgrind, disabling ASLR if possible because ASLR could noise up the results a
             // bit
@@ -158,6 +171,7 @@ impl Metadata {
                             OsString::from("-R"),
                             OsString::from(&valgrind_path),
                         ],
+                        envs: Vec::default(),
                     })
                 } else {
                     debug!(
@@ -178,6 +192,7 @@ impl Metadata {
                             OsString::from("disable"),
                             OsString::from(&valgrind_path),
                         ],
+                        envs: Vec::default(),
                     })
                 } else {
                     debug!(
@@ -193,7 +208,12 @@ impl Metadata {
                 None
             };
 
-            (valgrind_path, Vec::default(), valgrind_wrapper)
+            (
+                valgrind_path,
+                Vec::default(),
+                Vec::default(),
+                valgrind_wrapper,
+            )
         };
 
         Ok(Self {
@@ -202,6 +222,7 @@ impl Metadata {
             valgrind: Cmd {
                 bin: valgrind_path,
                 args: valgrind_args,
+                envs: valgrind_envs,
             },
             valgrind_wrapper,
             project_root,

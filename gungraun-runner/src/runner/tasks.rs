@@ -337,6 +337,7 @@ impl ProcessHandler {
         output_path: &ToolOutputPath,
         module_path: &ModulePath,
         captured_output: Option<&CapturedOutput>,
+        valgrind_runner_dest: Option<&Path>,
     ) -> Result<()> {
         if !self.setup_is_parallel {
             if let Some(Err(error)) = self.wait_for_setup() {
@@ -358,6 +359,7 @@ impl ProcessHandler {
             self.setup.as_mut().map(|(_, c)| c),
             captured_output,
             self.sandbox_dir.as_deref(),
+            valgrind_runner_dest,
         )?;
 
         self.bench = Some(child);

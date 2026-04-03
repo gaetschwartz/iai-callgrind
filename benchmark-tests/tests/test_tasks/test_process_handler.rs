@@ -159,6 +159,7 @@ fn test_start_bench_when_force_shutdown_is_false_then_bench_is_started(
             &tool_output_path,
             &module_path().fixture(),
             None,
+            None,
         )
         .expect("Starting the benchmark should succeed");
 
@@ -207,6 +208,7 @@ fn test_start_bench_when_setup_is_parallel_then_bench_is_started(#[case] exit_co
         RunOptions::default(),
         &tool_output_path,
         &module_path().fixture(),
+        None,
         None,
     );
 
@@ -261,6 +263,7 @@ fn test_start_bench_when_force_shutdown_is_true_then_interrupt(#[case] has_setup
         &tool_output_path,
         &module_path().fixture(),
         None,
+        None,
     );
 
     assert!(handler.bench.is_none());
@@ -302,6 +305,7 @@ fn test_start_bench_when_setup_not_parallel_with_error_then_no_bench_and_setup_e
         RunOptions::default(),
         &tool_output_path,
         &module_path().fixture(),
+        None,
         None,
     );
 

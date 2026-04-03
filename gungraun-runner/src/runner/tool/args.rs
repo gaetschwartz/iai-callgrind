@@ -43,10 +43,12 @@ pub mod defaults {
 
 use std::ffi::OsString;
 use std::fmt::Display;
+use std::path::Path;
 use std::str::FromStr;
 
 use anyhow::{anyhow, Result};
 use log::warn;
+use nix::NixPath;
 
 use super::path::ToolOutputPath;
 use crate::api::{RawToolArgs, ValgrindTool};
@@ -176,69 +178,67 @@ impl ToolArgs {
     }
 
     /// Set the output file argument depending on the tool of this `ToolArgs`
-    pub fn set_output_arg(&mut self, output_path: &ToolOutputPath) {
+    pub fn set_output_arg(
+        &mut self,
+        output_path: &ToolOutputPath,
+        valgrind_runner_dest: Option<&Path>,
+    ) {
         if !self.tool.has_output_file() {
             return;
         }
 
         match self.tool {
             ValgrindTool::Callgrind => {
-                let mut arg = OsString::from("--callgrind-out-file=");
-                let callgrind_out_path = if self.trace_children {
-                    output_path.with_modifiers(["#%p"])
-                } else {
-                    output_path.with_modifiers(["#0"])
-                };
-                arg.push(callgrind_out_path.to_path());
+                let arg = self.generate_file_arg(
+                    "--callgrind-out-file=",
+                    output_path,
+                    valgrind_runner_dest,
+                    None,
+                );
                 self.output_paths.push(arg);
             }
             ValgrindTool::Massif => {
-                let mut arg = OsString::from("--massif-out-file=");
-                let massif_out_path = if self.trace_children {
-                    output_path.with_modifiers(["#%p"])
-                } else {
-                    output_path.with_modifiers(["#0"])
-                };
-                arg.push(massif_out_path.to_path());
+                let arg = self.generate_file_arg(
+                    "--massif-out-file=",
+                    output_path,
+                    valgrind_runner_dest,
+                    None,
+                );
                 self.output_paths.push(arg);
             }
             ValgrindTool::DHAT => {
-                let mut arg = OsString::from("--dhat-out-file=");
-                let dhat_out_path = if self.trace_children {
-                    output_path.with_modifiers(["#%p"])
-                } else {
-                    output_path.with_modifiers(["#0"])
-                };
-                arg.push(dhat_out_path.to_path());
+                let arg = self.generate_file_arg(
+                    "--dhat-out-file=",
+                    output_path,
+                    valgrind_runner_dest,
+                    None,
+                );
                 self.output_paths.push(arg);
             }
             ValgrindTool::BBV => {
-                let mut bb_arg = OsString::from("--bb-out-file=");
-                let mut pc_arg = OsString::from("--pc-out-file=");
-                let (bb_out, pc_out) = if self.trace_children {
-                    (
-                        output_path.with_modifiers(["bb", "#%p"]),
-                        output_path.with_modifiers(["pc", "#%p"]),
-                    )
-                } else {
-                    (
-                        output_path.with_modifiers(["bb", "#0"]),
-                        output_path.with_modifiers(["pc", "#0"]),
-                    )
-                };
-                bb_arg.push(bb_out.to_path());
-                pc_arg.push(pc_out.to_path());
+                let bb_arg = self.generate_file_arg(
+                    "--bb-out-file=",
+                    output_path,
+                    valgrind_runner_dest,
+                    Some("bb"),
+                );
+                let pc_arg = self.generate_file_arg(
+                    "--pc-out-file=",
+                    output_path,
+                    valgrind_runner_dest,
+                    Some("pc"),
+                );
                 self.output_paths.push(bb_arg);
                 self.output_paths.push(pc_arg);
             }
             ValgrindTool::Cachegrind => {
-                let mut arg = OsString::from("--cachegrind-out-file=");
-                let cachegrind_out_path = if self.trace_children {
-                    output_path.with_modifiers(["#%p"])
-                } else {
-                    output_path.with_modifiers(["#0"])
-                };
-                arg.push(cachegrind_out_path.to_path());
+                let arg = self.generate_file_arg(
+                    "--cachegrind-out-file=",
+                    output_path,
+                    valgrind_runner_dest,
+                    None,
+                );
+
                 self.output_paths.push(arg);
             }
             // The other tools don't have an outfile
@@ -247,51 +247,50 @@ impl ToolArgs {
     }
 
     /// Set the logfile argument
-    pub fn set_log_arg(&mut self, output_path: &ToolOutputPath) {
-        let log_output = if self.trace_children {
-            output_path.to_log_output().with_modifiers(["#%p"])
-        } else {
-            output_path.to_log_output().with_modifiers(["#0"])
-        };
-        let mut arg = OsString::from("--log-file=");
-        arg.push(log_output.to_path());
+    pub fn set_log_arg(
+        &mut self,
+        output_path: &ToolOutputPath,
+        valgrind_runner_dest: Option<&Path>,
+    ) {
+        let arg = self.generate_file_arg(
+            "--log-file=",
+            &output_path.to_log_output(),
+            valgrind_runner_dest,
+            None,
+        );
         self.log_path = Some(arg);
     }
 
     /// Set the xtree-memory-file argument for tools which support it
-    pub fn set_xtree_arg(&mut self, output_path: &ToolOutputPath) {
-        let xtree_output = if self.trace_children {
-            output_path
-                .to_xtree_output()
-                .map(|p| p.with_modifiers(["#%p"]))
-        } else {
-            output_path
-                .to_xtree_output()
-                .map(|p| p.with_modifiers(["#0"]))
-        };
-
-        if let Some(output) = xtree_output {
-            let mut arg = OsString::from("--xtree-memory-file=");
-            arg.push(output.to_path());
+    pub fn set_xtree_arg(
+        &mut self,
+        output_path: &ToolOutputPath,
+        valgrind_runner_dest: Option<&Path>,
+    ) {
+        if let Some(output_path) = output_path.to_xtree_output() {
+            let arg = self.generate_file_arg(
+                "--xtree-memory-file=",
+                &output_path,
+                valgrind_runner_dest,
+                None,
+            );
             self.xtree_path = Some(arg);
         }
     }
 
     /// Set the xtree-leak-file argument for tools which support it
-    pub fn set_xleak_arg(&mut self, output_path: &ToolOutputPath) {
-        let xleak_output = if self.trace_children {
-            output_path
-                .to_xleak_output()
-                .map(|p| p.with_modifiers(["#%p"]))
-        } else {
-            output_path
-                .to_xleak_output()
-                .map(|p| p.with_modifiers(["#0"]))
-        };
-
-        if let Some(output) = xleak_output {
-            let mut arg = OsString::from("--xtree-leak-file=");
-            arg.push(output.to_path());
+    pub fn set_xleak_arg(
+        &mut self,
+        output_path: &ToolOutputPath,
+        valgrind_runner_dest: Option<&Path>,
+    ) {
+        if let Some(output_path) = output_path.to_xleak_output() {
+            let arg = self.generate_file_arg(
+                "--xtree-leak-file=",
+                &output_path,
+                valgrind_runner_dest,
+                None,
+            );
             self.xleak_path = Some(arg);
         }
     }
@@ -321,6 +320,31 @@ impl ToolArgs {
         }
 
         vec
+    }
+
+    fn generate_file_arg(
+        &self,
+        arg: &str,
+        output_path: &ToolOutputPath,
+        valgrind_runner_dest: Option<&Path>,
+        extra_modifier: Option<&str>,
+    ) -> OsString {
+        let output_path = match (self.trace_children, extra_modifier) {
+            (true, Some(modifier)) => output_path.with_modifiers([modifier, "#%p"]),
+            (true, None) => output_path.with_modifiers(["#%p"]),
+            (false, Some(modifier)) => output_path.with_modifiers([modifier, "#0"]),
+            (false, None) => output_path.with_modifiers(["#0"]),
+        };
+
+        let path = match valgrind_runner_dest {
+            Some(dest) => dest.join(output_path.file_name()),
+            None => output_path.to_path(),
+        };
+
+        let mut file_arg = OsString::with_capacity(arg.len().saturating_add(path.len()));
+        file_arg.push(arg);
+        file_arg.push(path);
+        file_arg
     }
 }
 
