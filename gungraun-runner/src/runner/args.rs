@@ -1,6 +1,13 @@
 // spell-checker: ignore totalbytes totalblocks writeback writebackbehaviour
 //! The command-line arguments of cargo bench as in ARGS of `cargo bench -- ARGS`
 
+/// TODO: DOCS
+/// TODO: Add all other args defaults and apply them
+pub mod defaults {
+    /// TODO: DOCS
+    pub const ALLOW_ASLR: bool = false;
+}
+
 use std::ffi::OsStr;
 use std::fmt::Display;
 use std::hash::Hash;
@@ -70,6 +77,7 @@ pub enum TruncateDescription {
     None,
 }
 
+// FIX: Add envs and passthrough envs, and env_clear
 /// The command line arguments the user provided after `--` when running cargo bench
 ///
 /// These arguments are not the command line arguments passed to `gungraun-runner`. We collect
@@ -584,7 +592,6 @@ pub struct CommandLineArgs {
     )]
     pub drd_metrics: Option<IndexSet<ErrorMetric>>,
 
-    // TODO: Add envs and passthrough envs
     #[rustfmt::skip]
     /// If specified, only run benchmarks matching this wildcard pattern
     ///
@@ -1106,6 +1113,7 @@ pub struct CommandLineArgs {
     )]
     pub valgrind_args: Option<RawToolArgs>,
 
+    // TODO: Document that args.valgrind_path is not checked for existence
     #[rustfmt::skip]
     /// TODO: DOCS
     #[arg(
@@ -1149,6 +1157,7 @@ pub struct CommandLineArgs {
     )]
     pub valgrind_runner: Option<PathBuf>,
 
+    // TODO: Add documentation for the interpolation
     #[rustfmt::skip]
     /// Additional arguments to pass to the valgrind runner executable
     ///
@@ -1162,7 +1171,7 @@ pub struct CommandLineArgs {
         long = "valgrind-runner-args",
         value_parser = parse_raw_args,
         // TODO: test this
-        requires = "valgrind-runner",
+        requires = "valgrind_runner",
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_VALGRIND_RUNNER_ARGS",
@@ -1176,12 +1185,23 @@ pub struct CommandLineArgs {
     #[arg(
         long = "valgrind-runner-dest",
         num_args = 1,
-        requires = "valgrind-runner",
+        requires = "valgrind_runner",
         verbatim_doc_comment,
         env = "GUNGRAUN_VALGRIND_RUNNER_DEST",
         display_order = 500
     )]
     pub valgrind_runner_dest: Option<PathBuf>,
+
+    /// TODO: DOCS
+    #[arg(
+        long = "valgrind-runner-root",
+        num_args = 1,
+        requires = "valgrind_runner",
+        verbatim_doc_comment,
+        env = "GUNGRAUN_VALGRIND_RUNNER_ROOT",
+        display_order = 500
+    )]
+    pub valgrind_runner_root: Option<PathBuf>,
 }
 
 /// A wrapper type for raw command-line arguments
@@ -1271,6 +1291,16 @@ impl RawArgs {
     /// Returns a slice of the underlying argument strings
     pub fn as_slice(&self) -> &[String] {
         &self.0
+    }
+
+    /// TODO: DOCS
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    /// TODO: DOCS
+    pub fn len(&self) -> usize {
+        self.0.len()
     }
 }
 
@@ -1540,7 +1570,9 @@ fn parse_parallel(value: &str) -> Result<usize, String> {
 
 /// This function parses a space separated list of raw argument strings into [`RawArgs`]
 fn parse_raw_args(value: &str) -> Result<RawArgs, String> {
-    let value = if value.len() >= 2 {
+    let value = if value.is_empty() {
+        return Err(String::from("Empty arguments"));
+    } else if value.len() >= 2 {
         match (&value.as_bytes()[0], &value.as_bytes()[value.len() - 1]) {
             (b'\'', b'\'') | (b'"', b'"') => &value[1..value.len() - 1],
             _ => value,
@@ -1613,18 +1645,22 @@ mod tests {
     use crate::api::RawToolArgs;
 
     #[rstest]
-    #[case::empty("", &[])]
     #[case::single_key_value("--some=yes", &["--some=yes"])]
     #[case::two_key_value("--some=yes --other=no", &["--some=yes", "--other=no"])]
     #[case::single_escaped("--some='yes and no'", &["--some=yes and no"])]
     #[case::double_escaped("--some='\"yes and no\"'", &["--some=\"yes and no\""])]
     #[case::multiple_escaped(
-    "--some='yes and no' --other='no and yes'",
-    &["--some=yes and no", "--other=no and yes"]
-)]
-    fn test_parse_callgrind_args(#[case] value: &str, #[case] expected: &[&str]) {
+        "--some='yes and no' --other='no and yes'",
+        &["--some=yes and no", "--other=no and yes"]
+    )]
+    fn test_parse_tool_args(#[case] value: &str, #[case] expected: &[&str]) {
         let actual = parse_tool_args(value).unwrap();
         assert_eq!(actual, RawToolArgs::from_iter(expected));
+    }
+
+    #[test]
+    fn test_parse_tool_args_when_empty_then_error() {
+        parse_tool_args("").unwrap_err();
     }
 
     #[rstest]
@@ -2249,7 +2285,13 @@ mod tests {
     #[case::flag_one_with_equals(&["--valgrind-runner-args=--foo=some"], &["--foo=some"])]
     #[case::flag_two(&["--valgrind-runner-args='--foo --bar'"], &["--foo", "--bar"])]
     fn test_valgrind_runner_args(#[case] input: &[&str], #[case] expected: &[&str]) {
-        let result = CommandLineArgs::try_parse_from(input).unwrap();
+        let result = CommandLineArgs::try_parse_from(
+            input
+                .iter()
+                .chain(std::iter::once(&"--valgrind-runner=/bin/cat")),
+        )
+        .map_err(|e| e.to_string())
+        .unwrap();
         assert_eq!(
             result.valgrind_runner_args,
             Some(RawArgs(expected.iter().map(ToString::to_string).collect()))
@@ -2261,6 +2303,7 @@ mod tests {
         CommandLineArgs::try_parse_from([
             "--valgrind-runner-args=--foo",
             "--valgrind-runner-args=--bar",
+            "--valgrind-runner=/bin/cat",
         ])
         .unwrap_err();
     }

@@ -1,11 +1,14 @@
 //! The module responsible for the actual run of the benchmark
 
-use std::ffi::OsString;
+use std::collections::HashMap;
+use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Output};
 
 use anyhow::Result;
+use itertools::Itertools;
 use log::{debug, error};
+use os_str_bytes::OsStrBytesExt;
 
 use super::config::ToolConfig;
 use super::path::ToolOutputPath;
@@ -27,7 +30,7 @@ pub struct RunOptions {
     /// If true, clear the environment variables
     pub env_clear: bool,
     /// The environment variables to pass into the [`ToolCommand`]
-    pub envs: Vec<(OsString, OsString)>,
+    pub envs: HashMap<OsString, OsString>,
     /// Configuration of the expected exit code/signal
     pub exit_with: Option<ExitWith>,
     /// If present, execute the [`ToolCommand`] in a [`api::Sandbox`]
@@ -54,6 +57,8 @@ pub struct ToolCommand {
     pub command: Command,
     /// Configuration for whether to capture or pass through the subprocess output
     pub nocapture: NoCapture,
+    /// TODO: DOCS
+    pub roots: Option<(PathBuf, PathBuf)>,
     /// The [`ValgrindTool`] to run
     pub tool: ValgrindTool,
 }
@@ -78,42 +83,86 @@ pub struct ToolCommandChild {
 
 impl ToolCommand {
     /// Creates new `ToolCommand`.
-    pub fn new(tool: ValgrindTool, meta: &Metadata, is_default: bool) -> Self {
-        let nocapture = if is_default {
+    pub fn new(
+        tool_config: &ToolConfig,
+        meta: &Metadata,
+        output_path: &ToolOutputPath,
+        run_options: &RunOptions,
+    ) -> Result<Self> {
+        let nocapture = if tool_config.is_default {
             meta.args.nocapture
         } else {
             NoCapture::False
         };
 
-        Self {
-            command: meta.into(),
+        let command = meta.to_tool_command(tool_config, output_path, run_options)?;
+        Ok(Self {
+            command,
             nocapture,
-            tool,
+            tool: tool_config.tool,
+            roots: meta
+                .args
+                .valgrind_runner_root
+                .clone()
+                .map(|r| (meta.project_root.clone(), r)),
+        })
+    }
+
+    /// TODO: DOCS
+    pub fn resolve_executable(&self, executable: &Path, current_dir: Option<&Path>) -> PathBuf {
+        if let Some(rebased) = self.try_rebase_arg(executable.as_os_str()) {
+            PathBuf::from(rebased)
+        } else {
+            resolve_binary_path(executable, current_dir)
+                .unwrap_or_else(|_| executable.to_path_buf())
         }
     }
 
-    /// Clear the environment variables
-    ///
-    /// The `LD_PRELOAD` and `LD_LIBRARY_PATH` variables are skipped. If they are set there's
-    /// usually a good reason for it.
-    ///
-    /// If the tool is `Memcheck`: In order to be able run `Memcheck` without errors, the `PATH`,
-    /// `HOME` and `DEBUGINFOD_URLS` variables are skipped.
-    pub fn env_clear(&mut self) -> &mut Self {
-        debug!("{}: Clearing environment variables", self.tool.id());
-        for (key, _) in std::env::vars() {
-            match (key.as_str(), self.tool) {
-                (key @ ("DEBUGINFOD_URLS" | "PATH" | "HOME"), ValgrindTool::Memcheck)
-                | (key @ ("LD_PRELOAD" | "LD_LIBRARY_PATH" | "VALGRIND_LIB"), _) => {
-                    debug!(
-                        "{}: Clearing environment variables: Skipping {key}",
-                        self.tool.id()
-                    );
-                }
-                _ => {
-                    self.command.env_remove(key);
-                }
-            }
+    /// TODO: DOCS
+    pub fn arg<T>(&mut self, arg: T) -> &mut Self
+    where
+        T: AsRef<OsStr>,
+    {
+        self.command.arg(arg.as_ref());
+        self
+    }
+
+    /// TODO: DOCS
+    pub fn arg_rebase<T>(&mut self, arg: T) -> &mut Self
+    where
+        T: AsRef<OsStr>,
+    {
+        let arg = arg.as_ref();
+
+        if let Some(rebased) = self.try_rebase_arg(arg) {
+            self.command.arg(rebased);
+        } else {
+            self.command.arg(arg);
+        }
+
+        self
+    }
+
+    /// TODO: DOCS
+    pub fn args<I, T>(&mut self, args: I) -> &mut Self
+    where
+        I: IntoIterator<Item = T>,
+        T: AsRef<OsStr>,
+    {
+        for arg in args {
+            self.arg(arg);
+        }
+        self
+    }
+
+    /// TODO: DOCS
+    pub fn args_rebase<I, T>(&mut self, args: I) -> &mut Self
+    where
+        I: IntoIterator<Item = T>,
+        T: AsRef<OsStr>,
+    {
+        for arg in args {
+            self.arg_rebase(arg);
         }
         self
     }
@@ -121,10 +170,10 @@ impl ToolCommand {
     /// Run the `ToolCommand`
     pub fn run(
         mut self,
-        config: ToolConfig,
+        config: &ToolConfig,
         executable: &Path,
         executable_args: &[OsString],
-        run_options: RunOptions,
+        run_options: &RunOptions,
         output_path: &ToolOutputPath,
         module_path: &ModulePath,
         child: Option<&mut Child>,
@@ -132,65 +181,59 @@ impl ToolCommand {
         sandbox_dir: Option<&Path>,
         valgrind_runner_dest: Option<&Path>,
     ) -> Result<ToolCommandChild> {
-        debug!(
-            "{}: Running with executable '{}'",
-            self.tool.id(),
-            executable.display()
-        );
-
         let RunOptions {
-            env_clear,
-            current_dir: run_dir,
+            current_dir,
             exit_with,
-            envs,
             stdin,
             stdout,
             stderr,
             ..
-        } = run_options;
+        } = run_options.clone();
 
-        if env_clear {
-            debug!("Clearing environment variables");
-            self.env_clear();
-        }
-
-        match (sandbox_dir, run_dir) {
+        match (sandbox_dir, current_dir.as_ref()) {
             (None, None) => {}
-            (None, Some(run_dir)) => {
-                self.command.current_dir(run_dir);
+            (None, Some(current_dir)) => {
+                self.command.current_dir(current_dir);
             }
             (Some(sandbox_dir), None) => {
                 self.command.current_dir(sandbox_dir);
             }
-            (Some(sandbox_dir), Some(run_dir)) => {
+            (Some(sandbox_dir), Some(current_dir)) => {
                 // If run_dir is absolute uses run_dir otherwise joins the paths
-                let path = sandbox_dir.join(run_dir);
+                let path = sandbox_dir.join(current_dir);
                 self.command.current_dir(path);
             }
         }
 
-        let mut tool_args = config.args;
+        let mut tool_args = config.args.clone();
         tool_args.set_output_arg(output_path, valgrind_runner_dest);
         tool_args.set_log_arg(output_path, valgrind_runner_dest);
         tool_args.set_xtree_arg(output_path, valgrind_runner_dest);
         tool_args.set_xleak_arg(output_path, valgrind_runner_dest);
 
-        let executable = resolve_binary_path(executable, sandbox_dir)?;
-        let args = tool_args.to_vec();
+        let executable = self.resolve_executable(executable, sandbox_dir);
+        debug!("{}: Executable: {}", self.tool.id(), executable.display());
         debug!(
-            "{}: Arguments: {}",
+            "{}: Executable arguments: {}",
             self.tool.id(),
-            args.iter()
+            executable_args
+                .iter()
                 .map(|s| s.to_string_lossy().to_string())
-                .collect::<Vec<String>>()
                 .join(" ")
         );
 
-        self.command
-            .args(tool_args.to_vec())
-            .arg(&executable)
-            .args(executable_args)
-            .envs(envs);
+        let args = tool_args.to_vec();
+        debug!(
+            "{}: Valgrind arguments: {}",
+            self.tool.id(),
+            args.iter()
+                .map(|s| s.to_string_lossy().to_string())
+                .join(" ")
+        );
+
+        self.args_rebase(args)
+            .arg(&executable) // already resolved, no need to rebase
+            .args_rebase(executable_args);
 
         self.nocapture.apply(&mut self.command, captured_output)?;
 
@@ -218,7 +261,7 @@ impl ToolCommand {
                 ToolCommandChild::new(
                     self.tool,
                     c,
-                    executable.clone(),
+                    executable,
                     exit_with,
                     output_path.to_log_output(),
                 )
@@ -226,6 +269,50 @@ impl ToolCommand {
             .map_err(|error| {
                 Error::LaunchError(PathBuf::from("valgrind"), error.to_string()).into()
             })
+    }
+
+    /// Attempts to rebase a path argument if it starts with the workspace root.
+    ///
+    /// Returns `Some(rebased_arg)` if rebasing was successful, `None` if the argument
+    /// should be passed through unchanged.
+    fn try_rebase_arg(&self, arg: &OsStr) -> Option<OsString> {
+        let (workspace_root, new_root) = self.roots.as_ref()?;
+
+        if arg.starts_with("-") {
+            if let Some((key, value)) = arg.split_once("=") {
+                Self::try_rebase_path_arg(key, value, workspace_root, new_root, "=")
+            } else if let Some((key, value)) = arg.split_once(" ") {
+                Self::try_rebase_path_arg(key, value, workspace_root, new_root, " ")
+            } else {
+                None
+            }
+        } else {
+            Path::new(arg)
+                .strip_prefix(workspace_root)
+                .ok()
+                .map(|suffix| new_root.join(suffix).into_os_string())
+        }
+    }
+
+    /// Attempts to rebase a key-value argument where the value is a path.
+    ///
+    /// Returns `Some(rebased_arg)` if the value path was successfully rebased,
+    /// `None` if the value is not under the workspace root.
+    fn try_rebase_path_arg(
+        key: &OsStr,
+        value: &OsStr,
+        workspace_root: &Path,
+        new_root: &Path,
+        separator: &str,
+    ) -> Option<OsString> {
+        let suffix = Path::new(value).strip_prefix(workspace_root).ok()?;
+
+        let new_path = new_root.join(suffix);
+        let mut new_arg = key.to_os_string();
+        new_arg.push(separator);
+        new_arg.push(new_path.into_os_string());
+
+        Some(new_arg)
     }
 }
 

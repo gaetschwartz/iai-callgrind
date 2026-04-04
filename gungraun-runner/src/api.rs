@@ -47,6 +47,7 @@
 
 #[cfg(feature = "runner")]
 use std::borrow::Cow;
+use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fmt::Display;
 #[cfg(feature = "runner")]
@@ -1380,7 +1381,7 @@ impl BinaryBenchmarkConfig {
     ///
     /// This is done especially for pass-through environment variables which have a `None` value at
     /// first.
-    pub fn resolve_envs(&self) -> Vec<(OsString, OsString)> {
+    pub fn resolve_envs(&self) -> HashMap<OsString, OsString> {
         self.envs
             .iter()
             .filter_map(|(key, value)| {
@@ -2143,7 +2144,7 @@ impl LibraryBenchmarkConfig {
     /// Resolves the environment variables and create key, value pairs out of them.
     ///
     /// Same as [`BinaryBenchmarkConfig::resolve_envs`]
-    pub fn resolve_envs(&self) -> Vec<(OsString, OsString)> {
+    pub fn resolve_envs(&self) -> HashMap<OsString, OsString> {
         self.envs
             .iter()
             .filter_map(|(key, value)| match value {

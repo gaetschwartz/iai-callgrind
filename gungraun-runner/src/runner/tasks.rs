@@ -330,10 +330,10 @@ impl ProcessHandler {
     pub fn start_bench(
         &mut self,
         command: ToolCommand,
-        tool_config: ToolConfig,
+        tool_config: &ToolConfig,
         executable: &Path,
         executable_args: &[OsString],
-        run_options: RunOptions,
+        run_options: &RunOptions,
         output_path: &ToolOutputPath,
         module_path: &ModulePath,
         captured_output: Option<&CapturedOutput>,

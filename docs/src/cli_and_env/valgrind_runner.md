@@ -25,6 +25,8 @@ When a custom runner is specified, Gungraun invokes it as follows:
 
 <!-- TODO: environment variables, interpolation -->
 <!-- TODO: or just valgrind or GUNGRAUN_VALGRIND_PATH -->
+<!-- TODO: `--` just submitted if there are --valgrind-runner-args -->
+<!-- TODO: additional environment variables like GUNGRAUN_VR_DEST_DIR, ... -->
 
 Key points:
 

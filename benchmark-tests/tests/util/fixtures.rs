@@ -171,17 +171,20 @@ pub fn test_file(dir: Option<&Path>) -> (PathBuf, File) {
 
 #[builder(finish_fn = "fixture")]
 pub fn tool_command(
+    output_path: &ToolOutputPath,
     tool: Option<ValgrindTool>,
     meta: Option<Metadata>,
     is_default: Option<bool>,
 ) -> ToolCommand {
     let meta = meta.unwrap_or_else(|| metadata().fixture());
 
-    ToolCommand::new(
-        tool.unwrap_or(DEFAULT_TOOL),
-        &meta,
-        is_default.unwrap_or(true),
-    )
+    todo!();
+    // ToolCommand::new(
+    //     tool.unwrap_or(DEFAULT_TOOL),
+    //     &meta,
+    //     is_default.unwrap_or(true),
+    //     output_path,
+    // )
 }
 
 #[builder(finish_fn = "fixture")]

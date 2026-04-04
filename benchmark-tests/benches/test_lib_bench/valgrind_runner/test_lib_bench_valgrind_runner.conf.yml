@@ -6,13 +6,25 @@ groups:
             "--valgrind-runner=/tmp/gungraun_test_lib_bench_valgrind_runner",
             "--nocapture",
           ]
+        envs:
+          __GUNGRAUN_TEST_VAR: test var
         setup: |
           cat <<'EOF' >/tmp/gungraun_test_lib_bench_valgrind_runner
           #!/usr/bin/env bash
 
-          echo "I am a valgrind runner running with arguments:"
-          while [[ $# -gt 0 && "$1" != "--" ]]; do echo "$1"; shift; done
-          [[ "$1" == "--" ]] && shift
+          echo "Running with the valgrind executable:"
+          printf '%s\n' "$1"
+
+          for env in \
+                    "GUNGRAUN_VR_DEST_DIR" \
+                    "GUNGRAUN_VR_HOME" \
+                    "GUNGRAUN_VR_WORKSPACE_ROOT" \
+                    "GUNGRAUN_ALLOW_ASLR"; do
+            [[ -n "$env" ]] && echo "Found env: ${env}"
+          done
+
+          [[ -z "$__GUNGRAUN_TEST_VAR" ]] && echo "Environment has been cleared"
+
           exec "$@"
           EOF
 

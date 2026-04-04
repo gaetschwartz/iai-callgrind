@@ -151,11 +151,11 @@ fn test_start_bench_when_force_shutdown_is_false_then_bench_is_started(
 
     handler
         .start_bench(
-            tool_command().fixture(),
-            tool_config().fixture(),
+            tool_command().output_path(&tool_output_path).fixture(),
+            &tool_config().fixture(),
             &ECHO_EXE,
             &["foo".into()],
-            RunOptions::default(),
+            &RunOptions::default(),
             &tool_output_path,
             &module_path().fixture(),
             None,
@@ -201,11 +201,11 @@ fn test_start_bench_when_setup_is_parallel_then_bench_is_started(#[case] exit_co
         .fixture();
 
     let result = handler.start_bench(
-        tool_command().fixture(),
-        tool_config().fixture(),
+        tool_command().output_path(&tool_output_path).fixture(),
+        &tool_config().fixture(),
         &ECHO_EXE,
         &[],
-        RunOptions::default(),
+        &RunOptions::default(),
         &tool_output_path,
         &module_path().fixture(),
         None,
@@ -255,11 +255,11 @@ fn test_start_bench_when_force_shutdown_is_true_then_interrupt(#[case] has_setup
     };
 
     let result = handler.start_bench(
-        tool_command().fixture(),
-        tool_config().fixture(),
+        tool_command().output_path(&tool_output_path).fixture(),
+        &tool_config().fixture(),
         &ECHO_EXE,
         &[],
-        RunOptions::default(),
+        &RunOptions::default(),
         &tool_output_path,
         &module_path().fixture(),
         None,
@@ -298,11 +298,11 @@ fn test_start_bench_when_setup_not_parallel_with_error_then_no_bench_and_setup_e
         .fixture();
 
     let result = handler.start_bench(
-        tool_command().fixture(),
-        tool_config().fixture(),
+        tool_command().output_path(&tool_output_path).fixture(),
+        &tool_config().fixture(),
         &ECHO_EXE,
         &[],
-        RunOptions::default(),
+        &RunOptions::default(),
         &tool_output_path,
         &module_path().fixture(),
         None,

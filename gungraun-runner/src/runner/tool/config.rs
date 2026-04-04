@@ -482,10 +482,13 @@ impl ToolConfigs {
                 sandbox.as_ref().and_then(Sandbox::path),
             );
 
-            let is_default = tool_config.is_default;
-            let command = ToolCommand::new(tool, &config.meta, is_default);
+            let command = ToolCommand::new(tool_config, &config.meta, &output_path, run_options)?;
             let nocapture = command.nocapture;
-            let captured_output = if is_default { captured_output } else { None };
+            let captured_output = if tool_config.is_default {
+                captured_output
+            } else {
+                None
+            };
             run_options.setup.as_ref().map_or(Ok(()), |setup| {
                 process_handler.start_assistant(
                     true,
@@ -508,10 +511,10 @@ impl ToolConfigs {
             process_handler
                 .start_bench(
                     command,
-                    tool_config.clone(),
+                    tool_config,
                     executable,
                     executable_args,
-                    run_options.clone(),
+                    run_options,
                     &output_path,
                     module_path,
                     captured_output,
