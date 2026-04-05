@@ -15,7 +15,7 @@ use log::debug;
 use super::args::CommandLineArgs;
 use super::envs;
 use crate::api::ValgrindTool;
-use crate::runner::args;
+use crate::runner::args::{self, RawArgs};
 use crate::runner::tool::config::ToolConfig;
 use crate::runner::tool::path::ToolOutputPath;
 use crate::runner::tool::run::RunOptions;
@@ -251,16 +251,22 @@ impl Metadata {
                         .into(),
                 );
 
-                if let Some(args) = self.args.valgrind_runner_args.as_ref() {
-                    if !args.is_empty() {
-                        let interpolated = interpolate_arguments(
-                            args.as_slice(),
-                            &run_options.envs,
-                            &additional_envs,
-                        )?;
-                        command.args(interpolated);
-                        command.arg("--");
-                    }
+                let mut has_args = false;
+                for args in self
+                    .args
+                    .valgrind_runner_args
+                    .iter()
+                    .filter(|&r| !r.is_empty())
+                    .map(RawArgs::as_slice)
+                {
+                    has_args = true;
+                    let interpolated =
+                        interpolate_arguments(args, &run_options.envs, &additional_envs)?;
+                    command.args(interpolated);
+                }
+
+                if has_args {
+                    command.arg("--");
                 }
 
                 command.arg(valgrind_path);

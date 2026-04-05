@@ -10,7 +10,7 @@ pub mod defaults {
     pub const ENV_CLEAR: bool = true;
 }
 
-use std::ffi::{OsStr, OsString};
+use std::ffi::OsString;
 use std::fmt::Display;
 use std::hash::Hash;
 use std::path::PathBuf;
@@ -18,8 +18,7 @@ use std::process::{Command, Stdio};
 use std::str::FromStr;
 
 use anyhow::Result;
-use clap::builder::{BoolishValueParser, TypedValueParser};
-use clap::error::{ContextKind, ContextValue, ErrorKind};
+use clap::builder::{BoolishValueParser, PathBufValueParser, TypedValueParser};
 use clap::{ArgAction, Parser};
 use indexmap::{indexset, IndexMap, IndexSet};
 use simplematch::{DoWild, Options};
@@ -1180,7 +1179,7 @@ pub struct CommandLineArgs {
     ///   * --valgrind-runner=/path/to/docker-valgrind-wrapper
     #[arg(
         long = "valgrind-runner",
-        value_parser = ValgrindRunnerParser,
+        value_parser = PathBufValueParser::new().try_map(parse_path_resolved),
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_VALGRIND_RUNNER",
@@ -1188,7 +1187,6 @@ pub struct CommandLineArgs {
     )]
     pub valgrind_runner: Option<PathBuf>,
 
-    // FIX: use arg action append where possible?
     // TODO: Add documentation for the interpolation
     #[rustfmt::skip]
     /// Additional arguments to pass to the valgrind runner executable
@@ -1203,12 +1201,14 @@ pub struct CommandLineArgs {
         long = "valgrind-runner-args",
         value_parser = parse_raw_args,
         requires = "valgrind_runner",
+        required = false,
         num_args = 1,
+        action = ArgAction::Append,
         verbatim_doc_comment,
         env = "GUNGRAUN_VALGRIND_RUNNER_ARGS",
         display_order = 500
     )]
-    pub valgrind_runner_args: Option<RawArgs>,
+    pub valgrind_runner_args: Vec<RawArgs>,
 
     #[rustfmt::skip]
     /// TODO: DOCS, only effective with the `valgrind_runner` variable, responsibility of user that
@@ -1242,9 +1242,6 @@ pub struct CommandLineArgs {
 /// `--valgrind-runner-args`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RawArgs(Vec<String>);
-
-#[derive(Debug, Clone)]
-struct ValgrindRunnerParser;
 
 impl BenchmarkFilter {
     /// Return `true` if the filter matches the haystack
@@ -1332,31 +1329,6 @@ impl RawArgs {
     /// TODO: DOCS
     pub fn len(&self) -> usize {
         self.0.len()
-    }
-}
-
-// FIX: use OsStringValueParser with a map
-impl TypedValueParser for ValgrindRunnerParser {
-    type Value = PathBuf;
-
-    fn parse_ref(
-        &self,
-        cmd: &clap::Command,
-        arg: Option<&clap::Arg>,
-        value: &OsStr,
-    ) -> Result<Self::Value, clap::Error> {
-        util::resolve_binary_path(value, None).map_err(|_| {
-            let mut err = clap::Error::new(ErrorKind::ValueValidation).with_cmd(cmd);
-            err.insert(
-                ContextKind::InvalidArg,
-                ContextValue::String(format!("--{}", arg.unwrap().get_id())),
-            );
-            err.insert(
-                ContextKind::InvalidValue,
-                ContextValue::String(format!("{}", value.to_string_lossy())),
-            );
-            err
-        })
     }
 }
 
@@ -1628,6 +1600,10 @@ fn parse_parallel(value: &str) -> Result<usize, String> {
     } else {
         Err(format!("Invalid value: {value}"))
     }
+}
+
+fn parse_path_resolved(value: PathBuf) -> Result<PathBuf, String> {
+    util::resolve_binary_path(value, None).map_err(|error| error.to_string())
 }
 
 /// This function parses a space separated list of raw argument strings into [`RawArgs`]
@@ -2356,18 +2332,25 @@ mod tests {
         .unwrap();
         assert_eq!(
             result.valgrind_runner_args,
-            Some(RawArgs(expected.iter().map(ToString::to_string).collect()))
+            vec![RawArgs(expected.iter().map(ToString::to_string).collect())]
         );
     }
 
     #[test]
-    fn test_valgrind_runner_args_when_twice_then_error() {
-        CommandLineArgs::try_parse_from([
+    fn test_valgrind_runner_args_when_twice() {
+        let result = CommandLineArgs::try_parse_from([
             "--valgrind-runner-args=--foo",
             "--valgrind-runner-args=--bar",
             "--valgrind-runner=/bin/cat",
         ])
-        .unwrap_err();
+        .unwrap();
+        assert_eq!(
+            result.valgrind_runner_args,
+            vec![
+                RawArgs(vec!["--foo".to_owned()]),
+                RawArgs(vec!["--bar".to_owned()])
+            ]
+        );
     }
 
     #[test]
