@@ -1,7 +1,8 @@
 //! This module provides common utility functions
 
+use std::collections::HashMap;
 // spell-checker: ignore axxxxxbcd
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::io::{self, BufWriter, Write};
 use std::ops::Neg;
 use std::path::{Path, PathBuf};
@@ -247,6 +248,25 @@ where
             binary.to_string_lossy()
         }),
     }
+}
+
+/// Resolves the environment variables and create key, value pairs out of them.
+///
+/// Same as [`BinaryBenchmarkConfig::resolve_envs`]
+pub fn resolve_envs<I, T>(envs: I) -> HashMap<OsString, OsString>
+where
+    I: IntoIterator<Item = T>,
+    T: Into<(OsString, Option<OsString>)>,
+{
+    envs.into_iter()
+        .filter_map(|pair| {
+            let (key, value) = pair.into();
+            match value {
+                Some(value) => Some((key, value)),
+                None => std::env::var_os(&key).map(|value| (key.clone(), value)),
+            }
+        })
+        .collect()
 }
 
 /// Format a float as string depending on the number of digits of the integer-part

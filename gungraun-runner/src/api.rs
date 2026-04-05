@@ -47,6 +47,7 @@
 
 #[cfg(feature = "runner")]
 use std::borrow::Cow;
+#[cfg(feature = "runner")]
 use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fmt::Display;
@@ -78,6 +79,8 @@ use crate::runner;
 use crate::runner::metrics::Summarize;
 #[cfg(feature = "runner")]
 use crate::runner::metrics::TypeChecker;
+#[cfg(feature = "runner")]
+use crate::util;
 
 /// All metrics which cachegrind produces and additionally some derived events
 ///
@@ -1344,6 +1347,7 @@ pub struct Tool {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Tools(pub Vec<Tool>);
 
+#[cfg(feature = "runner")]
 impl BinaryBenchmarkConfig {
     /// Update this configuration with all other configurations in the given order
     #[must_use]
@@ -1382,17 +1386,10 @@ impl BinaryBenchmarkConfig {
     /// This is done especially for pass-through environment variables which have a `None` value at
     /// first.
     pub fn resolve_envs(&self) -> HashMap<OsString, OsString> {
-        self.envs
-            .iter()
-            .filter_map(|(key, value)| {
-                value.as_ref().map_or_else(
-                    || std::env::var_os(key).map(|value| (key.clone(), value)),
-                    |value| Some((key.clone(), value.clone())),
-                )
-            })
-            .collect()
+        util::resolve_envs(self.envs.clone())
     }
 
+    // TODO: move logic into util and make use of it in `LibraryBenchmarkConfig`, too
     /// Collects all environment variables which don't have a `None` value.
     ///
     /// Pass-through variables have a `None` value.
@@ -2113,6 +2110,7 @@ impl From<CallgrindMetrics> for IndexSet<EventKind> {
     }
 }
 
+#[cfg(feature = "runner")]
 impl LibraryBenchmarkConfig {
     /// Update this configuration with all other configurations in the given order
     #[must_use]
@@ -2145,13 +2143,7 @@ impl LibraryBenchmarkConfig {
     ///
     /// Same as [`BinaryBenchmarkConfig::resolve_envs`]
     pub fn resolve_envs(&self) -> HashMap<OsString, OsString> {
-        self.envs
-            .iter()
-            .filter_map(|(key, value)| match value {
-                Some(value) => Some((key.clone(), value.clone())),
-                None => std::env::var_os(key).map(|value| (key.clone(), value)),
-            })
-            .collect()
+        util::resolve_envs(self.envs.clone())
     }
 
     /// Collects all environment variables which don't have a `None` value.

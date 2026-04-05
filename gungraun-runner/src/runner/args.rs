@@ -6,9 +6,11 @@
 pub mod defaults {
     /// TODO: DOCS
     pub const ALLOW_ASLR: bool = false;
+    /// TODO: DOCS
+    pub const ENV_CLEAR: bool = true;
 }
 
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::fmt::Display;
 use std::hash::Hash;
 use std::path::PathBuf;
@@ -77,7 +79,7 @@ pub enum TruncateDescription {
     None,
 }
 
-// FIX: Add envs and passthrough envs, and env_clear
+// TODO: is there a short help version?
 /// The command line arguments the user provided after `--` when running cargo bench
 ///
 /// These arguments are not the command line arguments passed to `gungraun-runner`. We collect
@@ -593,6 +595,34 @@ pub struct CommandLineArgs {
     pub drd_metrics: Option<IndexSet<ErrorMetric>>,
 
     #[rustfmt::skip]
+    /// TODO: DOCS
+    #[arg(
+        long = "env-clear",
+        num_args = 0..=1,
+        default_missing_value = "true",
+        verbatim_doc_comment,
+        value_parser = BoolishValueParser::new(),
+        env = "GUNGRAUN_ENV_CLEAR",
+        display_order = 100
+    )]
+    pub env_clear: Option<bool>,
+
+    #[rustfmt::skip]
+    /// TODO: DOCS
+    #[arg(
+        long = "envs",
+        num_args = 1,
+        required = false,
+        require_equals = true,
+        action = ArgAction::Append,
+        verbatim_doc_comment,
+        value_parser = parse_envs,
+        env = "GUNGRAUN_ENVS",
+        display_order = 100
+    )]
+    pub envs: Vec<Vec<(OsString, OsString)>>,
+
+    #[rustfmt::skip]
     /// If specified, only run benchmarks matching this wildcard pattern
     ///
     /// The wildcard pattern can contain `*` to match any amount of characters, `?` to match a
@@ -811,6 +841,7 @@ pub struct CommandLineArgs {
     )]
     pub nocapture: NoCapture,
 
+    // FIX: Add alias no-summary
     #[rustfmt::skip]
     /// Suppress the summary showing regressions and execution time at the end of a benchmark run
     ///
@@ -883,7 +914,7 @@ pub struct CommandLineArgs {
         require_equals = true,
         value_parser = parse_parallel,
         env = "GUNGRAUN_PARALLEL",
-        display_order = 300
+        display_order = 300 // FIX: DISPLAY ORDER
     )]
     pub parallel: usize,
 
@@ -1304,6 +1335,7 @@ impl RawArgs {
     }
 }
 
+// FIX: use OsStringValueParser with a map
 impl TypedValueParser for ValgrindRunnerParser {
     type Value = PathBuf;
 
@@ -1450,6 +1482,36 @@ fn parse_dhat_metrics(value: &str) -> Result<IndexSet<DhatMetric>, String> {
 /// Parse the DRD metrics as error metrics
 fn parse_drd_metrics(value: &str) -> Result<IndexSet<ErrorMetric>, String> {
     parse_tool_metrics(value, parse_error_metrics)
+}
+
+/// Parse environment variable `key=value` pairs and resolve standalone keys
+fn parse_envs(value: &str) -> Result<Vec<(OsString, OsString)>, String> {
+    let trimmed = value.trim();
+    let trimmed = trimmed
+        .strip_prefix('\'')
+        .and_then(|v| v.strip_suffix('\''))
+        .or_else(|| trimmed.strip_prefix('"').and_then(|v| v.strip_suffix('"')))
+        .unwrap_or(trimmed);
+
+    let splits = shlex::split(trimmed)
+        .ok_or_else(|| format!("Failed splitting '{value}' for POSIX shell environment"))?;
+
+    let mut result = vec![];
+    for split in splits {
+        if let Some((key, equals_value)) = split.split_once('=') {
+            if key.is_empty() {
+                return Err(format!("Empty key for value: '{equals_value}'"));
+            }
+
+            result.push((OsString::from(key), OsString::from(equals_value)));
+        } else if let Some(env_value) = std::env::var_os(&split) {
+            result.push((OsString::from(split), env_value));
+        } else {
+            // do nothing
+        }
+    }
+
+    Ok(result)
 }
 
 fn parse_error_metrics(item: &str) -> Result<IndexSet<ErrorMetric>, String> {
@@ -2306,5 +2368,291 @@ mod tests {
             "--valgrind-runner=/bin/cat",
         ])
         .unwrap_err();
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_env_clear_default() {
+        std::env::remove_var("GUNGRAUN_ENV_CLEAR");
+        let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
+        assert_eq!(result.env_clear, None);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_env_clear_env() {
+        std::env::set_var("GUNGRAUN_ENV_CLEAR", "yes");
+        let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
+        assert_eq!(result.env_clear, Some(true));
+        std::env::remove_var("GUNGRAUN_ENV_CLEAR");
+    }
+
+    #[rstest]
+    #[case::yes("yes", true)]
+    #[case::no("no", false)]
+    #[case::true_val("true", true)]
+    #[case::false_val("false", false)]
+    #[case::on("on", true)]
+    #[case::off("off", false)]
+    #[case::one("1", true)]
+    #[case::zero("0", false)]
+    #[case::default("", true)]
+    fn test_env_clear_cli(#[case] value: &str, #[case] expected: bool) {
+        let result = if value.is_empty() {
+            CommandLineArgs::parse_from(["--env-clear".to_owned()])
+        } else {
+            CommandLineArgs::parse_from([format!("--env-clear={value}")])
+        };
+        assert_eq!(result.env_clear, Some(expected));
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_envs_arg_all_missing_vars() {
+        let result =
+            CommandLineArgs::try_parse_from(["--envs='NONEXISTENT1 NONEXISTENT2'"]).unwrap();
+
+        assert_eq!(result.envs.len(), 1);
+        assert_eq!(result.envs[0], vec![]);
+    }
+
+    #[test]
+    fn test_envs_arg_empty_string() {
+        let result = CommandLineArgs::try_parse_from(["--envs=''"]).unwrap();
+        assert_eq!(result.envs.len(), 1);
+        assert_eq!(result.envs[0], vec![]);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_envs_arg_from_config_env() {
+        std::env::set_var("GUNGRAUN_ENVS", "FROM_CONFIG=yes");
+        let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
+        assert_eq!(
+            result.envs[0],
+            vec![(OsString::from("FROM_CONFIG"), OsString::from("yes"))]
+        );
+        std::env::remove_var("GUNGRAUN_ENVS");
+    }
+
+    #[test]
+    fn test_envs_arg_missing_env_var() {
+        let result = CommandLineArgs::try_parse_from(["--envs=NONEXISTENT_VAR_789"]).unwrap();
+        assert_eq!(result.envs[0], vec![]);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_envs_arg_mixed_resolution() {
+        std::env::set_var("MIXED_TEST_VAR", "from_env");
+        let result =
+            CommandLineArgs::try_parse_from(["--envs='KEY=val MIXED_TEST_VAR OTHER=set'"]).unwrap();
+        assert_eq!(
+            result.envs[0],
+            vec![
+                (OsString::from("KEY"), OsString::from("val")),
+                (OsString::from("MIXED_TEST_VAR"), OsString::from("from_env")),
+                (OsString::from("OTHER"), OsString::from("set")),
+            ]
+        );
+        std::env::remove_var("MIXED_TEST_VAR");
+    }
+
+    #[test]
+    fn test_envs_arg_multiple_delimited() {
+        let result = CommandLineArgs::try_parse_from(["--envs='A=1 B=2 C=3'"]).unwrap();
+        assert_eq!(
+            result.envs[0],
+            vec![
+                (OsString::from("A"), OsString::from("1")),
+                (OsString::from("B"), OsString::from("2")),
+                (OsString::from("C"), OsString::from("3")),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_envs_arg_multiple_invocations() {
+        let result = CommandLineArgs::try_parse_from(["--envs=A=1", "--envs=B=2"]).unwrap();
+        assert_eq!(
+            result.envs,
+            vec![
+                vec![(OsString::from("A"), OsString::from("1"))],
+                vec![(OsString::from("B"), OsString::from("2"))],
+            ]
+        );
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_envs_arg_partial_resolve() {
+        std::env::set_var("PARTIAL_EXISTS", "yes");
+        let result =
+            CommandLineArgs::try_parse_from(["--envs='PARTIAL_EXISTS NONEXISTENT_XYZ'"]).unwrap();
+        assert_eq!(
+            result.envs[0],
+            vec![(OsString::from("PARTIAL_EXISTS"), OsString::from("yes"))]
+        );
+        std::env::remove_var("PARTIAL_EXISTS");
+    }
+
+    #[test]
+    fn test_envs_arg_path_with_colons() {
+        let result = CommandLineArgs::try_parse_from(["--envs=PATH=/usr/bin:/bin"]).unwrap();
+        assert_eq!(
+            result.envs[0],
+            vec![(OsString::from("PATH"), OsString::from("/usr/bin:/bin"))]
+        );
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_envs_arg_resolve_from_env() {
+        std::env::set_var("RESOLVE_ME_VAR", "env_value");
+        let result = CommandLineArgs::try_parse_from(["--envs=RESOLVE_ME_VAR"]).unwrap();
+        assert_eq!(
+            result.envs[0],
+            vec![(
+                OsString::from("RESOLVE_ME_VAR"),
+                OsString::from("env_value")
+            )]
+        );
+        std::env::remove_var("RESOLVE_ME_VAR");
+    }
+
+    #[rstest]
+    #[case::simple(
+        &["--envs=KEY=value"],
+        vec![(OsString::from("KEY"), OsString::from("value"))]
+    )]
+    #[case::with_equals_in_value(
+        &["--envs=URL=http://example.com"],
+        vec![(OsString::from("URL"), OsString::from("http://example.com"))]
+    )]
+    #[case::empty_value(
+        &["--envs=EMPTY="],
+        vec![(OsString::from("EMPTY"), OsString::from(""))]
+    )]
+    #[case::multiple_equals(
+        &["--envs=A=B=C"],
+        vec![(OsString::from("A"), OsString::from("B=C"))]
+    )]
+    #[case::with_single_quotes(
+        &["--envs='A=foo bar'"],
+        vec![(OsString::from("A"), OsString::from("foo"))]
+    )]
+    #[case::with_single_quotes_value(
+        &["--envs=A='foo bar'"],
+        vec![(OsString::from("A"), OsString::from("foo bar"))]
+    )]
+    #[case::with_single_quotes_all(
+        &["--envs='A='foo bar''"],
+        vec![(OsString::from("A"), OsString::from("foo bar"))]
+    )]
+    #[case::with_double_quotes(
+        &["--envs=\"A=foo bar\""],
+        vec![(OsString::from("A"), OsString::from("foo"))]
+    )]
+    #[case::with_double_quotes_value(
+        &["--envs=A=\"foo bar\""],
+        vec![(OsString::from("A"), OsString::from("foo bar"))]
+    )]
+    #[case::with_double_quotes_all(
+        &["--envs=\"A=\"foo bar\"\""],
+        vec![(OsString::from("A"), OsString::from("foo bar"))]
+    )]
+    #[case::multiple_with_quotes(
+        &["--envs=\"A='foo bar' B=baz\""],
+        vec![
+            (OsString::from("A"), OsString::from("foo bar")),
+            (OsString::from("B"), OsString::from("baz"))
+        ]
+    )]
+    fn test_envs_arg_single(#[case] args: &[&str], #[case] expected: Vec<(OsString, OsString)>) {
+        let result = CommandLineArgs::try_parse_from(args).unwrap();
+        let expected: Vec<(OsString, OsString)> = expected.into_iter().collect();
+        assert_eq!(result.envs[0], expected);
+    }
+
+    #[test]
+    fn test_envs_arg_unicode() {
+        let result = CommandLineArgs::try_parse_from(["--envs=CAFÉ=café"]).unwrap();
+        assert_eq!(
+            result.envs[0],
+            vec![(OsString::from("CAFÉ"), OsString::from("café"))]
+        );
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_parse_env_from_env_var() {
+        std::env::set_var("TEST_PARSE_ENV_VAR", "resolved_value");
+        let result = parse_envs("TEST_PARSE_ENV_VAR").unwrap();
+        assert_eq!(
+            result,
+            vec![(
+                OsString::from("TEST_PARSE_ENV_VAR"),
+                OsString::from("resolved_value")
+            )]
+        );
+        std::env::remove_var("TEST_PARSE_ENV_VAR");
+    }
+
+    #[test]
+    fn test_parse_envs_empty() {
+        let result = parse_envs("").unwrap();
+        assert_eq!(result, vec![]);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_parse_envs_missing_env_var() {
+        let result = parse_envs("NONEXISTENT_VAR_XYZ123").unwrap();
+        assert_eq!(result, vec![]);
+    }
+
+    #[rstest]
+    #[case::empty_key("=value", "Empty key for value: 'value'")]
+    #[case::just_equals("=", "Empty key for value: ''")]
+    #[case::shlex_error_wrong_quoting(
+        "key='value",
+        "Failed splitting 'key='value' for POSIX shell environment"
+    )]
+    fn test_parse_envs_when_error(#[case] input: &str, #[case] expected: &str) {
+        let err = parse_envs(input).unwrap_err();
+        assert_eq!(err, expected);
+    }
+
+    #[rstest]
+    #[case::whitespace_only("      ", vec![])]
+    #[case::leading_trailing("  A=1  ", vec![(OsString::from("A"), OsString::from("1"))])]
+    #[case::multiple_spaces("A=1  B=2", vec![
+        (OsString::from("A"), OsString::from("1")),
+        (OsString::from("B"), OsString::from("2"))
+    ])]
+    fn test_parse_envs_whitespace(
+        #[case] input: &str,
+        #[case] expected: Vec<(OsString, OsString)>,
+    ) {
+        let result = parse_envs(input).unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[rstest]
+    #[case::simple("KEY=value", "KEY", "value")]
+    #[case::value_with_equals("URL=http://example.com", "URL", "http://example.com")]
+    #[case::multiple_equals("A=B=C=D", "A", "B=C=D")]
+    #[case::empty_value("KEY=", "KEY", "")]
+    #[case::with_colons("PATH=/usr/bin:/bin", "PATH", "/usr/bin:/bin")]
+    fn test_parse_envs_with_equals(
+        #[case] input: &str,
+        #[case] expected_key: &str,
+        #[case] expected_value: &str,
+    ) {
+        let result = parse_envs(input).unwrap();
+        assert_eq!(
+            result,
+            vec![(OsString::from(expected_key), OsString::from(expected_value))]
+        );
     }
 }

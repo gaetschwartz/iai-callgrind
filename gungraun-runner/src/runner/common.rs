@@ -1032,6 +1032,13 @@ impl Groups {
     ) -> Result<Self> {
         let global_config = benchmark_groups.config;
         let default_tool = benchmark_groups.default_tool;
+        let meta_envs = meta
+            .args
+            .envs
+            .iter()
+            .flatten()
+            .cloned()
+            .collect::<HashMap<_, _>>();
 
         let mut groups = vec![];
         for (main_index, binary_benchmark_group) in benchmark_groups.groups.into_iter().enumerate()
@@ -1101,6 +1108,7 @@ impl Groups {
                                 binary_benchmark_bench.has_setup,
                                 binary_benchmark_bench.has_teardown,
                                 meta,
+                                &meta_envs,
                                 main_index,
                                 config,
                                 group_index,
@@ -1142,6 +1150,7 @@ impl Groups {
                                             binary_benchmark_bench.has_setup,
                                             binary_benchmark_bench.has_teardown,
                                             meta,
+                                            &meta_envs,
                                             main_index,
                                             config,
                                             group_index,

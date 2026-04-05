@@ -22,6 +22,7 @@ use crate::api::{
     EntryPoint, LibraryBenchmarkConfig, LibraryBenchmarkGroups, RawToolArgs, ValgrindTool,
 };
 use crate::error::Error;
+use crate::runner::args;
 use crate::runner::common::{
     BaselineDataProcessor, Baselines, BenchmarkDataProcessor, BenchmarkSummaries, CapturedOutput,
     Config, Groups, LoadBaselineDataProcessor, ModulePath, Runner, SaveBaselineDataProcessor,
@@ -259,7 +260,10 @@ impl LibBench {
             }
         }
 
-        let envs = config.resolve_envs();
+        let mut envs = config.resolve_envs();
+        // meta envs are already resolved
+        envs.extend(meta.args.envs.iter().flatten().cloned());
+
         let mut default_args = HashMap::new();
 
         // The cachegrind client requests are not inserted into the benchmark function if the
@@ -308,7 +312,10 @@ impl LibBench {
             display,
             consts_display,
             run_options: RunOptions {
-                env_clear: config.env_clear.unwrap_or(true),
+                env_clear: meta
+                    .args
+                    .env_clear
+                    .unwrap_or_else(|| config.env_clear.unwrap_or(args::defaults::ENV_CLEAR)),
                 envs,
                 ..Default::default()
             },
