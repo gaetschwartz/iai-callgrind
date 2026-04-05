@@ -36,14 +36,14 @@
 groups:
   - runs:
       - args: ["--nocapture"]
-        env:
+        envs:
           __GUNGRAUN_TEST_VAR: 0
         expected:
           stdout: expected_stdout.1
           no_stderr: true
   - runs:
       - args: ["--nocapture", "--env-clear=true"]
-        env:
+        envs:
           __GUNGRAUN_TEST_VAR: 0
         setup: echo -n true > /tmp/gungraun_test_lib_bench_envs.env-clear
         teardown: rm -f /tmp/gungraun_test_lib_bench_envs.env-clear
@@ -52,7 +52,7 @@ groups:
           no_stderr: true
   - runs:
       - args: ["--nocapture", "--env-clear=false"]
-        env:
+        envs:
           __GUNGRAUN_TEST_VAR: 0
         setup: echo -n false > /tmp/gungraun_test_lib_bench_envs.env-clear
         teardown: rm -f /tmp/gungraun_test_lib_bench_envs.env-clear

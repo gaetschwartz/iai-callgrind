@@ -29,7 +29,7 @@
 groups:
   - runs:
       - args: ["--nocapture", "--truncate-description=no"]
-        env:
+        envs:
           __GUNGRAUN_TEST_VAR_1: yes
           __GUNGRAUN_TEST_VAR_2: no
         expected:
@@ -37,7 +37,7 @@ groups:
           stdout: expected_stdout.1
           no_stderr: true
       - args: ["--nocapture", "--truncate-description=no"]
-        env:
+        envs:
           __GUNGRAUN_TEST_VAR_1: yes
           __GUNGRAUN_TEST_VAR_2: no
         expected:

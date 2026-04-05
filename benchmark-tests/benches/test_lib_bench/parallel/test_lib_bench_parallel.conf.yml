@@ -31,7 +31,7 @@
 groups:
   - runs:
       - args: ["--parallel=2"]
-        env:
+        envs:
           __MAX_PARALLEL: "2"
         expected:
           files: expected_files.parallel.1.yml
@@ -40,7 +40,7 @@ groups:
   # `max_parallel = 0` means no limit, so this should run in parallel and succeed
   - runs:
       - args: ["--parallel=2"]
-        env:
+        envs:
           __MAX_PARALLEL: "0"
         expected:
           files: expected_files.parallel.1.yml
@@ -48,7 +48,7 @@ groups:
           no_stderr: true
   - runs:
       - args: ["--parallel=1"]
-        env:
+        envs:
           __MAX_PARALLEL: "2"
         expected:
           exit_code: 1
@@ -60,7 +60,7 @@ groups:
   # with --parallel=2.
   - runs:
       - args: ["--parallel=2"]
-        env:
+        envs:
           __MAX_PARALLEL: "1"
         expected:
           exit_code: 1

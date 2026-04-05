@@ -56,7 +56,7 @@ groups:
             "--valgrind-runner=/tmp/gungraun_test_lib_bench_valgrind_runner",
             "--nocapture",
           ]
-        env:
+        envs:
           __GUNGRAUN_TEST_VAR: test var
         setup: |
           cat <<'EOF' >/tmp/gungraun_test_lib_bench_valgrind_runner

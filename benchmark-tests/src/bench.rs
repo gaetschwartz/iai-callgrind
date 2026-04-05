@@ -226,7 +226,7 @@ struct RunConfig {
     #[serde(default)]
     flaky: Option<usize>,
     #[serde(default)]
-    env: HashMap<String, String>,
+    envs: HashMap<String, String>,
     #[serde(default)]
     tolerance: Option<f64>,
     #[serde(default)]
@@ -509,7 +509,7 @@ impl Benchmark {
                         template,
                         &run.cargo_args,
                         &run.args,
-                        &run.env,
+                        &run.envs,
                         &run.template_data,
                         meta,
                         capture,
@@ -523,7 +523,7 @@ impl Benchmark {
                     self.run_bench(
                         &run.cargo_args,
                         &run.args,
-                        &run.env,
+                        &run.envs,
                         capture,
                         run.tolerance,
                         run.setup.as_deref(),

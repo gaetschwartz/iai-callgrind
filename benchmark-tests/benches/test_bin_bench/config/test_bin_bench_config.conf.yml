@@ -45,7 +45,7 @@ groups:
   # passthrough
   - runs:
       - args: ["--nocapture", "--envs=CLI_ENV"]
-        env:
+        envs:
           CLI_ENV: 0
           CLI_ENV_TEST: "true"
         expected:
@@ -54,7 +54,7 @@ groups:
   # explicit
   - runs:
       - args: ["--nocapture", "--envs=CLI_ENV=0"]
-        env:
+        envs:
           CLI_ENV_TEST: "true"
         expected:
           stdout: expected_stdout.2
@@ -63,7 +63,7 @@ groups:
   # present
   - runs:
       - args: ["--nocapture", "--env-clear=true"]
-        env:
+        envs:
           CLI_ENV_CLEAR_TEST_VALUE: "true"
         expected:
           stdout: expected_stdout.1
@@ -71,7 +71,7 @@ groups:
   # --env-clear
   - runs:
       - args: ["--nocapture", "--env-clear=false"]
-        env:
+        envs:
           CLI_ENV_CLEAR_TEST_VALUE: "false"
         expected:
           stdout: expected_stdout.3
