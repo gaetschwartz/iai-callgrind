@@ -385,15 +385,13 @@ impl Benchmark {
             let teardown_path = dir.path().join("teardown");
             std::fs::write(&teardown_path, teardown)
                 .expect("Preparing the file with the teardown content should succeed");
-            print_info("Running setup:");
+
+            print_info("Running teardown:");
             let status = std::process::Command::new("bash")
                 .args(["-eux"])
                 .arg(teardown_path)
                 .status()
-                .expect(
-                    "Spawning
-                    the teardown process should succeed",
-                );
+                .expect("Spawning the teardown process should succeed");
 
             if !status.success() {
                 panic!("Running teardown failed with {status:?}");

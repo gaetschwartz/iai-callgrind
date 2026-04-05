@@ -154,6 +154,16 @@ pub fn fibonacci(n: u64) -> u64 {
     }
 }
 
+pub fn check_env(env_clear: bool) {
+    if env_clear {
+        assert!(std::env::var("__GUNGRAUN_TEST_VAR").is_err());
+        println!("Asserting that environment has been cleared succeeded");
+    } else {
+        assert!(std::env::var("__GUNGRAUN_TEST_VAR").is_ok());
+        println!("Asserting that environment has not been cleared succeeded");
+    }
+}
+
 pub fn print_env(args: &[&str]) {
     for arg in args {
         let (key, value) = match arg.split_once('=') {

@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command as StdCommand, Stdio as StdStdio};
@@ -15,7 +16,7 @@ use gungraun_runner::runner::tool::args::ToolArgs;
 use gungraun_runner::runner::tool::config::{ToolConfig, ToolFlamegraphConfig};
 use gungraun_runner::runner::tool::path::{ToolOutputPath, ToolOutputPathKind};
 use gungraun_runner::runner::tool::regression::ToolRegressionConfig;
-use gungraun_runner::runner::tool::run::{ToolCommand, ToolCommandChild};
+use gungraun_runner::runner::tool::run::{RunOptions, ToolCommand, ToolCommandChild};
 
 use crate::util::common::DEFAULT_TOOL;
 
@@ -170,21 +171,33 @@ pub fn test_file(dir: Option<&Path>) -> (PathBuf, File) {
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn tool_command(
-    output_path: &ToolOutputPath,
-    tool: Option<ValgrindTool>,
-    meta: Option<Metadata>,
-    is_default: Option<bool>,
-) -> ToolCommand {
+pub fn run_options() -> RunOptions {
+    RunOptions {
+        current_dir: None,
+        delay: None,
+        env_clear: true,
+        envs: HashMap::new(),
+        exit_with: None,
+        sandbox: None,
+        setup: None,
+        stderr: None,
+        stdin: None,
+        stdout: None,
+        teardown: None,
+    }
+}
+
+#[builder(finish_fn = "fixture")]
+pub fn tool_command(output_path: &ToolOutputPath, meta: Option<Metadata>) -> ToolCommand {
     let meta = meta.unwrap_or_else(|| metadata().fixture());
 
-    todo!();
-    // ToolCommand::new(
-    //     tool.unwrap_or(DEFAULT_TOOL),
-    //     &meta,
-    //     is_default.unwrap_or(true),
-    //     output_path,
-    // )
+    ToolCommand::new(
+        &tool_config().fixture(),
+        &meta,
+        output_path,
+        &run_options().fixture(),
+    )
+    .unwrap()
 }
 
 #[builder(finish_fn = "fixture")]
