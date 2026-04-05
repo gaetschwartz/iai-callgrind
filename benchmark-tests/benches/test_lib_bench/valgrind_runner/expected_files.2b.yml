@@ -4,5 +4,7 @@ data:
     expected:
       files:
         - callgrind.simple.log
+        - callgrind.simple.log.old
         - callgrind.simple.out
+        - callgrind.simple.out.old
         - summary.json

@@ -1188,6 +1188,7 @@ pub struct CommandLineArgs {
     )]
     pub valgrind_runner: Option<PathBuf>,
 
+    // FIX: use arg action append where possible?
     // TODO: Add documentation for the interpolation
     #[rustfmt::skip]
     /// Additional arguments to pass to the valgrind runner executable
@@ -1201,7 +1202,6 @@ pub struct CommandLineArgs {
     #[arg(
         long = "valgrind-runner-args",
         value_parser = parse_raw_args,
-        // TODO: test this
         requires = "valgrind_runner",
         num_args = 1,
         verbatim_doc_comment,
