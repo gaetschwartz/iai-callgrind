@@ -201,6 +201,19 @@ pub struct CommandLineArgs {
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // End of ignored libtest arguments
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Display order:
+    // 20 : List
+    // 100: General args
+    // 150: Valgrind runner
+    // 200: Baselines
+    // 300: Output format
+    // 400: Metrics
+    // 450: Tools
+    // 500: Tool arguments
+    // 600: Limits, Regression
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     #[rustfmt::skip]
     /// Allow ASLR (Address Space Layout Randomization)
     ///
@@ -348,7 +361,7 @@ pub struct CommandLineArgs {
     ///   * --cachegrind-metrics='@all' to show all possible cachegrind metrics
     ///   * --cachegrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
     #[arg(
-        display_order = 700,
+        display_order = 400,
         env = "GUNGRAUN_CACHEGRIND_METRICS",
         long = "cachegrind-metrics",
         num_args = 1..,
@@ -454,7 +467,7 @@ pub struct CommandLineArgs {
     ///   * --callgrind-metrics='@all' to show all possible callgrind metrics
     ///   * --callgrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
     #[arg(
-        display_order = 700,
+        display_order = 400,
         env = "GUNGRAUN_CALLGRIND_METRICS",
         long = "callgrind-metrics",
         num_args = 1..,
@@ -485,7 +498,7 @@ pub struct CommandLineArgs {
     /// your Cargo.toml. However, setting a tool with this option overrides cachegrind set with the
     /// gungraun feature. See the guide for all details.
     #[arg(
-        display_order = 50,
+        display_order = 450,
         env = "GUNGRAUN_DEFAULT_TOOL",
         long = "default-tool",
         num_args = 1,
@@ -575,7 +588,7 @@ pub struct CommandLineArgs {
     ///   * --dhat-metrics='@all' to show all possible dhat metrics
     ///   * --dhat-metrics='@default,mb' to show maximum bytes in addition to the defaults
     #[arg(
-        display_order = 700,
+        display_order = 400,
         env = "GUNGRAUN_DHAT_METRICS",
         long = "dhat-metrics",
         num_args = 1..,
@@ -621,7 +634,7 @@ pub struct CommandLineArgs {
     ///   * --drd-metrics='@all' to show all possible error metrics (the default)
     ///   * --drd-metrics='err,ctx' to show only errors and contexts
     #[arg(
-        display_order = 700,
+        display_order = 400,
         env = "GUNGRAUN_DRD_METRICS",
         long = "drd-metrics",
         num_args = 1..,
@@ -745,7 +758,7 @@ pub struct CommandLineArgs {
     ///   * --helgrind-metrics='@all' to show all possible error metrics (the default)
     ///   * --helgrind-metrics='err,ctx' to show only errors and contexts
     #[arg(
-        display_order = 700,
+        display_order = 400,
         env = "GUNGRAUN_HELGRIND_METRICS",
         long = "helgrind-metrics",
         num_args = 1..,
@@ -780,6 +793,7 @@ pub struct CommandLineArgs {
         action = ArgAction::Set,
         default_missing_value = "true",
         default_value = "false",
+        display_order = 20,
         env = "GUNGRAUN_LIST",
         long = "list",
         num_args = 0..=1,
@@ -883,7 +897,7 @@ pub struct CommandLineArgs {
     ///   * --memcheck-metrics='@all' to show all possible error metrics (the default)
     ///   * --memcheck-metrics='err,ctx' to show only errors and contexts
     #[arg(
-        display_order = 700,
+        display_order = 400,
         env = "GUNGRAUN_MEMCHECK_METRICS",
         long = "memcheck-metrics",
         num_args = 1..,
@@ -989,7 +1003,7 @@ pub struct CommandLineArgs {
     #[arg(
         default_missing_value = "auto",
         default_value = "1",
-        display_order = 300, // FIX: DISPLAY ORDER
+        display_order = 100,
         env = "GUNGRAUN_PARALLEL",
         long = "parallel",
         num_args = 0..=1,
@@ -1212,7 +1226,7 @@ pub struct CommandLineArgs {
     ///   * --tools dhat
     ///   * --tools memcheck,drd
     #[arg(
-        display_order = 50,
+        display_order = 450,
         env = "GUNGRAUN_TOOLS",
         long = "tools",
         num_args = 1..,
@@ -1288,7 +1302,7 @@ pub struct CommandLineArgs {
     ///   * `--valgrind-bin=/usr/local/bin/valgrind`
     ///   * `--valgrind-bin=/doesnotexist` (used with `--valgrind-runner` for container setups)
     #[arg(
-        display_order = 500,
+        display_order = 100,
         env = "GUNGRAUN_VALGRIND_BIN",
         long = "valgrind-bin",
         num_args = 1,
@@ -1323,7 +1337,7 @@ pub struct CommandLineArgs {
     ///   * --valgrind-runner=docker
     ///   * --valgrind-runner=/path/to/wrapper --valgrind-runner-args='--some-flag=${GUNGRAUN_ALLOW_ASLR}'
     #[arg(
-        display_order = 500,
+        display_order = 150,
         env = "GUNGRAUN_VALGRIND_RUNNER",
         long = "valgrind-runner",
         num_args = 1,
@@ -1354,7 +1368,7 @@ pub struct CommandLineArgs {
     ///   * --valgrind-runner=wrapper '--valgrind-runner-args=--allow-aslr=${GUNGRAUN_ALLOW_ASLR}'
     #[arg(
         action = ArgAction::Append,
-        display_order = 500,
+        display_order = 150,
         env = "GUNGRAUN_VALGRIND_RUNNER_ARGS",
         long = "valgrind-runner-args",
         num_args = 1,
@@ -1383,7 +1397,7 @@ pub struct CommandLineArgs {
     /// Examples:
     ///   * `--valgrind-runner-dest=/tmp/results`
     #[arg(
-        display_order = 500,
+        display_order = 150,
         env = "GUNGRAUN_VALGRIND_RUNNER_DEST",
         long = "valgrind-runner-dest",
         num_args = 1,
@@ -1405,7 +1419,7 @@ pub struct CommandLineArgs {
     /// Examples:
     ///   * `--valgrind-runner-root=/workspace`
     #[arg(
-        display_order = 500,
+        display_order = 150,
         env = "GUNGRAUN_VALGRIND_RUNNER_ROOT",
         long = "valgrind-runner-root",
         num_args = 1,
