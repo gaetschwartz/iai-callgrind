@@ -1,12 +1,11 @@
-// spell-checker: ignore totalbytes totalblocks writeback writebackbehaviour
-
 //! The command-line arguments of cargo bench as in ARGS of `cargo bench -- ARGS`
+
+// spell-checker: ignore totalbytes totalblocks writeback writebackbehaviour
 
 /// Default values for command-line arguments
 ///
 /// This module contains constants that define the default behavior when corresponding command-line
 /// arguments are not specified.
-// TODO: Add all other args defaults and apply them
 pub mod defaults {
     /// Default value for `--allow-aslr`
     ///
@@ -90,7 +89,6 @@ pub enum TruncateDescription {
     None,
 }
 
-// FIX: Use short help and long help
 /// The command line arguments the user provided after `--` when running cargo bench
 ///
 /// These arguments are not the command line arguments passed to `gungraun-runner`. We collect
@@ -118,11 +116,13 @@ instead of `true` and one of `n`, `no`, `f`, `false`, `off`, and `0` instead of
     max_term_width = 101
 )]
 pub struct CommandLineArgs {
-    /// The following arguments are accepted by the rust libtest harness and ignored by us
-    ///
-    /// Further details in <https://doc.rust-lang.org/rustc/tests/index.html#cli-arguments> or by
-    /// running `cargo test -- --help`
-    /// `--bench` also shows up as last argument set by `cargo bench` even if not explicitly given
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // The following arguments are accepted by the rust libtest harness and ignored by us
+    //
+    // Further details in <https://doc.rust-lang.org/rustc/tests/index.html#cli-arguments> or by
+    // running `cargo test -- --help`
+    // `--bench` also shows up as last argument set by `cargo bench` even if not explicitly given
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     #[arg(long = "bench", hide = true, action = ArgAction::SetTrue, required = false)]
     _bench: bool,
 
@@ -175,7 +175,6 @@ pub struct CommandLineArgs {
     #[arg(long = "shuffle", hide = true, action = ArgAction::SetTrue, required = false)]
     _shuffle: bool,
 
-    // This is the last of the ignored libtest args
     #[arg(long = "shuffle-seed", hide = true, required = false, num_args = 0..)]
     _shuffle_seed: Vec<String>,
 
@@ -191,6 +190,9 @@ pub struct CommandLineArgs {
     #[arg(short = 'Z', hide = true, required = false, num_args = 0..)]
     _unstable_options: Vec<String>,
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // End of ignored libtest arguments
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     #[rustfmt::skip]
     /// Allow ASLR (Address Space Layout Randomization)
     ///
@@ -1299,6 +1301,7 @@ pub struct CommandLineArgs {
     )]
     pub valgrind_runner_dest: Option<PathBuf>,
 
+    #[rustfmt::skip]
     /// Override the workspace root path for the valgrind runner
     ///
     /// This option is only effective when `--valgrind-runner` is specified. It allows substituting

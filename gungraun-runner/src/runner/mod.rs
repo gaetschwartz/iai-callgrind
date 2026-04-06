@@ -56,7 +56,8 @@ pub const DEFAULT_TOGGLE: &str = "*::__gungraun_wrapper_mod::*";
 #[derive(Debug)]
 enum Cli {
     Runner(RunnerArgs),
-    Help,
+    ShortHelp,
+    LongHelp,
     Version,
 }
 
@@ -91,7 +92,8 @@ impl Cli {
 
         let next = args.next().map(|s| s.to_string_lossy().into_owned());
         match next.as_deref() {
-            Some("--help" | "-h") | None => Ok(Self::Help),
+            Some("-h") => Ok(Self::ShortHelp),
+            Some("--help") | None => Ok(Self::LongHelp),
             Some("--version" | "-V") => Ok(Self::Version),
             _ => Ok(Self::Runner(RunnerArgs::new()?)),
         }
@@ -255,7 +257,11 @@ where
 pub fn run() -> Result<()> {
     let runner_args = match Cli::parse()? {
         Cli::Runner(runner_args) => runner_args,
-        Cli::Help => {
+        Cli::ShortHelp => {
+            CommandLineArgs::parse_from(["-h"]);
+            return Ok(());
+        }
+        Cli::LongHelp => {
             CommandLineArgs::parse_from(["--help"]);
             return Ok(());
         }
