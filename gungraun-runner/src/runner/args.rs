@@ -197,7 +197,7 @@ pub struct CommandLineArgs {
     /// Allow ASLR (Address Space Layout Randomization)
     ///
     /// If possible, ASLR is disabled on platforms that support it (linux, freebsd) because ASLR
-    /// could noise up the callgrind cache simulation results a bit. Setting this option to true
+    /// could noise up the callgrind cache simulation results a bit. Setting this option to `true`
     /// runs all benchmarks with ASLR enabled.
     ///
     /// See also [kernel.org: randomize_va_space]
@@ -216,7 +216,23 @@ pub struct CommandLineArgs {
     pub allow_aslr: Option<bool>,
 
     #[rustfmt::skip]
-    /// Compare against this baseline if present but do not overwrite it
+    /// Compare benchmark results against a previously saved baseline
+    ///
+    /// This option compares the current benchmark run against a named baseline from a previous run
+    /// without modifying the saved baseline. Baselines store benchmark results for future
+    /// comparisons, useful for tracking performance over time or comparing against fixed reference
+    /// points like a release tag or main branch.
+    ///
+    /// If this option is specified but no baseline with that name exists yet, Gungraun creates a
+    /// new baseline with the current results instead of comparing.
+    ///
+    /// See also: `--save-baseline` to create or update a baseline, `--load-baseline` to compare
+    /// existing baselines without running benchmarks.
+    ///
+    /// Examples:
+    ///   * `--baseline` (uses the default baseline name "default")
+    ///   * `--baseline=main` (compares against baseline saved as "main")
+    ///   * `--baseline=v1.0` (compares against baseline saved as "v1.0")
     #[arg(
         default_missing_value = "default",
         display_order = 200,
@@ -745,7 +761,6 @@ pub struct CommandLineArgs {
     )]
     pub home: Option<PathBuf>,
 
-    // FIX: should be exclusive
     #[rustfmt::skip]
     /// Print a list of all benchmarks. With this argument no benchmarks are executed.
     ///
@@ -766,7 +781,27 @@ pub struct CommandLineArgs {
     pub list: bool,
 
     #[rustfmt::skip]
-    /// Load this baseline as the new data set instead of creating a new one
+    /// Load an existing baseline instead of running new benchmarks
+    ///
+    /// This option loads benchmark results from a previously saved baseline and uses them as the
+    /// "new" data for comparison against another baseline. This allows comparing two existing
+    /// baselines without re-running any benchmarks.
+    ///
+    /// This option requires `--baseline` to be specified, which provides the "old" baseline to
+    /// compare against.
+    ///
+    /// This is useful for:
+    /// - Re-comparing existing baselines with different comparison targets
+    /// - Comparing two previously saved baselines against each other
+    /// - Avoiding expensive benchmark re-runs when only analysis is needed
+    ///
+    /// See also: `--baseline` to compare against a baseline while running new benchmarks,
+    /// `--save-baseline` to create or update a baseline.
+    ///
+    /// Examples:
+    ///   * `--load-baseline --baseline=main` (loads "default", compares against "main")
+    ///   * `--load-baseline=feature --baseline=main` (loads "feature", compares against "main")
+    ///   * `--load-baseline=v1.1 --baseline=v1.0` (loads "v1.1", compares against "v1.0")
     #[clap(
         id = "LOAD_BASELINE",
         long = "load-baseline",
@@ -957,9 +992,23 @@ pub struct CommandLineArgs {
     pub parallel: usize,
 
     #[rustfmt::skip]
-    /// If true, the first failed performance regression check fails the whole benchmark run
+    /// Fail the entire benchmark run on the first performance regression
     ///
-    /// Note that if --regression-fail-fast is set to true, no summary is printed.
+    /// When enabled, this option causes Gungraun to stop immediately when a performance regression
+    /// is detected, rather than continuing to run all benchmarks and reporting regressions at the
+    /// end. The program exits with exit code `3` to indicate that one or more regressions
+    /// occurred.
+    ///
+    /// Performance regressions are defined by limits set via `--callgrind-limits`,
+    /// `--cachegrind-limits`, `--dhat-limits`, and similar options. Without this option, Gungraun
+    /// completes all benchmarks and reports all regressions in a summary at the end.
+    ///
+    /// See also: `--callgrind-limits`, `--cachegrind-limits`, `--dhat-limits` for defining
+    /// regression limits.
+    ///
+    /// Examples:
+    ///   * `--regression-fail-fast` (fail on first regression)
+    ///   * `--regression-fail-fast=false` (continue running, report at end - default)
     #[arg(
         default_missing_value = "true",
         display_order = 600,
@@ -972,7 +1021,23 @@ pub struct CommandLineArgs {
     pub regression_fail_fast: Option<bool>,
 
     #[rustfmt::skip]
-    /// Compare against this baseline if present and then overwrite it
+    /// Save benchmark results as a named baseline for future comparisons
+    ///
+    /// If a baseline with this name already exists, Gungraun first compares against it before
+    /// overwriting with the new results.
+    ///
+    /// This option is useful for creating reference measurements (like from the main branch or a
+    /// release tag) that you can later compare against using `--baseline`.
+    ///
+    /// This option conflicts with `--baseline` and `--load-baseline`. Use `--baseline` instead if
+    /// you want to compare without overwriting the reference baseline. See `--baseline` to compare
+    /// against a saved baseline without modifying it and `--load-baseline` to compare existing
+    /// baselines without running benchmarks.
+    ///
+    /// Examples:
+    ///   * `--save-baseline` (uses the default baseline name "default")
+    ///   * `--save-baseline=main` (saves as baseline "main")
+    ///   * `--save-baseline=v1.0` (saves as baseline "v1.0")
     #[arg(
         conflicts_with_all = &["baseline", "LOAD_BASELINE"],
         default_missing_value = "default",
@@ -985,8 +1050,26 @@ pub struct CommandLineArgs {
     pub save_baseline: Option<BaselineName>,
 
     #[rustfmt::skip]
-    /// Save a machine-readable summary of each benchmark run in json format next to the usual
-    /// benchmark output
+    /// Save a machine-readable summary of each benchmark run to a JSON file
+    ///
+    /// This option saves a structured JSON summary of each benchmark run alongside the usual
+    /// benchmark output. The summary file contains benchmark results, metrics, detected
+    /// regressions, and other metadata in a machine-readable format.
+    ///
+    /// The summary file is saved as `summary.json` in the benchmark's output directory next to the
+    /// other usual benchmark output.
+    ///
+    /// Available formats:
+    /// - `json`: Compact JSON without newlines (space-efficient)
+    /// - `pretty-json`: Pretty-printed JSON with indentation (human-readable)
+    ///
+    /// See also `--output-format` for printing JSON summaries to the terminal instead of saving to
+    /// a file.
+    ///
+    /// Examples:
+    ///   * `--save-summary` (saves as compact JSON)
+    ///   * `--save-summary=json` (saves as compact JSON)
+    ///   * `--save-summary=pretty-json` (saves as pretty-printed JSON)
     #[arg(
         default_missing_value = "json",
         display_order = 300,
