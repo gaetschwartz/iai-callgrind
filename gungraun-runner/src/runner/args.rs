@@ -289,9 +289,9 @@ pub struct CommandLineArgs {
     /// event ::= CachegrindMetric
     ///
     /// Examples:
-    /// * --cachegrind-limits='ir=0.0%'
-    /// * --cachegrind-limits='ir=10000,EstimatedCycles=10%'
-    /// * --cachegrind-limits='@all=10%,ir=10000,EstimatedCycles=10%'
+    ///   * --cachegrind-limits='ir=0.0%'
+    ///   * --cachegrind-limits='ir=10000,EstimatedCycles=10%'
+    ///   * --cachegrind-limits='@all=10%,ir=10000,EstimatedCycles=10%'
     #[arg(
         long = "cachegrind-limits",
         num_args = 1,
@@ -318,9 +318,9 @@ pub struct CommandLineArgs {
     /// described in the `--cachegrind-limits` option.
     ///
     /// Examples:
-    /// * --cachegrind-metrics='ir' to show only `Instructions`
-    /// * --cachegrind-metrics='@all' to show all possible cachegrind metrics
-    /// * --cachegrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
+    ///   * --cachegrind-metrics='ir' to show only `Instructions`
+    ///   * --cachegrind-metrics='@all' to show all possible cachegrind metrics
+    ///   * --cachegrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
     #[arg(
         long = "cachegrind-metrics",
         num_args = 1..,
@@ -390,9 +390,9 @@ pub struct CommandLineArgs {
     /// exit code `3`.
     ///
     /// Examples:
-    /// * --callgrind-limits='ir=5.0%'
-    /// * --callgrind-limits='ir=10000,EstimatedCycles=10%'
-    /// * --callgrind-limits='@all=10%,ir=5%|10000'
+    ///   * --callgrind-limits='ir=5.0%'
+    ///   * --callgrind-limits='ir=10000,EstimatedCycles=10%'
+    ///   * --callgrind-limits='@all=10%,ir=5%|10000'
     #[arg(
         long = "callgrind-limits",
         num_args = 1,
@@ -424,9 +424,9 @@ pub struct CommandLineArgs {
     /// `--callgrind-args`.
     ///
     /// Examples:
-    /// * --callgrind-metrics='ir' to show only `Instructions`
-    /// * --callgrind-metrics='@all' to show all possible callgrind metrics
-    /// * --callgrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
+    ///   * --callgrind-metrics='ir' to show only `Instructions`
+    ///   * --callgrind-metrics='@all' to show all possible callgrind metrics
+    ///   * --callgrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
     #[arg(
         long = "callgrind-metrics",
         num_args = 1..,
@@ -517,9 +517,9 @@ pub struct CommandLineArgs {
     /// `events` with a long name have their allowed abbreviations placed in the same parentheses.
     ///
     /// Examples:
-    /// * --dhat-limits='totalbytes=0.0%'
-    /// * --dhat-limits='totalbytes=10000,totalblocks=5%'
-    /// * --dhat-limits='@all=10%,totalbytes=5000,totalblocks=5%'
+    ///   * --dhat-limits='totalbytes=0.0%'
+    ///   * --dhat-limits='totalbytes=10000,totalblocks=5%'
+    ///   * --dhat-limits='@all=10%,totalbytes=5000,totalblocks=5%'
     #[arg(
         long = "dhat-limits",
         num_args = 1,
@@ -545,9 +545,9 @@ pub struct CommandLineArgs {
     /// described in the `--dhat-limits` option.
     ///
     /// Examples:
-    /// * --dhat-metrics='totalbytes' to show only `Total Bytes`
-    /// * --dhat-metrics='@all' to show all possible dhat metrics
-    /// * --dhat-metrics='@default,mb' to show maximum bytes in addition to the defaults
+    ///   * --dhat-metrics='totalbytes' to show only `Total Bytes`
+    ///   * --dhat-metrics='@all' to show all possible dhat metrics
+    ///   * --dhat-metrics='@default,mb' to show maximum bytes in addition to the defaults
     #[arg(
         long = "dhat-metrics",
         num_args = 1..,
@@ -591,9 +591,9 @@ pub struct CommandLineArgs {
     /// Since this is a very small set of metrics, there is only one `group`: `@all`
     ///
     /// Examples:
-    /// * --drd-metrics='errors' to show only `Errors`
-    /// * --drd-metrics='@all' to show all possible error metrics (the default)
-    /// * --drd-metrics='err,ctx' to show only errors and contexts
+    ///   * --drd-metrics='errors' to show only `Errors`
+    ///   * --drd-metrics='@all' to show all possible error metrics (the default)
+    ///   * --drd-metrics='err,ctx' to show only errors and contexts
     #[arg(
         long = "drd-metrics",
         num_args = 1..,
@@ -641,10 +641,10 @@ pub struct CommandLineArgs {
     /// `LibraryBenchmarkConfig::env` or `BinaryBenchmarkConfig::env`.
     ///
     /// Examples:
-    ///    * `--envs=FOO=bar` (set FOO to "bar")
-    ///    * `--envs=FOO` (pass the original value of FOO from current environment)
-    ///    * `--envs='FOO=bar BAZ=qux'` (set multiple variables and once)
-    ///    * `--envs=FOO=bar --envs=BAZ=qux` (accumulate multiple times)
+    ///   * `--envs=FOO=bar` (set FOO to "bar")
+    ///   * `--envs=FOO` (pass the original value of FOO from current environment)
+    ///   * `--envs='FOO=bar BAZ=qux'` (set multiple variables and once)
+    ///   * `--envs=FOO=bar --envs=BAZ=qux` (accumulate multiple times)
     #[arg(
         long = "envs",
         num_args = 1,
@@ -715,9 +715,9 @@ pub struct CommandLineArgs {
     /// metrics.
     ///
     /// Examples:
-    /// * --helgrind-metrics='errors' to show only `Errors`
-    /// * --helgrind-metrics='@all' to show all possible error metrics (the default)
-    /// * --helgrind-metrics='err,ctx' to show only errors and contexts
+    ///   * --helgrind-metrics='errors' to show only `Errors`
+    ///   * --helgrind-metrics='@all' to show all possible error metrics (the default)
+    ///   * --helgrind-metrics='err,ctx' to show only errors and contexts
     #[arg(
         long = "helgrind-metrics",
         num_args = 1..,
@@ -834,9 +834,9 @@ pub struct CommandLineArgs {
     /// metrics.
     ///
     /// Examples:
-    /// * --memcheck-metrics='errors' to show only `Errors`
-    /// * --memcheck-metrics='@all' to show all possible error metrics (the default)
-    /// * --memcheck-metrics='err,ctx' to show only errors and contexts
+    ///   * --memcheck-metrics='errors' to show only `Errors`
+    ///   * --memcheck-metrics='@all' to show all possible error metrics (the default)
+    ///   * --memcheck-metrics='err,ctx' to show only errors and contexts
     #[arg(
         long = "memcheck-metrics",
         num_args = 1..,
@@ -939,8 +939,8 @@ pub struct CommandLineArgs {
     /// results depend on the hardware and if your benchmarks are performing disk I/O, too.
     ///
     /// Examples:
-    /// * --parallel=4
-    /// * --parallel=auto
+    ///   * --parallel=4
+    ///   * --parallel=auto
     #[arg(
         long = "parallel",
         required = false,
@@ -1095,8 +1095,8 @@ pub struct CommandLineArgs {
     /// Negative tolerance values are converted to their absolute value.
     ///
     /// Examples:
-    /// * --tolerance (applies the default value)
-    /// * --tolerance=0.1 (set the tolerance level to `0.1`)
+    ///   * --tolerance (applies the default value)
+    ///   * --tolerance=0.1 (set the tolerance level to `0.1`)
     #[arg(
         long = "tolerance",
         default_missing_value = "0.000009999999999999999",
@@ -1288,7 +1288,7 @@ pub struct CommandLineArgs {
     /// guide.
     ///
     /// Examples:
-    /// * `--valgrind-runner-dest=/tmp/results`
+    ///   * `--valgrind-runner-dest=/tmp/results`
     #[arg(
         long = "valgrind-runner-dest",
         num_args = 1,
