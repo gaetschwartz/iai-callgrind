@@ -21,18 +21,41 @@ use crate::runner::tool::path::ToolOutputPath;
 use crate::runner::tool::run::RunOptions;
 use crate::util::{bool_to_yesno, resolve_binary_path};
 
-/// TODO: DOCS, cannot use `std::process::Command` directly because it cannot be cloned
+/// Represents how Valgrind is invoked for benchmark execution
+///
+/// This enum cannot use `std::process::Command` directly because it doesn't implement `Clone`,
+/// which is needed for multiple benchmark runs. Instead, it stores the necessary components to
+/// construct a `Command` when needed.
+///
+/// The run mode is determined by whether ASLR should be disabled and whether a custom runner is
+/// specified:
+///
+/// - `DisabledASLR`: Valgrind is invoked through `setarch` (Linux) or `proccontrol` (FreeBSD) to
+///   disable ASLR for more consistent benchmark results
+/// - `Valgrind`: Valgrind is invoked directly without ASLR control
+/// - `ValgrindRunner`: A custom runner executable is used to invoke Valgrind, useful for running
+///   benchmarks in containers or specialized environments
 #[derive(Debug, Clone)]
 pub enum ValgrindRunMode {
-    /// TODO: DOCS
+    /// Valgrind invocation with ASLR disabled via system utilities
+    ///
+    /// On Linux, uses `setarch <arch> -R valgrind`. On FreeBSD, uses `proccontrol -m aslr -s
+    /// disable valgrind`.
     DisabledASLR(Cmd),
-    /// TODO: DOCS
+    /// Direct Valgrind invocation without ASLR control
     Valgrind(Cmd),
-    /// TODO: DOCS
+    /// Custom runner executable for Valgrind invocation
+    ///
+    /// The first `PathBuf` is the path to the runner executable, resolved from
+    /// `--valgrind-runner`. The second `PathBuf` is the path to Valgrind, either resolved from
+    /// `--valgrind-path` or the system default.
     ValgrindRunner(PathBuf, PathBuf),
 }
 
-/// The basic commands (like valgrind) to be executed with default arguments
+/// A command to be executed, containing an executable and its arguments
+///
+/// This is a simplified version of `std::process::Command` that implements `Clone`, used by
+/// [`ValgrindRunMode`] to prepare valgrind invocations before spawning the actual process.
 #[derive(Debug, Clone)]
 pub struct Cmd {
     /// The arguments for the executable
@@ -63,7 +86,9 @@ pub struct Metadata {
     /// * `/home/my/workspace/my-project/target/gungraun/my-project` or
     /// * `/home/my/workspace/my-project/target/gungraun/x86_64-linux-unknown-gnu/my-project`
     pub target_dir: PathBuf,
-    /// TODO: DOCS
+    /// The mode for running Valgrind, determined by ASLR settings and runner configuration
+    ///
+    /// See [`ValgrindRunMode`] for details on how Valgrind will be invoked.
     pub valgrind_run_mode: ValgrindRunMode,
 }
 
@@ -207,7 +232,17 @@ impl Metadata {
         })
     }
 
-    /// TODO: DOCS
+    /// Construct a `Command` for running a Valgrind tool
+    ///
+    /// Creates the appropriate `Command` based on the [`ValgrindRunMode`], clearing and
+    /// configuring environment variables, and arguments according to the tool configuration and
+    /// run options.
+    ///
+    /// For custom runner invocation (`ValgrindRunner` variant):
+    /// - Sets `GUNGRAUN_VR_DEST_DIR`, `GUNGRAUN_VR_HOME`, `GUNGRAUN_VR_WORKSPACE_ROOT`, and
+    ///   `GUNGRAUN_ALLOW_ASLR` environment variables
+    /// - Interpolates environment variables in `--valgrind-runner-args` arguments
+    /// - Passes valgrind path after runner arguments
     pub fn to_tool_command(
         &self,
         tool_config: &ToolConfig,

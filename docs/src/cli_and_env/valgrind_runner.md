@@ -1,113 +1,77 @@
+<!-- spell-checker: ignore unsetenv -->
+
 # Running Valgrind with a Custom Runner
 
 By default, Gungraun invokes Valgrind directly to run your benchmarks. However,
-if Valgrind is not available on your host system - for example, on Windows or in
-restricted environments, you can use the `--valgrind-runner` option to run
-Valgrind through a container or alternative execution environment.
+if Valgrind is not available on your host system, you can use the
+`--valgrind-runner` option to run Valgrind through a container or alternative
+execution environment.
 
-This is controlled by two command-line options and their respective environment
-variables:
+This is controlled by several command-line options and their respective
+environment variables:
 
 - `--valgrind-runner` (env: `GUNGRAUN_VALGRIND_RUNNER`): Specify the runner
-  executable
+  executable. This can be anything from a script to `docker`, `sudo`, ...
 - `--valgrind-runner-args` (env: `GUNGRAUN_VALGRIND_RUNNER_ARGS`): Pass
-  additional arguments to the runner
+  additional arguments to the runner (supports environment variable
+  interpolation)
+- `--valgrind-path` (env: `GUNGRAUN_VALGRIND_PATH`): Specify the valgrind
+  executable path.
+- `--valgrind-runner-dest` (env: `GUNGRAUN_VALGRIND_RUNNER_DEST`): Override the
+  destination directory of valgrind output files
+- `--valgrind-runner-root` (env: `GUNGRAUN_VALGRIND_RUNNER_ROOT`): Override the
+  path to the workspace root directory
 
 The command-line options take precedence over environment variables.
+
+If using a custom runner, the custom runner is responsible for a stable
+benchmark runtime environment:
+
+- clear the environment variables
+- disable ASLR, if asked to do so
+- if `--valgrind-runner-root` or `--valgrind-runner-dest` are used, to create
+  these directories
+- eventually run Valgrind to create the output files. Failing to produce the
+  output files will fail the benchmark.
 
 ## How Gungraun Invokes the Runner
 
 When a custom runner is specified, Gungraun invokes it as follows:
 
 ```shell
-<RUNNER> --allow-aslr=yes|no [RUNNER_ARGS...] -- /path/to/valgrind [VALGRIND_ARGS...] <BENCHMARK> <BENCHMARK_ARGS>
+<RUNNER> [RUNNER_ARGS] <VALGRIND_PATH> [VALGRIND_ARGS] <BENCHMARK> [BENCHMARK_ARGS]
 ```
-
-<!-- TODO: environment variables, interpolation -->
-<!-- TODO: or just valgrind or GUNGRAUN_VALGRIND_PATH -->
-<!-- TODO: `--` just submitted if there are --valgrind-runner-args -->
-<!-- TODO: additional environment variables like GUNGRAUN_VR_DEST_DIR, ... -->
 
 Key points:
 
-- `--allow-aslr` reflects the `--allow-aslr` command-line option (ASLR is
-  disabled by default for consistent benchmark results). When using a custom
-  runner, it's the runner's responsibility to handle this option. Containers
-  typically manage ASLR differently than bare metal, so you may need to
-  configure this in your container setup if consistent benchmark results are
-  critical.
-- Arguments from `--valgrind-runner-args` are placed before the `--` separator
-- `/path/to/valgrind` is the resolved path to Valgrind on the host, or just
-  `valgrind` if not found
-- Your normal `--callgrind-args`, `--cachegrind-args`, etc. are passed through
-  to Valgrind after the runner. The benchmark binary is passed as Valgrind's
-  first positional argument specifying the executable to profile.
-- All specified paths in the valgrind arguments are absolute paths.
-- Environment variables are still cleared. This means usually the `PATH` is not
-  available. You can configure this behavior and the environment variables with
-  a [`LibraryBenchmarkConfig`] or [`BinaryBenchmarkConfig`] in the benchmarks.
+- `<RUNNER_ARGS>` are additional arguments for the runner from
+  `--valgrind-runner-args`
+- `<VALGRIND_PATH>` is the resolved path to Valgrind (from `--valgrind-path` or
+  system default)
+- Your normal `<VALGRIND_ARGS>` for example set with `--callgrind-args`,
+  `--cachegrind-args`, etc. are passed through to Valgrind after the runner
+- The benchmark binary is passed as Valgrind's first positional argument. After
+  that all arguments to the benchmark binary are added as last arguments.
+- All paths set by Gungraun in the valgrind arguments are absolute paths
+- Environment variables are still cleared by default. Configure this behavior
+  with [`LibraryBenchmarkConfig`] or [`BinaryBenchmarkConfig`] in the benchmarks
+  or in the CLI with `--env-clear` (env: `GUNGRAUN_ENV_CLEAR`)
 
-## Running Valgrind in a Container
+## Environment Variables for Runners
 
-> **Warning:** The examples in this section are mostly untested and need to be
-> improved. Be prepared to run into errors and need to make changes.
+Gungraun sets the following environment variables for the custom valgrind runner
+process even if the environment variables have been asked to be cleared. The
+custom valgrind runner is responsible for clearing the environment variables.
 
-Since Gungraun passes arguments like `--allow-aslr` directly to the runner, you
-need a wrapper script that handles these arguments appropriately for your
-container runtime.
+- `GUNGRAUN_VR_DEST_DIR`: Destination directory for output files
+- `GUNGRAUN_VR_HOME`: The gungraun home directory
+- `GUNGRAUN_VR_WORKSPACE_ROOT`: The project's workspace root directory
+- `GUNGRAUN_ALLOW_ASLR`: `yes` or `no` based on `--allow-aslr` setting
 
-### Docker/Podman Example
+These can be interpolated in `--valgrind-runner-args` like any other environment
+variable using the `${VAR}` syntax.
 
-<!-- TODO: add target dir mount -->
-
-Create a wrapper script `~/bin/docker-valgrind`:
-
-```bash
-#!/usr/bin/env bash
-# Wrapper script to run Valgrind inside a Docker container
-
-# Gungraun passes:
-#   --allow-aslr=yes|no [runner_args...] -- /path/to/valgrind [valgrind_args...]
-
-# Skip the --allow-aslr argument or handle it. We skip it here for the sake of
-# simplicity
-shift
-
-# Since we haven't passed any arguments to the script we can skip the `--`
-# separator with another shift
-shift
-
-# Skip the Valgrind path of the host
-shift
-
-# Run Valgrind inside the container. The command below assumes you have a Docker
-# image with Valgrind installed and Valgrind is available in the PATH of the
-# Docker image.
-exec /usr/bin/docker run --rm -i valgrind-image valgrind "$@"
-```
-
-> **Note:** You'll need a Docker image with Valgrind installed. For example:
->
-> ```dockerfile
-> FROM ubuntu:24.04
-> RUN apt-get update && apt-get install -y libc6-dbg valgrind
-> ```
->
-> Build and tag the image: `docker build -t valgrind-image .`
-
-Make it executable:
-
-```bash
-chmod +x ~/bin/docker-valgrind
-```
-
-Then use it with Gungraun:
-
-```bash
-cargo bench -- --valgrind-runner=~/bin/docker-valgrind
-```
-
-### Passing Additional Arguments
+## Passing Additional Arguments
 
 Use `--valgrind-runner-args` to pass additional arguments to your wrapper:
 
@@ -117,41 +81,114 @@ cargo bench -- \
     --valgrind-runner-args='--volume=/my/project:/project:ro'
 ```
 
-Your wrapper script would then incorporate these arguments:
+### Environment Variable Interpolation
+
+The `--valgrind-runner-args` option supports environment variable interpolation
+using the `${VAR}` syntax. Variables are resolved in this order:
+
+1. `GUNGRAUN_VR_*` variables set by Gungraun and `GUNGRAUN_ALLOW_ASLR`
+2. Variables specified via `--envs` and in the benchmark with a
+   `LibraryBenchmarkConfig` or `BinaryBenchmarkConfig`
+3. System environment variables. This happens before the environment variables
+   are cleared, so all environment variables passed to the `cargo bench`
+   invocation are available for interpolation.
+
+This allows passing dynamic configuration to your runner:
 
 ```bash
-#!/usr/bin/env bash
-
-# Skip --allow-aslr
-shift
-
-# These are the runner args (before --)
-runner_args=()
-while [[ $# -gt 0 ]] && [[ "$1" != "--" ]]; do
-    runner_args+=("$1")
-    shift
-done
-
-# Skip --
-shift
-
-# Skip the Valgrind binary of the host
-shift
-
-# Run docker with the runner args and Valgrind
-exec docker run --rm -i "${runner_args[@]}" valgrind-image valgrind "$@"
+cargo bench -- \
+    --valgrind-runner=./docker-wrapper \
+    --valgrind-runner-args='--allow-aslr=${GUNGRAUN_ALLOW_ASLR} --dest=${GUNGRAUN_VR_DEST_DIR}'
 ```
 
-### Windows Hosts
+## Path Substitution
 
-Valgrind is only available on Linux and FreeBSD. If you're developing on
-Windows, you can use WSL2 with Docker or Podman to run Valgrind in a Linux
-container:
+When running in containers, paths on the host may differ from paths inside the
+container. Use these options to help the runner use the correct directories and
+files. If using docker as custom runner, then most likely you will need to
+specify all of them. Note that Gungraun doesn't create any directories given by
+`--valgrind-runner-dest` and `--valgrind-runner-root`. It is your responsibility
+to create these directories before the first custom runner execution.
+
+### `--valgrind-runner-dest`
+
+Specifies a path prefix that replaces all occurrences of the value of
+`GUNGRAUN_VR_DEST_DIR` in the valgrind command line arguments. Useful when using
+a container volume mount that is different from the destination directory on the
+host. The destination directory on the host is guaranteed to be different for
+each benchmark and valgrind-runner execution, so it is safe to mount the
+original `GUNGRAUN_VR_DEST_DIR` to the same directory for each invocation.
+However, make sure you have write permissions to that directory and it is empty
+before the first invocation of the custom valgrind runner.
+
+> **Warning** Setting this variable to a non-empty directory or to a directory
+> which contains important data will potentially destroy the contained data.
+> Gungraun repeatedly dumps files in this directory and then either deletes
+> **all** of the contained files or moves **all** content to the final
+> destination directory on the host.
+
+If the directory `/tmp/dest` in the docker container exists:
 
 ```bash
-# Using Docker Desktop with WSL2 backend
-cargo bench -- --valgrind-runner=~/bin/docker-valgrind
+cargo bench -- \
+    --valgrind-runner=docker \
+    --valgrind-runner-dest=/tmp/dest
+    --valgrind-runner-args='run --volume ${GUNGRAUN_VR_DEST_DIR}:/tmp/dest alpine'
 ```
+
+### `--valgrind-runner-root`
+
+Specifies a path prefix that replaces all occurrences in paths with the value of
+`GUNGRAUN_VR_WORKSPACE_ROOT` in the valgrind command line arguments. Useful when
+a container mount of the workspace root is different from the host workspace
+root. When running library benchmarks, the compiled benchmark binary (somewhere
+located in `${GUNGRAUN_VR_WORKSPACE_ROOT}/target/release/deps/some_name-1a2b3c`)
+needs to be executed in the container which you could achieve with something
+similar to:
+
+```bash
+cargo bench -- \
+    --valgrind-runner=docker \
+    --valgrind-runner-root=/workspace
+    --valgrind-runner-args='run --volume ${GUNGRAUN_VR_WORKSPACE_ROOT}:/workspace alpine'
+```
+
+## Running Valgrind in a Container
+
+### Docker/Podman Example
+
+> **Note:** You'll need a Docker image with Valgrind installed. For example:
+>
+> ```dockerfile
+> FROM ubuntu:24.04
+> RUN apt-get update && \
+> 	  apt-get install -y libc6-dbg valgrind && \
+> 	  mkdir -p /workspace /var/gungraun-dest
+> ```
+>
+> Build and tag the image: `docker build -t valgrind-image .`
+
+Then use it with Gungraun and execute the following in your workspace root (the
+directory with the top-level `Cargo.toml` file). Here, `--valgrind-path` points
+to the valgrind executable in the container although the path might be the same
+on the host:
+
+```bash
+cargo bench -- \
+      --clear-env=no \
+      --valgrind-runner=docker \
+      --valgrind-path=/usr/bin/valgrind \
+      --valgrind-runner-root=/workspace \
+      --valgrind-runner-dest=/var/gungraun-dest \
+      --valgrind-runner-args='run --unsetenv-all' \
+      --valgrind-runner-args='-v ${GUNGRAUN_VR_WORKSPACE_ROOT}:/workspace' \
+      --valgrind-runner-args='-v ${GUNGRAUN_VR_DEST_DIR}:/var/gungraun-dest' \
+      --valgrind-runner-args='valgrind-image'
+```
+
+`--clear-env=no` is set, since `docker` needs some of the environment variables
+and we can configure `docker` with `--unsetenv-all` to clear the environment
+variables for the container.
 
 [`LibraryBenchmarkConfig`]:
     https://docs.rs/gungraun/0.17.2/gungraun/struct.LibraryBenchmarkConfig.html

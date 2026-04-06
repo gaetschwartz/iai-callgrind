@@ -22,7 +22,6 @@ fn check_args() -> Vec<String> {
 
 fn is_cleared_args(is_cleared: bool) -> Vec<String> {
     if let Ok(value) = std::env::var("CLI_ENV_CLEAR_TEST_VALUE") {
-        dbg!(&value);
         vec![format!("--is-cleared={value}")]
     } else if is_cleared {
         vec![format!("--is-cleared=true")]

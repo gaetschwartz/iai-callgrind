@@ -39,7 +39,7 @@
 #     --valgrind-runner-args are not set
 #   - Environment variables `GUNGRAUN_VR_DEST_DIR`, `GUNGRAUN_VR_HOME`,
 #     `GUNGRAUN_VR_WORKSPACE_ROOT`, `GUNGRAUN_ALLOW_ASLR` are available to runner
-#   - Extra arguments via `--valgrind-runner-args` are passed before `--`
+#   - Extra arguments via `--valgrind-runner-args` are passed before the valgrind path
 #   - Environment variable interpolation in `--valgrind-runner-args` works:
 #     - Default `GUNGRAUN_ALLOW_ASLR=no` when `--allow-aslr` not specified
 #     - `GUNGRAUN_ALLOW_ASLR=yes` when `--allow-aslr=true` specified
@@ -49,8 +49,8 @@
 #   - Test environment variable is cleared when `env_clear` is true (default)
 
 groups:
+  # without extra arguments
   - runs:
-      # without extra arguments
       - args:
           [
             "--valgrind-runner=/tmp/gungraun_test_lib_bench_valgrind_runner",
@@ -83,12 +83,13 @@ groups:
           stdout: expected_stdout.1
           files: expected_files.1.yml
           no_stderr: true
+  # with extra arguments and interpolation
   - runs:
-      # with extra arguments and interpolation
+      # without explicit --allow-aslr
       - args:
           [
             "--valgrind-runner=/tmp/gungraun_test_lib_bench_valgrind_runner",
-            "--valgrind-runner-args='--just=test --allow-aslr=${GUNGRAUN_ALLOW_ASLR}'",
+            "--valgrind-runner-args='--just=test --allow-aslr=${GUNGRAUN_ALLOW_ASLR} --'",
             "--nocapture",
           ]
         setup: |
@@ -106,11 +107,12 @@ groups:
           stdout: expected_stdout.2a
           files: expected_files.1.yml
           no_stderr: true
+      # set --allow-aslr=true
       - args:
           [
             "--allow-aslr=true",
             "--valgrind-runner=/tmp/gungraun_test_lib_bench_valgrind_runner",
-            "--valgrind-runner-args='--just=test --allow-aslr=${GUNGRAUN_ALLOW_ASLR}'",
+            "--valgrind-runner-args='--just=test --allow-aslr=${GUNGRAUN_ALLOW_ASLR} --'",
             "--nocapture",
           ]
         setup: |

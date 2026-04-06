@@ -57,7 +57,11 @@ pub struct ToolCommand {
     pub command: Command,
     /// Configuration for whether to capture or pass through the subprocess output
     pub nocapture: NoCapture,
-    /// TODO: DOCS
+    /// Optional path rebasing configuration for containerized runners
+    ///
+    /// When using `--valgrind-runner-root`, this contains the tuple `(original_workspace_root,
+    /// replacement_path)` for rebasing paths to match the runner's perspective (e.g., inside a
+    /// container).
     pub roots: Option<(PathBuf, PathBuf)>,
     /// The [`ValgrindTool`] to run
     pub tool: ValgrindTool,
@@ -108,7 +112,11 @@ impl ToolCommand {
         })
     }
 
-    /// TODO: DOCS
+    /// Resolve an executable path, applying path rebasing if configured
+    ///
+    /// When `--valgrind-runner-root` is specified, this method attempts to rebase the executable
+    /// path from the original workspace root to the runner's perspective. If rebasing is not
+    /// possible or not configured, falls back to resolving the binary path normally.
     pub fn resolve_executable(&self, executable: &Path, current_dir: Option<&Path>) -> PathBuf {
         if let Some(rebased) = self.try_rebase_arg(executable.as_os_str()) {
             PathBuf::from(rebased)
@@ -118,7 +126,9 @@ impl ToolCommand {
         }
     }
 
-    /// TODO: DOCS
+    /// Add an argument to the command
+    ///
+    /// This is a convenience wrapper around `self.command.arg()`.
     pub fn arg<T>(&mut self, arg: T) -> &mut Self
     where
         T: AsRef<OsStr>,
@@ -127,7 +137,10 @@ impl ToolCommand {
         self
     }
 
-    /// TODO: DOCS
+    /// Add an argument to the command, applying path rebasing if configured
+    ///
+    /// When `--valgrind-runner-root` is specified and the argument appears to be a path that needs
+    /// rebasing, this method will rebase it. Otherwise, it behaves like [`Self::arg`].
     pub fn arg_rebase<T>(&mut self, arg: T) -> &mut Self
     where
         T: AsRef<OsStr>,
@@ -143,7 +156,9 @@ impl ToolCommand {
         self
     }
 
-    /// TODO: DOCS
+    /// Add multiple arguments to the command
+    ///
+    /// This is a convenience wrapper that calls [`Self::arg`] for each argument.
     pub fn args<I, T>(&mut self, args: I) -> &mut Self
     where
         I: IntoIterator<Item = T>,
@@ -155,7 +170,9 @@ impl ToolCommand {
         self
     }
 
-    /// TODO: DOCS
+    /// Add multiple arguments to the command, applying path rebasing if configured
+    ///
+    /// This is a convenience wrapper that calls [`Self::arg_rebase`] for each argument.
     pub fn args_rebase<I, T>(&mut self, args: I) -> &mut Self
     where
         I: IntoIterator<Item = T>,

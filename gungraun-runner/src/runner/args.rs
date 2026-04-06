@@ -1,12 +1,24 @@
 // spell-checker: ignore totalbytes totalblocks writeback writebackbehaviour
+
 //! The command-line arguments of cargo bench as in ARGS of `cargo bench -- ARGS`
 
-/// TODO: DOCS
-/// TODO: Add all other args defaults and apply them
+/// Default values for command-line arguments
+///
+/// This module contains constants that define the default behavior when corresponding command-line
+/// arguments are not specified.
+// TODO: Add all other args defaults and apply them
 pub mod defaults {
-    /// TODO: DOCS
+    /// Default value for `--allow-aslr`
+    ///
+    /// When `false` (the default), Gungraun attempts to disable Address Space Layout Randomization
+    /// (ASLR) for more consistent benchmark results by using `setarch` on Linux or `proccontrol`
+    /// on FreeBSD.
     pub const ALLOW_ASLR: bool = false;
-    /// TODO: DOCS
+
+    /// Default value for `--env-clear`
+    ///
+    /// When `true` (the default), Gungraun clears most environment variables before running the
+    /// benchmark. Only essential variables like `LD_PRELOAD`, `LD_LIBRARY_PATH` are preserved.
     pub const ENV_CLEAR: bool = true;
 }
 
@@ -78,7 +90,7 @@ pub enum TruncateDescription {
     None,
 }
 
-// TODO: is there a short help version?
+// FIX: Use short help and long help
 /// The command line arguments the user provided after `--` when running cargo bench
 ///
 /// These arguments are not the command line arguments passed to `gungraun-runner`. We collect
@@ -594,7 +606,15 @@ pub struct CommandLineArgs {
     pub drd_metrics: Option<IndexSet<ErrorMetric>>,
 
     #[rustfmt::skip]
-    /// TODO: DOCS
+    /// Control whether environment variables are cleared before running a benchmark
+    ///
+    /// By default (`true`), environment variables are cleared to ensure reproducible benchmark
+    /// results across different environments. Set to `false` to preserve all environment variables
+    /// of the `cargo bench` process.
+    ///
+    /// Examples:
+    ///   * `--env-clear` (default: clear environment)
+    ///   * `--env-clear=false` (preserve environment)
     #[arg(
         long = "env-clear",
         num_args = 0..=1,
@@ -607,7 +627,24 @@ pub struct CommandLineArgs {
     pub env_clear: Option<bool>,
 
     #[rustfmt::skip]
-    /// TODO: DOCS
+    /// Set environment variables for benchmarks ignoring the clearing of environment variables
+    ///
+    /// Environment variables can be specified in two forms:
+    /// - `KEY=VALUE`: Set `KEY` to `VALUE` explicitly
+    /// - `KEY`: Resolve `KEY` from the current environment and pass its value
+    ///
+    /// Multiple key-value pairs can be specified in a single invocation using space-separated
+    /// values (posix-style quoting of values is supported). The `--envs` argument can also be
+    /// specified multiple times to accumulate environment variables.
+    ///
+    /// These variables are cumulative to any environment variables configured via
+    /// `LibraryBenchmarkConfig::env` or `BinaryBenchmarkConfig::env`.
+    ///
+    /// Examples:
+    ///    * `--envs=FOO=bar` (set FOO to "bar")
+    ///    * `--envs=FOO` (pass the original value of FOO from current environment)
+    ///    * `--envs='FOO=bar BAZ=qux'` (set multiple variables and once)
+    ///    * `--envs=FOO=bar --envs=BAZ=qux` (accumulate multiple times)
     #[arg(
         long = "envs",
         num_args = 1,
@@ -1143,9 +1180,20 @@ pub struct CommandLineArgs {
     )]
     pub valgrind_args: Option<RawToolArgs>,
 
-    // TODO: Document that args.valgrind_path is not checked for existence
     #[rustfmt::skip]
-    /// TODO: DOCS
+    /// Specify the path to the valgrind executable
+    ///
+    /// By default, Gungraun searches for `valgrind` in the system PATH. This option
+    /// allows specifying an alternative valgrind executable. When used with
+    /// `--valgrind-runner`, this path is passed to the runner as the valgrind binary
+    /// to invoke.
+    ///
+    /// Note: The specified path is not validated for existence. If the path is invalid, the
+    /// benchmark will fail when attempting to execute valgrind.
+    ///
+    /// Examples:
+    ///   * `--valgrind-path=/usr/local/bin/valgrind`
+    ///   * `--valgrind-path=/doesnotexist` (used with `--valgrind-runner` for container setups)
     #[arg(
         long = "valgrind-path",
         num_args = 1,
@@ -1163,20 +1211,24 @@ pub struct CommandLineArgs {
     /// valgrind passed as an argument to the runner.
     ///
     /// When specified, the runner is invoked as:
-    /// `<RUNNER> --allow-aslr=yes|no [RUNNER_ARGS...] -- /path/to/valgrind [VALGRIND_ARGS...]`
+    ///   `<RUNNER> [RUNNER_ARGS...] <VALGRIND_PATH> [VALGRIND_ARGS...] <BENCHMARK> [BENCHMARK_ARGS...]`
     ///
-    /// TODO: update docs, --allow-aslr and any custom args will be removed
+    /// The runner receives extra environment variables that provide context:
+    /// - `GUNGRAUN_VR_DEST_DIR`: The destination directory for valgrind output files
+    /// - `GUNGRAUN_VR_HOME`: The gungraun home (`--home`) directory
+    /// - `GUNGRAUN_VR_WORKSPACE_ROOT`: The project's workspace root directory
+    /// - `GUNGRAUN_ALLOW_ASLR`: `yes` or `no` (the default) based on `--allow-aslr` setting
+    ///
+    /// Environment variables in `--valgrind-runner-args` are interpolated using `${VAR}` syntax.
+    /// The interpolation priority is: `GUNGRAUN_VR_*` variables first, then `--envs` variables,
+    /// then the system environment.
+    ///
     /// This is useful for running benchmarks in containers or other environments where valgrind is
-    /// not available on the host. The `--allow-aslr` flag reflects the `--allow-aslr` command-line
-    /// option. Additional runner arguments can be specified with `--valgrind-runner-args`.
-    /// `/path/to/valgrind` is the path to the valgrind binary if present on the host. If it wasn't
-    /// found the path is set to `valgrind`.
-    ///
-    /// Since the runner receives `--allow-aslr` and other gungraun-specific arguments, you
-    /// typically need a wrapper script. See the online guide for detailed examples.
+    /// not available on the host. See the online guide for detailed examples.
     ///
     /// Examples:
-    ///   * --valgrind-runner=/path/to/docker-valgrind-wrapper
+    ///   * --valgrind-runner=docker
+    ///   * --valgrind-runner=/path/to/wrapper --valgrind-runner-args='--some-flag=${GUNGRAUN_ALLOW_ASLR}'
     #[arg(
         long = "valgrind-runner",
         value_parser = PathBufValueParser::new().try_map(parse_path_resolved),
@@ -1187,16 +1239,26 @@ pub struct CommandLineArgs {
     )]
     pub valgrind_runner: Option<PathBuf>,
 
-    // TODO: Add documentation for the interpolation
     #[rustfmt::skip]
     /// Additional arguments to pass to the valgrind runner executable
     ///
     /// This option is only effective when `--valgrind-runner` is specified. The arguments are
-    /// passed to the runner executable before the `--` separator and valgrind invocation.
+    /// passed to the runner executable after `--valgrind-runner` and before the valgrind path.
+    ///
+    /// Environment variable interpolation is supported using the `${VAR}` syntax. Variables are
+    /// resolved in this order:
+    /// 1. `GUNGRAUN_VR_*` variables set by Gungraun (see `--valgrind-runner` for the list)
+    /// 2. Variables specified via `--envs` and `LibraryBenchmarkConfig::envs` or
+    ///    `BinaryBenchmarkConfig::envs`
+    /// 3. System environment variables
+    ///
+    /// The interpolation allows passing dynamic values to the runner based on Gungraun's
+    /// configuration. For example, `${GUNGRAUN_ALLOW_ASLR}` interpolation is useful for passing
+    /// the ASLR setting to container setups.
     ///
     /// Examples:
     ///   * --valgrind-runner=sudo --valgrind-runner-args='--user=foo'
-    ///   * --valgrind-runner=/path/to/wrapper --valgrind-runner-args='--some-flag --other-flag'
+    ///   * --valgrind-runner=wrapper '--valgrind-runner-args=--allow-aslr=${GUNGRAUN_ALLOW_ASLR}'
     #[arg(
         long = "valgrind-runner-args",
         value_parser = parse_raw_args,
@@ -1211,8 +1273,22 @@ pub struct CommandLineArgs {
     pub valgrind_runner_args: Vec<RawArgs>,
 
     #[rustfmt::skip]
-    /// TODO: DOCS, only effective with the `valgrind_runner` variable, responsibility of user that
-    /// this directory exists
+    /// Override the destination directory path for valgrind runner output files
+    ///
+    /// This option is only effective when `--valgrind-runner` is specified. By default, valgrind
+    /// output files are written to paths under the gungraun home directory or in temporary
+    /// directories. This option allows substituting this path with a custom directory.
+    ///
+    /// When specified, any occurrence of this path prefix in valgrind arguments will be replaced
+    /// with the directory path specified by `--valgrind-runner-dest`.
+    ///
+    /// WARNING: Make sure the directory of this argument exists, is empty and doesn't point to a
+    /// directory with important files in it! This directory is managed by Gungraun and Gungraun
+    /// might delete **all** files in this directory. More details can be found in the online
+    /// guide.
+    ///
+    /// Examples:
+    /// * `--valgrind-runner-dest=/tmp/results`
     #[arg(
         long = "valgrind-runner-dest",
         num_args = 1,
@@ -1223,7 +1299,17 @@ pub struct CommandLineArgs {
     )]
     pub valgrind_runner_dest: Option<PathBuf>,
 
-    /// TODO: DOCS
+    /// Override the workspace root path for the valgrind runner
+    ///
+    /// This option is only effective when `--valgrind-runner` is specified. It allows substituting
+    /// the workspace root path prefix in the benchmark executable path and all other valgrind
+    /// arguments.
+    ///
+    /// This can be useful for container setups where the workspace is mounted at a different
+    /// location inside the container.
+    ///
+    /// Examples:
+    ///   * `--valgrind-runner-root=/workspace`
     #[arg(
         long = "valgrind-runner-root",
         num_args = 1,

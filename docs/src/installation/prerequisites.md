@@ -88,9 +88,10 @@ pkg install valgrind
 
 ### Running Valgrind in Containers
 
-If Valgrind cannot be installed directly on your host system, for example, on
-Windows or in restricted CI/CD environments, you can use the `--valgrind-runner`
-argument to run Valgrind through a container runtime like Docker or Podman.
+If Valgrind cannot be installed directly on your host system or you want to
+customize the Valgrind execution in a wrapper, you can use the
+`--valgrind-runner` argument, for example to run Valgrind through a container
+runtime like Docker or Podman.
 
 For detailed instructions and more examples, see
 [Running Valgrind with a Custom Runner](../cli_and_env/valgrind_runner.md).
