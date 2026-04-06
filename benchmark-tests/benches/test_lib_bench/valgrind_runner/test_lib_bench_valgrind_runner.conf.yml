@@ -15,7 +15,7 @@
 #      a. Extra arguments are passed to the runner with environment variable
 #         interpolation (`${GUNGRAUN_ALLOW_ASLR}` defaults to `no`)
 #      b. Interpolation respects CLI arg `--allow-aslr=true` (results in `yes`)
-#   3. Run with `--valgrind-runner` and `--valgrind-path` to verify custom
+#   3. Run with `--valgrind-runner` and `--valgrind-bin` to verify custom
 #      valgrind executable path is passed to runner
 #   4. Run with `--valgrind-runner` and `--valgrind-runner-dest` to verify
 #      destination path substitution and replacing it with the original
@@ -28,7 +28,7 @@
 #   - `--valgrind-runner-args='--just=test --allow-aslr=${GUNGRAUN_ALLOW_ASLR}'`
 #     for testing environment variable interpolation in runner args
 #   - `--allow-aslr=true` CLI arg to test interpolation with non-default value
-#   - `--valgrind-path=/doesnotexist` for custom valgrind executable path
+#   - `--valgrind-bin=/doesnotexist` for custom valgrind executable path
 #   - `--valgrind-runner-dest=/doesnotexist` for destination path substitution
 #   - `--valgrind-runner-root=/doesnotexist` for workspace root substitution
 #   - Environment variable `__GUNGRAUN_TEST_VAR=test var` for env clearing test
@@ -43,7 +43,7 @@
 #   - Environment variable interpolation in `--valgrind-runner-args` works:
 #     - Default `GUNGRAUN_ALLOW_ASLR=no` when `--allow-aslr` not specified
 #     - `GUNGRAUN_ALLOW_ASLR=yes` when `--allow-aslr=true` specified
-#   - Custom valgrind path via `--valgrind-path` is passed to runner.
+#   - Custom valgrind path via `--valgrind-bin` is passed to runner.
 #   - `/doesnotexist` paths are substituted with actual paths via environment
 #     variables when using `--valgrind-runner-dest` or `--valgrind-runner-root`
 #   - Test environment variable is cleared when `env_clear` is true (default)
@@ -135,7 +135,7 @@ groups:
       - args:
           [
             "--valgrind-runner=/tmp/gungraun_test_lib_bench_valgrind_runner",
-            "--valgrind-path=/doesnotexist",
+            "--valgrind-bin=/doesnotexist",
             "--nocapture",
             "--env-clear=no",
           ]

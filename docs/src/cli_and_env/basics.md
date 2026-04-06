@@ -473,7 +473,7 @@ Options:
 
           [env: GUNGRAUN_VALGRIND_ARGS=]
 
-      --valgrind-path <VALGRIND_PATH>
+      --valgrind-bin <VALGRIND_BIN>
           Specify the path to the valgrind executable
 
           By default, Gungraun searches for `valgrind` in the system PATH. This option
@@ -485,10 +485,10 @@ Options:
           benchmark will fail when attempting to execute valgrind.
 
           Examples:
-            * `--valgrind-path=/usr/local/bin/valgrind`
-            * `--valgrind-path=/doesnotexist` (used with `--valgrind-runner` for container setups)
+            * `--valgrind-bin=/usr/local/bin/valgrind`
+            * `--valgrind-bin=/doesnotexist` (used with `--valgrind-runner` for container setups)
 
-          [env: GUNGRAUN_VALGRIND_PATH=]
+          [env: GUNGRAUN_VALGRIND_BIN=]
 
       --valgrind-runner <VALGRIND_RUNNER>
           Specify an alternative executable to run valgrind
@@ -498,7 +498,7 @@ Options:
           valgrind passed as an argument to the runner.
 
           When specified, the runner is invoked as:
-            `<RUNNER> [RUNNER_ARGS...] <VALGRIND_PATH> [VALGRIND_ARGS...] <BENCHMARK>
+            `<RUNNER> [RUNNER_ARGS...] <VALGRIND_BIN> [VALGRIND_ARGS...] <BENCHMARK>
             [BENCHMARK_ARGS...]`
 
           The runner receives extra environment variables that provide context:

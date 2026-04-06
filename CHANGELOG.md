@@ -35,7 +35,7 @@ and this project adheres to
 - `--valgrind-runner-args` (env: `GUNGRAUN_VALGRIND_RUNNER_ARGS`) to pass
   additional arguments to the custom runner with support for environment
   variable interpolation using `${VAR}` syntax.
-- `--valgrind-path` (env: `GUNGRAUN_VALGRIND_PATH`) to specify the Valgrind
+- `--valgrind-bin` (env: `GUNGRAUN_VALGRIND_BIN`) to specify the Valgrind
   executable path.
 - `--valgrind-runner-dest` (env: `GUNGRAUN_VALGRIND_RUNNER_DEST`) to override
   the destination directory for Valgrind output files.

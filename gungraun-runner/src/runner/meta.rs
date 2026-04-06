@@ -48,7 +48,7 @@ pub enum ValgrindRunMode {
     ///
     /// The first `PathBuf` is the path to the runner executable, resolved from
     /// `--valgrind-runner`. The second `PathBuf` is the path to Valgrind, either resolved from
-    /// `--valgrind-path` or the system default.
+    /// `--valgrind-bin` or the system default.
     ValgrindRunner(PathBuf, PathBuf),
 }
 
@@ -147,7 +147,7 @@ impl Metadata {
         debug!("Detected target directory: '{}'", target_dir.display());
 
         let valgrind_path = args
-            .valgrind_path
+            .valgrind_bin
             .clone()
             .or_else(|| resolve_binary_path("valgrind", None).ok())
             .unwrap_or_else(|| PathBuf::from("valgrind"));

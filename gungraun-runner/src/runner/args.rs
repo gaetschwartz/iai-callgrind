@@ -1192,16 +1192,16 @@ pub struct CommandLineArgs {
     /// benchmark will fail when attempting to execute valgrind.
     ///
     /// Examples:
-    ///   * `--valgrind-path=/usr/local/bin/valgrind`
-    ///   * `--valgrind-path=/doesnotexist` (used with `--valgrind-runner` for container setups)
+    ///   * `--valgrind-bin=/usr/local/bin/valgrind`
+    ///   * `--valgrind-bin=/doesnotexist` (used with `--valgrind-runner` for container setups)
     #[arg(
-        long = "valgrind-path",
+        long = "valgrind-bin",
         num_args = 1,
         verbatim_doc_comment,
-        env = "GUNGRAUN_VALGRIND_PATH",
+        env = "GUNGRAUN_VALGRIND_BIN",
         display_order = 500
     )]
-    pub valgrind_path: Option<PathBuf>,
+    pub valgrind_bin: Option<PathBuf>,
 
     #[rustfmt::skip]
     /// Specify an alternative executable to run valgrind
@@ -1211,7 +1211,7 @@ pub struct CommandLineArgs {
     /// valgrind passed as an argument to the runner.
     ///
     /// When specified, the runner is invoked as:
-    ///   `<RUNNER> [RUNNER_ARGS...] <VALGRIND_PATH> [VALGRIND_ARGS...] <BENCHMARK> [BENCHMARK_ARGS...]`
+    ///   `<RUNNER> [RUNNER_ARGS...] <VALGRIND_BIN> [VALGRIND_ARGS...] <BENCHMARK> [BENCHMARK_ARGS...]`
     ///
     /// The runner receives extra environment variables that provide context:
     /// - `GUNGRAUN_VR_DEST_DIR`: The destination directory for valgrind output files

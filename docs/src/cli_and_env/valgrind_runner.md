@@ -15,7 +15,7 @@ environment variables:
 - `--valgrind-runner-args` (env: `GUNGRAUN_VALGRIND_RUNNER_ARGS`): Pass
   additional arguments to the runner (supports environment variable
   interpolation)
-- `--valgrind-path` (env: `GUNGRAUN_VALGRIND_PATH`): Specify the valgrind
+- `--valgrind-bin` (env: `GUNGRAUN_VALGRIND_BIN`): Specify the valgrind
   executable path.
 - `--valgrind-runner-dest` (env: `GUNGRAUN_VALGRIND_RUNNER_DEST`): Override the
   destination directory of valgrind output files
@@ -39,14 +39,14 @@ benchmark runtime environment:
 When a custom runner is specified, Gungraun invokes it as follows:
 
 ```shell
-<RUNNER> [RUNNER_ARGS] <VALGRIND_PATH> [VALGRIND_ARGS] <BENCHMARK> [BENCHMARK_ARGS]
+<RUNNER> [RUNNER_ARGS] <VALGRIND_BIN> [VALGRIND_ARGS] <BENCHMARK> [BENCHMARK_ARGS]
 ```
 
 Key points:
 
 - `<RUNNER_ARGS>` are additional arguments for the runner from
   `--valgrind-runner-args`
-- `<VALGRIND_PATH>` is the resolved path to Valgrind (from `--valgrind-path` or
+- `<VALGRIND_BIN>` is the resolved path to Valgrind (from `--valgrind-bin` or
   system default)
 - Your normal `<VALGRIND_ARGS>` for example set with `--callgrind-args`,
   `--cachegrind-args`, etc. are passed through to Valgrind after the runner
@@ -169,7 +169,7 @@ cargo bench -- \
 > Build and tag the image: `docker build -t valgrind-image .`
 
 Then use it with Gungraun and execute the following in your workspace root (the
-directory with the top-level `Cargo.toml` file). Here, `--valgrind-path` points
+directory with the top-level `Cargo.toml` file). Here, `--valgrind-bin` points
 to the valgrind executable in the container although the path might be the same
 on the host:
 
@@ -177,7 +177,7 @@ on the host:
 cargo bench -- \
       --clear-env=no \
       --valgrind-runner=docker \
-      --valgrind-path=/usr/bin/valgrind \
+      --valgrind-bin=/usr/bin/valgrind \
       --valgrind-runner-root=/workspace \
       --valgrind-runner-dest=/var/gungraun-dest \
       --valgrind-runner-args='run --unsetenv-all' \
