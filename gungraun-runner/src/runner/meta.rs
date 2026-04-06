@@ -251,7 +251,6 @@ impl Metadata {
                         .into(),
                 );
 
-                let mut has_args = false;
                 for args in self
                     .args
                     .valgrind_runner_args
@@ -259,14 +258,9 @@ impl Metadata {
                     .filter(|&r| !r.is_empty())
                     .map(RawArgs::as_slice)
                 {
-                    has_args = true;
                     let interpolated =
                         interpolate_arguments(args, &run_options.envs, &additional_envs)?;
                     command.args(interpolated);
-                }
-
-                if has_args {
-                    command.arg("--");
                 }
 
                 command.arg(valgrind_path);
