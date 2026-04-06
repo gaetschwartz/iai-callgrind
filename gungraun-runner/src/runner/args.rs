@@ -146,6 +146,14 @@ pub struct CommandLineArgs {
     #[arg(
         action = ArgAction::SetTrue,
         hide = true,
+        long = "fail-fast",
+        required = false
+    )]
+    _fail_fast: bool,
+
+    #[arg(
+        action = ArgAction::SetTrue,
+        hide = true,
         long = "force-run-in-process",
         required = false
     )]
@@ -885,7 +893,6 @@ pub struct CommandLineArgs {
     )]
     pub memcheck_metrics: Option<IndexSet<ErrorMetric>>,
 
-    // FIX: Add alias --no-capture
     #[rustfmt::skip]
     /// Don't capture terminal output of benchmarks
     ///
@@ -902,6 +909,7 @@ pub struct CommandLineArgs {
     /// to `stderr` will be discarded. Likewise, if `--nocapture=stderr` is specified, the output
     /// to `stderr` won't be captured and the output to `stdout` will be discarded.
     #[arg(
+        alias = "no-capture",
         default_missing_value = "true",
         default_value = "false",
         display_order = 300,
@@ -914,7 +922,6 @@ pub struct CommandLineArgs {
     )]
     pub nocapture: NoCapture,
 
-    // FIX: Add alias no-summary
     #[rustfmt::skip]
     /// Suppress the summary showing regressions and execution time at the end of a benchmark run
     ///
@@ -923,6 +930,7 @@ pub struct CommandLineArgs {
     /// The summary described by `--nosummary` is different from `--save-summary` and they do not
     /// affect each other.
     #[arg(
+        alias = "no-summary",
         action = ArgAction::Set,
         default_missing_value = "true",
         default_value = "false",
