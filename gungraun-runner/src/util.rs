@@ -251,8 +251,6 @@ where
 }
 
 /// Resolves the environment variables and create key, value pairs out of them.
-///
-/// Same as [`BinaryBenchmarkConfig::resolve_envs`]
 pub fn resolve_envs<I, T>(envs: I) -> HashMap<OsString, OsString>
 where
     I: IntoIterator<Item = T>,
