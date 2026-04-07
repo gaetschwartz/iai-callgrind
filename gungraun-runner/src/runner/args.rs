@@ -112,7 +112,7 @@ instead of `true` and one of `n`, `no`, `f`, `false`, `off`, and `0` instead of
     ",
     long_about = None,
     no_binary_name = true,
-    override_usage= "cargo bench ... [FILTER] -- [OPTIONS]",
+    override_usage= "cargo bench ... -- [OPTIONS | FILTER]",
     max_term_width = 101
 )]
 pub struct CommandLineArgs {
