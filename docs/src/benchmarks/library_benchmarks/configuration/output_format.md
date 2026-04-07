@@ -89,7 +89,7 @@ possibilities for [`Callgrind`]. The output format of the other valgrind tools
 can be customized in the same way. More details can be found in the docs for the
 respective format (`Dhat::format`, `DhatMetric`, `Cachegrind::format`,
 `CachegrindMetric`, ...) and for their respective command-line arguments with
-`--help`.
+`gungraun-runner --help`.
 
 ## Setting a Tolerance Margin for Metric Changes
 

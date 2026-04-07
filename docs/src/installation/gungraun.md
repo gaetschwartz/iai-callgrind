@@ -25,7 +25,8 @@ installation guide.
 
 To be able to run the benchmarks you'll also need the `gungraun-runner` binary
 installed somewhere in your `$PATH`. Otherwise, there is no need to interact
-with `gungraun-runner` as it is just an implementation detail.
+with `gungraun-runner` as it is just an implementation detail. However,
+`gungraun-runner` understands the commands `--help`, `-h` and `--version`, `-V`.
 
 ### From Source
 

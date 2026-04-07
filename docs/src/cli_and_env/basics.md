@@ -4,10 +4,10 @@ It's possible to pass arguments to Gungraun separated by `--`
 (`cargo bench -- ARGS`). If you're running into the error `Unrecognized Option`,
 see
 [Troubleshooting](../troubleshooting/running-cargo-bench-results-in-an-unrecognized-option-error.md).
-For a complete rundown of possible arguments, execute
-`cargo bench --bench <benchmark> -- --help`. Almost all command-line arguments
-have a corresponding environment variable. The environment variables which don't
-have a corresponding command-line argument are:
+For a complete rundown of possible arguments, execute `gungraun-runner --help`.
+Almost all command-line arguments have a corresponding environment variable. The
+environment variables which don't have a corresponding command-line argument
+are:
 
 - `GUNGRAUN_COLOR`: [Control the colored output of Gungraun](./output/color.md)
   (Default is `auto`)
@@ -23,7 +23,7 @@ have a corresponding command-line argument are:
 
 ## The Command-Line Arguments
 
-For an up-to-date list run `cargo bench` with `--help` as described above.
+For an up-to-date list for your Gungraun version run `gungraun-runner --help`:
 
 ````text
 High-precision, one-shot and consistent benchmarking framework/harness for Rust
