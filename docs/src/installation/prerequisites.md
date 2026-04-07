@@ -86,7 +86,17 @@ dnf install valgrind
 pkg install valgrind
 ```
 
-#### Valgrind is Available for the Following Distributions
+### Running Valgrind in Containers
+
+If Valgrind cannot be installed directly on your host system or you want to
+customize the Valgrind execution in a wrapper, you can use the
+`--valgrind-runner` argument, for example to run Valgrind through a container
+runtime like Docker or Podman.
+
+For detailed instructions and more examples, see
+[Running Valgrind with a Custom Runner](../cli_and_env/valgrind_runner.md).
+
+### Valgrind is Available for the Following Distributions
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/valgrind.svg)](https://repology.org/project/valgrind/versions)
 

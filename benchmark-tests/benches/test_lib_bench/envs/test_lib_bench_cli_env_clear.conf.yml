@@ -1,0 +1,61 @@
+# Test Case: `test_lib_bench_cli_env_clear`
+#
+# Description:
+#   Tests the `--env-clear` CLI argument and
+#   `LibraryBenchmarkConfig::env_clear()` configuration, validating that CLI
+#   arguments override config-level settings.
+#
+# Test Steps:
+#   1. Run benchmarks without `--env-clear` CLI arg to verify default behavior
+#   2. Run benchmarks with `--env-clear=true` to verify CLI overrides all
+#      configs
+#   3. Run benchmarks with `--env-clear=false` to verify CLI disables env
+#      clearing
+#
+# Test Inputs:
+#   - Three benchmark cases:
+#     - `yes_default`: uses default `env_clear(true)`
+#     - `yes_explicit`: explicitly sets `env_clear(true)` in config
+#     - `no`: sets `env_clear(false)` in config
+#   - `--env-clear=true` and `--env-clear=false` CLI arguments
+#   - `__GUNGRAUN_TEST_VAR=0` environment variable set for verification in the
+#     `check_env` function
+#
+# Test environment:
+#   - The temp file `/tmp/gungraun_test_lib_bench_envs.env-clear` is created to
+#     transfer the expected value for the `check_env` function to the benchmark
+#
+# Expected Outcomes:
+#   - Without CLI arg: config-level `env_clear` settings are respected
+#   - With `--env-clear=true`: all benchmarks clear environment regardless of
+#     config-level settings
+#   - With `--env-clear=false`: all benchmarks do NOT clear environment
+#     regardless of config-level settings
+#   - CLI argument takes precedence over benchmark configuration
+
+groups:
+  - runs:
+      - args: ["--nocapture"]
+        envs:
+          __GUNGRAUN_TEST_VAR: 0
+        expected:
+          stdout: expected_stdout.1
+          no_stderr: true
+  - runs:
+      - args: ["--nocapture", "--env-clear=true"]
+        envs:
+          __GUNGRAUN_TEST_VAR: 0
+        setup: echo -n true > /tmp/gungraun_test_lib_bench_envs.env-clear
+        teardown: rm -f /tmp/gungraun_test_lib_bench_envs.env-clear
+        expected:
+          stdout: expected_stdout.2
+          no_stderr: true
+  - runs:
+      - args: ["--nocapture", "--env-clear=false"]
+        envs:
+          __GUNGRAUN_TEST_VAR: 0
+        setup: echo -n false > /tmp/gungraun_test_lib_bench_envs.env-clear
+        teardown: rm -f /tmp/gungraun_test_lib_bench_envs.env-clear
+        expected:
+          stdout: expected_stdout.3
+          no_stderr: true

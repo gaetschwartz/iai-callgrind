@@ -28,14 +28,52 @@ and this project adheres to
 
 ## [Unreleased]
 
-- discarded printing of log file with info level
-- Implemented running benchmarks in parallel
-- Add a `--parallel` cli option and environment variable
+### Added
+
+- `--valgrind-runner` (env: `GUNGRAUN_VALGRIND_RUNNER`) option to run Valgrind
+  through a container or alternative execution environment.
+- `--valgrind-runner-args` (env: `GUNGRAUN_VALGRIND_RUNNER_ARGS`) to pass
+  additional arguments to the custom runner with support for environment
+  variable interpolation using `${VAR}` syntax.
+- `--valgrind-bin` (env: `GUNGRAUN_VALGRIND_BIN`) to specify the Valgrind
+  executable path.
+- `--valgrind-runner-dest` (env: `GUNGRAUN_VALGRIND_RUNNER_DEST`) to override
+  the destination directory for Valgrind output files.
+- `--valgrind-runner-root` (env: `GUNGRAUN_VALGRIND_RUNNER_ROOT`) to override
+  the workspace root directory path.
+- `--env-clear` (env: `GUNGRAUN_ENV_CLEAR`) CLI argument to control environment
+  variable clearing behavior for benchmarks.
+- `--envs` CLI argument to pass environment variables to benchmarks from the
+  command line (supports both passthrough `--envs=VAR` and explicit
+  `--envs=VAR=value`).
+- Environment variables `GUNGRAUN_VR_DEST_DIR`, `GUNGRAUN_VR_HOME`,
+  `GUNGRAUN_VR_WORKSPACE_ROOT`, `GUNGRAUN_ALLOW_ASLR` for custom valgrind
+  runners.
+- Documentation page for running Valgrind with a custom runner in the guide.
+- `--parallel` CLI option and environment variable to run benchmarks in
+  parallel.
+
+### Changed
+
 - Improved performance of serial benchmark execution:
     - By using a temporary directory for the new data which most likely is a
       in-memory file system like tmpfs
     - Execute the benchmark and then process and print the data while already
       executing the next benchmark.
+- Discarded printing of log file with info level.
+- `--bbv-args`, `--cachegrind-args`, `--callgrind-args`, `--dhat-args`,
+  `--drd-args`, `--helgrind-args`, `--massif-args`, `--memcheck-args`,
+  `--valgrind-args` now support specifying valgrind arguments without the `--`
+  flag for convenience. For example: `--callgrind-args='toggle-collect=some::*'`
+  instead of `--callgrind-args='--toggle-collect=some::*'`
+
+### Fixed
+
+- `--bbv-args`, `--cachegrind-args`, `--callgrind-args`, `--dhat-args`,
+  `--drd-args`, `--helgrind-args`, `--massif-args`, `--memcheck-args`,
+  `--valgrind-args` are now parsing multiple space separated argument lists
+  correctly and split them according to POSIX shell arguments.
+- Bullet point indentation in Examples section of CLI arguments help output.
 
 ## [0.17.2] - 2026-02-10
 

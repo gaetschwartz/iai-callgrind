@@ -705,7 +705,19 @@ impl ToolOutputPath {
     /// modifiers like `%p`. Use [`Self::real_paths`] to get the real and existing (possibly
     /// multiple) paths to the output files of the respective tool.
     pub fn to_path(&self) -> PathBuf {
-        self.dest_dir().join(format!(
+        self.dest_dir().join(self.file_name())
+    }
+
+    /// Return the filename for this tool's output file
+    ///
+    /// The filename is constructed as `<tool_id>.<name>.<extension>`, where:
+    /// - `tool_id` is the valgrind tool identifier (e.g., "callgrind", "memcheck")
+    /// - `name` is the benchmark name
+    /// - `extension` is the file extension for this tool (e.g., "out", "log")
+    ///
+    /// For example, a Callgrind output file might be named `callgrind.bench_fibonacci.out`.
+    pub fn file_name(&self) -> PathBuf {
+        PathBuf::from(format!(
             "{}.{}.{}",
             self.tool.id(),
             self.name,

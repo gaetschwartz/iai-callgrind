@@ -313,6 +313,11 @@ path = "benches/test_lib_bench/entry_point/test_lib_bench_entry_point.rs"
 
 [[bench]]
 harness = false
+name = "test_lib_bench_cli_env_clear"
+path = "benches/test_lib_bench/envs/test_lib_bench_cli_env_clear.rs"
+
+[[bench]]
+harness = false
 name = "test_lib_bench_file_parameter"
 path = "benches/test_lib_bench/file_parameter/test_lib_bench_file_parameter.rs"
 
@@ -415,6 +420,11 @@ path = "benches/test_lib_bench/threads/test_lib_bench_threads_nested.rs"
 harness = false
 name = "test_lib_bench_tools"
 path = "benches/test_lib_bench/tools/test_lib_bench_tools.rs"
+
+[[bench]]
+harness = false
+name = "test_lib_bench_valgrind_runner"
+path = "benches/test_lib_bench/valgrind_runner/test_lib_bench_valgrind_runner.rs"
 
 [[bench]]
 harness = false

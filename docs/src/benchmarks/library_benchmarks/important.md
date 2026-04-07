@@ -2,9 +2,10 @@
 
 # Important Default Behaviour
 
-The environment variables are cleared before running a library benchmark. Have a
-look into the [Configuration](./configuration.md) section if you need to change
-that behavior. Gungraun sometimes deviates from the Valgrind defaults which are:
+The environment variables are cleared before running a library benchmark. This
+can be changed in the [Configuration](./configuration.md) or via the
+command-line arguments [`--env-clear`][cli_args] and [`--envs`][cli_args].
+Gungraun sometimes deviates from the Valgrind defaults which are:
 
 | Gungraun                 | Valgrind (v3.23)        |
 | ------------------------ | ----------------------- |
@@ -70,4 +71,6 @@ Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regression
 
 If you prefer cache misses over cache hits or just want both metrics displayed
 you can fully customize the
-[callgrind output format](../library_benchmarks/configuration/output_format.md).
+[callgrind output format](./configuration/output_format.md).
+
+[cli_args]: ../../cli_and_env/basics.md

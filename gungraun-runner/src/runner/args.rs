@@ -1,6 +1,28 @@
 // spell-checker: ignore totalbytes totalblocks writeback writebackbehaviour
+
 //! The command-line arguments of cargo bench as in ARGS of `cargo bench -- ARGS`
 
+/// Default values for command-line arguments
+///
+/// This module contains constants that define the default behavior when corresponding command-line
+/// arguments are not specified.
+// TODO: Add all other args defaults and apply them
+pub mod defaults {
+    /// Default value for `--allow-aslr`
+    ///
+    /// When `false` (the default), Gungraun attempts to disable Address Space Layout Randomization
+    /// (ASLR) for more consistent benchmark results by using `setarch` on Linux or `proccontrol`
+    /// on FreeBSD.
+    pub const ALLOW_ASLR: bool = false;
+
+    /// Default value for `--env-clear`
+    ///
+    /// When `true` (the default), Gungraun clears most environment variables before running the
+    /// benchmark. Only essential variables like `LD_PRELOAD`, `LD_LIBRARY_PATH` are preserved.
+    pub const ENV_CLEAR: bool = true;
+}
+
+use std::ffi::OsString;
 use std::fmt::Display;
 use std::hash::Hash;
 use std::path::PathBuf;
@@ -8,7 +30,7 @@ use std::process::{Command, Stdio};
 use std::str::FromStr;
 
 use anyhow::Result;
-use clap::builder::BoolishValueParser;
+use clap::builder::{BoolishValueParser, PathBufValueParser, TypedValueParser};
 use clap::{ArgAction, Parser};
 use indexmap::{indexset, IndexMap, IndexSet};
 use simplematch::{DoWild, Options};
@@ -23,9 +45,10 @@ use super::summary::{BaselineName, SummaryFormat};
 use super::tool::regression::ToolRegressionConfig;
 use crate::api::{
     CachegrindMetric, CachegrindMetrics, CallgrindMetrics, DhatMetric, DhatMetrics, ErrorMetric,
-    EventKind, RawArgs, ValgrindTool,
+    EventKind, RawToolArgs, ValgrindTool,
 };
 use crate::runner::common::CapturedOutput;
+use crate::util;
 
 const DOWILD_OPTIONS: Options<u8> = Options::new().enable_escape(true).enable_classes(true);
 
@@ -67,6 +90,7 @@ pub enum TruncateDescription {
     None,
 }
 
+// FIX: Use short help and long help
 /// The command line arguments the user provided after `--` when running cargo bench
 ///
 /// These arguments are not the command line arguments passed to `gungraun-runner`. We collect
@@ -212,13 +236,13 @@ pub struct CommandLineArgs {
     ///   * --bbv-args='--interval-size=10000 --instr-count-only=yes'
     #[arg(
         long = "bbv-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_BBV_ARGS",
         display_order = 500
     )]
-    pub bbv_args: Option<RawArgs>,
+    pub bbv_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     /// The command-line arguments to pass through to Cachegrind
@@ -227,17 +251,17 @@ pub struct CommandLineArgs {
     /// description for --callgrind-args for more details and restrictions.
     ///
     /// Examples:
-    ///   * --cachegrind-args=--intr-at-start=no
+    ///   * --cachegrind-args=--instr-at-start=no
     ///   * --cachegrind-args='--branch-sim=yes --instr-at-start=no'
     #[arg(
         long = "cachegrind-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_CACHEGRIND_ARGS",
         display_order = 500
     )]
-    pub cachegrind_args: Option<RawArgs>,
+    pub cachegrind_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     #[allow(clippy::doc_markdown)]
@@ -265,9 +289,9 @@ pub struct CommandLineArgs {
     /// event ::= CachegrindMetric
     ///
     /// Examples:
-    /// * --cachegrind-limits='ir=0.0%'
-    /// * --cachegrind-limits='ir=10000,EstimatedCycles=10%'
-    /// * --cachegrind-limits='@all=10%,ir=10000,EstimatedCycles=10%'
+    ///   * --cachegrind-limits='ir=0.0%'
+    ///   * --cachegrind-limits='ir=10000,EstimatedCycles=10%'
+    ///   * --cachegrind-limits='@all=10%,ir=10000,EstimatedCycles=10%'
     #[arg(
         long = "cachegrind-limits",
         num_args = 1,
@@ -294,9 +318,9 @@ pub struct CommandLineArgs {
     /// described in the `--cachegrind-limits` option.
     ///
     /// Examples:
-    /// * --cachegrind-metrics='ir' to show only `Instructions`
-    /// * --cachegrind-metrics='@all' to show all possible cachegrind metrics
-    /// * --cachegrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
+    ///   * --cachegrind-metrics='ir' to show only `Instructions`
+    ///   * --cachegrind-metrics='@all' to show all possible cachegrind metrics
+    ///   * --cachegrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
     #[arg(
         long = "cachegrind-metrics",
         num_args = 1..,
@@ -322,13 +346,13 @@ pub struct CommandLineArgs {
     ///   * --callgrind-args='--dump-instr=yes --collect-systime=yes'
     #[arg(
         long = "callgrind-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_CALLGRIND_ARGS",
         display_order = 500
     )]
-    pub callgrind_args: Option<RawArgs>,
+    pub callgrind_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     #[allow(clippy::doc_markdown)]
@@ -366,9 +390,9 @@ pub struct CommandLineArgs {
     /// exit code `3`.
     ///
     /// Examples:
-    /// * --callgrind-limits='ir=5.0%'
-    /// * --callgrind-limits='ir=10000,EstimatedCycles=10%'
-    /// * --callgrind-limits='@all=10%,ir=5%|10000'
+    ///   * --callgrind-limits='ir=5.0%'
+    ///   * --callgrind-limits='ir=10000,EstimatedCycles=10%'
+    ///   * --callgrind-limits='@all=10%,ir=5%|10000'
     #[arg(
         long = "callgrind-limits",
         num_args = 1,
@@ -400,9 +424,9 @@ pub struct CommandLineArgs {
     /// `--callgrind-args`.
     ///
     /// Examples:
-    /// * --callgrind-metrics='ir' to show only `Instructions`
-    /// * --callgrind-metrics='@all' to show all possible callgrind metrics
-    /// * --callgrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
+    ///   * --callgrind-metrics='ir' to show only `Instructions`
+    ///   * --callgrind-metrics='@all' to show all possible callgrind metrics
+    ///   * --callgrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
     #[arg(
         long = "callgrind-metrics",
         num_args = 1..,
@@ -453,13 +477,13 @@ pub struct CommandLineArgs {
     ///   * --dhat-args=--mode=ad-hoc
     #[arg(
         long = "dhat-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_DHAT_ARGS",
         display_order = 500
     )]
-    pub dhat_args: Option<RawArgs>,
+    pub dhat_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     #[allow(clippy::doc_markdown)]
@@ -493,9 +517,9 @@ pub struct CommandLineArgs {
     /// `events` with a long name have their allowed abbreviations placed in the same parentheses.
     ///
     /// Examples:
-    /// * --dhat-limits='totalbytes=0.0%'
-    /// * --dhat-limits='totalbytes=10000,totalblocks=5%'
-    /// * --dhat-limits='@all=10%,totalbytes=5000,totalblocks=5%'
+    ///   * --dhat-limits='totalbytes=0.0%'
+    ///   * --dhat-limits='totalbytes=10000,totalblocks=5%'
+    ///   * --dhat-limits='@all=10%,totalbytes=5000,totalblocks=5%'
     #[arg(
         long = "dhat-limits",
         num_args = 1,
@@ -521,9 +545,9 @@ pub struct CommandLineArgs {
     /// described in the `--dhat-limits` option.
     ///
     /// Examples:
-    /// * --dhat-metrics='totalbytes' to show only `Total Bytes`
-    /// * --dhat-metrics='@all' to show all possible dhat metrics
-    /// * --dhat-metrics='@default,mb' to show maximum bytes in addition to the defaults
+    ///   * --dhat-metrics='totalbytes' to show only `Total Bytes`
+    ///   * --dhat-metrics='@all' to show all possible dhat metrics
+    ///   * --dhat-metrics='@default,mb' to show maximum bytes in addition to the defaults
     #[arg(
         long = "dhat-metrics",
         num_args = 1..,
@@ -546,13 +570,13 @@ pub struct CommandLineArgs {
     ///   * --drd-args='--exclusive-threshold=100 --free-is-write=yes'
     #[arg(
         long = "drd-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_DRD_ARGS",
         display_order = 500
     )]
-    pub drd_args: Option<RawArgs>,
+    pub drd_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     /// Define the drd error metrics and the order in which they are displayed
@@ -567,9 +591,9 @@ pub struct CommandLineArgs {
     /// Since this is a very small set of metrics, there is only one `group`: `@all`
     ///
     /// Examples:
-    /// * --drd-metrics='errors' to show only `Errors`
-    /// * --drd-metrics='@all' to show all possible error metrics (the default)
-    /// * --drd-metrics='err,ctx' to show only errors and contexts
+    ///   * --drd-metrics='errors' to show only `Errors`
+    ///   * --drd-metrics='@all' to show all possible error metrics (the default)
+    ///   * --drd-metrics='err,ctx' to show only errors and contexts
     #[arg(
         long = "drd-metrics",
         num_args = 1..,
@@ -580,6 +604,59 @@ pub struct CommandLineArgs {
         display_order = 700
     )]
     pub drd_metrics: Option<IndexSet<ErrorMetric>>,
+
+    #[rustfmt::skip]
+    /// Control whether environment variables are cleared before running a benchmark
+    ///
+    /// By default (`true`), environment variables are cleared to ensure reproducible benchmark
+    /// results across different environments. Set to `false` to preserve all environment variables
+    /// of the `cargo bench` process.
+    ///
+    /// Examples:
+    ///   * `--env-clear` (default: clear environment)
+    ///   * `--env-clear=false` (preserve environment)
+    #[arg(
+        long = "env-clear",
+        num_args = 0..=1,
+        default_missing_value = "true",
+        verbatim_doc_comment,
+        value_parser = BoolishValueParser::new(),
+        env = "GUNGRAUN_ENV_CLEAR",
+        display_order = 100
+    )]
+    pub env_clear: Option<bool>,
+
+    #[rustfmt::skip]
+    /// Set environment variables for benchmarks ignoring the clearing of environment variables
+    ///
+    /// Environment variables can be specified in two forms:
+    /// - `KEY=VALUE`: Set `KEY` to `VALUE` explicitly
+    /// - `KEY`: Resolve `KEY` from the current environment and pass its value
+    ///
+    /// Multiple key-value pairs can be specified in a single invocation using space-separated
+    /// values (posix-style quoting of values is supported). The `--envs` argument can also be
+    /// specified multiple times to accumulate environment variables.
+    ///
+    /// These variables are cumulative to any environment variables configured via
+    /// `LibraryBenchmarkConfig::env` or `BinaryBenchmarkConfig::env`.
+    ///
+    /// Examples:
+    ///   * `--envs=FOO=bar` (set FOO to "bar")
+    ///   * `--envs=FOO` (pass the original value of FOO from current environment)
+    ///   * `--envs='FOO=bar BAZ=qux'` (set multiple variables and once)
+    ///   * `--envs=FOO=bar --envs=BAZ=qux` (accumulate multiple times)
+    #[arg(
+        long = "envs",
+        num_args = 1,
+        required = false,
+        require_equals = true,
+        action = ArgAction::Append,
+        verbatim_doc_comment,
+        value_parser = parse_envs,
+        env = "GUNGRAUN_ENVS",
+        display_order = 100
+    )]
+    pub envs: Vec<Vec<(OsString, OsString)>>,
 
     #[rustfmt::skip]
     /// If specified, only run benchmarks matching this wildcard pattern
@@ -619,13 +696,13 @@ pub struct CommandLineArgs {
     ///   * --helgrind-args='--conflict-cache-size=100000 --free-is-write=yes'
     #[arg(
         long = "helgrind-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_HELGRIND_ARGS",
         display_order = 500
     )]
-    pub helgrind_args: Option<RawArgs>,
+    pub helgrind_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     /// Define the helgrind error metrics and the order in which they are displayed
@@ -638,9 +715,9 @@ pub struct CommandLineArgs {
     /// metrics.
     ///
     /// Examples:
-    /// * --helgrind-metrics='errors' to show only `Errors`
-    /// * --helgrind-metrics='@all' to show all possible error metrics (the default)
-    /// * --helgrind-metrics='err,ctx' to show only errors and contexts
+    ///   * --helgrind-metrics='errors' to show only `Errors`
+    ///   * --helgrind-metrics='@all' to show all possible error metrics (the default)
+    ///   * --helgrind-metrics='err,ctx' to show only errors and contexts
     #[arg(
         long = "helgrind-metrics",
         num_args = 1..,
@@ -655,7 +732,7 @@ pub struct CommandLineArgs {
     #[rustfmt::skip]
     /// Specify the home directory of gungraun benchmark output files
     ///
-    /// All output files are per default stored under the `$PROJECT_ROOT/target/gungraun` directory.
+    /// All output files are by default stored under the `$PROJECT_ROOT/target/gungraun` directory.
     /// This option lets you customize this home directory, and it will be created if it doesn't
     /// exist.
     #[arg(
@@ -666,6 +743,7 @@ pub struct CommandLineArgs {
     )]
     pub home: Option<PathBuf>,
 
+    // FIX: should be exclusive
     #[rustfmt::skip]
     /// Print a list of all benchmarks. With this argument no benchmarks are executed.
     ///
@@ -710,13 +788,13 @@ pub struct CommandLineArgs {
     ///   * --massif-args='--heap=no --threshold=2.0'
     #[arg(
         long = "massif-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_MASSIF_ARGS",
         display_order = 500
     )]
-    pub massif_args: Option<RawArgs>,
+    pub massif_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     /// The command-line arguments to pass through to Memcheck
@@ -729,13 +807,13 @@ pub struct CommandLineArgs {
     ///   * --memcheck-args='--leak-check=yes --show-leak-kinds=all'
     #[arg(
         long = "memcheck-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_MEMCHECK_ARGS",
         display_order = 500
     )]
-    pub memcheck_args: Option<RawArgs>,
+    pub memcheck_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
     /// Define the memcheck error metrics and the order in which they are displayed
@@ -756,9 +834,9 @@ pub struct CommandLineArgs {
     /// metrics.
     ///
     /// Examples:
-    /// * --memcheck-metrics='errors' to show only `Errors`
-    /// * --memcheck-metrics='@all' to show all possible error metrics (the default)
-    /// * --memcheck-metrics='err,ctx' to show only errors and contexts
+    ///   * --memcheck-metrics='errors' to show only `Errors`
+    ///   * --memcheck-metrics='@all' to show all possible error metrics (the default)
+    ///   * --memcheck-metrics='err,ctx' to show only errors and contexts
     #[arg(
         long = "memcheck-metrics",
         num_args = 1..,
@@ -770,6 +848,7 @@ pub struct CommandLineArgs {
     )]
     pub memcheck_metrics: Option<IndexSet<ErrorMetric>>,
 
+    // FIX: Add alias --no-capture
     #[rustfmt::skip]
     /// Don't capture terminal output of benchmarks
     ///
@@ -798,6 +877,7 @@ pub struct CommandLineArgs {
     )]
     pub nocapture: NoCapture,
 
+    // FIX: Add alias no-summary
     #[rustfmt::skip]
     /// Suppress the summary showing regressions and execution time at the end of a benchmark run
     ///
@@ -859,8 +939,8 @@ pub struct CommandLineArgs {
     /// results depend on the hardware and if your benchmarks are performing disk I/O, too.
     ///
     /// Examples:
-    /// * --parallel=4
-    /// * --parallel=auto
+    ///   * --parallel=4
+    ///   * --parallel=auto
     #[arg(
         long = "parallel",
         required = false,
@@ -870,7 +950,7 @@ pub struct CommandLineArgs {
         require_equals = true,
         value_parser = parse_parallel,
         env = "GUNGRAUN_PARALLEL",
-        display_order = 300
+        display_order = 300 // FIX: DISPLAY ORDER
     )]
     pub parallel: usize,
 
@@ -1015,8 +1095,8 @@ pub struct CommandLineArgs {
     /// Negative tolerance values are converted to their absolute value.
     ///
     /// Examples:
-    /// * --tolerance (applies the default value)
-    /// * --tolerance=0.1 (set the tolerance level to `0.1`)
+    ///   * --tolerance (applies the default value)
+    ///   * --tolerance=0.1 (set the tolerance level to `0.1`)
     #[arg(
         long = "tolerance",
         default_missing_value = "0.000009999999999999999",
@@ -1055,7 +1135,7 @@ pub struct CommandLineArgs {
     /// value disables the truncation entirely and a value will truncate the description to the
     /// given amount of characters excluding the ellipsis.
     ///
-    /// To clearify which part of the output is meant by `DESCRIPTION`:
+    /// To clarify which part of the output is meant by `DESCRIPTION`:
     ///
     /// ```text
     /// benchmark_file::group_name::function_name id:DESCRIPTION
@@ -1092,14 +1172,162 @@ pub struct CommandLineArgs {
     ///   * --valgrind-args='--error-exitcode=202 --num-callers=50'
     #[arg(
         long = "valgrind-args",
-        value_parser = parse_args,
+        value_parser = parse_tool_args,
         num_args = 1,
         verbatim_doc_comment,
         env = "GUNGRAUN_VALGRIND_ARGS",
         display_order = 500
     )]
-    pub valgrind_args: Option<RawArgs>,
+    pub valgrind_args: Option<RawToolArgs>,
+
+    #[rustfmt::skip]
+    /// Specify the path to the valgrind executable
+    ///
+    /// By default, Gungraun searches for `valgrind` in the system PATH. This option
+    /// allows specifying an alternative valgrind executable. When used with
+    /// `--valgrind-runner`, this path is passed to the runner as the valgrind binary
+    /// to invoke.
+    ///
+    /// Note: The specified path is not validated for existence. If the path is invalid, the
+    /// benchmark will fail when attempting to execute valgrind.
+    ///
+    /// Examples:
+    ///   * `--valgrind-bin=/usr/local/bin/valgrind`
+    ///   * `--valgrind-bin=/doesnotexist` (used with `--valgrind-runner` for container setups)
+    #[arg(
+        long = "valgrind-bin",
+        num_args = 1,
+        verbatim_doc_comment,
+        env = "GUNGRAUN_VALGRIND_BIN",
+        display_order = 500
+    )]
+    pub valgrind_bin: Option<PathBuf>,
+
+    #[rustfmt::skip]
+    /// Specify an alternative executable to run valgrind
+    ///
+    /// By default, gungraun runs the benchmark executable with valgrind directly. This option
+    /// allows specifying an alternative runner executable that will be invoked instead, with
+    /// valgrind passed as an argument to the runner.
+    ///
+    /// When specified, the runner is invoked as:
+    ///   `<RUNNER> [RUNNER_ARGS...] <VALGRIND_BIN> [VALGRIND_ARGS...] <BENCHMARK> [BENCHMARK_ARGS...]`
+    ///
+    /// The runner receives extra environment variables that provide context:
+    /// - `GUNGRAUN_VR_DEST_DIR`: The destination directory for valgrind output files
+    /// - `GUNGRAUN_VR_HOME`: The gungraun home (`--home`) directory
+    /// - `GUNGRAUN_VR_WORKSPACE_ROOT`: The project's workspace root directory
+    /// - `GUNGRAUN_ALLOW_ASLR`: `yes` or `no` (the default) based on `--allow-aslr` setting
+    ///
+    /// Environment variables in `--valgrind-runner-args` are interpolated using `${VAR}` syntax.
+    /// The interpolation priority is: `GUNGRAUN_VR_*` variables first, then `--envs` variables,
+    /// then the system environment.
+    ///
+    /// This is useful for running benchmarks in containers or other environments where valgrind is
+    /// not available on the host. See the online guide for detailed examples.
+    ///
+    /// Examples:
+    ///   * --valgrind-runner=docker
+    ///   * --valgrind-runner=/path/to/wrapper --valgrind-runner-args='--some-flag=${GUNGRAUN_ALLOW_ASLR}'
+    #[arg(
+        long = "valgrind-runner",
+        value_parser = PathBufValueParser::new().try_map(parse_path_resolved),
+        num_args = 1,
+        verbatim_doc_comment,
+        env = "GUNGRAUN_VALGRIND_RUNNER",
+        display_order = 500
+    )]
+    pub valgrind_runner: Option<PathBuf>,
+
+    #[rustfmt::skip]
+    /// Additional arguments to pass to the valgrind runner executable
+    ///
+    /// This option is only effective when `--valgrind-runner` is specified. The arguments are
+    /// passed to the runner executable after `--valgrind-runner` and before the valgrind path.
+    ///
+    /// Environment variable interpolation is supported using the `${VAR}` syntax. Variables are
+    /// resolved in this order:
+    /// 1. `GUNGRAUN_VR_*` variables set by Gungraun (see `--valgrind-runner` for the list)
+    /// 2. Variables specified via `--envs` and `LibraryBenchmarkConfig::envs` or
+    ///    `BinaryBenchmarkConfig::envs`
+    /// 3. System environment variables
+    ///
+    /// The interpolation allows passing dynamic values to the runner based on Gungraun's
+    /// configuration. For example, `${GUNGRAUN_ALLOW_ASLR}` interpolation is useful for passing
+    /// the ASLR setting to container setups.
+    ///
+    /// Examples:
+    ///   * --valgrind-runner=sudo --valgrind-runner-args='--user=foo'
+    ///   * --valgrind-runner=wrapper '--valgrind-runner-args=--allow-aslr=${GUNGRAUN_ALLOW_ASLR}'
+    #[arg(
+        long = "valgrind-runner-args",
+        value_parser = parse_raw_args,
+        requires = "valgrind_runner",
+        required = false,
+        num_args = 1,
+        action = ArgAction::Append,
+        verbatim_doc_comment,
+        env = "GUNGRAUN_VALGRIND_RUNNER_ARGS",
+        display_order = 500
+    )]
+    pub valgrind_runner_args: Vec<RawArgs>,
+
+    #[rustfmt::skip]
+    /// Override the destination directory path for valgrind runner output files
+    ///
+    /// This option is only effective when `--valgrind-runner` is specified. By default, valgrind
+    /// output files are written to paths under the gungraun home directory or in temporary
+    /// directories. This option allows substituting this path with a custom directory.
+    ///
+    /// When specified, any occurrence of this path prefix in valgrind arguments will be replaced
+    /// with the directory path specified by `--valgrind-runner-dest`.
+    ///
+    /// WARNING: Make sure the directory of this argument exists, is empty and doesn't point to a
+    /// directory with important files in it! This directory is managed by Gungraun and Gungraun
+    /// might delete **all** files in this directory. More details can be found in the online
+    /// guide.
+    ///
+    /// Examples:
+    ///   * `--valgrind-runner-dest=/tmp/results`
+    #[arg(
+        long = "valgrind-runner-dest",
+        num_args = 1,
+        requires = "valgrind_runner",
+        verbatim_doc_comment,
+        env = "GUNGRAUN_VALGRIND_RUNNER_DEST",
+        display_order = 500
+    )]
+    pub valgrind_runner_dest: Option<PathBuf>,
+
+    /// Override the workspace root path for the valgrind runner
+    ///
+    /// This option is only effective when `--valgrind-runner` is specified. It allows substituting
+    /// the workspace root path prefix in the benchmark executable path and all other valgrind
+    /// arguments.
+    ///
+    /// This can be useful for container setups where the workspace is mounted at a different
+    /// location inside the container.
+    ///
+    /// Examples:
+    ///   * `--valgrind-runner-root=/workspace`
+    #[arg(
+        long = "valgrind-runner-root",
+        num_args = 1,
+        requires = "valgrind_runner",
+        verbatim_doc_comment,
+        env = "GUNGRAUN_VALGRIND_RUNNER_ROOT",
+        display_order = 500
+    )]
+    pub valgrind_runner_root: Option<PathBuf>,
 }
+
+/// A wrapper type for raw command-line arguments
+///
+/// Stores a list of raw string arguments without special processing or validation. Used for
+/// arguments passed through to external executables without modification, particularly for
+/// `--valgrind-runner-args`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RawArgs(Vec<String>);
 
 impl BenchmarkFilter {
     /// Return `true` if the filter matches the haystack
@@ -1173,6 +1401,23 @@ impl From<TruncateDescription> for Option<usize> {
     }
 }
 
+impl RawArgs {
+    /// Returns a slice of the underlying argument strings
+    pub fn as_slice(&self) -> &[String] {
+        &self.0
+    }
+
+    /// TODO: DOCS
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    /// TODO: DOCS
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
 // Convert the `metric` if it is present
 //
 // Used for example for hard limits to convert u64 values to f64 values if required.
@@ -1194,13 +1439,6 @@ fn convert_metric<T: Display + TypeChecker + Copy>(
     } else {
         Ok((metric_kind, None))
     }
-}
-
-/// This function parses a space separated list of raw argument strings into [`crate::api::RawArgs`]
-fn parse_args(value: &str) -> Result<RawArgs, String> {
-    shlex::split(value)
-        .ok_or_else(|| "Failed to split args".to_owned())
-        .map(RawArgs::new)
 }
 
 /// Same as `parse_callgrind_limits` but for cachegrind
@@ -1302,6 +1540,36 @@ fn parse_dhat_metrics(value: &str) -> Result<IndexSet<DhatMetric>, String> {
 /// Parse the DRD metrics as error metrics
 fn parse_drd_metrics(value: &str) -> Result<IndexSet<ErrorMetric>, String> {
     parse_tool_metrics(value, parse_error_metrics)
+}
+
+/// Parse environment variable `key=value` pairs and resolve standalone keys
+fn parse_envs(value: &str) -> Result<Vec<(OsString, OsString)>, String> {
+    let trimmed = value.trim();
+    let trimmed = trimmed
+        .strip_prefix('\'')
+        .and_then(|v| v.strip_suffix('\''))
+        .or_else(|| trimmed.strip_prefix('"').and_then(|v| v.strip_suffix('"')))
+        .unwrap_or(trimmed);
+
+    let splits = shlex::split(trimmed)
+        .ok_or_else(|| format!("Failed splitting '{value}' for POSIX shell environment"))?;
+
+    let mut result = vec![];
+    for split in splits {
+        if let Some((key, equals_value)) = split.split_once('=') {
+            if key.is_empty() {
+                return Err(format!("Empty key for value: '{equals_value}'"));
+            }
+
+            result.push((OsString::from(key), OsString::from(equals_value)));
+        } else if let Some(env_value) = std::env::var_os(&split) {
+            result.push((OsString::from(split), env_value));
+        } else {
+            // do nothing
+        }
+    }
+
+    Ok(result)
 }
 
 fn parse_error_metrics(item: &str) -> Result<IndexSet<ErrorMetric>, String> {
@@ -1420,6 +1688,34 @@ fn parse_parallel(value: &str) -> Result<usize, String> {
     }
 }
 
+fn parse_path_resolved(value: PathBuf) -> Result<PathBuf, String> {
+    util::resolve_binary_path(value, None).map_err(|error| error.to_string())
+}
+
+/// This function parses a space separated list of raw argument strings into [`RawArgs`]
+fn parse_raw_args(value: &str) -> Result<RawArgs, String> {
+    let value = if value.is_empty() {
+        return Err(String::from("Empty arguments"));
+    } else if value.len() >= 2 {
+        match (&value.as_bytes()[0], &value.as_bytes()[value.len() - 1]) {
+            (b'\'', b'\'') | (b'"', b'"') => &value[1..value.len() - 1],
+            _ => value,
+        }
+    } else {
+        value
+    };
+
+    shlex::split(value)
+        .ok_or_else(|| "Failed to split args".to_owned())
+        .map(RawArgs)
+}
+
+/// This function parses a space separated list of raw argument strings into
+/// [`crate::api::RawToolArgs`]
+fn parse_tool_args(value: &str) -> Result<RawToolArgs, String> {
+    parse_raw_args(value).map(|r| RawToolArgs::new(r.0))
+}
+
 /// Utility function to parse the --callgrind-metrics, ...
 fn parse_tool_metrics<T: Eq + Hash>(
     value: &str,
@@ -1462,25 +1758,33 @@ fn parse_truncate_description(value: &str) -> Result<TruncateDescription, String
 
 #[cfg(test)]
 mod tests {
+    use std::fs::Permissions;
+    use std::os::unix::fs::PermissionsExt;
+
     use rstest::rstest;
+    use tempfile::{tempdir, NamedTempFile};
 
     use super::*;
     use crate::api::EventKind::*;
-    use crate::api::RawArgs;
+    use crate::api::RawToolArgs;
 
     #[rstest]
-    #[case::empty("", &[])]
     #[case::single_key_value("--some=yes", &["--some=yes"])]
     #[case::two_key_value("--some=yes --other=no", &["--some=yes", "--other=no"])]
     #[case::single_escaped("--some='yes and no'", &["--some=yes and no"])]
     #[case::double_escaped("--some='\"yes and no\"'", &["--some=\"yes and no\""])]
     #[case::multiple_escaped(
-    "--some='yes and no' --other='no and yes'",
-    &["--some=yes and no", "--other=no and yes"]
-)]
-    fn test_parse_callgrind_args(#[case] value: &str, #[case] expected: &[&str]) {
-        let actual = parse_args(value).unwrap();
-        assert_eq!(actual, RawArgs::from_iter(expected));
+        "--some='yes and no' --other='no and yes'",
+        &["--some=yes and no", "--other=no and yes"]
+    )]
+    fn test_parse_tool_args(#[case] value: &str, #[case] expected: &[&str]) {
+        let actual = parse_tool_args(value).unwrap();
+        assert_eq!(actual, RawToolArgs::from_iter(expected));
+    }
+
+    #[test]
+    fn test_parse_tool_args_when_empty_then_error() {
+        parse_tool_args("").unwrap_err();
     }
 
     #[rstest]
@@ -1584,17 +1888,23 @@ mod tests {
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(
             result.callgrind_args,
-            Some(RawArgs::new(vec![test_arg.to_owned()]))
+            Some(RawToolArgs::new(vec![test_arg.to_owned()]))
         );
     }
 
-    #[test]
-    fn test_callgrind_args_not_env() {
-        let test_arg = "--just-testing=yes";
-        let result = CommandLineArgs::parse_from([format!("--callgrind-args={test_arg}")]);
+    #[rstest]
+    #[case::without_flag("--callgrind-args=foo", &["--foo"])]
+    #[case::with_flag("--callgrind-args=--foo", &["--foo"])]
+    #[case::without_flag_and_quotes("--callgrind-args='foo'", &["--foo"])]
+    #[case::with_flag_and_quotes("--callgrind-args='--foo'", &["--foo"])]
+    #[case::with_equals("--callgrind-args=--foo=bar", &["--foo=bar"])]
+    #[case::two_flags("--callgrind-args='--foo=bar --bar=baz'", &["--foo=bar", "--bar=baz"])]
+    #[case::two_without_flags("--callgrind-args='foo=bar bar=baz'", &["--foo=bar", "--bar=baz"])]
+    fn test_callgrind_args_not_env(#[case] input: &str, #[case] expected: &[&str]) {
+        let result = CommandLineArgs::try_parse_from([input]).unwrap();
         assert_eq!(
             result.callgrind_args,
-            Some(RawArgs::new(vec![test_arg.to_owned()]))
+            Some(RawToolArgs::new(expected.iter().map(ToOwned::to_owned)))
         );
     }
 
@@ -1607,7 +1917,7 @@ mod tests {
         let result = CommandLineArgs::parse_from([format!("--callgrind-args={test_arg_no}")]);
         assert_eq!(
             result.callgrind_args,
-            Some(RawArgs::new(vec![test_arg_no.to_owned()]))
+            Some(RawToolArgs::new(vec![test_arg_no.to_owned()]))
         );
     }
 
@@ -2054,5 +2364,364 @@ mod tests {
         std::env::set_var("GUNGRAUN_TRUNCATE_DESCRIPTION", "no");
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(result.truncate_description, Some(TruncateDescription::None));
+    }
+
+    #[test]
+    fn test_arg_valgrind_runner() {
+        let file = tempfile::Builder::new()
+            .permissions(Permissions::from_mode(0o755))
+            .tempfile()
+            .unwrap();
+        let result = CommandLineArgs::try_parse_from([format!(
+            "--valgrind-runner={}",
+            file.path().display()
+        )])
+        .unwrap();
+
+        assert_eq!(result.valgrind_runner, Some(file.path().to_path_buf()));
+    }
+
+    #[test]
+    fn test_arg_valgrind_runner_when_directory_then_error() {
+        let dir = tempdir().unwrap();
+        let result = CommandLineArgs::try_parse_from([format!(
+            "--valgrind-runner='{}'",
+            dir.path().display()
+        )]);
+        result.unwrap_err();
+    }
+
+    #[test]
+    fn test_arg_valgrind_runner_when_not_executable_then_error() {
+        let file = NamedTempFile::new().unwrap();
+        let result = CommandLineArgs::try_parse_from([format!(
+            "--valgrind-runner={}",
+            file.path().display()
+        )]);
+        result.unwrap_err();
+    }
+
+    #[rstest]
+    #[case::positional_one(&["--valgrind-runner-args=foo"], &["foo"])]
+    #[case::positional_one_with_quotes(&["--valgrind-runner-args='foo'"], &["foo"])]
+    #[case::flag_one(&["--valgrind-runner-args=--foo"], &["--foo"])]
+    #[case::flag_one_with_quotes(&["--valgrind-runner-args='--foo'"], &["--foo"])]
+    #[case::flag_one_with_equals(&["--valgrind-runner-args=--foo=some"], &["--foo=some"])]
+    #[case::flag_two(&["--valgrind-runner-args='--foo --bar'"], &["--foo", "--bar"])]
+    fn test_valgrind_runner_args(#[case] input: &[&str], #[case] expected: &[&str]) {
+        let result = CommandLineArgs::try_parse_from(
+            input
+                .iter()
+                .chain(std::iter::once(&"--valgrind-runner=/bin/cat")),
+        )
+        .map_err(|e| e.to_string())
+        .unwrap();
+        assert_eq!(
+            result.valgrind_runner_args,
+            vec![RawArgs(expected.iter().map(ToString::to_string).collect())]
+        );
+    }
+
+    #[test]
+    fn test_valgrind_runner_args_when_twice() {
+        let result = CommandLineArgs::try_parse_from([
+            "--valgrind-runner-args=--foo",
+            "--valgrind-runner-args=--bar",
+            "--valgrind-runner=/bin/cat",
+        ])
+        .unwrap();
+        assert_eq!(
+            result.valgrind_runner_args,
+            vec![
+                RawArgs(vec!["--foo".to_owned()]),
+                RawArgs(vec!["--bar".to_owned()])
+            ]
+        );
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_env_clear_default() {
+        std::env::remove_var("GUNGRAUN_ENV_CLEAR");
+        let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
+        assert_eq!(result.env_clear, None);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_env_clear_env() {
+        std::env::set_var("GUNGRAUN_ENV_CLEAR", "yes");
+        let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
+        assert_eq!(result.env_clear, Some(true));
+        std::env::remove_var("GUNGRAUN_ENV_CLEAR");
+    }
+
+    #[rstest]
+    #[case::yes("yes", true)]
+    #[case::no("no", false)]
+    #[case::true_val("true", true)]
+    #[case::false_val("false", false)]
+    #[case::on("on", true)]
+    #[case::off("off", false)]
+    #[case::one("1", true)]
+    #[case::zero("0", false)]
+    #[case::default("", true)]
+    fn test_env_clear_cli(#[case] value: &str, #[case] expected: bool) {
+        let result = if value.is_empty() {
+            CommandLineArgs::parse_from(["--env-clear".to_owned()])
+        } else {
+            CommandLineArgs::parse_from([format!("--env-clear={value}")])
+        };
+        assert_eq!(result.env_clear, Some(expected));
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_envs_arg_all_missing_vars() {
+        let result =
+            CommandLineArgs::try_parse_from(["--envs='NONEXISTENT1 NONEXISTENT2'"]).unwrap();
+
+        assert_eq!(result.envs.len(), 1);
+        assert_eq!(result.envs[0], vec![]);
+    }
+
+    #[test]
+    fn test_envs_arg_empty_string() {
+        let result = CommandLineArgs::try_parse_from(["--envs=''"]).unwrap();
+        assert_eq!(result.envs.len(), 1);
+        assert_eq!(result.envs[0], vec![]);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_envs_arg_from_config_env() {
+        std::env::set_var("GUNGRAUN_ENVS", "FROM_CONFIG=yes");
+        let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
+        assert_eq!(
+            result.envs[0],
+            vec![(OsString::from("FROM_CONFIG"), OsString::from("yes"))]
+        );
+        std::env::remove_var("GUNGRAUN_ENVS");
+    }
+
+    #[test]
+    fn test_envs_arg_missing_env_var() {
+        let result = CommandLineArgs::try_parse_from(["--envs=NONEXISTENT_VAR_789"]).unwrap();
+        assert_eq!(result.envs[0], vec![]);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_envs_arg_mixed_resolution() {
+        std::env::set_var("MIXED_TEST_VAR", "from_env");
+        let result =
+            CommandLineArgs::try_parse_from(["--envs='KEY=val MIXED_TEST_VAR OTHER=set'"]).unwrap();
+        assert_eq!(
+            result.envs[0],
+            vec![
+                (OsString::from("KEY"), OsString::from("val")),
+                (OsString::from("MIXED_TEST_VAR"), OsString::from("from_env")),
+                (OsString::from("OTHER"), OsString::from("set")),
+            ]
+        );
+        std::env::remove_var("MIXED_TEST_VAR");
+    }
+
+    #[test]
+    fn test_envs_arg_multiple_delimited() {
+        let result = CommandLineArgs::try_parse_from(["--envs='A=1 B=2 C=3'"]).unwrap();
+        assert_eq!(
+            result.envs[0],
+            vec![
+                (OsString::from("A"), OsString::from("1")),
+                (OsString::from("B"), OsString::from("2")),
+                (OsString::from("C"), OsString::from("3")),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_envs_arg_multiple_invocations() {
+        let result = CommandLineArgs::try_parse_from(["--envs=A=1", "--envs=B=2"]).unwrap();
+        assert_eq!(
+            result.envs,
+            vec![
+                vec![(OsString::from("A"), OsString::from("1"))],
+                vec![(OsString::from("B"), OsString::from("2"))],
+            ]
+        );
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_envs_arg_partial_resolve() {
+        std::env::set_var("PARTIAL_EXISTS", "yes");
+        let result =
+            CommandLineArgs::try_parse_from(["--envs='PARTIAL_EXISTS NONEXISTENT_XYZ'"]).unwrap();
+        assert_eq!(
+            result.envs[0],
+            vec![(OsString::from("PARTIAL_EXISTS"), OsString::from("yes"))]
+        );
+        std::env::remove_var("PARTIAL_EXISTS");
+    }
+
+    #[test]
+    fn test_envs_arg_path_with_colons() {
+        let result = CommandLineArgs::try_parse_from(["--envs=PATH=/usr/bin:/bin"]).unwrap();
+        assert_eq!(
+            result.envs[0],
+            vec![(OsString::from("PATH"), OsString::from("/usr/bin:/bin"))]
+        );
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_envs_arg_resolve_from_env() {
+        std::env::set_var("RESOLVE_ME_VAR", "env_value");
+        let result = CommandLineArgs::try_parse_from(["--envs=RESOLVE_ME_VAR"]).unwrap();
+        assert_eq!(
+            result.envs[0],
+            vec![(
+                OsString::from("RESOLVE_ME_VAR"),
+                OsString::from("env_value")
+            )]
+        );
+        std::env::remove_var("RESOLVE_ME_VAR");
+    }
+
+    #[rstest]
+    #[case::simple(
+        &["--envs=KEY=value"],
+        vec![(OsString::from("KEY"), OsString::from("value"))]
+    )]
+    #[case::with_equals_in_value(
+        &["--envs=URL=http://example.com"],
+        vec![(OsString::from("URL"), OsString::from("http://example.com"))]
+    )]
+    #[case::empty_value(
+        &["--envs=EMPTY="],
+        vec![(OsString::from("EMPTY"), OsString::from(""))]
+    )]
+    #[case::multiple_equals(
+        &["--envs=A=B=C"],
+        vec![(OsString::from("A"), OsString::from("B=C"))]
+    )]
+    #[case::with_single_quotes(
+        &["--envs='A=foo bar'"],
+        vec![(OsString::from("A"), OsString::from("foo"))]
+    )]
+    #[case::with_single_quotes_value(
+        &["--envs=A='foo bar'"],
+        vec![(OsString::from("A"), OsString::from("foo bar"))]
+    )]
+    #[case::with_single_quotes_all(
+        &["--envs='A='foo bar''"],
+        vec![(OsString::from("A"), OsString::from("foo bar"))]
+    )]
+    #[case::with_double_quotes(
+        &["--envs=\"A=foo bar\""],
+        vec![(OsString::from("A"), OsString::from("foo"))]
+    )]
+    #[case::with_double_quotes_value(
+        &["--envs=A=\"foo bar\""],
+        vec![(OsString::from("A"), OsString::from("foo bar"))]
+    )]
+    #[case::with_double_quotes_all(
+        &["--envs=\"A=\"foo bar\"\""],
+        vec![(OsString::from("A"), OsString::from("foo bar"))]
+    )]
+    #[case::multiple_with_quotes(
+        &["--envs=\"A='foo bar' B=baz\""],
+        vec![
+            (OsString::from("A"), OsString::from("foo bar")),
+            (OsString::from("B"), OsString::from("baz"))
+        ]
+    )]
+    fn test_envs_arg_single(#[case] args: &[&str], #[case] expected: Vec<(OsString, OsString)>) {
+        let result = CommandLineArgs::try_parse_from(args).unwrap();
+        let expected: Vec<(OsString, OsString)> = expected.into_iter().collect();
+        assert_eq!(result.envs[0], expected);
+    }
+
+    #[test]
+    fn test_envs_arg_unicode() {
+        let result = CommandLineArgs::try_parse_from(["--envs=CAFÉ=café"]).unwrap();
+        assert_eq!(
+            result.envs[0],
+            vec![(OsString::from("CAFÉ"), OsString::from("café"))]
+        );
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_parse_env_from_env_var() {
+        std::env::set_var("TEST_PARSE_ENV_VAR", "resolved_value");
+        let result = parse_envs("TEST_PARSE_ENV_VAR").unwrap();
+        assert_eq!(
+            result,
+            vec![(
+                OsString::from("TEST_PARSE_ENV_VAR"),
+                OsString::from("resolved_value")
+            )]
+        );
+        std::env::remove_var("TEST_PARSE_ENV_VAR");
+    }
+
+    #[test]
+    fn test_parse_envs_empty() {
+        let result = parse_envs("").unwrap();
+        assert_eq!(result, vec![]);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_parse_envs_missing_env_var() {
+        let result = parse_envs("NONEXISTENT_VAR_XYZ123").unwrap();
+        assert_eq!(result, vec![]);
+    }
+
+    #[rstest]
+    #[case::empty_key("=value", "Empty key for value: 'value'")]
+    #[case::just_equals("=", "Empty key for value: ''")]
+    #[case::shlex_error_wrong_quoting(
+        "key='value",
+        "Failed splitting 'key='value' for POSIX shell environment"
+    )]
+    fn test_parse_envs_when_error(#[case] input: &str, #[case] expected: &str) {
+        let err = parse_envs(input).unwrap_err();
+        assert_eq!(err, expected);
+    }
+
+    #[rstest]
+    #[case::whitespace_only("      ", vec![])]
+    #[case::leading_trailing("  A=1  ", vec![(OsString::from("A"), OsString::from("1"))])]
+    #[case::multiple_spaces("A=1  B=2", vec![
+        (OsString::from("A"), OsString::from("1")),
+        (OsString::from("B"), OsString::from("2"))
+    ])]
+    fn test_parse_envs_whitespace(
+        #[case] input: &str,
+        #[case] expected: Vec<(OsString, OsString)>,
+    ) {
+        let result = parse_envs(input).unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[rstest]
+    #[case::simple("KEY=value", "KEY", "value")]
+    #[case::value_with_equals("URL=http://example.com", "URL", "http://example.com")]
+    #[case::multiple_equals("A=B=C=D", "A", "B=C=D")]
+    #[case::empty_value("KEY=", "KEY", "")]
+    #[case::with_colons("PATH=/usr/bin:/bin", "PATH", "/usr/bin:/bin")]
+    fn test_parse_envs_with_equals(
+        #[case] input: &str,
+        #[case] expected_key: &str,
+        #[case] expected_value: &str,
+    ) {
+        let result = parse_envs(input).unwrap();
+        assert_eq!(
+            result,
+            vec![(OsString::from(expected_key), OsString::from(expected_value))]
+        );
     }
 }

@@ -3,7 +3,6 @@
 mod defaults {
     use crate::api::Stdin;
 
-    pub const ENV_CLEAR: bool = true;
     pub const STDIN: Stdin = Stdin::Pipe;
     pub const WORKSPACE_ROOT_ENV: &str = "_WORKSPACE_ROOT";
 }
@@ -34,6 +33,7 @@ use crate::api::{
     self, BinaryBenchmarkConfig, BinaryBenchmarkGroups, DelayKind, EntryPoint, Stdin, ValgrindTool,
 };
 use crate::error::Error;
+use crate::runner::args;
 use crate::runner::common::{
     Assistant, AssistantKind, BaselineDataProcessor, Baselines, BenchmarkDataProcessor,
     BenchmarkSummaries, CapturedOutput, Config, Groups, LoadBaselineDataProcessor, ModulePath,
@@ -270,6 +270,7 @@ impl BinBench {
         has_setup: bool,
         has_teardown: bool,
         meta: &Metadata,
+        meta_envs: &HashMap<OsString, OsString>,
         main_index: usize,
         config: BinaryBenchmarkConfig,
         group_index: usize,
@@ -313,13 +314,19 @@ impl BinBench {
             Error::ConfigurationError(module_path.clone(), id.clone(), error.to_string())
         })?;
 
+        // We don't need the passthrough environment variables since we don't clear the environment
+        // for assistants, so `collect_envs` is enough.
         let mut assistant_envs = config.collect_envs();
+        // meta envs are already resolved, which is a little bit inefficient but it is not an error
+        // to add the potential passthrough env vars again.
+        assistant_envs.extend(meta_envs.clone());
         assistant_envs.push((
             OsString::from(defaults::WORKSPACE_ROOT_ENV),
             meta.project_root.clone().into(),
         ));
 
-        let command_envs = config.resolve_envs();
+        let mut envs = config.resolve_envs();
+        envs.extend(meta_envs.clone());
 
         let mut output_format = config
             .output_format
@@ -371,8 +378,11 @@ impl BinBench {
             function_name,
             tools: tool_configs,
             run_options: RunOptions {
-                env_clear: config.env_clear.unwrap_or(defaults::ENV_CLEAR),
-                envs: command_envs,
+                env_clear: meta
+                    .args
+                    .env_clear
+                    .unwrap_or_else(|| config.env_clear.unwrap_or(args::defaults::ENV_CLEAR)),
+                envs,
                 stdin: stdin.or(Some(defaults::STDIN)),
                 stdout,
                 stderr,

@@ -1,12 +1,15 @@
 # Test Case: `test_bin_bench_config`
 #
 # Description:
-#   Tests `BinaryBenchmarkConfig` inheritance and override behavior at main,
-#   group, binary benchmark, and bench levels. Validates that environment
-#   variables set at each level are correctly inherited and overridden.
+#   Tests `BinaryBenchmarkConfig` environment variable inheritance and override
+#   behavior across main, group, binary benchmark, and bench levels. Also validates
+#   the `--envs` CLI argument for passing environment variables to benchmarks.
 #
 # Test Steps:
-#   1. Run benchmarks with `--nocapture` verifying environment configuration
+#   1. Run benchmarks with `--nocapture` only to verify baseline config inheritance
+#   2. Run benchmarks with `--envs=CLI_ENV` from environment to verify CLI env
+#      passthrough mode
+#   3. Run benchmarks with `--envs=CLI_ENV=0` to verify explicit env setting
 #
 # Test Inputs:
 #   - `MAIN_ENV=1` set at `main!` level
@@ -14,18 +17,62 @@
 #   - `BINARY_BENCHMARK_ENV=3` set at `#[binary_benchmark]` level
 #   - `BENCH_ENV=4` set at `#[bench]` level
 #   - `COMMAND_ENV=5` set on `Command` directly
-#   - the `env` helper binary with --is-cleared=true/false` to verify
+#   - `--envs=CLI_ENV` (passthrough) and `--envs=CLI_ENV=0` (explicit) CLI
+#     arguments
+#   - The `env` helper binary with `--is-cleared=true/false` to verify
 #     environment clearing behavior
+#   - `--env-clear=(false|true)`
 #   - `DHAT` tool for additional config testing
 #
 # Expected Outcomes:
-#   - Environment variables correctly inherited from parent configs
+#   - Environment variables correctly inherited from parent configs at all levels
 #   - Child configs override parent values for same variable
-#   - Setup/teardown see environment cleared from Command-level vars
-#   - Stdout shows all expected environment values
+#   - Setup/teardown see environment NOT cleared (inherit all vars)
+#   - Benchmark execution sees environment cleared of Command-level vars
+#   - `--envs` passthrough mode resolves environment variable from runner's
+#     environment
+#   - `--envs` explicit mode sets environment variable value directly
+#   - CLI environment variables appear alongside config-level variables
+#   - CLI --env-clear is applied and overrides the default
 
 groups:
+  # no cli arg
   - runs:
       - args: ["--nocapture"]
         expected:
-          stdout: expected_stdout
+          stdout: expected_stdout.1
+          no_stderr: true
+  # passthrough
+  - runs:
+      - args: ["--nocapture", "--envs=CLI_ENV"]
+        envs:
+          CLI_ENV: 0
+          CLI_ENV_TEST: "true"
+        expected:
+          stdout: expected_stdout.2
+          no_stderr: true
+  # explicit
+  - runs:
+      - args: ["--nocapture", "--envs=CLI_ENV=0"]
+        envs:
+          CLI_ENV_TEST: "true"
+        expected:
+          stdout: expected_stdout.2
+          no_stderr: true
+  # --env-clear with the default value of true should behave as if it wasn't
+  # present
+  - runs:
+      - args: ["--nocapture", "--env-clear=true"]
+        envs:
+          CLI_ENV_CLEAR_TEST_VALUE: "true"
+        expected:
+          stdout: expected_stdout.1
+          no_stderr: true
+  # --env-clear
+  - runs:
+      - args: ["--nocapture", "--env-clear=false"]
+        envs:
+          CLI_ENV_CLEAR_TEST_VALUE: "false"
+        expected:
+          stdout: expected_stdout.3
+          no_stderr: true

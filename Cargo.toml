@@ -29,7 +29,7 @@ bon = { version = "3" }
 cargo_metadata = { version = "0.19" }
 cc = { version = "1" }
 cfg-if = { version = "1" }
-clap = { version = "4", features = ["derive", "env"] }
+clap = { version = "4.0.12", features = ["derive", "env"] }
 colored = { version = ">=2.2, <4" }
 crossbeam = { version = "0.8" }
 cty = { version = "0.2" }
@@ -49,6 +49,7 @@ minijinja = { version = "2.0.1" }
 nix = { version = "0.31" }
 num_cpus = { version = "1" }
 once_cell = { version = "1" }
+os_str_bytes = { version = "7" }
 polonius-the-crab = { version = "0.5" }
 predicates = { version = "3" }
 pretty_assertions = "1.1"
@@ -70,7 +71,7 @@ signal-hook = { version = "0.4" }
 simplematch = "0.3"
 strum = { version = "0.28" }
 syn = { version = "2.0.46", features = ["full", "extra-traits"] }
-tempfile = { version = "3" }
+tempfile = { version = "3.10.0" }
 trybuild = "1.0.18"
 valico = { version = "4" }
 version-compare = { version = "0.2" }

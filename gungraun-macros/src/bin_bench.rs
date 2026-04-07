@@ -187,7 +187,8 @@ impl Bench {
                 } else {
                     abort!(
                         pair, "Invalid parameter: {}", pair.path.require_ident()?;
-                        help = "Valid parameters are: `args`, `consts`, `config`, `setup`, `teardown`"
+                        help = "Valid parameters are: `args`, `consts`, `config`, `setup`, \
+                        `teardown`"
                     );
                 }
             }

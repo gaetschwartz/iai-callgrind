@@ -120,12 +120,48 @@ Options:
           [env: GUNGRAUN_ALLOW_ASLR=]
           [possible values: true, false]
 
+      --env-clear [<ENV_CLEAR>]
+          Control whether environment variables are cleared before running a benchmark
+
+          By default (`true`), environment variables are cleared to ensure reproducible benchmark
+          results across different environments. Set to `false` to preserve all environment variables
+          of the `cargo bench` process.
+
+          Examples:
+            * `--env-clear` (default: clear environment)
+            * `--env-clear=false` (preserve environment)
+
+          [env: GUNGRAUN_ENV_CLEAR=]
+          [possible values: true, false]
+
+      --envs=<ENVS>
+          Set environment variables for benchmarks ignoring the clearing of environment variables
+
+          Environment variables can be specified in two forms:
+          - `KEY=VALUE`: Set `KEY` to `VALUE` explicitly
+          - `KEY`: Resolve `KEY` from the current environment and pass its value
+
+          Multiple key-value pairs can be specified in a single invocation using space-separated
+          values (posix-style quoting of values is supported). The `--envs` argument can also be
+          specified multiple times to accumulate environment variables.
+
+          These variables are cumulative to any environment variables configured via
+          `LibraryBenchmarkConfig::env` or `BinaryBenchmarkConfig::env`.
+
+          Examples:
+            * `--envs=FOO=bar` (set FOO to "bar")
+            * `--envs=FOO` (pass the original value of FOO from current environment)
+            * `--envs='FOO=bar BAZ=qux'` (set multiple variables and once)
+            * `--envs=FOO=bar --envs=BAZ=qux` (accumulate multiple times)
+
+          [env: GUNGRAUN_ENVS=]
+
       --home <HOME>
           Specify the home directory of gungraun benchmark output files
 
-          All output files are by default stored under the `$PROJECT_ROOT/target/gungraun`
-          directory. This option lets you customize this home directory, and it will be created if it
-          doesn't exist.
+          All output files are by default stored under the `$PROJECT_ROOT/target/gungraun` directory.
+          This option lets you customize this home directory, and it will be created if it doesn't
+          exist.
 
           [env: GUNGRAUN_HOME=]
 
@@ -298,8 +334,8 @@ Options:
           Negative tolerance values are converted to their absolute value.
 
           Examples:
-          * --tolerance (applies the default value)
-          * --tolerance=0.1 (set the tolerance level to `0.1`)
+            * --tolerance (applies the default value)
+            * --tolerance=0.1 (set the tolerance level to `0.1`)
 
           [env: GUNGRAUN_TOLERANCE=]
 
@@ -437,6 +473,112 @@ Options:
 
           [env: GUNGRAUN_VALGRIND_ARGS=]
 
+      --valgrind-bin <VALGRIND_BIN>
+          Specify the path to the valgrind executable
+
+          By default, Gungraun searches for `valgrind` in the system PATH. This option
+          allows specifying an alternative valgrind executable. When used with
+          `--valgrind-runner`, this path is passed to the runner as the valgrind binary
+          to invoke.
+
+          Note: The specified path is not validated for existence. If the path is invalid, the
+          benchmark will fail when attempting to execute valgrind.
+
+          Examples:
+            * `--valgrind-bin=/usr/local/bin/valgrind`
+            * `--valgrind-bin=/doesnotexist` (used with `--valgrind-runner` for container setups)
+
+          [env: GUNGRAUN_VALGRIND_BIN=]
+
+      --valgrind-runner <VALGRIND_RUNNER>
+          Specify an alternative executable to run valgrind
+
+          By default, gungraun runs the benchmark executable with valgrind directly. This option
+          allows specifying an alternative runner executable that will be invoked instead, with
+          valgrind passed as an argument to the runner.
+
+          When specified, the runner is invoked as:
+            `<RUNNER> [RUNNER_ARGS...] <VALGRIND_BIN> [VALGRIND_ARGS...] <BENCHMARK>
+            [BENCHMARK_ARGS...]`
+
+          The runner receives extra environment variables that provide context:
+          - `GUNGRAUN_VR_DEST_DIR`: The destination directory for valgrind output files
+          - `GUNGRAUN_VR_HOME`: The gungraun home (`--home`) directory
+          - `GUNGRAUN_VR_WORKSPACE_ROOT`: The project's workspace root directory
+          - `GUNGRAUN_ALLOW_ASLR`: `yes` or `no` (the default) based on `--allow-aslr` setting
+
+          Environment variables in `--valgrind-runner-args` are interpolated using `${VAR}` syntax.
+          The interpolation priority is: `GUNGRAUN_VR_*` variables first, then `--envs` variables,
+          then the system environment.
+
+          This is useful for running benchmarks in containers or other environments where valgrind is
+          not available on the host. See the online guide for detailed examples.
+
+          Examples:
+            * --valgrind-runner=docker
+            * --valgrind-runner=/path/to/wrapper
+            --valgrind-runner-args='--some-flag=${GUNGRAUN_ALLOW_ASLR}'
+
+          [env: GUNGRAUN_VALGRIND_RUNNER=]
+
+      --valgrind-runner-args <VALGRIND_RUNNER_ARGS>
+          Additional arguments to pass to the valgrind runner executable
+
+          This option is only effective when `--valgrind-runner` is specified. The arguments are
+          passed to the runner executable after `--valgrind-runner` and before the valgrind path.
+
+          Environment variable interpolation is supported using the `${VAR}` syntax. Variables are
+          resolved in this order:
+          1. `GUNGRAUN_VR_*` variables set by Gungraun (see `--valgrind-runner` for the list)
+          2. Variables specified via `--envs` and `LibraryBenchmarkConfig::envs` or
+             `BinaryBenchmarkConfig::envs`
+          3. System environment variables
+
+          The interpolation allows passing dynamic values to the runner based on Gungraun's
+          configuration. For example, `${GUNGRAUN_ALLOW_ASLR}` interpolation is useful for passing
+          the ASLR setting to container setups.
+
+          Examples:
+            * --valgrind-runner=sudo --valgrind-runner-args='--user=foo'
+            * --valgrind-runner=wrapper '--valgrind-runner-args=--allow-aslr=${GUNGRAUN_ALLOW_ASLR}'
+
+          [env: GUNGRAUN_VALGRIND_RUNNER_ARGS=]
+
+      --valgrind-runner-dest <VALGRIND_RUNNER_DEST>
+          Override the destination directory path for valgrind runner output files
+
+          This option is only effective when `--valgrind-runner` is specified. By default, valgrind
+          output files are written to paths under the gungraun home directory or in temporary
+          directories. This option allows substituting this path with a custom directory.
+
+          When specified, any occurrence of this path prefix in valgrind arguments will be replaced
+          with the directory path specified by `--valgrind-runner-dest`.
+
+          WARNING: Make sure the directory of this argument exists, is empty and doesn't point to a
+          directory with important files in it! This directory is managed by Gungraun and Gungraun
+          might delete **all** files in this directory. More details can be found in the online
+          guide.
+
+          Examples:
+            * `--valgrind-runner-dest=/tmp/results`
+
+          [env: GUNGRAUN_VALGRIND_RUNNER_DEST=]
+
+      --valgrind-runner-root <VALGRIND_RUNNER_ROOT>
+          Override the workspace root path for the valgrind runner
+
+          This option is only effective when `--valgrind-runner` is specified. It allows substituting
+          the workspace root path prefix in the benchmark executable path and all other valgrind
+          arguments.
+
+          This can be useful for container setups where the workspace is mounted at a different
+          location inside the container.
+
+          Examples:
+            * `--valgrind-runner-root=/workspace`
+
+          [env: GUNGRAUN_VALGRIND_RUNNER_ROOT=]
+
       --cachegrind-limits <CACHEGRIND_LIMITS>
           Set performance regression limits for specific cachegrind metrics
 
@@ -462,9 +604,9 @@ Options:
           event ::= CachegrindMetric
 
           Examples:
-          * --cachegrind-limits='ir=0.0%'
-          * --cachegrind-limits='ir=10000,EstimatedCycles=10%'
-          * --cachegrind-limits='@all=10%,ir=10000,EstimatedCycles=10%'
+            * --cachegrind-limits='ir=0.0%'
+            * --cachegrind-limits='ir=10000,EstimatedCycles=10%'
+            * --cachegrind-limits='@all=10%,ir=10000,EstimatedCycles=10%'
 
           [env: GUNGRAUN_CACHEGRIND_LIMITS=]
 
@@ -503,9 +645,9 @@ Options:
           exit code `3`.
 
           Examples:
-          * --callgrind-limits='ir=5.0%'
-          * --callgrind-limits='ir=10000,EstimatedCycles=10%'
-          * --callgrind-limits='@all=10%,ir=5%|10000'
+            * --callgrind-limits='ir=5.0%'
+            * --callgrind-limits='ir=10000,EstimatedCycles=10%'
+            * --callgrind-limits='@all=10%,ir=5%|10000'
 
           [env: GUNGRAUN_CALLGRIND_LIMITS=]
 
@@ -540,9 +682,9 @@ Options:
           `events` with a long name have their allowed abbreviations placed in the same parentheses.
 
           Examples:
-          * --dhat-limits='totalbytes=0.0%'
-          * --dhat-limits='totalbytes=10000,totalblocks=5%'
-          * --dhat-limits='@all=10%,totalbytes=5000,totalblocks=5%'
+            * --dhat-limits='totalbytes=0.0%'
+            * --dhat-limits='totalbytes=10000,totalblocks=5%'
+            * --dhat-limits='@all=10%,totalbytes=5000,totalblocks=5%'
 
           [env: GUNGRAUN_DHAT_LIMITS=]
 
@@ -570,9 +712,10 @@ Options:
           described in the `--cachegrind-limits` option.
 
           Examples:
-          * --cachegrind-metrics='ir' to show only `Instructions`
-          * --cachegrind-metrics='@all' to show all possible cachegrind metrics
-          * --cachegrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
+            * --cachegrind-metrics='ir' to show only `Instructions`
+            * --cachegrind-metrics='@all' to show all possible cachegrind metrics
+            * --cachegrind-metrics='@default,@mr' to show cache miss rates in addition to the
+            defaults
 
           [env: GUNGRAUN_CACHEGRIND_METRICS=]
 
@@ -597,9 +740,9 @@ Options:
           `--callgrind-args`.
 
           Examples:
-          * --callgrind-metrics='ir' to show only `Instructions`
-          * --callgrind-metrics='@all' to show all possible callgrind metrics
-          * --callgrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
+            * --callgrind-metrics='ir' to show only `Instructions`
+            * --callgrind-metrics='@all' to show all possible callgrind metrics
+            * --callgrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
 
           [env: GUNGRAUN_CALLGRIND_METRICS=]
 
@@ -618,9 +761,9 @@ Options:
           described in the `--dhat-limits` option.
 
           Examples:
-          * --dhat-metrics='totalbytes' to show only `Total Bytes`
-          * --dhat-metrics='@all' to show all possible dhat metrics
-          * --dhat-metrics='@default,mb' to show maximum bytes in addition to the defaults
+            * --dhat-metrics='totalbytes' to show only `Total Bytes`
+            * --dhat-metrics='@all' to show all possible dhat metrics
+            * --dhat-metrics='@default,mb' to show maximum bytes in addition to the defaults
 
           [env: GUNGRAUN_DHAT_METRICS=]
 
@@ -637,9 +780,9 @@ Options:
           Since this is a very small set of metrics, there is only one `group`: `@all`
 
           Examples:
-          * --drd-metrics='errors' to show only `Errors`
-          * --drd-metrics='@all' to show all possible error metrics (the default)
-          * --drd-metrics='err,ctx' to show only errors and contexts
+            * --drd-metrics='errors' to show only `Errors`
+            * --drd-metrics='@all' to show all possible error metrics (the default)
+            * --drd-metrics='err,ctx' to show only errors and contexts
 
           [env: GUNGRAUN_DRD_METRICS=]
 
@@ -654,9 +797,9 @@ Options:
           metrics.
 
           Examples:
-          * --helgrind-metrics='errors' to show only `Errors`
-          * --helgrind-metrics='@all' to show all possible error metrics (the default)
-          * --helgrind-metrics='err,ctx' to show only errors and contexts
+            * --helgrind-metrics='errors' to show only `Errors`
+            * --helgrind-metrics='@all' to show all possible error metrics (the default)
+            * --helgrind-metrics='err,ctx' to show only errors and contexts
 
           [env: GUNGRAUN_HELGRIND_METRICS=]
 
@@ -679,9 +822,9 @@ Options:
           metrics.
 
           Examples:
-          * --memcheck-metrics='errors' to show only `Errors`
-          * --memcheck-metrics='@all' to show all possible error metrics (the default)
-          * --memcheck-metrics='err,ctx' to show only errors and contexts
+            * --memcheck-metrics='errors' to show only `Errors`
+            * --memcheck-metrics='@all' to show all possible error metrics (the default)
+            * --memcheck-metrics='err,ctx' to show only errors and contexts
 
           [env: GUNGRAUN_MEMCHECK_METRICS=]
 

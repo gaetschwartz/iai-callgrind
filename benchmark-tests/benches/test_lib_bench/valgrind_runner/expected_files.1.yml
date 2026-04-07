@@ -1,0 +1,8 @@
+data:
+  - group: my_group
+    function: simple
+    expected:
+      files:
+        - callgrind.simple.log
+        - callgrind.simple.out
+        - summary.json

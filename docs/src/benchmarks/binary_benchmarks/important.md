@@ -3,8 +3,9 @@
 # Important Default Behaviour
 
 As in library benchmarks, the environment variables are cleared before running a
-binary benchmark. Have a look at the [Configuration](./configuration.md) section
-if you want to change this behavior. Gungraun sometimes deviates from the
+binary benchmark. This can be changed in the [Configuration](./configuration.md)
+or via the command-line arguments [`--env-clear`](../../cli_and_env/basics.md)
+and [`--envs`](../../cli_and_env/basics.md) Gungraun sometimes deviates from the
 Valgrind defaults which are:
 
 | Gungraun                 | Valgrind (v3.23)        |

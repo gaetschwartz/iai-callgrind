@@ -52,6 +52,7 @@
 - [Basic Usage and Exit Codes](./cli_and_env/basics.md)
 - [Comparing with Baselines](./cli_and_env/baselines.md)
 - [Running Benchmarks in Parallel](./cli_and_env/parallel.md)
+- [Running Valgrind with a Custom Runner](./cli_and_env/valgrind_runner.md)
 - [Controlling the Output of Gungraun](./cli_and_env/output.md)
     - [Customize the Output Directory](./cli_and_env/output/out_directory.md)
     - [Machine-Readable Output](./cli_and_env/output/machine_readable.md)
