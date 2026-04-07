@@ -51,8 +51,7 @@
 groups:
   # 1. without extra arguments
   - runs:
-      - runs_on: "!x86_64-unknown-freebsd"
-        args:
+      - args:
           [
             "--valgrind-runner=/tmp/gungraun_test_lib_bench_valgrind_runner",
             "--nocapture",
@@ -82,41 +81,6 @@ groups:
           chmod +x /tmp/gungraun_test_lib_bench_valgrind_runner
         expected:
           stdout: expected_stdout.1
-          files: expected_files.1.yml
-          no_stderr: true
-  # like 1. but on freebsd
-  - runs:
-      - runs_on: "x86_64-unknown-freebsd"
-        args:
-          [
-            "--valgrind-runner=/tmp/gungraun_test_lib_bench_valgrind_runner",
-            "--nocapture",
-          ]
-        envs:
-          __GUNGRAUN_TEST_VAR: test var
-        setup: |
-          cat <<'EOF' >/tmp/gungraun_test_lib_bench_valgrind_runner
-          #!/usr/bin/env bash
-
-          echo "Running with the valgrind executable:"
-          printf '%s\n' "$1"
-
-          for env in \
-                    "GUNGRAUN_VR_DEST_DIR" \
-                    "GUNGRAUN_VR_HOME" \
-                    "GUNGRAUN_VR_WORKSPACE_ROOT" \
-                    "GUNGRAUN_ALLOW_ASLR"; do
-            [[ -n "$env" ]] && echo "Found env: ${env}"
-          done
-
-          [[ -z "$__GUNGRAUN_TEST_VAR" ]] && echo "Environment has been cleared"
-
-          exec "$@"
-          EOF
-
-          chmod +x /tmp/gungraun_test_lib_bench_valgrind_runner
-        expected:
-          stdout: expected_stdout.1.freebsd
           files: expected_files.1.yml
           no_stderr: true
   # 2. with extra arguments and interpolation
@@ -168,8 +132,7 @@ groups:
           no_stderr: true
   # 3. with valgrind bin path
   - runs:
-      - runs_on: "!x86_64-unknown-freebsd"
-        args:
+      - args:
           [
             "--valgrind-runner=/tmp/gungraun_test_lib_bench_valgrind_runner",
             "--valgrind-bin=/doesnotexist",
@@ -180,7 +143,7 @@ groups:
           cat <<'EOF' >/tmp/gungraun_test_lib_bench_valgrind_runner
           #!/usr/bin/env bash
 
-          echo "Running with valgrind runner: '$1'"
+          echo "Running with valgrind runner: %$1%"
           [[ "$1" == "/doesnotexist" ]] || { echo "Wrong valgrind runner"; exit 1; }
 
           shift
@@ -195,36 +158,7 @@ groups:
           stdout: expected_stdout.3
           files: expected_files.1.yml
           no_stderr: true
-  # like 3. but on freebsd different output for valgrind path
-  - runs:
-      - runs_on: "x86_64-unknown-freebsd"
-        args:
-          [
-            "--valgrind-runner=/tmp/gungraun_test_lib_bench_valgrind_runner",
-            "--valgrind-bin=/doesnotexist",
-            "--nocapture",
-            "--env-clear=no",
-          ]
-        setup: |
-          cat <<'EOF' >/tmp/gungraun_test_lib_bench_valgrind_runner
-          #!/usr/bin/env bash
-
-          echo "Running with valgrind runner: '$1'"
-          [[ "$1" == "/doesnotexist" ]] || { echo "Wrong valgrind runner"; exit 1; }
-
-          shift
-          valgrind="$(command -v valgrind)"
-          echo "Found valgrind: '${valgrind}'"
-
-          exec "$valgrind" "$@"
-          EOF
-
-          chmod +x /tmp/gungraun_test_lib_bench_valgrind_runner
-        expected:
-          stdout: expected_stdout.3.freebsd
-          files: expected_files.1.yml
-          no_stderr: true
-  # --valgrind-runner-dest
+  # 4. --valgrind-runner-dest
   - runs:
       - args:
           [
@@ -256,7 +190,7 @@ groups:
           stdout: expected_stdout.4
           files: expected_files.1.yml
           no_stderr: true
-  # --valgrind-runner-root
+  # 5. --valgrind-runner-root
   - runs:
       - args:
           [
@@ -272,7 +206,7 @@ groups:
           runner_args=()
           while [[ $# -gt 0 ]]; do
             if [[ "$1" =~ .*/doesnotexist/.* ]]; then
-              echo "${1/test_lib_bench_valgrind_runner-[0-9a-zA-Z]*/test_lib_bench_valgrind_runner-<__FILTER__>}"
+              echo "%${1/test_lib_bench_valgrind_runner-[0-9a-zA-Z]*/test_lib_bench_valgrind_runner-<__FILTER__>}%"
               runner_args+=("${1/\/doesnotexist/${GUNGRAUN_VR_WORKSPACE_ROOT}}")
             else
               runner_args+=("$1")
