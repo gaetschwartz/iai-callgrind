@@ -1,18 +1,10 @@
 use std::hint::black_box;
 
-use benchmark_tests::bubble_sort;
+use benchmark_tests::{bubble_sort, setup_worst_case_array};
 use gungraun::{
     library_benchmark, library_benchmark_group, main, Callgrind, EventKind, FlamegraphConfig,
     LibraryBenchmarkConfig,
 };
-
-fn setup_worst_case_array(start: i32) -> Vec<i32> {
-    if start.is_negative() {
-        (start..0).rev().collect()
-    } else {
-        (0..start).rev().collect()
-    }
-}
 
 #[library_benchmark(config = LibraryBenchmarkConfig::default()
     .tool(Callgrind::with_args(["--cache-sim=yes"]))

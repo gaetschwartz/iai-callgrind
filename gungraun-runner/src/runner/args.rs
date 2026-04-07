@@ -1515,12 +1515,12 @@ impl RawArgs {
         &self.0
     }
 
-    /// TODO: DOCS
+    /// Return `true` if there are no elements in this `RawArgs`
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
 
-    /// TODO: DOCS
+    /// Return the amount of elements
     pub fn len(&self) -> usize {
         self.0.len()
     }

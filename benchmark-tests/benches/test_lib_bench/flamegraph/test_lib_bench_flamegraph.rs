@@ -1,19 +1,10 @@
 use std::hint::black_box;
 
+use benchmark_tests::setup_worst_case_array;
 use gungraun::{
     library_benchmark, library_benchmark_group, main, Callgrind, FlamegraphConfig, FlamegraphKind,
     LibraryBenchmarkConfig,
 };
-
-// This function is used to create the worst case array we want to sort with our implementation of
-// bubble sort
-fn setup_worst_case_array(start: i32) -> Vec<i32> {
-    if start.is_negative() {
-        (start..0).rev().collect()
-    } else {
-        (0..start).rev().collect()
-    }
-}
 
 #[library_benchmark]
 #[bench::all_kinds(
