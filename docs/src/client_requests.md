@@ -13,7 +13,7 @@ Client requests are deactivated by default but can be activated with the
 
 ```toml
 [dev-dependencies]
-gungraun = { version = "0.17.2", features = ["client_requests"] }
+gungraun = { version = "0.18.0", features = ["client_requests"] }
 ```
 
 If you need the client requests in your production code, you don't want them to
@@ -24,12 +24,12 @@ runtime dependencies and with the `client_requests` feature to your
 
 ```toml
 [dependencies]
-gungraun = { version = "0.17.2", default-features = false, features = [
+gungraun = { version = "0.18.0", default-features = false, features = [
     "client_requests_defs"
 ] }
 
 [dev-dependencies]
-gungraun = { version = "0.17.2", features = ["client_requests"] }
+gungraun = { version = "0.18.0", features = ["client_requests"] }
 ```
 
 With just the `client_requests_defs` feature activated, the client requests
@@ -41,7 +41,7 @@ Gungraun, so you could even use the client requests without the rest of Gungraun
 by disabling the default-features:
 
 ```toml
-gungraun = { version = "0.17.2", default-features = false, features = [
+gungraun = { version = "0.18.0", default-features = false, features = [
     "client_requests"
 ] }
 ```
@@ -174,9 +174,9 @@ When the standard toggle is switched off with `EntryPoint::None`, make sure
 
 Please see the [`docs`][api-docs] for more details!
 
-[api-docs]: https://docs.rs/gungraun/0.17.2/gungraun/client_requests
+[api-docs]: https://docs.rs/gungraun/0.18.0/gungraun/client_requests
 [callgrind-arguments]:
     https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options
-[EntryPoint]: https://docs.rs/gungraun/0.17.2/gungraun/enum.EntryPoint.html
+[EntryPoint]: https://docs.rs/gungraun/0.18.0/gungraun/enum.EntryPoint.html
 [valgrind-client-req]:
     https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
