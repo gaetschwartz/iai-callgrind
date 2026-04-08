@@ -93,7 +93,7 @@ lazy_static! {
     static ref FRAGMENT_HEADER_RE: Regex =
         Regex::new(r"^(##(?: \S+: \S+)+)(\s*)([|].*)$").expect("Regex should compile");
     static ref ABSOLUTE_PATH_RE: Regex =
-        Regex::new(r"(\s+)([/][^/]*)+").expect("Regex should compile");
+        Regex::new(r"(\s+|^|')([/][^/]*)+").expect("Regex should compile");
     // Gungraun result: Success. 2 completed without regressions; 0 regressed; 0 filtered;
     // 2 benchmarks finished in 0.296s
     static ref SUMMARY_LINE_RE: Regex =

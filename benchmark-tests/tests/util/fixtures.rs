@@ -1,4 +1,6 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
+use std::ffi::OsString;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command as StdCommand, Stdio as StdStdio};
@@ -21,29 +23,33 @@ use gungraun_runner::runner::tool::run::{RunOptions, ToolCommand, ToolCommandChi
 use crate::util::common::DEFAULT_TOOL;
 
 #[builder(finish_fn = "fixture")]
-pub fn assistant(kind: AssistantKind) -> Assistant {
+pub fn assistant_f(kind: AssistantKind) -> Assistant {
     Assistant::new_main_assistant(kind, vec![], false)
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn config(bench_bin: &Path, bench_file: Option<&Path>, meta: Option<&Metadata>) -> Config {
+pub fn config_f(
+    bench_bin: &Path,
+    bench_file: Option<&Path>,
+    metadata: Option<&Metadata>,
+) -> Config {
     Config {
         bench_bin: bench_bin.to_path_buf(),
         bench_file: bench_file
             .map_or_else(|| PathBuf::from("does_not_exist.rs"), |f| f.to_path_buf()),
-        meta: meta.map_or_else(|| metadata().fixture(), Clone::clone),
+        meta: metadata.map_or_else(|| metadata_f().fixture(), Clone::clone),
         module_path: ModulePath::new("does_not_exist"),
         package_dir: PathBuf::from("test_package"),
     }
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn bench_child(
+pub fn bench_child_f(
     exe: &Path,
     args: Option<&[&str]>,
     stdout: Option<StdStdio>,
 ) -> (PathBuf, Child) {
-    let child = command_child()
+    let child = command_child_f()
         .exe(exe)
         .maybe_args(args)
         .maybe_stdout(stdout)
@@ -53,7 +59,7 @@ pub fn bench_child(
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn command_child(exe: &Path, args: Option<&[&str]>, stdout: Option<StdStdio>) -> Child {
+pub fn command_child_f(exe: &Path, args: Option<&[&str]>, stdout: Option<StdStdio>) -> Child {
     let mut command = StdCommand::new(exe);
     if let Some(args) = args {
         command.args(args);
@@ -68,12 +74,12 @@ pub fn command_child(exe: &Path, args: Option<&[&str]>, stdout: Option<StdStdio>
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn force_shutdown(yes: Option<bool>) -> Arc<AtomicBool> {
+pub fn force_shutdown_f(yes: Option<bool>) -> Arc<AtomicBool> {
     Arc::new(AtomicBool::new(yes.unwrap_or(false)))
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn metadata(raw_command_line_args: Option<&[&str]>) -> Metadata {
+pub fn metadata_f(raw_command_line_args: Option<&[&str]>) -> Metadata {
     let args = raw_command_line_args
         .into_iter()
         .flatten()
@@ -89,20 +95,20 @@ pub fn metadata(raw_command_line_args: Option<&[&str]>) -> Metadata {
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn module_path() -> ModulePath {
+pub fn module_path_f() -> ModulePath {
     ModulePath::new("test::path")
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn process_handler(
+pub fn process_handler_f(
     set_force_shutdown: Option<Arc<AtomicBool>>,
     assistant: Option<(AssistantKind, Child)>,
     setup_is_parallel: Option<bool>,
     bench: Option<ToolCommandChild>,
 ) -> ProcessHandler {
     let mut handler = ProcessHandler::new(
-        set_force_shutdown.unwrap_or_else(|| force_shutdown().fixture()),
-        module_path().fixture(),
+        set_force_shutdown.unwrap_or_else(|| force_shutdown_f().fixture()),
+        module_path_f().fixture(),
         false,
         Duration::from_millis(50),
         None,
@@ -131,12 +137,12 @@ pub fn process_handler(
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn setup_child(
+pub fn setup_child_f(
     exe: &Path,
     args: Option<&[&str]>,
     stdout: Option<StdStdio>,
 ) -> (AssistantKind, Child) {
-    let child = command_child()
+    let child = command_child_f()
         .exe(exe)
         .maybe_args(args)
         .maybe_stdout(stdout)
@@ -145,12 +151,12 @@ pub fn setup_child(
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn teardown_child(
+pub fn teardown_child_f(
     exe: &Path,
     args: Option<&[&str]>,
     stdout: Option<StdStdio>,
 ) -> (AssistantKind, Child) {
-    let child = command_child()
+    let child = command_child_f()
         .exe(exe)
         .maybe_args(args)
         .maybe_stdout(stdout)
@@ -159,7 +165,7 @@ pub fn teardown_child(
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn test_file(dir: Option<&Path>) -> (PathBuf, File) {
+pub fn test_file_f(dir: Option<&Path>) -> (PathBuf, File) {
     let path = if let Some(dir) = dir {
         dir.join("test-file")
     } else {
@@ -171,12 +177,20 @@ pub fn test_file(dir: Option<&Path>) -> (PathBuf, File) {
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn run_options() -> RunOptions {
+pub fn run_options_f() -> RunOptions {
+    // Sometimes necessary to be able to run the tests with valgrind
+    let valgrind_lib = OsString::from("VALGRIND_LIB");
+
+    let mut envs = HashMap::new();
+    if let Some(value) = std::env::var_os(&valgrind_lib) {
+        envs.insert(valgrind_lib, value);
+    }
+
     RunOptions {
         current_dir: None,
         delay: None,
         env_clear: true,
-        envs: HashMap::new(),
+        envs,
         exit_with: None,
         sandbox: None,
         setup: None,
@@ -188,20 +202,21 @@ pub fn run_options() -> RunOptions {
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn tool_command(output_path: &ToolOutputPath, meta: Option<Metadata>) -> ToolCommand {
-    let meta = meta.unwrap_or_else(|| metadata().fixture());
+pub fn tool_command_f(
+    output_path: &ToolOutputPath,
+    metadata: Option<Metadata>,
+    run_options: Option<&RunOptions>,
+) -> ToolCommand {
+    let meta = metadata.unwrap_or_else(|| metadata_f().fixture());
 
-    ToolCommand::new(
-        &tool_config().fixture(),
-        &meta,
-        output_path,
-        &run_options().fixture(),
-    )
-    .unwrap()
+    let run_options =
+        run_options.map_or_else(|| Cow::Owned(run_options_f().fixture()), Cow::Borrowed);
+
+    ToolCommand::new(&tool_config_f().fixture(), &meta, output_path, &run_options).unwrap()
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn tool_command_child(
+pub fn tool_command_child_f(
     exe: &Path,
     args: Option<&[&str]>,
     log_path: ToolOutputPath,
@@ -209,7 +224,7 @@ pub fn tool_command_child(
     exit_with: Option<ExitWith>,
     stdout: Option<StdStdio>,
 ) -> ToolCommandChild {
-    let (path, child) = bench_child()
+    let (path, child) = bench_child_f()
         .exe(exe)
         .maybe_args(args)
         .maybe_stdout(stdout)
@@ -225,7 +240,7 @@ pub fn tool_command_child(
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn tool_config(tool: Option<ValgrindTool>, is_default: Option<bool>) -> ToolConfig {
+pub fn tool_config_f(tool: Option<ValgrindTool>, is_default: Option<bool>) -> ToolConfig {
     let tool = tool.unwrap_or(DEFAULT_TOOL);
     ToolConfig::new(
         tool,
@@ -240,7 +255,7 @@ pub fn tool_config(tool: Option<ValgrindTool>, is_default: Option<bool>) -> Tool
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn tool_output_path(
+pub fn tool_output_path_f(
     target_dir: &Path,
     tool: Option<ValgrindTool>,
     name: Option<&str>,
@@ -253,7 +268,7 @@ pub fn tool_output_path(
         tool.unwrap_or(ValgrindTool::Callgrind),
         &BaselineKind::Old,
         target_dir,
-        &module_path_string.map_or_else(|| module_path().fixture(), ModulePath::new),
+        &module_path_string.map_or_else(|| module_path_f().fixture(), ModulePath::new),
         name.unwrap_or("foo"),
         false,
     )

@@ -15,17 +15,18 @@ use crate::util::common::{
     TIMEOUT_EXE,
 };
 use crate::util::fixtures::{
-    assistant, config, force_shutdown, module_path, process_handler, setup_child, teardown_child,
-    test_file, tool_command, tool_command_child, tool_config, tool_output_path,
+    assistant_f, config_f, force_shutdown_f, module_path_f, process_handler_f, run_options_f,
+    setup_child_f, teardown_child_f, test_file_f, tool_command_child_f, tool_command_f,
+    tool_config_f, tool_output_path_f,
 };
 
 #[test]
 fn test_start_assistant_when_setup() {
-    let assistant = assistant().kind(AssistantKind::Setup).fixture();
-    let config = config().bench_bin(&BENCH_BIN_FAKE_EXE).fixture();
+    let assistant = assistant_f().kind(AssistantKind::Setup).fixture();
+    let config = config_f().bench_bin(&BENCH_BIN_FAKE_EXE).fixture();
     let module_path = config.module_path.join("does::not_matter");
 
-    let mut process_handler = process_handler().fixture();
+    let mut process_handler = process_handler_f().fixture();
     process_handler
         .start_assistant(
             true,
@@ -57,11 +58,11 @@ fn test_start_assistant_when_setup() {
 
 #[test]
 fn test_start_assistant_when_teardown() {
-    let assistant = assistant().kind(AssistantKind::Teardown).fixture();
-    let config = config().bench_bin(&BENCH_BIN_FAKE_EXE).fixture();
+    let assistant = assistant_f().kind(AssistantKind::Teardown).fixture();
+    let config = config_f().bench_bin(&BENCH_BIN_FAKE_EXE).fixture();
     let module_path = config.module_path.join("does::not_matter");
 
-    let mut process_handler = process_handler().fixture();
+    let mut process_handler = process_handler_f().fixture();
     process_handler
         .start_assistant(
             true,
@@ -95,12 +96,12 @@ fn test_start_assistant_when_teardown() {
 #[case::setup(AssistantKind::Setup)]
 #[case::teardown(AssistantKind::Teardown)]
 fn test_start_assistant_when_force_shutdown_is_true_then_interrupt(#[case] kind: AssistantKind) {
-    let assistant = assistant().kind(kind).fixture();
-    let config = config().bench_bin(&BENCH_BIN_FAKE_EXE).fixture();
+    let assistant = assistant_f().kind(kind).fixture();
+    let config = config_f().bench_bin(&BENCH_BIN_FAKE_EXE).fixture();
     let module_path = config.module_path.join("does::not_matter");
 
-    let force_shutdown = force_shutdown().yes(true).fixture();
-    let mut process_handler = process_handler()
+    let force_shutdown = force_shutdown_f().yes(true).fixture();
+    let mut process_handler = process_handler_f()
         .set_force_shutdown(force_shutdown)
         .fixture();
 
@@ -133,31 +134,31 @@ fn test_start_bench_when_force_shutdown_is_false_then_bench_is_started(
 ) {
     let test_dir = tempfile::tempdir().unwrap();
 
-    let tool_output_path = tool_output_path()
+    let tool_output_path = tool_output_path_f()
         .target_dir(test_dir.path())
         .init(true)
         .fixture();
 
     let mut handler = if has_setup {
-        process_handler()
+        process_handler_f()
             .setup_is_parallel(setup_is_parallel)
-            .assistant(setup_child().exe(&TIMEOUT_EXE).args(&["1000"]).fixture())
+            .assistant(setup_child_f().exe(&TIMEOUT_EXE).args(&["1000"]).fixture())
             .fixture()
     } else {
-        process_handler()
+        process_handler_f()
             .setup_is_parallel(setup_is_parallel)
             .fixture()
     };
 
     handler
         .start_bench(
-            tool_command().output_path(&tool_output_path).fixture(),
-            &tool_config().fixture(),
+            tool_command_f().output_path(&tool_output_path).fixture(),
+            &tool_config_f().fixture(),
             &ECHO_EXE,
             &["foo".into()],
             &RunOptions::default(),
             &tool_output_path,
-            &module_path().fixture(),
+            &module_path_f().fixture(),
             None,
             None,
         )
@@ -185,29 +186,33 @@ fn test_start_bench_when_force_shutdown_is_false_then_bench_is_started(
 fn test_start_bench_when_setup_is_parallel_then_bench_is_started(#[case] exit_code: i32) {
     let test_dir = tempfile::tempdir().unwrap();
 
-    let tool_output_path = tool_output_path()
+    let tool_output_path = tool_output_path_f()
         .target_dir(test_dir.path())
         .init(true)
         .fixture();
 
-    let mut handler = process_handler()
+    let mut handler = process_handler_f()
         .setup_is_parallel(true)
         .assistant(
-            setup_child()
+            setup_child_f()
                 .exe(&EXIT_WITH_EXE)
                 .args(&[&exit_code.to_string()])
                 .fixture(),
         )
         .fixture();
 
+    let run_options = run_options_f().fixture();
     let result = handler.start_bench(
-        tool_command().output_path(&tool_output_path).fixture(),
-        &tool_config().fixture(),
+        tool_command_f()
+            .output_path(&tool_output_path)
+            .run_options(&run_options)
+            .fixture(),
+        &tool_config_f().fixture(),
         &ECHO_EXE,
         &[],
-        &RunOptions::default(),
+        &run_options,
         &tool_output_path,
-        &module_path().fixture(),
+        &module_path_f().fixture(),
         None,
         None,
     );
@@ -235,33 +240,33 @@ fn test_start_bench_when_setup_is_parallel_then_bench_is_started(#[case] exit_co
 fn test_start_bench_when_force_shutdown_is_true_then_interrupt(#[case] has_setup: bool) {
     let test_dir = tempfile::tempdir().unwrap();
 
-    let tool_output_path = tool_output_path()
+    let tool_output_path = tool_output_path_f()
         .target_dir(test_dir.path())
         .init(true)
         .fixture();
 
-    let force_shutdown = force_shutdown().yes(true).fixture();
+    let force_shutdown = force_shutdown_f().yes(true).fixture();
     let mut handler = if has_setup {
-        process_handler()
+        process_handler_f()
             .setup_is_parallel(false)
-            .assistant(setup_child().exe(&TIMEOUT_EXE).args(&["10000"]).fixture())
+            .assistant(setup_child_f().exe(&TIMEOUT_EXE).args(&["10000"]).fixture())
             .set_force_shutdown(force_shutdown)
             .fixture()
     } else {
-        process_handler()
+        process_handler_f()
             .setup_is_parallel(false)
             .set_force_shutdown(force_shutdown)
             .fixture()
     };
 
     let result = handler.start_bench(
-        tool_command().output_path(&tool_output_path).fixture(),
-        &tool_config().fixture(),
+        tool_command_f().output_path(&tool_output_path).fixture(),
+        &tool_config_f().fixture(),
         &ECHO_EXE,
         &[],
         &RunOptions::default(),
         &tool_output_path,
-        &module_path().fixture(),
+        &module_path_f().fixture(),
         None,
         None,
     );
@@ -282,15 +287,15 @@ fn test_start_bench_when_force_shutdown_is_true_then_interrupt(#[case] has_setup
 fn test_start_bench_when_setup_not_parallel_with_error_then_no_bench_and_setup_error() {
     let test_dir = tempfile::tempdir().unwrap();
 
-    let tool_output_path = tool_output_path()
+    let tool_output_path = tool_output_path_f()
         .target_dir(test_dir.path())
         .init(true)
         .fixture();
 
     let expected_exit_code = 200;
-    let mut handler = process_handler()
+    let mut handler = process_handler_f()
         .assistant(
-            setup_child()
+            setup_child_f()
                 .exe(&EXIT_WITH_EXE)
                 .args(&[&expected_exit_code.to_string()])
                 .fixture(),
@@ -298,13 +303,13 @@ fn test_start_bench_when_setup_not_parallel_with_error_then_no_bench_and_setup_e
         .fixture();
 
     let result = handler.start_bench(
-        tool_command().output_path(&tool_output_path).fixture(),
-        &tool_config().fixture(),
+        tool_command_f().output_path(&tool_output_path).fixture(),
+        &tool_config_f().fixture(),
         &ECHO_EXE,
         &[],
         &RunOptions::default(),
         &tool_output_path,
-        &module_path().fixture(),
+        &module_path_f().fixture(),
         None,
         None,
     );
@@ -335,7 +340,7 @@ fn test_start_bench_when_setup_not_parallel_with_error_then_no_bench_and_setup_e
 #[test]
 #[should_panic = "A benchmark should be started before waiting"]
 fn test_wait_or_shutdown_when_no_bench_then_panic() {
-    let mut handler = process_handler().fixture();
+    let mut handler = process_handler_f().fixture();
     let _ = handler.wait_or_shutdown();
 }
 
@@ -345,12 +350,12 @@ fn test_wait_or_shutdown_when_no_bench_then_panic() {
 fn test_wait_or_shutdown_when_force_shutdown_is_false(#[case] has_setup: bool) {
     let test_dir = tempfile::tempdir().unwrap();
 
-    let tool_command_child = tool_command_child()
+    let tool_command_child = tool_command_child_f()
         .exe(&ECHO_EXE)
         .args(&["foo"])
         .stdout(StdStdio::piped())
         .log_path(
-            tool_output_path()
+            tool_output_path_f()
                 .target_dir(test_dir.path())
                 .init(true)
                 .fixture()
@@ -359,12 +364,12 @@ fn test_wait_or_shutdown_when_force_shutdown_is_false(#[case] has_setup: bool) {
         .fixture();
 
     let mut handler = if has_setup {
-        process_handler()
-            .assistant(setup_child().exe(&TIMEOUT_EXE).args(&["100"]).fixture())
+        process_handler_f()
+            .assistant(setup_child_f().exe(&TIMEOUT_EXE).args(&["100"]).fixture())
             .bench(tool_command_child)
             .fixture()
     } else {
-        process_handler().bench(tool_command_child).fixture()
+        process_handler_f().bench(tool_command_child).fixture()
     };
 
     let output = handler
@@ -384,11 +389,11 @@ fn test_wait_or_shutdown_when_force_shutdown_is_false(#[case] has_setup: bool) {
 fn test_wait_or_shutdown_when_force_shutdown_is_true_then_interrupt(#[case] has_setup: bool) {
     let test_dir = tempfile::tempdir().unwrap();
 
-    let tool_command_child = tool_command_child()
+    let tool_command_child = tool_command_child_f()
         .exe(&TIMEOUT_EXE)
         .args(&["5000"])
         .log_path(
-            tool_output_path()
+            tool_output_path_f()
                 .target_dir(test_dir.path())
                 .init(true)
                 .fixture()
@@ -396,15 +401,15 @@ fn test_wait_or_shutdown_when_force_shutdown_is_true_then_interrupt(#[case] has_
         )
         .fixture();
 
-    let force_shutdown = force_shutdown().yes(true).fixture();
+    let force_shutdown = force_shutdown_f().yes(true).fixture();
     let mut handler = if has_setup {
-        process_handler()
-            .assistant(setup_child().exe(&TIMEOUT_EXE).args(&["10000"]).fixture())
+        process_handler_f()
+            .assistant(setup_child_f().exe(&TIMEOUT_EXE).args(&["10000"]).fixture())
             .set_force_shutdown(force_shutdown)
             .bench(tool_command_child)
             .fixture()
     } else {
-        process_handler()
+        process_handler_f()
             .set_force_shutdown(force_shutdown)
             .bench(tool_command_child)
             .fixture()
@@ -432,11 +437,11 @@ fn test_wait_or_shutdown_when_error_in_setup_then_setup_error(#[case] exit_code:
     let test_dir = tempfile::tempdir().unwrap();
     let expected_exit_code = 222;
 
-    let tool_command_child = tool_command_child()
+    let tool_command_child = tool_command_child_f()
         .exe(&EXIT_WITH_EXE)
         .args(&[&exit_code.to_string()])
         .log_path(
-            tool_output_path()
+            tool_output_path_f()
                 .target_dir(test_dir.path())
                 .init(true)
                 .fixture()
@@ -444,9 +449,9 @@ fn test_wait_or_shutdown_when_error_in_setup_then_setup_error(#[case] exit_code:
         )
         .fixture();
 
-    let mut handler = process_handler()
+    let mut handler = process_handler_f()
         .assistant(
-            setup_child()
+            setup_child_f()
                 .exe(&EXIT_WITH_EXE)
                 .args(&[&expected_exit_code.to_string()])
                 .fixture(),
@@ -486,12 +491,12 @@ fn test_wait_or_shutdown_when_exit_with(#[case] exit_with_code: i32) {
     let test_dir = tempfile::tempdir().unwrap();
 
     let exit_with = ExitWith::Code(exit_with_code);
-    let tool_command_child = tool_command_child()
+    let tool_command_child = tool_command_child_f()
         .exe(&EXIT_WITH_EXE)
         .args(&[&exit_with_code.to_string()])
         .exit_with(exit_with)
         .log_path(
-            tool_output_path()
+            tool_output_path_f()
                 .target_dir(test_dir.path())
                 .init(true)
                 .fixture()
@@ -499,7 +504,7 @@ fn test_wait_or_shutdown_when_exit_with(#[case] exit_with_code: i32) {
         )
         .fixture();
 
-    let mut handler = process_handler().bench(tool_command_child).fixture();
+    let mut handler = process_handler_f().bench(tool_command_child).fixture();
 
     let output = handler
         .wait_or_shutdown()
@@ -522,12 +527,12 @@ fn test_wait_or_shutdown_when_exit_with_no_match_then_error() {
     let test_dir = tempfile::tempdir().unwrap();
     let actual_exit_code = 0;
 
-    let tool_command_child = tool_command_child()
+    let tool_command_child = tool_command_child_f()
         .exe(&EXIT_WITH_EXE)
         .args(&[&actual_exit_code.to_string()])
         .exit_with(ExitWith::Code(222))
         .log_path(
-            tool_output_path()
+            tool_output_path_f()
                 .target_dir(test_dir.path())
                 .init(true)
                 .fixture()
@@ -535,7 +540,7 @@ fn test_wait_or_shutdown_when_exit_with_no_match_then_error() {
         )
         .fixture();
 
-    let mut handler = process_handler().bench(tool_command_child).fixture();
+    let mut handler = process_handler_f().bench(tool_command_child).fixture();
 
     let error = handler
         .wait_or_shutdown()
@@ -566,7 +571,7 @@ fn test_wait_or_shutdown_when_exit_with_no_match_then_error() {
 
 #[test]
 fn test_wait_for_setup_when_no_setup() {
-    let mut handler = process_handler().fixture();
+    let mut handler = process_handler_f().fixture();
     let result = handler.wait_for_setup();
 
     assert!(handler.setup.is_none());
@@ -578,11 +583,11 @@ fn test_wait_for_setup_when_no_setup() {
 #[test]
 fn test_wait_for_setup() {
     let test_dir = tempdir().unwrap();
-    let (test_file_path, _) = test_file().dir(test_dir.path()).fixture();
+    let (test_file_path, _) = test_file_f().dir(test_dir.path()).fixture();
 
-    let mut handler = process_handler()
+    let mut handler = process_handler_f()
         .assistant(
-            setup_child()
+            setup_child_f()
                 .exe(&FILE_EXISTS_EXE)
                 .args(&[&test_file_path.display().to_string(), "true"])
                 .fixture(),
@@ -601,9 +606,9 @@ fn test_wait_for_setup() {
 
 #[test]
 fn test_wait_for_setup_when_force_shutdown_is_true_then_interrupt() {
-    let force_shutdown = force_shutdown().yes(true).fixture();
-    let mut handler = process_handler()
-        .assistant(setup_child().exe(&TIMEOUT_EXE).args(&["5000"]).fixture())
+    let force_shutdown = force_shutdown_f().yes(true).fixture();
+    let mut handler = process_handler_f()
+        .assistant(setup_child_f().exe(&TIMEOUT_EXE).args(&["5000"]).fixture())
         .set_force_shutdown(force_shutdown)
         .fixture();
 
@@ -625,7 +630,7 @@ fn test_wait_for_setup_when_force_shutdown_is_true_then_interrupt() {
 
 #[test]
 fn test_wait_for_teardown_when_no_teardown() {
-    let mut handler = process_handler().fixture();
+    let mut handler = process_handler_f().fixture();
     let result = handler.wait_for_teardown();
 
     assert!(handler.teardown.is_none());
@@ -637,11 +642,11 @@ fn test_wait_for_teardown_when_no_teardown() {
 #[test]
 fn test_wait_for_teardown() {
     let test_dir = tempdir().unwrap();
-    let (test_file_path, _) = test_file().dir(test_dir.path()).fixture();
+    let (test_file_path, _) = test_file_f().dir(test_dir.path()).fixture();
 
-    let mut handler = process_handler()
+    let mut handler = process_handler_f()
         .assistant(
-            teardown_child()
+            teardown_child_f()
                 .exe(&FILE_EXISTS_EXE)
                 .args(&[&test_file_path.display().to_string(), "true"])
                 .fixture(),

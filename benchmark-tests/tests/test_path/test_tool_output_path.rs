@@ -3,7 +3,7 @@ use rstest::rstest;
 use tempfile::tempdir;
 use ValgrindTool::*;
 
-use crate::util::fixtures::tool_output_path;
+use crate::util::fixtures::tool_output_path_f;
 
 #[rstest]
 #[case::empty(
@@ -107,7 +107,7 @@ fn test_clear_temp_files(
     #[case] expected_files: &[&str],
 ) {
     let temp_dir = tempdir().unwrap();
-    let output_path = tool_output_path()
+    let output_path = tool_output_path_f()
         .target_dir(temp_dir.path())
         .name("function.bench")
         .tool(tool)

@@ -10,20 +10,11 @@ struct Right(Option<Rc<RefCell<Left>>>);
 
 use std::hint::black_box;
 
-use benchmark_tests::{bubble_sort, bubble_sort_allocate, subprocess};
+use benchmark_tests::{bubble_sort, bubble_sort_allocate, setup_worst_case_array, subprocess};
 use gungraun::{
     library_benchmark, library_benchmark_group, main, Bbv, Callgrind, Dhat, Drd, EventKind,
     Helgrind, LibraryBenchmarkConfig, Massif, Memcheck, OutputFormat,
 };
-
-#[inline(never)]
-fn setup_worst_case_array(start: i32) -> Vec<i32> {
-    if start.is_negative() {
-        (start..0).rev().collect()
-    } else {
-        (0..start).rev().collect()
-    }
-}
 
 #[library_benchmark]
 #[bench::empty(

@@ -1,12 +1,11 @@
-// spell-checker: ignore totalbytes totalblocks writeback writebackbehaviour
-
 //! The command-line arguments of cargo bench as in ARGS of `cargo bench -- ARGS`
+
+// spell-checker: ignore totalbytes totalblocks writeback writebackbehaviour
 
 /// Default values for command-line arguments
 ///
 /// This module contains constants that define the default behavior when corresponding command-line
 /// arguments are not specified.
-// TODO: Add all other args defaults and apply them
 pub mod defaults {
     /// Default value for `--allow-aslr`
     ///
@@ -90,7 +89,6 @@ pub enum TruncateDescription {
     None,
 }
 
-// FIX: Use short help and long help
 /// The command line arguments the user provided after `--` when running cargo bench
 ///
 /// These arguments are not the command line arguments passed to `gungraun-runner`. We collect
@@ -114,88 +112,113 @@ instead of `true` and one of `n`, `no`, `f`, `false`, `off`, and `0` instead of
     ",
     long_about = None,
     no_binary_name = true,
-    override_usage= "cargo bench ... [FILTER] -- [OPTIONS]",
+    override_usage= "cargo bench ... -- [OPTIONS | FILTER]",
     max_term_width = 101
 )]
 pub struct CommandLineArgs {
-    /// The following arguments are accepted by the rust libtest harness and ignored by us
-    ///
-    /// Further details in <https://doc.rust-lang.org/rustc/tests/index.html#cli-arguments> or by
-    /// running `cargo test -- --help`
-    /// `--bench` also shows up as last argument set by `cargo bench` even if not explicitly given
-    #[arg(long = "bench", hide = true, action = ArgAction::SetTrue, required = false)]
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // The following arguments are accepted by the rust libtest harness and ignored by us
+    //
+    // Further details in <https://doc.rust-lang.org/rustc/tests/index.html#cli-arguments> or by
+    // running `cargo test -- --help`
+    // `--bench` also shows up as last argument set by `cargo bench` even if not explicitly given
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    #[arg(action = ArgAction::SetTrue, hide = true, long = "bench", required = false)]
     _bench: bool,
 
-    #[arg(long = "color", hide = true, required = false, num_args = 0..)]
+    #[arg(hide = true, long = "color", num_args = 0.., required = false)]
     _color: Vec<String>,
 
-    #[arg(long = "ensure-time", hide = true, action = ArgAction::SetTrue, required = false)]
+    #[arg(action = ArgAction::SetTrue, hide = true, long = "ensure-time", required = false)]
     _ensure_time: bool,
 
-    #[arg(long = "exact", hide = true, action = ArgAction::SetTrue, required = false)]
+    #[arg(action = ArgAction::SetTrue, hide = true, long = "exact", required = false)]
     _exact: bool,
 
     #[arg(
-        long = "exclude-should-panic",
-        hide = true,
         action = ArgAction::SetTrue,
+        hide = true,
+        long = "exclude-should-panic",
         required = false
     )]
     _exclude_should_panic: bool,
 
     #[arg(
-        long = "force-run-in-process",
-        hide = true,
         action = ArgAction::SetTrue,
+        hide = true,
+        long = "fail-fast",
+        required = false
+    )]
+    _fail_fast: bool,
+
+    #[arg(
+        action = ArgAction::SetTrue,
+        hide = true,
+        long = "force-run-in-process",
         required = false
     )]
     _force_run_in_process: bool,
 
-    #[arg(long = "format", hide = true, required = false, num_args = 0..)]
+    #[arg(hide = true, long = "format", num_args = 0.., required = false)]
     _format: Vec<String>,
 
-    #[arg(long = "ignored", hide = true, action = ArgAction::SetTrue, required = false)]
+    #[arg(action = ArgAction::SetTrue, hide = true, long = "ignored", required = false)]
     _ignored: bool,
 
-    #[arg(long = "include-ignored", hide = true, action = ArgAction::SetTrue, required = false)]
+    #[arg(action = ArgAction::SetTrue, hide = true, long = "include-ignored", required = false)]
     _include_ignored: bool,
 
-    #[arg(long = "logfile", hide = true, required = false, num_args = 0..)]
+    #[arg(hide = true, long = "logfile", num_args = 0.., required = false)]
     _logfile: Vec<String>,
 
-    #[arg(long = "quiet", short = 'q', hide = true, action = ArgAction::SetTrue, required = false)]
+    #[arg(action = ArgAction::SetTrue, hide = true, long = "quiet", required = false, short = 'q')]
     _quiet: bool,
 
-    #[arg(long = "report-time", hide = true, action = ArgAction::SetTrue, required = false)]
+    #[arg(action = ArgAction::SetTrue, hide = true, long = "report-time", required = false)]
     _report_time: bool,
 
-    #[arg(long = "show-output", hide = true, action = ArgAction::SetTrue, required = false)]
+    #[arg(action = ArgAction::SetTrue, hide = true, long = "show-output", required = false)]
     _show_output: bool,
 
-    #[arg(long = "shuffle", hide = true, action = ArgAction::SetTrue, required = false)]
+    #[arg(action = ArgAction::SetTrue, hide = true, long = "shuffle", required = false)]
     _shuffle: bool,
 
-    // This is the last of the ignored libtest args
-    #[arg(long = "shuffle-seed", hide = true, required = false, num_args = 0..)]
+    #[arg(hide = true, long = "shuffle-seed", num_args = 0.., required = false)]
     _shuffle_seed: Vec<String>,
 
-    #[arg(long = "skip", hide = true, required = false, num_args = 0..)]
+    #[arg(hide = true, long = "skip", num_args = 0.., required = false)]
     _skip: Vec<String>,
 
-    #[arg(long = "test", hide = true, action = ArgAction::SetTrue, required = false)]
+    #[arg(action = ArgAction::SetTrue, hide = true, long = "test", required = false)]
     _test: bool,
 
-    #[arg(long = "test-threads", hide = true, required = false, num_args = 0..)]
+    #[arg(hide = true, long = "test-threads", num_args = 0.., required = false)]
     _test_threads: Vec<String>,
 
-    #[arg(short = 'Z', hide = true, required = false, num_args = 0..)]
+    #[arg(hide = true, num_args = 0.., required = false, short = 'Z')]
     _unstable_options: Vec<String>,
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // End of ignored libtest arguments
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Display order:
+    // 20 : List
+    // 100: General args
+    // 150: Valgrind runner
+    // 200: Baselines
+    // 300: Output format
+    // 400: Metrics
+    // 450: Tools
+    // 500: Tool arguments
+    // 600: Limits, Regression
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     #[rustfmt::skip]
     /// Allow ASLR (Address Space Layout Randomization)
     ///
     /// If possible, ASLR is disabled on platforms that support it (linux, freebsd) because ASLR
-    /// could noise up the callgrind cache simulation results a bit. Setting this option to true
+    /// could noise up the callgrind cache simulation results a bit. Setting this option to `true`
     /// runs all benchmarks with ASLR enabled.
     ///
     /// See also [kernel.org: randomize_va_space]
@@ -203,25 +226,41 @@ pub struct CommandLineArgs {
     /// [kernel.org: randomize_va_space]:
     /// https://docs.kernel.org/admin-guide/sysctl/kernel.html#randomize-va-space
     #[arg(
-        long = "allow-aslr",
         default_missing_value = "true",
+        display_order = 100,
+        env = "GUNGRAUN_ALLOW_ASLR",
+        long = "allow-aslr",
         num_args = 0..=1,
         require_equals = true,
         value_parser = BoolishValueParser::new(),
-        env = "GUNGRAUN_ALLOW_ASLR",
-        display_order = 100
     )]
     pub allow_aslr: Option<bool>,
 
     #[rustfmt::skip]
-    /// Compare against this baseline if present but do not overwrite it
+    /// Compare benchmark results against a previously saved baseline
+    ///
+    /// This option compares the current benchmark run against a named baseline from a previous run
+    /// without modifying the saved baseline. Baselines store benchmark results for future
+    /// comparisons, useful for tracking performance over time or comparing against fixed reference
+    /// points like a release tag or main branch.
+    ///
+    /// If this option is specified but no baseline with that name exists yet, Gungraun creates a
+    /// new baseline with the current results instead of comparing.
+    ///
+    /// See also: `--save-baseline` to create or update a baseline, `--load-baseline` to compare
+    /// existing baselines without running benchmarks.
+    ///
+    /// Examples:
+    ///   * `--baseline` (uses the default baseline name "default")
+    ///   * `--baseline=main` (compares against baseline saved as "main")
+    ///   * `--baseline=v1.0` (compares against baseline saved as "v1.0")
     #[arg(
-        long = "baseline",
         default_missing_value = "default",
+        display_order = 200,
+        env = "GUNGRAUN_BASELINE",
+        long = "baseline",
         num_args = 0..=1,
         require_equals = true,
-        env = "GUNGRAUN_BASELINE",
-        display_order = 200
     )]
     pub baseline: Option<BaselineName>,
 
@@ -235,12 +274,12 @@ pub struct CommandLineArgs {
     ///   * --bbv-args=--interval-size=10000
     ///   * --bbv-args='--interval-size=10000 --instr-count-only=yes'
     #[arg(
-        long = "bbv-args",
-        value_parser = parse_tool_args,
-        num_args = 1,
-        verbatim_doc_comment,
+        display_order = 500,
         env = "GUNGRAUN_BBV_ARGS",
-        display_order = 500
+        long = "bbv-args",
+        num_args = 1,
+        value_parser = parse_tool_args,
+        verbatim_doc_comment,
     )]
     pub bbv_args: Option<RawToolArgs>,
 
@@ -254,12 +293,12 @@ pub struct CommandLineArgs {
     ///   * --cachegrind-args=--instr-at-start=no
     ///   * --cachegrind-args='--branch-sim=yes --instr-at-start=no'
     #[arg(
-        long = "cachegrind-args",
-        value_parser = parse_tool_args,
-        num_args = 1,
-        verbatim_doc_comment,
+        display_order = 500,
         env = "GUNGRAUN_CACHEGRIND_ARGS",
-        display_order = 500
+        long = "cachegrind-args",
+        num_args = 1,
+        value_parser = parse_tool_args,
+        verbatim_doc_comment,
     )]
     pub cachegrind_args: Option<RawToolArgs>,
 
@@ -293,12 +332,12 @@ pub struct CommandLineArgs {
     ///   * --cachegrind-limits='ir=10000,EstimatedCycles=10%'
     ///   * --cachegrind-limits='@all=10%,ir=10000,EstimatedCycles=10%'
     #[arg(
+        display_order = 600,
+        env = "GUNGRAUN_CACHEGRIND_LIMITS",
         long = "cachegrind-limits",
         num_args = 1,
-        verbatim_doc_comment,
         value_parser = parse_cachegrind_limits,
-        env = "GUNGRAUN_CACHEGRIND_LIMITS",
-        display_order = 600
+        verbatim_doc_comment,
     )]
     pub cachegrind_limits: Option<ToolRegressionConfig>,
 
@@ -322,13 +361,13 @@ pub struct CommandLineArgs {
     ///   * --cachegrind-metrics='@all' to show all possible cachegrind metrics
     ///   * --cachegrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
     #[arg(
+        display_order = 400,
+        env = "GUNGRAUN_CACHEGRIND_METRICS",
         long = "cachegrind-metrics",
         num_args = 1..,
         required = false,
-        verbatim_doc_comment,
         value_parser = parse_cachegrind_metrics,
-        env = "GUNGRAUN_CACHEGRIND_METRICS",
-        display_order = 700
+        verbatim_doc_comment,
     )]
     pub cachegrind_metrics: Option<IndexSet<CachegrindMetric>>,
 
@@ -345,12 +384,12 @@ pub struct CommandLineArgs {
     ///   * --callgrind-args=--dump-instr=yes
     ///   * --callgrind-args='--dump-instr=yes --collect-systime=yes'
     #[arg(
-        long = "callgrind-args",
-        value_parser = parse_tool_args,
-        num_args = 1,
-        verbatim_doc_comment,
+        display_order = 500,
         env = "GUNGRAUN_CALLGRIND_ARGS",
-        display_order = 500
+        long = "callgrind-args",
+        num_args = 1,
+        value_parser = parse_tool_args,
+        verbatim_doc_comment,
     )]
     pub callgrind_args: Option<RawToolArgs>,
 
@@ -394,12 +433,12 @@ pub struct CommandLineArgs {
     ///   * --callgrind-limits='ir=10000,EstimatedCycles=10%'
     ///   * --callgrind-limits='@all=10%,ir=5%|10000'
     #[arg(
+        display_order = 600,
+        env = "GUNGRAUN_CALLGRIND_LIMITS",
         long = "callgrind-limits",
         num_args = 1,
-        verbatim_doc_comment,
         value_parser = parse_callgrind_limits,
-        env = "GUNGRAUN_CALLGRIND_LIMITS",
-        display_order = 600
+        verbatim_doc_comment,
     )]
     pub callgrind_limits: Option<ToolRegressionConfig>,
 
@@ -428,13 +467,13 @@ pub struct CommandLineArgs {
     ///   * --callgrind-metrics='@all' to show all possible callgrind metrics
     ///   * --callgrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
     #[arg(
+        display_order = 400,
+        env = "GUNGRAUN_CALLGRIND_METRICS",
         long = "callgrind-metrics",
         num_args = 1..,
         required = false,
-        verbatim_doc_comment,
         value_parser = parse_callgrind_metrics,
-        env = "GUNGRAUN_CALLGRIND_METRICS",
-        display_order = 700
+        verbatim_doc_comment,
     )]
     pub callgrind_metrics: Option<IndexSet<EventKind>>,
 
@@ -459,11 +498,11 @@ pub struct CommandLineArgs {
     /// your Cargo.toml. However, setting a tool with this option overrides cachegrind set with the
     /// gungraun feature. See the guide for all details.
     #[arg(
+        display_order = 450,
+        env = "GUNGRAUN_DEFAULT_TOOL",
         long = "default-tool",
         num_args = 1,
         verbatim_doc_comment,
-        env = "GUNGRAUN_DEFAULT_TOOL",
-        display_order = 50
     )]
     pub default_tool: Option<ValgrindTool>,
 
@@ -476,12 +515,12 @@ pub struct CommandLineArgs {
     /// Examples:
     ///   * --dhat-args=--mode=ad-hoc
     #[arg(
-        long = "dhat-args",
-        value_parser = parse_tool_args,
-        num_args = 1,
-        verbatim_doc_comment,
+        display_order = 500,
         env = "GUNGRAUN_DHAT_ARGS",
-        display_order = 500
+        long = "dhat-args",
+        num_args = 1,
+        value_parser = parse_tool_args,
+        verbatim_doc_comment,
     )]
     pub dhat_args: Option<RawToolArgs>,
 
@@ -521,12 +560,12 @@ pub struct CommandLineArgs {
     ///   * --dhat-limits='totalbytes=10000,totalblocks=5%'
     ///   * --dhat-limits='@all=10%,totalbytes=5000,totalblocks=5%'
     #[arg(
+        display_order = 600,
+        env = "GUNGRAUN_DHAT_LIMITS",
         long = "dhat-limits",
         num_args = 1,
-        verbatim_doc_comment,
         value_parser = parse_dhat_limits,
-        env = "GUNGRAUN_DHAT_LIMITS",
-        display_order = 600
+        verbatim_doc_comment,
     )]
     pub dhat_limits: Option<ToolRegressionConfig>,
 
@@ -549,13 +588,13 @@ pub struct CommandLineArgs {
     ///   * --dhat-metrics='@all' to show all possible dhat metrics
     ///   * --dhat-metrics='@default,mb' to show maximum bytes in addition to the defaults
     #[arg(
+        display_order = 400,
+        env = "GUNGRAUN_DHAT_METRICS",
         long = "dhat-metrics",
         num_args = 1..,
         required = false,
-        verbatim_doc_comment,
         value_parser = parse_dhat_metrics,
-        env = "GUNGRAUN_DHAT_METRICS",
-        display_order = 700
+        verbatim_doc_comment,
     )]
     pub dhat_metrics: Option<IndexSet<DhatMetric>>,
 
@@ -569,12 +608,12 @@ pub struct CommandLineArgs {
     ///   * --drd-args=--exclusive-threshold=100
     ///   * --drd-args='--exclusive-threshold=100 --free-is-write=yes'
     #[arg(
-        long = "drd-args",
-        value_parser = parse_tool_args,
-        num_args = 1,
-        verbatim_doc_comment,
+        display_order = 500,
         env = "GUNGRAUN_DRD_ARGS",
-        display_order = 500
+        long = "drd-args",
+        num_args = 1,
+        value_parser = parse_tool_args,
+        verbatim_doc_comment,
     )]
     pub drd_args: Option<RawToolArgs>,
 
@@ -595,13 +634,13 @@ pub struct CommandLineArgs {
     ///   * --drd-metrics='@all' to show all possible error metrics (the default)
     ///   * --drd-metrics='err,ctx' to show only errors and contexts
     #[arg(
+        display_order = 400,
+        env = "GUNGRAUN_DRD_METRICS",
         long = "drd-metrics",
         num_args = 1..,
         required = false,
-        verbatim_doc_comment,
         value_parser = parse_drd_metrics,
-        env = "GUNGRAUN_DRD_METRICS",
-        display_order = 700
+        verbatim_doc_comment,
     )]
     pub drd_metrics: Option<IndexSet<ErrorMetric>>,
 
@@ -616,13 +655,13 @@ pub struct CommandLineArgs {
     ///   * `--env-clear` (default: clear environment)
     ///   * `--env-clear=false` (preserve environment)
     #[arg(
+        default_missing_value = "true",
+        display_order = 100,
+        env = "GUNGRAUN_ENV_CLEAR",
         long = "env-clear",
         num_args = 0..=1,
-        default_missing_value = "true",
-        verbatim_doc_comment,
         value_parser = BoolishValueParser::new(),
-        env = "GUNGRAUN_ENV_CLEAR",
-        display_order = 100
+        verbatim_doc_comment,
     )]
     pub env_clear: Option<bool>,
 
@@ -646,15 +685,15 @@ pub struct CommandLineArgs {
     ///   * `--envs='FOO=bar BAZ=qux'` (set multiple variables and once)
     ///   * `--envs=FOO=bar --envs=BAZ=qux` (accumulate multiple times)
     #[arg(
+        action = ArgAction::Append,
+        display_order = 100,
+        env = "GUNGRAUN_ENVS",
         long = "envs",
         num_args = 1,
-        required = false,
         require_equals = true,
-        action = ArgAction::Append,
-        verbatim_doc_comment,
+        required = false,
         value_parser = parse_envs,
-        env = "GUNGRAUN_ENVS",
-        display_order = 100
+        verbatim_doc_comment,
     )]
     pub envs: Vec<Vec<(OsString, OsString)>>,
 
@@ -678,10 +717,10 @@ pub struct CommandLineArgs {
     ///   * `my_file::some_group::*` runs all benchmarks in the file `my_file` and the group
     ///     `some_group`
     #[arg(
+        env = "GUNGRAUN_FILTER",
         name = "FILTER",
         num_args = 0..=1,
         verbatim_doc_comment,
-        env = "GUNGRAUN_FILTER"
     )]
     pub filter: Option<BenchmarkFilter>,
 
@@ -695,12 +734,12 @@ pub struct CommandLineArgs {
     ///   * --helgrind-args=--free-is-write=yes
     ///   * --helgrind-args='--conflict-cache-size=100000 --free-is-write=yes'
     #[arg(
-        long = "helgrind-args",
-        value_parser = parse_tool_args,
-        num_args = 1,
-        verbatim_doc_comment,
+        display_order = 500,
         env = "GUNGRAUN_HELGRIND_ARGS",
-        display_order = 500
+        long = "helgrind-args",
+        num_args = 1,
+        value_parser = parse_tool_args,
+        verbatim_doc_comment,
     )]
     pub helgrind_args: Option<RawToolArgs>,
 
@@ -719,13 +758,13 @@ pub struct CommandLineArgs {
     ///   * --helgrind-metrics='@all' to show all possible error metrics (the default)
     ///   * --helgrind-metrics='err,ctx' to show only errors and contexts
     #[arg(
+        display_order = 400,
+        env = "GUNGRAUN_HELGRIND_METRICS",
         long = "helgrind-metrics",
         num_args = 1..,
         required = false,
-        verbatim_doc_comment,
         value_parser = parse_helgrind_metrics,
-        env = "GUNGRAUN_HELGRIND_METRICS",
-        display_order = 700
+        verbatim_doc_comment,
     )]
     pub helgrind_metrics: Option<IndexSet<ErrorMetric>>,
 
@@ -736,14 +775,13 @@ pub struct CommandLineArgs {
     /// This option lets you customize this home directory, and it will be created if it doesn't
     /// exist.
     #[arg(
+        display_order = 100,
+        env = "GUNGRAUN_HOME",
         long = "home",
         num_args = 1,
-        env = "GUNGRAUN_HOME",
-        display_order = 100
     )]
     pub home: Option<PathBuf>,
 
-    // FIX: should be exclusive
     #[rustfmt::skip]
     /// Print a list of all benchmarks. With this argument no benchmarks are executed.
     ///
@@ -752,19 +790,40 @@ pub struct CommandLineArgs {
     /// gungraun. As a consequence, it is not considered safe to rely on the output in
     /// scripts.
     #[arg(
-        long = "list",
+        action = ArgAction::Set,
         default_missing_value = "true",
         default_value = "false",
+        display_order = 20,
+        env = "GUNGRAUN_LIST",
+        long = "list",
         num_args = 0..=1,
         require_equals = true,
         value_parser = BoolishValueParser::new(),
-        action = ArgAction::Set,
-        env = "GUNGRAUN_LIST"
     )]
     pub list: bool,
 
     #[rustfmt::skip]
-    /// Load this baseline as the new data set instead of creating a new one
+    /// Load an existing baseline instead of running new benchmarks
+    ///
+    /// This option loads benchmark results from a previously saved baseline and uses them as the
+    /// "new" data for comparison against another baseline. This allows comparing two existing
+    /// baselines without re-running any benchmarks.
+    ///
+    /// This option requires `--baseline` to be specified, which provides the "old" baseline to
+    /// compare against.
+    ///
+    /// This is useful for:
+    /// - Re-comparing existing baselines with different comparison targets
+    /// - Comparing two previously saved baselines against each other
+    /// - Avoiding expensive benchmark re-runs when only analysis is needed
+    ///
+    /// See also: `--baseline` to compare against a baseline while running new benchmarks,
+    /// `--save-baseline` to create or update a baseline.
+    ///
+    /// Examples:
+    ///   * `--load-baseline --baseline=main` (loads "default", compares against "main")
+    ///   * `--load-baseline=feature --baseline=main` (loads "feature", compares against "main")
+    ///   * `--load-baseline=v1.1 --baseline=v1.0` (loads "v1.1", compares against "v1.0")
     #[clap(
         id = "LOAD_BASELINE",
         long = "load-baseline",
@@ -787,12 +846,12 @@ pub struct CommandLineArgs {
     ///   * --massif-args=--heap=no
     ///   * --massif-args='--heap=no --threshold=2.0'
     #[arg(
-        long = "massif-args",
-        value_parser = parse_tool_args,
-        num_args = 1,
-        verbatim_doc_comment,
+        display_order = 500,
         env = "GUNGRAUN_MASSIF_ARGS",
-        display_order = 500
+        long = "massif-args",
+        num_args = 1,
+        value_parser = parse_tool_args,
+        verbatim_doc_comment,
     )]
     pub massif_args: Option<RawToolArgs>,
 
@@ -806,12 +865,12 @@ pub struct CommandLineArgs {
     ///   * --memcheck-args=--leak-check=full
     ///   * --memcheck-args='--leak-check=yes --show-leak-kinds=all'
     #[arg(
-        long = "memcheck-args",
-        value_parser = parse_tool_args,
-        num_args = 1,
-        verbatim_doc_comment,
+        display_order = 500,
         env = "GUNGRAUN_MEMCHECK_ARGS",
-        display_order = 500
+        long = "memcheck-args",
+        num_args = 1,
+        value_parser = parse_tool_args,
+        verbatim_doc_comment,
     )]
     pub memcheck_args: Option<RawToolArgs>,
 
@@ -838,17 +897,16 @@ pub struct CommandLineArgs {
     ///   * --memcheck-metrics='@all' to show all possible error metrics (the default)
     ///   * --memcheck-metrics='err,ctx' to show only errors and contexts
     #[arg(
+        display_order = 400,
+        env = "GUNGRAUN_MEMCHECK_METRICS",
         long = "memcheck-metrics",
         num_args = 1..,
         required = false,
-        verbatim_doc_comment,
         value_parser = parse_memcheck_metrics,
-        env = "GUNGRAUN_MEMCHECK_METRICS",
-        display_order = 700
+        verbatim_doc_comment,
     )]
     pub memcheck_metrics: Option<IndexSet<ErrorMetric>>,
 
-    // FIX: Add alias --no-capture
     #[rustfmt::skip]
     /// Don't capture terminal output of benchmarks
     ///
@@ -865,19 +923,19 @@ pub struct CommandLineArgs {
     /// to `stderr` will be discarded. Likewise, if `--nocapture=stderr` is specified, the output
     /// to `stderr` won't be captured and the output to `stdout` will be discarded.
     #[arg(
-        long = "nocapture",
-        required = false,
+        alias = "no-capture",
         default_missing_value = "true",
         default_value = "false",
+        display_order = 300,
+        env = "GUNGRAUN_NOCAPTURE",
+        long = "nocapture",
         num_args = 0..=1,
         require_equals = true,
+        required = false,
         value_parser = parse_nocapture,
-        env = "GUNGRAUN_NOCAPTURE",
-        display_order = 300
     )]
     pub nocapture: NoCapture,
 
-    // FIX: Add alias no-summary
     #[rustfmt::skip]
     /// Suppress the summary showing regressions and execution time at the end of a benchmark run
     ///
@@ -886,15 +944,16 @@ pub struct CommandLineArgs {
     /// The summary described by `--nosummary` is different from `--save-summary` and they do not
     /// affect each other.
     #[arg(
-        long = "nosummary",
+        alias = "no-summary",
+        action = ArgAction::Set,
         default_missing_value = "true",
         default_value = "false",
+        display_order = 300,
+        env = "GUNGRAUN_NOSUMMARY",
+        long = "nosummary",
         num_args = 0..=1,
         require_equals = true,
         value_parser = BoolishValueParser::new(),
-        action = ArgAction::Set,
-        env = "GUNGRAUN_NOSUMMARY",
-        display_order = 300
     )]
     pub nosummary: bool,
 
@@ -914,13 +973,13 @@ pub struct CommandLineArgs {
     ///
     /// which transforms `{...}\n{...}` into `[{...},{...}]`
     #[arg(
-        long = "output-format",
-        value_enum,
-        required = false,
         default_value = "default",
-        num_args = 1,
+        display_order = 300,
         env = "GUNGRAUN_OUTPUT_FORMAT",
-        display_order = 300
+        long = "output-format",
+        num_args = 1,
+        required = false,
+        value_enum,
     )]
     pub output_format: OutputFormatKind,
 
@@ -942,57 +1001,105 @@ pub struct CommandLineArgs {
     ///   * --parallel=4
     ///   * --parallel=auto
     #[arg(
-        long = "parallel",
-        required = false,
         default_missing_value = "auto",
         default_value = "1",
+        display_order = 100,
+        env = "GUNGRAUN_PARALLEL",
+        long = "parallel",
         num_args = 0..=1,
         require_equals = true,
+        required = false,
         value_parser = parse_parallel,
-        env = "GUNGRAUN_PARALLEL",
-        display_order = 300 // FIX: DISPLAY ORDER
     )]
     pub parallel: usize,
 
     #[rustfmt::skip]
-    /// If true, the first failed performance regression check fails the whole benchmark run
+    /// Fail the entire benchmark run on the first performance regression
     ///
-    /// Note that if --regression-fail-fast is set to true, no summary is printed.
+    /// When enabled, this option causes Gungraun to stop immediately when a performance regression
+    /// is detected, rather than continuing to run all benchmarks and reporting regressions at the
+    /// end. The program exits with exit code `3` to indicate that one or more regressions
+    /// occurred.
+    ///
+    /// Performance regressions are defined by limits set via `--callgrind-limits`,
+    /// `--cachegrind-limits`, `--dhat-limits`, and similar options. Without this option, Gungraun
+    /// completes all benchmarks and reports all regressions in a summary at the end.
+    ///
+    /// See also: `--callgrind-limits`, `--cachegrind-limits`, `--dhat-limits` for defining
+    /// regression limits.
+    ///
+    /// Examples:
+    ///   * `--regression-fail-fast` (fail on first regression)
+    ///   * `--regression-fail-fast=false` (continue running, report at end - default)
     #[arg(
-        long = "regression-fail-fast",
         default_missing_value = "true",
+        display_order = 600,
+        env = "GUNGRAUN_REGRESSION_FAIL_FAST",
+        long = "regression-fail-fast",
         num_args = 0..=1,
         require_equals = true,
         value_parser = BoolishValueParser::new(),
-        env = "GUNGRAUN_REGRESSION_FAIL_FAST",
-        display_order = 600
     )]
     pub regression_fail_fast: Option<bool>,
 
     #[rustfmt::skip]
-    /// Compare against this baseline if present and then overwrite it
+    /// Save benchmark results as a named baseline for future comparisons
+    ///
+    /// If a baseline with this name already exists, Gungraun first compares against it before
+    /// overwriting with the new results.
+    ///
+    /// This option is useful for creating reference measurements (like from the main branch or a
+    /// release tag) that you can later compare against using `--baseline`.
+    ///
+    /// This option conflicts with `--baseline` and `--load-baseline`. Use `--baseline` instead if
+    /// you want to compare without overwriting the reference baseline. See `--baseline` to compare
+    /// against a saved baseline without modifying it and `--load-baseline` to compare existing
+    /// baselines without running benchmarks.
+    ///
+    /// Examples:
+    ///   * `--save-baseline` (uses the default baseline name "default")
+    ///   * `--save-baseline=main` (saves as baseline "main")
+    ///   * `--save-baseline=v1.0` (saves as baseline "v1.0")
     #[arg(
-        long = "save-baseline",
+        conflicts_with_all = &["baseline", "LOAD_BASELINE"],
         default_missing_value = "default",
+        display_order = 200,
+        env = "GUNGRAUN_SAVE_BASELINE",
+        long = "save-baseline",
         num_args = 0..=1,
         require_equals = true,
-        conflicts_with_all = &["baseline", "LOAD_BASELINE"],
-        env = "GUNGRAUN_SAVE_BASELINE",
-        display_order = 200
     )]
     pub save_baseline: Option<BaselineName>,
 
     #[rustfmt::skip]
-    /// Save a machine-readable summary of each benchmark run in json format next to the usual
-    /// benchmark output
+    /// Save a machine-readable summary of each benchmark run to a JSON file
+    ///
+    /// This option saves a structured JSON summary of each benchmark run alongside the usual
+    /// benchmark output. The summary file contains benchmark results, metrics, detected
+    /// regressions, and other metadata in a machine-readable format.
+    ///
+    /// The summary file is saved as `summary.json` in the benchmark's output directory next to the
+    /// other usual benchmark output.
+    ///
+    /// Available formats:
+    /// - `json`: Compact JSON without newlines (space-efficient)
+    /// - `pretty-json`: Pretty-printed JSON with indentation (human-readable)
+    ///
+    /// See also `--output-format` for printing JSON summaries to the terminal instead of saving to
+    /// a file.
+    ///
+    /// Examples:
+    ///   * `--save-summary` (saves as compact JSON)
+    ///   * `--save-summary=json` (saves as compact JSON)
+    ///   * `--save-summary=pretty-json` (saves as pretty-printed JSON)
     #[arg(
+        default_missing_value = "json",
+        display_order = 300,
+        env = "GUNGRAUN_SAVE_SUMMARY",
         long = "save-summary",
-        value_enum,
         num_args = 0..=1,
         require_equals = true,
-        default_missing_value = "json",
-        env = "GUNGRAUN_SAVE_SUMMARY",
-        display_order = 300
+        value_enum,
     )]
     pub save_summary: Option<SummaryFormat>,
 
@@ -1014,15 +1121,15 @@ pub struct CommandLineArgs {
     /// baselines and a combination of `--save-baseline=$TARGET` and `--baseline=$TARGET` if you
     /// prefer having all files of a single $BENCH in the same directory.
     #[arg(
-        long = "separate-targets",
+        action = ArgAction::Set,
         default_missing_value = "true",
         default_value = "false",
+        display_order = 100,
+        env = "GUNGRAUN_SEPARATE_TARGETS",
+        long = "separate-targets",
         num_args = 0..=1,
         require_equals = true,
         value_parser = BoolishValueParser::new(),
-        action = ArgAction::Set,
-        env = "GUNGRAUN_SEPARATE_TARGETS",
-        display_order = 100
     )]
     pub separate_targets: bool,
 
@@ -1033,13 +1140,13 @@ pub struct CommandLineArgs {
     /// running multiple tools with multiple threads and subprocesses for example by using
     /// `--show-intermediate`.
     #[arg(
-        long = "show-grid",
         default_missing_value = "true",
+        display_order = 300,
+        env = "GUNGRAUN_SHOW_GRID",
+        long = "show-grid",
         num_args = 0..=1,
         require_equals = true,
         value_parser = BoolishValueParser::new(),
-        env = "GUNGRAUN_SHOW_GRID",
-        display_order = 300
     )]
     pub show_grid: Option<bool>,
 
@@ -1054,13 +1161,13 @@ pub struct CommandLineArgs {
     /// Temporarily setting `show_intermediate` to `true` can help to find misconfigurations in
     /// multi-thread/multi-process benchmarks.
     #[arg(
-        long = "show-intermediate",
         default_missing_value = "true",
+        display_order = 300,
+        env = "GUNGRAUN_SHOW_INTERMEDIATE",
+        long = "show-intermediate",
         num_args = 0..=1,
         require_equals = true,
         value_parser = BoolishValueParser::new(),
-        env = "GUNGRAUN_SHOW_INTERMEDIATE",
-        display_order = 300
     )]
     pub show_intermediate: Option<bool>,
 
@@ -1074,14 +1181,14 @@ pub struct CommandLineArgs {
     /// especially benchmarks which are not compared to another benchmark. Such benchmarks have only
     /// the usual benchmark headline printed.
     #[arg(
-        long = "show-only-comparison",
         default_missing_value = "true",
+        display_order = 300,
+        env = "GUNGRAUN_SHOW_ONLY_COMPARISON",
+        long = "show-only-comparison",
         num_args = 0..=1,
         require_equals = true,
         value_parser = BoolishValueParser::new(),
         verbatim_doc_comment,
-        env = "GUNGRAUN_SHOW_ONLY_COMPARISON",
-        display_order = 300
     )]
     pub show_only_comparison: Option<bool>,
 
@@ -1098,13 +1205,13 @@ pub struct CommandLineArgs {
     ///   * --tolerance (applies the default value)
     ///   * --tolerance=0.1 (set the tolerance level to `0.1`)
     #[arg(
-        long = "tolerance",
         default_missing_value = "0.000009999999999999999",
+        display_order = 300,
+        env = "GUNGRAUN_TOLERANCE",
+        long = "tolerance",
         num_args = 0..=1,
         require_equals = true,
         verbatim_doc_comment,
-        env = "GUNGRAUN_TOLERANCE",
-        display_order = 300
     )]
     pub tolerance: Option<f64>,
 
@@ -1119,12 +1226,12 @@ pub struct CommandLineArgs {
     ///   * --tools dhat
     ///   * --tools memcheck,drd
     #[arg(
+        display_order = 450,
+        env = "GUNGRAUN_TOOLS",
         long = "tools",
         num_args = 1..,
         value_delimiter = ',',
         verbatim_doc_comment,
-        env = "GUNGRAUN_TOOLS",
-        display_order = 50
     )]
     pub tools: Vec<ValgrindTool>,
 
@@ -1148,14 +1255,14 @@ pub struct CommandLineArgs {
     ///   * --truncate-description=100 (set the truncation to 100 ascii chars)
     ///   * --truncate-description (this is the default and sets the size of 50 ascii chars)
     #[arg(
-        long = "truncate-description",
         default_missing_value = "50",
+        display_order = 300,
+        env = "GUNGRAUN_TRUNCATE_DESCRIPTION",
+        long = "truncate-description",
         num_args = 0..=1,
         require_equals = true,
         value_parser = parse_truncate_description,
         verbatim_doc_comment,
-        env = "GUNGRAUN_TRUNCATE_DESCRIPTION",
-        display_order = 300
     )]
     pub truncate_description: Option<TruncateDescription>,
 
@@ -1171,12 +1278,12 @@ pub struct CommandLineArgs {
     ///   * --valgrind-args=--time-stamp=yes
     ///   * --valgrind-args='--error-exitcode=202 --num-callers=50'
     #[arg(
-        long = "valgrind-args",
-        value_parser = parse_tool_args,
-        num_args = 1,
-        verbatim_doc_comment,
+        display_order = 500,
         env = "GUNGRAUN_VALGRIND_ARGS",
-        display_order = 500
+        long = "valgrind-args",
+        num_args = 1,
+        value_parser = parse_tool_args,
+        verbatim_doc_comment,
     )]
     pub valgrind_args: Option<RawToolArgs>,
 
@@ -1195,11 +1302,11 @@ pub struct CommandLineArgs {
     ///   * `--valgrind-bin=/usr/local/bin/valgrind`
     ///   * `--valgrind-bin=/doesnotexist` (used with `--valgrind-runner` for container setups)
     #[arg(
+        display_order = 100,
+        env = "GUNGRAUN_VALGRIND_BIN",
         long = "valgrind-bin",
         num_args = 1,
         verbatim_doc_comment,
-        env = "GUNGRAUN_VALGRIND_BIN",
-        display_order = 500
     )]
     pub valgrind_bin: Option<PathBuf>,
 
@@ -1230,12 +1337,12 @@ pub struct CommandLineArgs {
     ///   * --valgrind-runner=docker
     ///   * --valgrind-runner=/path/to/wrapper --valgrind-runner-args='--some-flag=${GUNGRAUN_ALLOW_ASLR}'
     #[arg(
-        long = "valgrind-runner",
-        value_parser = PathBufValueParser::new().try_map(parse_path_resolved),
-        num_args = 1,
-        verbatim_doc_comment,
+        display_order = 150,
         env = "GUNGRAUN_VALGRIND_RUNNER",
-        display_order = 500
+        long = "valgrind-runner",
+        num_args = 1,
+        value_parser = PathBufValueParser::new().try_map(parse_path_resolved),
+        verbatim_doc_comment,
     )]
     pub valgrind_runner: Option<PathBuf>,
 
@@ -1260,15 +1367,15 @@ pub struct CommandLineArgs {
     ///   * --valgrind-runner=sudo --valgrind-runner-args='--user=foo'
     ///   * --valgrind-runner=wrapper '--valgrind-runner-args=--allow-aslr=${GUNGRAUN_ALLOW_ASLR}'
     #[arg(
-        long = "valgrind-runner-args",
-        value_parser = parse_raw_args,
-        requires = "valgrind_runner",
-        required = false,
-        num_args = 1,
         action = ArgAction::Append,
-        verbatim_doc_comment,
+        display_order = 150,
         env = "GUNGRAUN_VALGRIND_RUNNER_ARGS",
-        display_order = 500
+        long = "valgrind-runner-args",
+        num_args = 1,
+        required = false,
+        requires = "valgrind_runner",
+        value_parser = parse_raw_args,
+        verbatim_doc_comment,
     )]
     pub valgrind_runner_args: Vec<RawArgs>,
 
@@ -1290,15 +1397,16 @@ pub struct CommandLineArgs {
     /// Examples:
     ///   * `--valgrind-runner-dest=/tmp/results`
     #[arg(
+        display_order = 150,
+        env = "GUNGRAUN_VALGRIND_RUNNER_DEST",
         long = "valgrind-runner-dest",
         num_args = 1,
         requires = "valgrind_runner",
         verbatim_doc_comment,
-        env = "GUNGRAUN_VALGRIND_RUNNER_DEST",
-        display_order = 500
     )]
     pub valgrind_runner_dest: Option<PathBuf>,
 
+    #[rustfmt::skip]
     /// Override the workspace root path for the valgrind runner
     ///
     /// This option is only effective when `--valgrind-runner` is specified. It allows substituting
@@ -1311,12 +1419,12 @@ pub struct CommandLineArgs {
     /// Examples:
     ///   * `--valgrind-runner-root=/workspace`
     #[arg(
+        display_order = 150,
+        env = "GUNGRAUN_VALGRIND_RUNNER_ROOT",
         long = "valgrind-runner-root",
         num_args = 1,
         requires = "valgrind_runner",
         verbatim_doc_comment,
-        env = "GUNGRAUN_VALGRIND_RUNNER_ROOT",
-        display_order = 500
     )]
     pub valgrind_runner_root: Option<PathBuf>,
 }
@@ -1407,12 +1515,12 @@ impl RawArgs {
         &self.0
     }
 
-    /// TODO: DOCS
+    /// Return `true` if there are no elements in this `RawArgs`
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
 
-    /// TODO: DOCS
+    /// Return the amount of elements
     pub fn len(&self) -> usize {
         self.0.len()
     }

@@ -1,6 +1,8 @@
 # Running Cargo Bench Results in an "Unrecognized Option" Error
 
-For
+To print the help for command-line arguments you can simply run
+`gungraun-runner --help` or for a short summary `gungraun-runner -h`. For all
+other arguments
 
 ```shell
 cargo bench -- --some-valid-arg
