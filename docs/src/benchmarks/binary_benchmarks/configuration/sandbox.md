@@ -36,9 +36,8 @@ without error.
 ```rust
 # extern crate gungraun;
 # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-use gungraun::{
-    binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Sandbox
-};
+use gungraun::prelude::*;
+use gungraun::Sandbox;
 
 fn create_file(path: &str) {
     std::fs::write(path, "some content").unwrap();
@@ -77,9 +76,8 @@ to copy `fixtures` into the temporary directory with `Sandbox::fixtures`:
 ```rust
 # extern crate gungraun;
 # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-use gungraun::{
-    binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Sandbox
-};
+use gungraun::prelude::*;
+use gungraun::Sandbox;
 
 #[binary_benchmark]
 #[bench::foo(
@@ -118,9 +116,9 @@ can copy it into a temporary directory `tmp` (which may or may not exist) in
 ```rust
 # extern crate gungraun;
 # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-use gungraun::{
-    binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Sandbox
-};
+use gungraun::prelude::*;
+use gungraun::Sandbox;
+
 use std::path::PathBuf;
 
 fn copy_fixture(path: &str) {

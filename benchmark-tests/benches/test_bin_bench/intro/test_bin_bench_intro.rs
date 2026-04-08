@@ -10,10 +10,8 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 
-use gungraun::{
-    binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Pipe, Sandbox, Stdin,
-    Stdio,
-};
+use gungraun::prelude::*;
+use gungraun::{Pipe, Sandbox, Stdin, Stdio};
 
 // This constant stores the absolute path to our crate's binary `echo`. Our `echo` is really simple
 // and prints all arguments to stdout as the original `echo` would do. In case of multiple arguments

@@ -1,4 +1,4 @@
-use gungraun::{library_benchmark, LibraryBenchmarkConfig};
+use gungraun::prelude::*;
 
 mod test_when_range {
     use super::*;

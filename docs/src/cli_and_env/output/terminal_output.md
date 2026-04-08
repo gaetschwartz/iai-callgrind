@@ -31,7 +31,7 @@ Consider the following library benchmark in `benches/my_benchmark.rs`
 
 ```rust
 # extern crate gungraun;
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 fn print_to_stderr(value: u64) {

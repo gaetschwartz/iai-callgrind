@@ -47,7 +47,7 @@ benchmark.
 ```rust
 # extern crate gungraun;
 # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-use gungraun::{binary_benchmark, binary_benchmark_group, main};
+use gungraun::prelude::*;
 use std::path::PathBuf;
 
 #[binary_benchmark]
@@ -88,7 +88,7 @@ work differently.
 ```rust
 # extern crate gungraun;
 # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-use gungraun::{binary_benchmark, binary_benchmark_group, main};
+use gungraun::prelude::*;
 
 fn create_file() {
     std::fs::write("foo.txt", "some content").unwrap();
@@ -122,7 +122,7 @@ library benchmarks:
 ```rust
 # extern crate gungraun;
 # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-use gungraun::{binary_benchmark, binary_benchmark_group, main};
+use gungraun::prelude::*;
 
 fn create_file(path: &str) {
     std::fs::write(path, "some content").unwrap();

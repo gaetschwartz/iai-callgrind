@@ -8,9 +8,8 @@ different from `0`, the expected exit code can be set in
 ```rust
 # extern crate gungraun;
 # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-use gungraun::{
-     binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, ExitWith
-};
+use gungraun::prelude::*;
+use gungraun::ExitWith;
 
 #[binary_benchmark]
 // Here, we set the expected exit code of `my-foo` to 2

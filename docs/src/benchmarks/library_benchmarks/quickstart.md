@@ -2,8 +2,8 @@
 
 # Quickstart
 
-Create a file `$WORKSPACE_ROOT/benches/library_benchmark.rs` (or for best
-results use
+Create a file `$WORKSPACE_ROOT/benches/library_benchmark.rs` (for best results
+use
 [Use a Separate Workspace Member for Benchmarks](../../best_practices.md#use-a-separate-workspace-member-for-benchmarks))
 and add
 
@@ -21,7 +21,7 @@ Then copy the following content into this file:
 
 ```rust
 # extern crate gungraun;
-use gungraun::{main, library_benchmark_group, library_benchmark};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 fn fibonacci(n: u64) -> u64 {
@@ -49,7 +49,8 @@ main!(library_benchmark_groups = bench_fibonacci_group);
 # }
 ```
 
-Now, that your first library benchmark is set up, you can run it with
+The `gungraun::prelude` contains the most important macro definitions and
+structs. Now, that your first library benchmark is set up, you can run it with
 
 ```shell
 cargo bench

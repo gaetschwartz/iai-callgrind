@@ -137,10 +137,8 @@ soft limit of `+5%` for the `Ir` event kind for all benchmarks of this file:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn bubble_sort(_: Vec<i32>) -> Vec<i32> { vec![] } }
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig,
-    Callgrind, EventKind
-};
+use gungraun::prelude::*;
+use gungraun::{Callgrind, EventKind};
 use std::hint::black_box;
 
 #[library_benchmark]

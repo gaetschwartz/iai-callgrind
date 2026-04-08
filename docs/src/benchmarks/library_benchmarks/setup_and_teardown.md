@@ -24,7 +24,7 @@ indirection with great effect. The effect is best shown with an example:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn count_bytes_fast(_file: std::fs::File) -> u64 { 1 } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 
 use std::hint::black_box;
 use std::path::PathBuf;
@@ -75,7 +75,7 @@ parameter of the `#[library_benchmark]`:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn count_bytes_fast(_file: std::fs::File) -> u64 { 1 } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 
 use std::hint::black_box;
 use std::path::PathBuf;
@@ -121,7 +121,7 @@ argument:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn count_bytes_fast(_file: std::fs::File) -> u64 { 1 } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 
 use std::hint::black_box;
 use std::path::PathBuf;

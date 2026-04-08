@@ -13,7 +13,7 @@ it is convenient especially when you have to specify many paths, don't do this:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn count_lines_in_file_fast(_path: std::path::PathBuf) -> u64 { 1 } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 
 use std::hint::black_box;
 use std::path::PathBuf;
@@ -38,7 +38,7 @@ almost never what you intended. You should instead convert the argument to a
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn count_lines_in_file_fast(_path: std::path::PathBuf) -> u64 { 1 } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 
 use std::hint::black_box;
 use std::path::PathBuf;
@@ -72,7 +72,7 @@ is the same as for the `args` parameter:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn create_buffer(_: usize) -> Vec<u8> { vec![] } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 #[library_benchmark]
@@ -101,7 +101,7 @@ For functions with multiple const generics:
 # mod my_lib { pub fn create_matrix(_: usize, _: usize) -> Vec<Vec<u8>> {
 #     vec![] }
 # }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 #[library_benchmark]
@@ -133,7 +133,7 @@ parameters in the benchmark function signature:
 #       Vec::with_capacity(SIZE)
 #   }
 # }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 #[library_benchmark]

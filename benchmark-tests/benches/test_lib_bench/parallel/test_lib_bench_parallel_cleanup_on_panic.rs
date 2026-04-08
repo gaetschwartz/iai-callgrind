@@ -4,7 +4,7 @@ use std::env;
 use std::thread::sleep;
 use std::time::Duration;
 
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use tempfile::Builder;
 
 const SUFFIX: &str = "test-file";

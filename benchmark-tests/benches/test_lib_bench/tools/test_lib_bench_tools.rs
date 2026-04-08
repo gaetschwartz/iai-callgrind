@@ -11,10 +11,8 @@ struct Right(Option<Rc<RefCell<Left>>>);
 use std::hint::black_box;
 
 use benchmark_tests::{bubble_sort, bubble_sort_allocate, setup_worst_case_array, subprocess};
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, Bbv, Callgrind, Dhat, Drd, EventKind,
-    Helgrind, LibraryBenchmarkConfig, Massif, Memcheck, OutputFormat,
-};
+use gungraun::prelude::*;
+use gungraun::{Bbv, Callgrind, Dhat, Drd, EventKind, Helgrind, Massif, Memcheck, OutputFormat};
 
 #[library_benchmark]
 #[bench::empty(

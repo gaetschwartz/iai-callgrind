@@ -30,8 +30,8 @@
 //! - __Regression__: Gungraun reports the difference between benchmark runs to make it easy to spot
 //!   detailed performance regressions and improvements.
 //! - __CPU and Cache Profiling__: Gungraun generates a Callgrind profile of your code while
-//!   benchmarking, so you can use Callgrind-compatible tools like [callgrind_annotate][cl-annotate]
-//!   or the visualizer [kcachegrind] to analyze the results in detail.
+//!   benchmarking, so you can use Callgrind-compatible tools like [`callgrind_annotate`] or the
+//!   visualizer [kcachegrind] to analyze the results in detail.
 //! - __Memory Profiling__: You can run other Valgrind tools like [DHAT: a dynamic heap analysis
 //!   tool][DHAT] and [Massif: a heap profiler][massif] with Gungraun. Their profiles are stored
 //!   next to the callgrind profiles and are ready to be examined with analyzing tools like
@@ -49,8 +49,7 @@
 //!
 //! ### Library Benchmarks
 //!
-//! Use this scheme of the [`main`] macro if you want to benchmark functions of your
-//! crate's library.
+//! Use the [`main!`] macro to benchmark functions of your crate's library.
 //!
 //! #### Important default behavior
 //!
@@ -62,7 +61,7 @@
 //! ```rust
 //! use std::hint::black_box;
 //!
-//! use gungraun::{library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig};
+//! use gungraun::prelude::*;
 //!
 //! // Our function we want to test. Just assume this is a public function in your
 //! // library.
@@ -87,7 +86,7 @@
 //!     }
 //! }
 //!
-//! // The #[library_benchmark] attribute let's you define a benchmark function which you
+//! // The #[library_benchmark] attribute lets you define a benchmark function which you
 //! // can later use in the `library_benchmark_groups!` macro.
 //! #[library_benchmark]
 //! fn bench_bubble_sort_empty() -> Vec<i32> {
@@ -167,20 +166,21 @@
 //! # }
 //! ```
 //!
-//! Note that it is important to annotate the benchmark functions with
-//! [`#[library_benchmark]`](crate::library_benchmark).
+//! The [`gungraun::prelude`](crate::prelude) contains the most important macro definitions and
+//! structs. Note that it is important to annotate the benchmark functions with
+//! [`#[library_benchmark]`].
 //!
 //! ### Configuration (#library-benchmarks)
 //!
 //! It's possible to configure some of the behavior of `gungraun`. See the docs of
-//! [`crate::LibraryBenchmarkConfig`] for more details. Configure library benchmarks at
-//! top-level with the [`crate::main`] macro, at group level within the
-//! [`crate::library_benchmark_group`], at [`crate::library_benchmark`] level
+//! [`LibraryBenchmarkConfig`] for more details. Configure library benchmarks at
+//! top-level with the [`main!`] macro, at group level within the
+//! [`library_benchmark_group!`], at [`#[library_benchmark]`] level
 //!
 //! and at `bench` level:
 //!
 //! ```rust
-//! # use gungraun::{LibraryBenchmarkConfig, library_benchmark};
+//! # use gungraun::prelude::*;
 //! #[library_benchmark]
 //! #[bench::some_id(args = (1, 2), config = LibraryBenchmarkConfig::default())]
 //! // ...
@@ -195,25 +195,25 @@
 //! configuration values like `envs` are additive and don't overwrite configuration values of higher
 //! levels.
 //!
-//! See also the docs of [`crate::library_benchmark_group`]. The [online guide][Guide] includes more
+//! See also the docs of [`library_benchmark_group!`]. The [online guide][Guide] includes more
 //! explanations, common recipes and examples.
 //!
 //! ### Binary Benchmarks
 //!
-//! Use this scheme of the [`main`] macro to benchmark one or more binaries of your crate (or any
+//! Use this scheme of the [`main!`] macro to benchmark one or more binaries of your crate (or any
 //! other executable). The documentation for setting up binary benchmarks with the
-//! `binary_benchmark_group` macro can be found in the docs of [`crate::binary_benchmark_group`].
+//! `binary_benchmark_group` macro can be found in the docs of [`binary_benchmark_group!`].
 //!
 //! #### Important default behavior
 //!
 //! By default, all binary benchmarks run with the environment variables cleared. See also
-//! [`crate::BinaryBenchmarkConfig::env_clear`] for how to change this behavior.
+//! [`BinaryBenchmarkConfig::env_clear`] for how to change this behavior.
 //!
 //! #### Quickstart (#binary-benchmarks)
 //!
 //! There are two apis to set up binary benchmarks, but we only describe the high-level api using
-//! the [`#[binary_benchmark]`](`crate::binary_benchmark`) attribute here. See the docs of
-//! [`binary_benchmark_group`] for more details about the low level api. The `#[binary_benchmark]`
+//! the [`#[binary_benchmark]`] attribute here. See the docs of
+//! [`binary_benchmark_group!`] for more details about the low level api. The `#[binary_benchmark]`
 //! attribute works almost the same as the `#[library_benchmark]` attribute. You will find the same
 //! parameters `setup`, `teardown`, `config`, `consts`, etc. in `#[binary_benchmark]` as in
 //! `#[library_benchmark]` and the inner attributes `#[bench]`, `#[benches]`. But, there are also
@@ -226,7 +226,7 @@
 //! use std::ffi::OsString;
 //! use std::path::PathBuf;
 //!
-//! use gungraun::{binary_benchmark, binary_benchmark_group, main};
+//! use gungraun::prelude::*;
 //!
 //! // In binary benchmarks there's no need to return a value from the setup function
 //! fn my_setup() {
@@ -288,7 +288,7 @@
 //! As opposed to library benchmarks the function annotated with the `binary_benchmark` attribute
 //! always returns a `gungraun::Command`. More specifically, this function is not a benchmark
 //! function, since we don't benchmark functions anymore but [`Command`]s instead which are the
-//! return value of the [`#[binary_benchmark]`](crate::binary_benchmark) function.
+//! return value of the [`#[binary_benchmark]`] function.
 //!
 //! This change has far-reaching consequences but also simplifies things. Since the function itself
 //! is not benchmarked you can put any code into this function, and it does not influence the
@@ -300,7 +300,7 @@
 //!
 //! In library benchmarks the `setup` parameter only takes a path to a function, more specifically
 //! the function pointer. In binary benchmarks however, the `setup` (and `teardown`) parameters of
-//! the [`#[binary_benchmark]`](crate::binary_benchmark), `#[bench]` and `#[benches]` attribute
+//! the [`#[binary_benchmark]`], `#[bench]` and `#[benches]` attribute
 //! take expressions which includes function calls for example `setup = my_setup()`. Only in the
 //! special case that the expression is a function pointer, we pass the `args` of the `#[bench]` and
 //! `#[benches]` attributes into the `setup`, `teardown` __and__ the function itself. Also, these
@@ -319,8 +319,8 @@
 //! benchmarks, binary benchmarks can be also configured at a lower and last level in [`Command`]
 //! directly.
 //!
-//! For further details see the section about binary benchmarks of the [`crate::main`] docs the docs
-//! of [`crate::binary_benchmark_group`] and [`Command`]. The [guide][Guide] of this crate includes
+//! For further details see the section about binary benchmarks of the [`main!`] docs the docs
+//! of [`binary_benchmark_group!`] and [`Command`]. The [guide][Guide] of this crate includes
 //! a more thorough documentation with additional examples.
 //!
 //! ## Valgrind Tools
@@ -334,8 +334,8 @@
 //! [`BinaryBenchmarkConfig::tool`]. For example to run `DHAT` for all library benchmarks:
 //!
 //! ```rust
-//! # use gungraun::{library_benchmark, library_benchmark_group};
-//! use gungraun::{main, Dhat, LibraryBenchmarkConfig};
+//! use gungraun::prelude::*;
+//! use gungraun::{main, Dhat};
 //! # #[library_benchmark]
 //! # fn some_func() {}
 //! # library_benchmark_group!(name = some_group, benchmarks = some_func);
@@ -351,8 +351,8 @@
 //! can change the default tool wherever a configuration can be specified. Here in `main!`:
 //!
 //! ```rust
-//! # use gungraun::{library_benchmark, library_benchmark_group};
-//! use gungraun::{main, LibraryBenchmarkConfig, ValgrindTool};
+//! use gungraun::prelude::*;
+//! use gungraun::{main, ValgrindTool};
 //! # #[library_benchmark]
 //! # fn some_func() {}
 //! # library_benchmark_group!(name = some_group, benchmarks = some_func);
@@ -385,21 +385,123 @@
 //!
 //! [Cachegrind]: https://valgrind.org/docs/manual/cg-manual.html
 //! [Callgrind]: https://valgrind.org/docs/manual/cl-manual.html
-//! [cl-annotate]:
-//!   https://valgrind.org/docs/manual/cl-manual.html#cl-manual.callgrind_annotate-options
-//! [client-req]: https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
 //! [DHAT]: https://valgrind.org/docs/manual/dh-manual.html
 //! [DRD]: https://valgrind.org/docs/manual/drd-manual.html
 //! [Guide]: https://gungraun.github.io/gungraun/latest/html/intro.html
 //! [Helgrind]: https://valgrind.org/docs/manual/hg-manual.html
-//! [kcachegrind]: https://kcachegrind.github.io/html/Home.html
-//! [massif]: https://valgrind.org/docs/manual/ms-manual.html
 //! [Memcheck]: https://valgrind.org/docs/manual/mc-manual.html
 //! [Valgrind User Manual]: https://valgrind.org/docs/manual/manual.html
+//! [`callgrind_annotate`]:
+//!   <https://valgrind.org/docs/manual/cl-manual.html#cl-manual.callgrind_annotate-options>
+//! [client-req]: https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
+//! [kcachegrind]: https://kcachegrind.github.io/html/Home.html
+//! [massif]: https://valgrind.org/docs/manual/ms-manual.html
+//!
+//! [`#[binary_benchmark]`]: `crate::binary_benchmark`
+//! [`#[library_benchmark]`]: `crate::library_benchmark`
+//! [`BinaryBenchmarkConfig`]: `crate::BinaryBenchmarkConfig`
+//! [`BinaryBenchmarkConfig::env_clear`]: `crate::BinaryBenchmarkConfig::env_clear`
+//! [`BinaryBenchmarkConfig::tool`]: `crate::BinaryBenchmarkConfig::tool`
+//! [`Callgrind::flamegraph`]: `crate::Callgrind::flamegraph`
+//! [`Command`]: `crate::Command`
+//! [`FlamegraphConfig`]: `crate::FlamegraphConfig`
+//! [`LibraryBenchmarkConfig`]: `crate::LibraryBenchmarkConfig`
+//! [`LibraryBenchmarkConfig::tool`]: `crate::LibraryBenchmarkConfig::tool`
+//! [`binary_benchmark_group!`]: `crate::binary_benchmark_group`
+//! [`client_requests`]: `crate::client_requests`
+//! [`library_benchmark_group!`]: `crate::library_benchmark_group`
+//! [`main!`]: `crate::main`
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc(test(attr(warn(unused))))]
 #![doc(test(attr(allow(unused_extern_crates))))]
+
+/// Import the basic macros and configuration structs for benchmarking
+///
+/// The prelude is kept small and is focused on the most commonly used items for setting up
+/// benchmarks with Gungraun conveniently. A typical import would be:
+///
+/// ```
+/// use gungraun::prelude::*;
+/// ```
+///
+/// # Exported Items
+///
+/// ## Macros
+///
+/// - [`library_benchmark`]: Annotate a function as a library benchmark
+/// - [`library_benchmark_group`]: Define a group of library benchmarks
+/// - [`binary_benchmark`]: Annotate a function as a binary benchmark
+/// - [`binary_benchmark_group`]: Define a group of binary benchmarks
+/// - [`main!`]: Entry point macro that runs all benchmarks
+///
+/// ## Structs
+///
+/// - [`LibraryBenchmarkConfig`]: Configuration for library benchmarks
+/// - [`BinaryBenchmarkConfig`]: Configuration for binary benchmarks
+/// - [`Command`]: Build commands for binary benchmarks
+///
+/// # Library Benchmark Example
+///
+/// ```rust
+/// use std::hint::black_box;
+///
+/// use gungraun::prelude::*;
+///
+/// fn my_function(n: u64) -> u64 {
+///     n + 1
+/// }
+///
+/// #[library_benchmark]
+/// fn bench_my_function() -> u64 {
+///     black_box(my_function(black_box(42)))
+/// }
+///
+/// library_benchmark_group!(name = my_group, benchmarks = bench_my_function);
+/// # fn main() {
+/// main!(library_benchmark_groups = my_group);
+/// # }
+/// ```
+///
+/// # Binary Benchmark Example
+///
+/// ```rust
+/// use gungraun::prelude::*;
+///
+/// #[binary_benchmark]
+/// fn bench_my_binary() -> Command {
+///     Command::new("my-binary").arg("--option").build()
+/// }
+///
+/// binary_benchmark_group!(name = my_group, benchmarks = bench_my_binary);
+/// # fn main() {
+/// main!(binary_benchmark_groups = my_group);
+/// # }
+/// ```
+///
+/// # See Also
+///
+/// See the [module-level documentation](crate) or the [guide] for comprehensive guides and examples
+/// for both library and binary benchmarks.
+///
+/// [`BinaryBenchmarkConfig`]: crate::BinaryBenchmarkConfig
+/// [`Command`]: crate::Command
+/// [guide]: https://gungraun.github.io/gungraun/latest/html/intro.html
+/// [`LibraryBenchmarkConfig`]: crate::LibraryBenchmarkConfig
+/// [`binary_benchmark`]: crate::binary_benchmark
+/// [`binary_benchmark_group`]: crate::binary_benchmark_group
+/// [`library_benchmark`]: crate::library_benchmark
+/// [`library_benchmark_group`]: crate::library_benchmark_group
+/// [`main!`]: crate::main
+#[cfg(feature = "default")]
+pub mod prelude {
+    // Shows actual source location instead of prelude, making items easier to find for the user
+    #[doc(no_inline)]
+    pub use crate::{
+        binary_benchmark, binary_benchmark_group, library_benchmark, library_benchmark_group, main,
+        BinaryBenchmarkConfig, Command, LibraryBenchmarkConfig,
+    };
+}
 
 #[cfg(feature = "default")]
 #[doc(hidden)]

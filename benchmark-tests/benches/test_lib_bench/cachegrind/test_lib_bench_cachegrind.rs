@@ -1,9 +1,8 @@
 use std::hint::black_box;
 
 use benchmark_tests::{bubble_sort, setup_best_case_array};
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, Cachegrind, Callgrind, LibraryBenchmarkConfig,
-};
+use gungraun::prelude::*;
+use gungraun::{Cachegrind, Callgrind};
 
 #[library_benchmark(
     config = LibraryBenchmarkConfig::default()

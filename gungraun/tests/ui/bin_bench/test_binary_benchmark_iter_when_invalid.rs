@@ -1,4 +1,4 @@
-use gungraun::binary_benchmark;
+use gungraun::prelude::*;
 
 mod test_when_together_with_other_main_parameter {
     use super::*;

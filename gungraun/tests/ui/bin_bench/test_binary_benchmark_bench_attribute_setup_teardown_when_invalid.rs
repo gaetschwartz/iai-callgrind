@@ -1,5 +1,5 @@
 mod test_setup_as_path_too_few_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     fn setup(_arg: &str) {}
 
@@ -11,7 +11,7 @@ mod test_setup_as_path_too_few_arguments {
 }
 
 mod test_setup_as_path_too_many_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     fn setup(_arg: &str) {}
 
@@ -25,7 +25,7 @@ mod test_setup_as_path_too_many_arguments {
 }
 
 mod test_teardown_as_path_too_few_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     fn teardown(_arg: &str) {}
 
@@ -37,7 +37,7 @@ mod test_teardown_as_path_too_few_arguments {
 }
 
 mod test_teardown_as_path_too_many_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     fn teardown(_arg: &str) {}
 
@@ -51,7 +51,7 @@ mod test_teardown_as_path_too_many_arguments {
 }
 
 mod test_setup_too_few_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     fn setup(_arg: &str) {}
 
@@ -63,7 +63,7 @@ mod test_setup_too_few_arguments {
 }
 
 mod test_setup_too_many_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     fn setup(_arg: &str) {}
 
@@ -75,7 +75,7 @@ mod test_setup_too_many_arguments {
 }
 
 mod test_teardown_too_few_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     fn teardown(_arg: &str) {}
 
@@ -87,7 +87,7 @@ mod test_teardown_too_few_arguments {
 }
 
 mod test_teardown_too_many_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     fn teardown(_arg: &str) {}
 
@@ -99,7 +99,7 @@ mod test_teardown_too_many_arguments {
 }
 
 mod test_setup_too_many_teardown_too_many_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     fn teardown(_arg: &str) {}
     fn setup(_arg: &str) {}
@@ -112,7 +112,7 @@ mod test_setup_too_many_teardown_too_many_arguments {
 }
 
 mod test_setup_as_path_too_few_teardown_too_few_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     fn teardown(_arg: &str) {}
     fn setup(_arg: &str) {}

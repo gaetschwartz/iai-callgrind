@@ -1,5 +1,5 @@
 mod test_main_when_default_config {
-    use gungraun::{binary_benchmark_group, main, BinaryBenchmarkConfig};
+    use gungraun::prelude::*;
 
     binary_benchmark_group!(
         name = some,
@@ -15,7 +15,7 @@ mod test_main_when_default_config {
 }
 
 mod test_main_when_config_is_ref {
-    use gungraun::{binary_benchmark_group, main, BinaryBenchmarkConfig};
+    use gungraun::prelude::*;
 
     binary_benchmark_group!(
         name = some,
@@ -31,7 +31,8 @@ mod test_main_when_config_is_ref {
 }
 
 mod test_main_when_config_is_mut_ref {
-    use gungraun::{binary_benchmark_group, main, BinaryBenchmarkConfig, Cachegrind};
+    use gungraun::prelude::*;
+    use gungraun::Cachegrind;
 
     binary_benchmark_group!(
         name = some,
@@ -47,7 +48,7 @@ mod test_main_when_config_is_mut_ref {
 }
 
 mod test_main_when_no_config {
-    use gungraun::{binary_benchmark_group, main};
+    use gungraun::prelude::*;
 
     binary_benchmark_group!(
         name = some,
@@ -60,7 +61,7 @@ mod test_main_when_no_config {
 }
 
 mod test_main_when_multiple_groups {
-    use gungraun::{binary_benchmark_group, main};
+    use gungraun::prelude::*;
 
     binary_benchmark_group!(
         name = some,

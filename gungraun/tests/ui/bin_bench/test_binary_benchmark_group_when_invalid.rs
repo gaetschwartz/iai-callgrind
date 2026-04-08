@@ -1,11 +1,11 @@
 mod test_when_empty {
-    use gungraun::binary_benchmark_group;
+    use gungraun::prelude::*;
 
     binary_benchmark_group!();
 }
 
 mod test_when_no_name {
-    use gungraun::{binary_benchmark, binary_benchmark_group, Command};
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     fn bench() -> Command {
@@ -60,7 +60,7 @@ mod test_when_no_name {
 }
 
 mod test_low_level_when_no_benchmark {
-    use gungraun::binary_benchmark_group;
+    use gungraun::prelude::*;
 
     // comma syntax
     binary_benchmark_group!(
@@ -96,7 +96,7 @@ mod test_low_level_when_no_benchmark {
 }
 
 mod test_when_no_benchmark_argument {
-    use gungraun::binary_benchmark_group;
+    use gungraun::prelude::*;
 
     binary_benchmark_group!(name = some);
     binary_benchmark_group!(name = some,);
@@ -106,7 +106,7 @@ mod test_when_no_benchmark_argument {
 }
 
 mod test_when_max_parallel {
-    use gungraun::{binary_benchmark, binary_benchmark_group, Command};
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     fn some_func() -> Command {

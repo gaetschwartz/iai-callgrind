@@ -1,5 +1,5 @@
 mod test_when_config_has_wrong_type {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some(config = "string")]
@@ -9,7 +9,7 @@ mod test_when_config_has_wrong_type {
 }
 
 mod test_when_setup_not_exists {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some(setup = setup())]
@@ -19,7 +19,7 @@ mod test_when_setup_not_exists {
 }
 
 mod test_when_setup_as_path_not_exists {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some(setup = setup)]
@@ -29,7 +29,7 @@ mod test_when_setup_as_path_not_exists {
 }
 
 mod test_when_teardown_as_path_not_exists {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some(teardown = teardown)]
@@ -39,7 +39,7 @@ mod test_when_teardown_as_path_not_exists {
 }
 
 mod test_when_args_has_no_value {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some(args = )]
@@ -50,7 +50,7 @@ mod test_when_args_has_no_value {
 
 // TODO: THE SPAN SHOULD POINT TO #[bench] instead of #[binary_benchmark]
 mod test_when_args_not_present_but_expected {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some()]
@@ -60,7 +60,7 @@ mod test_when_args_not_present_but_expected {
 }
 
 mod test_when_args_has_too_few_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some(args = ())]
@@ -70,7 +70,7 @@ mod test_when_args_has_too_few_arguments {
 }
 
 mod test_when_args_has_too_many_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some(args = (1))]
@@ -80,7 +80,7 @@ mod test_when_args_has_too_many_arguments {
 }
 
 mod test_when_args_type_is_wrong {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some(args = (1))]
@@ -90,7 +90,7 @@ mod test_when_args_type_is_wrong {
 }
 
 mod test_when_multiple_args_types_are_wrong {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some(args = (1, 2))]
@@ -100,7 +100,7 @@ mod test_when_multiple_args_types_are_wrong {
 }
 
 mod test_when_list_has_too_many_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some(1)]
@@ -110,7 +110,7 @@ mod test_when_list_has_too_many_arguments {
 }
 
 mod test_when_list_has_too_few_arguments {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some(1)]
@@ -122,7 +122,7 @@ mod test_when_list_has_too_few_arguments {
 }
 
 mod test_when_list_type_is_wrong {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some(1)]
@@ -132,7 +132,7 @@ mod test_when_list_type_is_wrong {
 }
 
 mod test_when_multiple_list_types_are_wrong {
-    use gungraun::binary_benchmark;
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     #[bench::some(1, 2)]

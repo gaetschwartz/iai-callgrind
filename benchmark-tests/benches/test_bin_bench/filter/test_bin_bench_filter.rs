@@ -1,4 +1,4 @@
-use gungraun::{binary_benchmark, binary_benchmark_group, main, Command};
+use gungraun::prelude::*;
 
 const ECHO: &str = env!("CARGO_BIN_EXE_echo");
 

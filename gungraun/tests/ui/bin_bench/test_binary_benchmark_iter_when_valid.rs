@@ -1,4 +1,4 @@
-use gungraun::{binary_benchmark, BinaryBenchmarkConfig};
+use gungraun::prelude::*;
 
 mod test_when_range {
     use super::*;

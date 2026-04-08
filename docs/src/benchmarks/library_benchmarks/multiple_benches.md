@@ -10,7 +10,7 @@ Start with an example:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn bubble_sort(value: Vec<i32>) -> Vec<i32> { value } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 use my_lib::bubble_sort;
 
@@ -43,7 +43,7 @@ function instead. The above `#[library_benchmark]` is roughly the same as
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn bubble_sort(value: Vec<i32>) -> Vec<i32> { value } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 use my_lib::bubble_sort;
 
@@ -84,7 +84,7 @@ case. For example creating multiple benchmarks from a range:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn u64_to_string(input: u64) -> String { "1".to_owned() } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 #[library_benchmark]
@@ -108,7 +108,7 @@ separate benchmark.
 use std::hint::black_box;
 use std::path::PathBuf;
 
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 
 fn read_dir() -> Vec<PathBuf> {
     std::fs::read_dir("benches/fixtures")
@@ -153,7 +153,7 @@ then
 ```rust,ignore
 # extern crate gungraun;
 # mod my_lib { pub fn string_to_u64(value: String) -> Result<u64, String> { Ok(1) } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 #[library_benchmark]
@@ -173,7 +173,7 @@ The above is roughly equivalent to the following but with the `args` parameter
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn string_to_u64(value: String) -> Result<u64, String> { Ok(1) } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 #[library_benchmark]
@@ -203,7 +203,7 @@ and your library has a function which converts from RGB to HSV color space:
 ```rust,ignore
 # extern crate gungraun;
 # mod my_lib { pub fn rgb_to_hsv(a: u8, b: u8, c:u8) -> (u16, u8, u8) { (a.into(), b, c) } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 fn decode_line(line: String) -> (u8, u8, u8) {
@@ -239,7 +239,7 @@ can specified the same way as the `args` parameter:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn create_buffer(_: usize) -> Vec<u8> { vec![] } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 #[library_benchmark]
@@ -261,7 +261,7 @@ elements the last `args` value repeats:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn process(_: i32, _: usize) -> i32 { 0 } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 #[library_benchmark]

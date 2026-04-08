@@ -1,6 +1,6 @@
 use std::hint::black_box;
 
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 
 #[library_benchmark]
 fn minimal_bench() -> u64 {

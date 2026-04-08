@@ -1,7 +1,5 @@
-use gungraun::{
-    binary_benchmark, binary_benchmark_group, main, Bench, BinaryBenchmark, BinaryBenchmarkConfig,
-    Command,
-};
+use gungraun::prelude::*;
+use gungraun::{Bench, BinaryBenchmark};
 
 #[binary_benchmark]
 fn bench() -> Command {

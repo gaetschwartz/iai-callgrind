@@ -69,14 +69,15 @@ Gungraun provides built-in mechanisms for this:
 ```rust
 # extern crate gungraun;
 # fn process_data(data: Vec<u64>) -> u64 { data.len() as u64 }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 fn expensive_setup(n: u64) -> Vec<u64> {
     (0..n).collect()
 }
 
-#[library_benchmark(setup = expensive_setup(1000))]
+#[library_benchmark]
+#[bench::with_setup(args = [100], setup = expensive_setup)]
 fn bench_processing(data: Vec<u64>) -> u64 {
     black_box(process_data(black_box(data)))
 }
@@ -97,10 +98,11 @@ input and output values:
 ```rust
 # extern crate gungraun;
 # fn expensive_computation(n: u64) -> u64 { n }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 #[library_benchmark]
+#[bench::low(5)]
 fn bench_example(n: u64) -> u64 {
     // Ensure `n` and `result` are used and not optimized away
     black_box(expensive_computation(black_box(n)))

@@ -1,4 +1,4 @@
-use gungraun::{binary_benchmark, library_benchmark};
+use gungraun::prelude::*;
 
 mod test_empty_file {
     use super::*;

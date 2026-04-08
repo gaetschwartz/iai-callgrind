@@ -1,5 +1,5 @@
 mod test_when_single_group {
-    use gungraun::{binary_benchmark, binary_benchmark_group, main};
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     fn some_bench() -> gungraun::Command {
@@ -11,7 +11,7 @@ mod test_when_single_group {
 }
 
 mod test_when_multiple_groups {
-    use gungraun::{binary_benchmark, binary_benchmark_group, main};
+    use gungraun::prelude::*;
 
     #[binary_benchmark]
     fn some_bench() -> gungraun::Command {

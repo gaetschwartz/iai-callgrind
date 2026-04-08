@@ -1,4 +1,4 @@
-use gungraun::{binary_benchmark, binary_benchmark_group, main, Command};
+use gungraun::prelude::*;
 
 #[binary_benchmark]
 #[bench::one("1")]

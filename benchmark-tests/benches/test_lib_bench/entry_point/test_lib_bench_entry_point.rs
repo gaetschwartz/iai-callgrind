@@ -1,10 +1,8 @@
 use std::hint::black_box;
 
 use benchmark_tests::assert::Assert;
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, Callgrind, EntryPoint, EventKind,
-    FlamegraphConfig, LibraryBenchmarkConfig, ValgrindTool,
-};
+use gungraun::prelude::*;
+use gungraun::{Callgrind, EntryPoint, EventKind, FlamegraphConfig, ValgrindTool};
 use gungraun_runner::runner::callgrind::hashmap_parser::SourcePath;
 use gungraun_runner::runner::metrics::Metric;
 use gungraun_runner::runner::summary::{BenchmarkSummary, ToolMetricSummary};

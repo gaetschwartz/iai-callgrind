@@ -1,4 +1,4 @@
-use gungraun::library_benchmark;
+use gungraun::prelude::*;
 
 // missing id
 #[library_benchmark]

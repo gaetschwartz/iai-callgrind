@@ -1,10 +1,8 @@
 use std::hint::black_box;
 
 use benchmark_tests::setup_worst_case_array;
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, Callgrind, FlamegraphConfig, FlamegraphKind,
-    LibraryBenchmarkConfig,
-};
+use gungraun::prelude::*;
+use gungraun::{Callgrind, FlamegraphConfig, FlamegraphKind};
 
 #[library_benchmark]
 #[bench::all_kinds(

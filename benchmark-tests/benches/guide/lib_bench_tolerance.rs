@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 use std::hint::black_box;
 
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig, OutputFormat,
-};
+use gungraun::prelude::*;
+use gungraun::OutputFormat;
 
 fn make_hashmap(num: usize) -> HashMap<String, usize> {
     (0..num).fold(HashMap::new(), |mut acc, e| {

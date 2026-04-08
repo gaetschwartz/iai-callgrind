@@ -38,7 +38,7 @@ package `my_package`
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn bubble_sort(_: Vec<i32>) -> Vec<i32> { vec![] } }
-use gungraun::{main, library_benchmark_group, library_benchmark};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 #[library_benchmark]

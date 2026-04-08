@@ -40,10 +40,8 @@ benchmark file run a specific benchmark function with Cachegrind:
 # extern crate gungraun;
 # pub mod my_lib { pub fn bubble_sort(input: Vec<i32>) -> Vec<i32> { input } }
 
-use gungraun::{
-    main, library_benchmark_group, library_benchmark, LibraryBenchmarkConfig,
-    client_requests, ValgrindTool
-};
+use gungraun::prelude::*;
+use gungraun::ValgrindTool;
 use std::hint::black_box;
 
 #[library_benchmark(
@@ -71,10 +69,8 @@ to start and stop the instrumentation:
 # extern crate gungraun;
 # pub mod my_lib { pub fn bubble_sort(input: Vec<i32>) -> Vec<i32> { input } }
 
-use gungraun::{
-    main, library_benchmark_group, library_benchmark, LibraryBenchmarkConfig,
-    ValgrindTool, client_requests, Cachegrind
-};
+use gungraun::prelude::*;
+use gungraun::{client_requests, ValgrindTool, Cachegrind};
 use std::hint::black_box;
 
 #[library_benchmark(

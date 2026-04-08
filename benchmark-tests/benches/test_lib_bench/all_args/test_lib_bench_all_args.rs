@@ -1,9 +1,7 @@
 use std::hint::black_box;
 
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, Callgrind, EntryPoint,
-    LibraryBenchmarkConfig, OutputFormat,
-};
+use gungraun::prelude::*;
+use gungraun::{Callgrind, EntryPoint, OutputFormat};
 
 #[cfg(any(target_vendor = "apple", target_os = "freebsd"))]
 pub fn get_data_collections_options_yes() -> LibraryBenchmarkConfig {

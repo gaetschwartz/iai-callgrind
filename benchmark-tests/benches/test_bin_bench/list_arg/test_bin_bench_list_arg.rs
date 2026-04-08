@@ -1,4 +1,4 @@
-use gungraun::{binary_benchmark, binary_benchmark_group, main};
+use gungraun::prelude::*;
 
 #[binary_benchmark]
 fn echo_bench() -> gungraun::Command {

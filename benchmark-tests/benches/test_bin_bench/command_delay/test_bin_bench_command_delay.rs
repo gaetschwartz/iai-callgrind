@@ -4,10 +4,8 @@ use std::path::PathBuf;
 use std::time::Duration;
 use std::{env, thread};
 
-use gungraun::{
-    binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Command, Delay,
-    DelayKind, Sandbox,
-};
+use gungraun::prelude::*;
+use gungraun::{Delay, DelayKind, Sandbox};
 
 const ECHO: &str = env!("CARGO_BIN_EXE_echo");
 const FILE_EXISTS: &str = env!("CARGO_BIN_EXE_file-exists");

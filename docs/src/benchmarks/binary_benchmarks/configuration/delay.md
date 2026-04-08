@@ -15,9 +15,8 @@ use std::net::{SocketAddr, TcpListener};
 use std::time::Duration;
 use std::thread;
 
-use gungraun::{
-    binary_benchmark, binary_benchmark_group, main, Delay, DelayKind
-};
+use gungraun::prelude::*;
+use gungraun::{Delay, DelayKind};
 
 const ADDRESS: &str = "127.0.0.1:31000";
 

@@ -1,6 +1,6 @@
 use std::hint::black_box;
 
-use gungraun::{library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig};
+use gungraun::prelude::*;
 
 const TMP_ENV_CLEAR: &str = "/tmp/gungraun_test_lib_bench_envs.env-clear";
 

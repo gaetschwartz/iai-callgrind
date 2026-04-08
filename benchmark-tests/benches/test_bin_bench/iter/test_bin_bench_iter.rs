@@ -1,7 +1,5 @@
-use gungraun::{
-    binary_benchmark, binary_benchmark_attribute, binary_benchmark_group, main, Bench,
-    BinaryBenchmark, BinaryBenchmarkConfig, OutputFormat, Sandbox,
-};
+use gungraun::prelude::*;
+use gungraun::{binary_benchmark_attribute, Bench, BinaryBenchmark, OutputFormat, Sandbox};
 
 const ECHO: &str = env!("CARGO_BIN_EXE_echo");
 const FILE_EXISTS: &str = env!("CARGO_BIN_EXE_file-exists");
