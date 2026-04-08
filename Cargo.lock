@@ -778,7 +778,7 @@ dependencies = [
 
 [[package]]
 name = "gungraun-macros"
-version = "0.7.2"
+version = "0.8.0"
 dependencies = [
  "derive_more",
  "pretty_assertions",
