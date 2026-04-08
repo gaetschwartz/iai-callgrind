@@ -401,6 +401,16 @@
 #![doc(test(attr(warn(unused))))]
 #![doc(test(attr(allow(unused_extern_crates))))]
 
+/// Import the basic macros and configuration structs with `use gungraun::prelude::*`
+#[cfg(feature = "default")]
+pub mod prelude {
+    #[doc(no_inline)]
+    pub use crate::{
+        binary_benchmark, binary_benchmark_group, library_benchmark, library_benchmark_group, main,
+        BinaryBenchmarkConfig, Command, LibraryBenchmarkConfig,
+    };
+}
+
 #[cfg(feature = "default")]
 #[doc(hidden)]
 pub mod __internal;
