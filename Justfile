@@ -406,7 +406,7 @@ bump config part:
     fi
     # We also need the changed version in Cargo.lock. Building gungraun
     # should be enough to also update the runner
-    just gungraun --all-features --lib
+    just build gungraun --all-features --lib
 
 # Generate the base for the expected files of a system test (Uses: bash, coreutils)
 [group('util')]
