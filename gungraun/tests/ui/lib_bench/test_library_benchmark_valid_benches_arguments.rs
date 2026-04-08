@@ -1,4 +1,4 @@
-use gungraun::library_benchmark;
+use gungraun::prelude::*;
 
 fn some_setup(my: u8) -> u64 {
     my as u64 + 1

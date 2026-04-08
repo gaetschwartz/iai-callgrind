@@ -25,7 +25,8 @@ cycles, you can easily switch cache simulation off for example with:
 
 ```rust
 # extern crate gungraun;
-use gungraun::{LibraryBenchmarkConfig, Callgrind};
+use gungraun::prelude::*;
+use gungraun::Callgrind;
 
 LibraryBenchmarkConfig::default().tool(Callgrind::with_args(["--cache-sim=no"]));
 ```
@@ -35,10 +36,8 @@ To switch off cache simulation for all benchmarks in the same file:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn fibonacci(a: u64) -> u64 { a } }
-use gungraun::{
-    main, library_benchmark_group, library_benchmark, LibraryBenchmarkConfig,
-    Callgrind
-};
+use gungraun::prelude::*;
+use gungraun::Callgrind;
 use std::hint::black_box;
 
 #[library_benchmark]

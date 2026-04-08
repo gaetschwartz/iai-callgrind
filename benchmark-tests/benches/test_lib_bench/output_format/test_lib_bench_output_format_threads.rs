@@ -1,9 +1,7 @@
 use std::hint::black_box;
 
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, Callgrind, Dhat, EntryPoint,
-    LibraryBenchmarkConfig, OutputFormat,
-};
+use gungraun::prelude::*;
+use gungraun::{Callgrind, Dhat, EntryPoint, OutputFormat};
 
 #[library_benchmark(
     config = LibraryBenchmarkConfig::default()

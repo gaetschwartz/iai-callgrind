@@ -4,7 +4,7 @@ We're reusing our example from the [Quickstart](./quickstart.md) section.
 
 ```rust
 # extern crate gungraun;
-use gungraun::{main, library_benchmark_group, library_benchmark};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 fn fibonacci(n: u64) -> u64 {
@@ -61,7 +61,7 @@ code being attributed to the benchmarked function.
 
 ```rust
 # extern crate gungraun;
-use gungraun::{main, library_benchmark_group, library_benchmark};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 fn some_setup_func(value: u64) -> u64 {

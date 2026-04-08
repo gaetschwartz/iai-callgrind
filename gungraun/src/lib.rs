@@ -62,7 +62,7 @@
 //! ```rust
 //! use std::hint::black_box;
 //!
-//! use gungraun::{library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig};
+//! use gungraun::prelude::*;
 //!
 //! // Our function we want to test. Just assume this is a public function in your
 //! // library.
@@ -180,7 +180,7 @@
 //! and at `bench` level:
 //!
 //! ```rust
-//! # use gungraun::{LibraryBenchmarkConfig, library_benchmark};
+//! # use gungraun::prelude::*;
 //! #[library_benchmark]
 //! #[bench::some_id(args = (1, 2), config = LibraryBenchmarkConfig::default())]
 //! // ...
@@ -226,7 +226,7 @@
 //! use std::ffi::OsString;
 //! use std::path::PathBuf;
 //!
-//! use gungraun::{binary_benchmark, binary_benchmark_group, main};
+//! use gungraun::prelude::*;
 //!
 //! // In binary benchmarks there's no need to return a value from the setup function
 //! fn my_setup() {
@@ -334,8 +334,8 @@
 //! [`BinaryBenchmarkConfig::tool`]. For example to run `DHAT` for all library benchmarks:
 //!
 //! ```rust
-//! # use gungraun::{library_benchmark, library_benchmark_group};
-//! use gungraun::{main, Dhat, LibraryBenchmarkConfig};
+//! use gungraun::prelude::*;
+//! use gungraun::{main, Dhat};
 //! # #[library_benchmark]
 //! # fn some_func() {}
 //! # library_benchmark_group!(name = some_group, benchmarks = some_func);
@@ -351,8 +351,8 @@
 //! can change the default tool wherever a configuration can be specified. Here in `main!`:
 //!
 //! ```rust
-//! # use gungraun::{library_benchmark, library_benchmark_group};
-//! use gungraun::{main, LibraryBenchmarkConfig, ValgrindTool};
+//! use gungraun::prelude::*;
+//! use gungraun::{main, ValgrindTool};
 //! # #[library_benchmark]
 //! # fn some_func() {}
 //! # library_benchmark_group!(name = some_group, benchmarks = some_func);

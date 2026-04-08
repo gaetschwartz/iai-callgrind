@@ -38,10 +38,8 @@ need for `--tools=dhat`:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn bubble_sort(_: Vec<i32>) -> Vec<i32> { vec![] } }
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig,
-    ValgrindTool, Dhat
-};
+use gungraun::prelude::*;
+use gungraun::{Dhat, ValgrindTool};
 use std::hint::black_box;
 
 #[library_benchmark]

@@ -4,9 +4,8 @@ mod my_lib {
 use std::hint::black_box;
 
 use benchmark_tests::setup_worst_case_array;
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, Dhat, EntryPoint, LibraryBenchmarkConfig,
-};
+use gungraun::prelude::*;
+use gungraun::{Dhat, EntryPoint};
 
 #[library_benchmark]
 #[bench::worst_case_3(setup_worst_case_array(3))]

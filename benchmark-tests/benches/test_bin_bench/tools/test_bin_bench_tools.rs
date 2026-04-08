@@ -1,7 +1,5 @@
-use gungraun::{
-    binary_benchmark, binary_benchmark_group, main, Bbv, BinaryBenchmarkConfig, Command, Dhat, Drd,
-    Helgrind, Massif, Memcheck, OutputFormat,
-};
+use gungraun::prelude::*;
+use gungraun::{Bbv, Dhat, Drd, Helgrind, Massif, Memcheck, OutputFormat};
 
 #[binary_benchmark]
 #[bench::trace_children()]

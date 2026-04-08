@@ -9,7 +9,7 @@ high-level API with the `#[binary_benchmark]` attribute:
 ```rust
 # extern crate gungraun;
 # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-use gungraun::{binary_benchmark, binary_benchmark_group, main};
+use gungraun::prelude::*;
 
 #[binary_benchmark]
 #[bench::some_id("foo.txt")]
@@ -76,7 +76,8 @@ written with the low-level API:
 ```rust
 # extern crate gungraun;
 # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-use gungraun::{BinaryBenchmark, Bench, binary_benchmark_group, main};
+use gungraun::prelude::*;
+use gungraun::{BinaryBenchmark, Bench};
 
 binary_benchmark_group!(
     name = my_group,

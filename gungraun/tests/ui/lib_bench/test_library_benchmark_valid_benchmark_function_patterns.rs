@@ -1,4 +1,4 @@
-use gungraun::library_benchmark;
+use gungraun::prelude::*;
 
 mod test_when_reference {
     use super::*;

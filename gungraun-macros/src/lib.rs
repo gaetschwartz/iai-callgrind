@@ -495,6 +495,7 @@ pub fn library_benchmark(args: TokenStream, input: TokenStream) -> TokenStream {
 /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
 /// # use gungraun_macros::binary_benchmark;
 /// # pub mod gungraun {
+/// # pub mod prelude {}
 /// # use std::path::PathBuf;
 /// # #[derive(Clone)]
 /// # pub struct Command {}
@@ -538,7 +539,9 @@ pub fn library_benchmark(args: TokenStream, input: TokenStream) -> TokenStream {
 /// #    { fn from(_value: &mut BinaryBenchmarkConfig) -> Self { InternalBinaryBenchmarkConfig {}} }
 /// # }
 /// # }
-/// use gungraun::{BinaryBenchmarkConfig, Sandbox};
+/// # use gungraun::BinaryBenchmarkConfig;
+/// use gungraun::prelude::*;
+/// use gungraun::Sandbox;
 /// use std::path::PathBuf;
 ///
 /// // In binary benchmarks there's no need to return a value from the setup function

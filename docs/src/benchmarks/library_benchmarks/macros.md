@@ -32,7 +32,7 @@ attributes.
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn bubble_sort(value: Vec<i32>) -> Vec<i32> { value } }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 #[library_benchmark]
@@ -59,10 +59,8 @@ The following parameters are accepted:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn bubble_sort(value: Vec<i32>) -> Vec<i32> { value } }
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig,
-    OutputFormat
-};
+use gungraun::prelude::*;
+use gungraun::OutputFormat;
 use std::hint::black_box;
 
 #[library_benchmark(
@@ -111,7 +109,7 @@ arguments as a list of values. So, instead of
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn bubble_sort(value: Vec<i32>) -> Vec<i32> { value } }
-use gungraun::{library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 // This function is used to create a worst case array we want to sort with our implementation of
@@ -151,7 +149,7 @@ array of arguments.
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn bubble_sort(value: Vec<i32>) -> Vec<i32> { value } }
-use gungraun::{library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 pub fn worst_case(start: i32) -> Vec<i32> {
@@ -186,15 +184,15 @@ the lower amount of elements is repeated:
 #       Vec::with_capacity(SIZE)
 #   }
 # }
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 #[library_benchmark]
 // This creates three benchmarks with args "foo" repeated and the three consts
-#[benches::small(args = ["foo"], consts = (10, 50, 100))]
+#[benches::small(args = ["foo"], consts = [10, 50, 100])]
 // This creates two benchmarks with args "foo" and "baz" and the consts `10000`
 // repeated
-#[benches::big(args = ["bar", "baz"], consts = (10000))]
+#[benches::big(args = ["bar", "baz"], consts = [10000])]
 fn bench_buffer<const SIZE: usize, T>(arg_t: T) -> Vec<Vec<u8>>
 where T: std::fmt::Display {
     black_box(my_lib::create_buffer::<SIZE, T>(black_box(arg_t)))

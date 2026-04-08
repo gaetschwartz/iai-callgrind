@@ -17,10 +17,8 @@ and/or subprocesses you can switch on `OutputFormat::show_intermediate`:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn find_primes_multi_thread(_: u64) -> Vec<u64> { vec![]} }
-use gungraun::{
-    main, library_benchmark_group, library_benchmark, LibraryBenchmarkConfig,
-    OutputFormat
-};
+use gungraun::prelude::*;
+use gungraun::OutputFormat;
 use std::hint::black_box;
 
 #[library_benchmark]
@@ -66,10 +64,8 @@ in a benchmark file `benches/lib_bench_threads.rs`
 
 ```rust
 # extern crate gungraun;
-use gungraun::{
-    main, library_benchmark_group, library_benchmark, LibraryBenchmarkConfig,
-    OutputFormat
-};
+use gungraun::prelude::*;
+use gungraun::OutputFormat;
 use std::hint::black_box;
 
 /// Suppose this is your library
@@ -182,10 +178,8 @@ easiest way and can be done like so:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn find_primes_multi_thread(_: usize) -> Vec<u64> { vec![] }}
-use gungraun::{
-    main, library_benchmark_group, library_benchmark, LibraryBenchmarkConfig,
-    EntryPoint, Callgrind
-};
+use gungraun::prelude::*;
+use gungraun::{Callgrind, EntryPoint};
 use std::hint::black_box;
 
 #[library_benchmark(
@@ -305,10 +299,8 @@ off the `EntryPoint`:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn find_primes_multi_thread(_: usize) -> Vec<u64> { vec![] }}
-use gungraun::{
-    main, library_benchmark_group, library_benchmark, LibraryBenchmarkConfig,
-    EntryPoint, Callgrind
-};
+use gungraun::prelude::*;
+use gungraun::{Callgrind, EntryPoint};
 use std::hint::black_box;
 
 #[library_benchmark(
@@ -465,10 +457,8 @@ use the following:
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn find_primes_multi_thread(_: usize) -> Vec<u64> { vec![] }}
-use gungraun::{
-    main, library_benchmark_group, library_benchmark, LibraryBenchmarkConfig,
-    EntryPoint, Callgrind
-};
+use gungraun::prelude::*;
+use gungraun::{Callgrind, EntryPoint};
 use std::hint::black_box;
 
 #[library_benchmark(
@@ -575,10 +565,8 @@ use std::io;
 use std::path::PathBuf;
 use std::process::ExitStatus;
 
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig,
-    OutputFormat,
-};
+use gungraun::prelude::*;
+use gungraun::OutputFormat;
 
 /// Suppose this is your library
 pub mod my_lib {
@@ -671,10 +659,8 @@ benchmark will just work:
 # use std::io;
 # use std::path::PathBuf;
 # use std::process::ExitStatus;
-# use gungraun::{
-#    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig,
-#    OutputFormat, Callgrind
-# };
+# use gungraun::prelude::*;
+# use gungraun::{OutputFormat, Callgrind};
 #[library_benchmark(
     config = LibraryBenchmarkConfig::default()
         .tool(Callgrind::with_args(["--toggle-collect=cat::main"]))
@@ -765,10 +751,8 @@ without the toggle:
 # use std::io;
 # use std::path::PathBuf;
 # use std::process::ExitStatus;
-# use gungraun::{
-#    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig,
-#    OutputFormat,
-# };
+# use gungraun::prelude::*;
+# use gungraun::OutputFormat;
 #[library_benchmark]
 #[bench::some(setup = create_file)]
 fn bench_subprocess(path: PathBuf) -> io::Result<ExitStatus> {

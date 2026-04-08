@@ -22,7 +22,8 @@ with
 
 ```rust
 # extern crate gungraun;
-use gungraun::{BinaryBenchmarkConfig, Callgrind};
+use gungraun::prelude::*;
+use gungraun::Callgrind;
 
 BinaryBenchmarkConfig::default().tool(Callgrind::with_args(["--cache-sim=no"]));
 ```
@@ -32,10 +33,8 @@ To switch off cache simulation for all benchmarks in the same file:
 ```rust
 # extern crate gungraun;
 # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-use gungraun::{
-    binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig,
-    Callgrind
-};
+use gungraun::prelude::*;
+use gungraun::Callgrind;
 
 #[binary_benchmark]
 fn bench_binary() -> gungraun::Command {

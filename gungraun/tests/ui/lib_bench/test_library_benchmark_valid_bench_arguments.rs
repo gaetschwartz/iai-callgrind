@@ -1,4 +1,4 @@
-use gungraun::{library_benchmark, LibraryBenchmarkConfig};
+use gungraun::prelude::*;
 
 #[library_benchmark]
 #[bench::id1(42)]

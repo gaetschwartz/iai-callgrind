@@ -21,7 +21,7 @@ Then copy the following content into this file:
 
 ```rust
 # extern crate gungraun;
-use gungraun::{main, library_benchmark_group, library_benchmark};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 fn fibonacci(n: u64) -> u64 {

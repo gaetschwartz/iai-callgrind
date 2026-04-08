@@ -7,7 +7,7 @@ mod my_lib {
 use std::hint::black_box;
 use std::path::PathBuf;
 
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 
 fn read_dir() -> Vec<PathBuf> {
     std::fs::read_dir("benches/fixtures")

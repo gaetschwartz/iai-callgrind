@@ -2,10 +2,10 @@ use std::collections::HashMap;
 use std::hint::black_box;
 
 use benchmark_tests::{bubble_sort, setup_worst_case_array};
+use gungraun::prelude::*;
 use gungraun::{
-    library_benchmark, library_benchmark_group, main, Cachegrind, CachegrindMetric,
-    CachegrindMetrics, Callgrind, CallgrindMetrics, Dhat, DhatMetric, Drd, ErrorMetric, EventKind,
-    Helgrind, LibraryBenchmarkConfig, Memcheck, OutputFormat, ValgrindTool,
+    Cachegrind, CachegrindMetric, CachegrindMetrics, Callgrind, CallgrindMetrics, Dhat, DhatMetric,
+    Drd, ErrorMetric, EventKind, Helgrind, Memcheck, OutputFormat, ValgrindTool,
 };
 
 fn make_hashmap(num: usize) -> HashMap<String, usize> {

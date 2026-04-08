@@ -1,11 +1,11 @@
 mod test_when_empty {
-    use gungraun::library_benchmark_group;
+    use gungraun::prelude::*;
 
     library_benchmark_group!();
 }
 
 mod test_when_no_name {
-    use gungraun::{library_benchmark, library_benchmark_group};
+    use gungraun::prelude::*;
 
     #[library_benchmark]
     fn some_func() {}
@@ -37,7 +37,7 @@ mod test_when_no_name {
 }
 
 mod test_when_same_name {
-    use gungraun::{library_benchmark, library_benchmark_group};
+    use gungraun::prelude::*;
 
     #[library_benchmark]
     fn some_func() {}
@@ -47,13 +47,13 @@ mod test_when_same_name {
 }
 
 mod test_when_no_benchmark_argument {
-    use gungraun::library_benchmark_group;
+    use gungraun::prelude::*;
 
     library_benchmark_group!(name = some_name);
 }
 
 mod test_when_no_benchmarks {
-    use gungraun::library_benchmark_group;
+    use gungraun::prelude::*;
 
     // comma syntax
     library_benchmark_group!(
@@ -87,13 +87,13 @@ mod test_when_no_benchmarks {
 }
 
 mod test_when_unknown_token {
-    use gungraun::library_benchmark_group;
+    use gungraun::prelude::*;
 
     library_benchmark_group!(something);
 }
 
 mod test_when_max_parallel {
-    use gungraun::{library_benchmark, library_benchmark_group};
+    use gungraun::prelude::*;
 
     #[library_benchmark]
     fn some_func() {}

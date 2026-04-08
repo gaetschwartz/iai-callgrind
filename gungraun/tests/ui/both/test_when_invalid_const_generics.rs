@@ -1,4 +1,4 @@
-use gungraun::{binary_benchmark, library_benchmark, Command};
+use gungraun::prelude::*;
 
 mod test_consts_when_invalid_type {
     use super::*;

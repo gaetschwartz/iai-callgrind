@@ -871,7 +871,8 @@ pub enum EventKind {
 /// # Examples
 ///
 /// ```rust,ignore
-/// use gungraun::{main, BinaryBenchmarkConfig, ExitWith};
+/// use gungraun::prelude::*;
+/// use gungraun::ExitWith;
 ///
 /// # fn main() {
 /// main!(

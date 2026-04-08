@@ -1,4 +1,4 @@
-use gungraun::library_benchmark;
+use gungraun::prelude::*;
 
 fn setup_no_args() -> u64 {
     42

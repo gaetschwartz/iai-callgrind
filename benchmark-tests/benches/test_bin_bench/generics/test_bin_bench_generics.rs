@@ -1,6 +1,6 @@
 use std::ffi::OsString;
 
-use gungraun::{binary_benchmark, binary_benchmark_group, main, Command};
+use gungraun::prelude::*;
 
 pub const ECHO: &str = env!("CARGO_BIN_EXE_echo");
 

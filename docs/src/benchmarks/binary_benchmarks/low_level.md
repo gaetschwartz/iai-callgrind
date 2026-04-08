@@ -10,10 +10,8 @@ The entry point of the low-level API is the `binary_benchmark_group`
 ```rust
 # extern crate gungraun;
 # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-use gungraun::{
-     binary_benchmark, binary_benchmark_attribute, binary_benchmark_group, main,
-     BinaryBenchmark, Bench
-};
+use gungraun::prelude::*;
+use gungraun::{binary_benchmark_attribute, BinaryBenchmark, Bench};
 
 binary_benchmark_group!(
     name = my_group,
@@ -67,10 +65,8 @@ other way around is much more involved.
 ```rust
 # extern crate gungraun;
 # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-use gungraun::{
-     binary_benchmark, binary_benchmark_attribute, binary_benchmark_group, main,
-     BinaryBenchmark, Bench
-};
+use gungraun::prelude::*;
+use gungraun::{binary_benchmark_attribute, BinaryBenchmark, Bench};
 
 #[binary_benchmark]
 #[bench::some_id("foo")]

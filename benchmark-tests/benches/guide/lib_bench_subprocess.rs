@@ -3,9 +3,8 @@ use std::io;
 use std::path::PathBuf;
 use std::process::ExitStatus;
 
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig, OutputFormat,
-};
+use gungraun::prelude::*;
+use gungraun::OutputFormat;
 
 /// Suppose this is your library
 pub mod my_lib {

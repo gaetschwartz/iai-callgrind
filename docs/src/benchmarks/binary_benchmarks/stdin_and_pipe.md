@@ -19,7 +19,8 @@ or `Stderr` as `Stdin` for the `Command`.
 ```rust
 # extern crate gungraun;
 # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-use gungraun::{binary_benchmark, binary_benchmark_group, main, Stdin, Pipe};
+use gungraun::prelude::*;
+use gungraun::{Stdin, Pipe};
 
 fn setup_pipe() {
     println!(

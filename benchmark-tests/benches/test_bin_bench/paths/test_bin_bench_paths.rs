@@ -1,10 +1,8 @@
 use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 
-use gungraun::{
-    binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Callgrind, Command,
-    OutputFormat, Sandbox,
-};
+use gungraun::prelude::*;
+use gungraun::{Callgrind, OutputFormat, Sandbox};
 
 fn create_script(path: &str) {
     let script = r#"#!/usr/bin/env sh

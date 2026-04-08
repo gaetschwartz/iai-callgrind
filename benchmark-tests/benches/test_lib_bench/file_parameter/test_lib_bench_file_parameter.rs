@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 
 fn consume_line(path: &PathBuf) -> String {
     let mut file = File::open(path).expect("Opening the file for reading should succeed");

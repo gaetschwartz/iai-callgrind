@@ -2,10 +2,8 @@ use std::hint::black_box;
 use std::process::{Command, ExitStatus};
 
 use benchmark_tests::{find_primes, find_primes_multi_thread_with_instrumentation};
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, Callgrind, EntryPoint,
-    LibraryBenchmarkConfig, OutputFormat,
-};
+use gungraun::prelude::*;
+use gungraun::{Callgrind, EntryPoint, OutputFormat};
 
 #[library_benchmark]
 #[bench::dump_every_bb(

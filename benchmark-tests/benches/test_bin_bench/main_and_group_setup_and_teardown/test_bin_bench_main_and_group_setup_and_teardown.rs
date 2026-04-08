@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::Write;
 
-use gungraun::{binary_benchmark, binary_benchmark_group, main};
+use gungraun::prelude::*;
 
 const GROUP_SETUP_FILE: &str = "/tmp/gungraun.group_setup.tmp";
 const READ_FILE: &str = env!("CARGO_BIN_EXE_read-file");

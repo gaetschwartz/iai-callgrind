@@ -54,7 +54,7 @@ For example, given the following structure:
 
 ```rust
 # extern crate gungraun;
-use gungraun::{library_benchmark, library_benchmark_group};
+use gungraun::prelude::*;
 
 #[library_benchmark]
 fn bench_a() { /* ... */ }
@@ -108,7 +108,7 @@ isolation guarantees:
 
 ```rust
 # extern crate gungraun;
-use gungraun::{library_benchmark};
+use gungraun::prelude::*;
 // This is SAFE with --parallel - each benchmark gets its own process
 static mut COUNTER: usize = 0;
 
@@ -205,7 +205,7 @@ themselves cause conflicts:
 ```rust
 # extern crate gungraun;
 use std::path::PathBuf;
-use gungraun::{library_benchmark, library_benchmark_group};
+use gungraun::prelude::*;
 
 const DIR: &str = "/tmp/benchmark_temp";
 
@@ -281,7 +281,7 @@ You can get **highly variable, non-reproducible metrics**.
 ```rust
 # extern crate gungraun;
 # fn compute_intensively() {}
-use gungraun::{library_benchmark};
+use gungraun::prelude::*;
 use std::thread;
 // Benchmark spawns 8 threads internally
 #[library_benchmark]
@@ -371,7 +371,7 @@ The `max_parallel` parameter in `library_benchmark_group!` and
 
 ```rust
 # extern crate gungraun;
-# use gungraun::{library_benchmark, library_benchmark_group};
+# use gungraun::prelude::*;
 # #[library_benchmark] fn bench_a() {}
 # #[library_benchmark] fn bench_b() {}
 # #[library_benchmark] fn bench_c() {}
@@ -429,7 +429,7 @@ library_benchmark_group!(
 # #[library_benchmark] fn fast_bench_2() {}
 # #[library_benchmark] fn threaded_bench() {}
 # #[library_benchmark] fn io_bound_bench() {}
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 // These can run in parallel with each other
 library_benchmark_group!(
     name = fast_benches,
@@ -480,12 +480,11 @@ which [limits parallelism](#limiting-parallelism-per-group):
 
 ```rust
 # extern crate gungraun;
-# use gungraun::{library_benchmark};
 # #[library_benchmark] fn bench_a() {}
 # #[library_benchmark] fn bench_b() {}
 # #[library_benchmark] fn bench_c() {}
 # #[library_benchmark] fn problematic_bench() {}
-use gungraun::{library_benchmark_group};
+use gungraun::prelude::*;
 // These can run in parallel
 library_benchmark_group!(
     name = parallel_safe,

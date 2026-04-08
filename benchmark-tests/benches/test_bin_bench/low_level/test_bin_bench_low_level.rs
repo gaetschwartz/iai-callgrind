@@ -1,9 +1,7 @@
 use std::path::PathBuf;
 
-use gungraun::{
-    binary_benchmark, binary_benchmark_attribute, binary_benchmark_group, main, Bench,
-    BinaryBenchmark, BinaryBenchmarkConfig, Command, OutputFormat, Sandbox, Stdio,
-};
+use gungraun::prelude::*;
+use gungraun::{binary_benchmark_attribute, Bench, BinaryBenchmark, OutputFormat, Sandbox, Stdio};
 
 const ECHO: &str = env!("CARGO_BIN_EXE_echo");
 const ENV: &str = env!("CARGO_BIN_EXE_env");

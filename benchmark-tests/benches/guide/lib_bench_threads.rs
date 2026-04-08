@@ -1,9 +1,7 @@
 use std::hint::black_box;
 
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, Callgrind, EntryPoint,
-    LibraryBenchmarkConfig, OutputFormat,
-};
+use gungraun::prelude::*;
+use gungraun::{Callgrind, EntryPoint, OutputFormat};
 
 /// Suppose this is your library
 pub mod my_lib {

@@ -16,8 +16,7 @@ The different levels where a `LibraryBenchmarkConfig` can be specified.
 
 ```rust
 # extern crate gungraun;
-# use gungraun::{library_benchmark, library_benchmark_group};
-use gungraun::{main, LibraryBenchmarkConfig};
+use gungraun::prelude::*;
 
 # #[library_benchmark] fn bench() {}
 # library_benchmark_group!(name = my_group, benchmarks = bench);
@@ -33,8 +32,7 @@ main!(
 
 ```rust
 # extern crate gungraun;
-# use gungraun::library_benchmark;
-use gungraun::{main, LibraryBenchmarkConfig, library_benchmark_group};
+use gungraun::prelude::*;
 
 # #[library_benchmark] fn bench() {}
 library_benchmark_group!(
@@ -53,9 +51,7 @@ main!(library_benchmark_groups = my_group);
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn bubble_sort(_: Vec<i32>) -> Vec<i32> { vec![] } }
-use gungraun::{
-    main, LibraryBenchmarkConfig, library_benchmark_group, library_benchmark
-};
+use gungraun::prelude::*;
 
 #[library_benchmark(config = LibraryBenchmarkConfig::default())]
 fn bench() {
@@ -78,9 +74,7 @@ main!(library_benchmark_groups = my_group);
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn bubble_sort(_: Vec<i32>) -> Vec<i32> { vec![] } }
-use gungraun::{
-    main, LibraryBenchmarkConfig, library_benchmark_group, library_benchmark
-};
+use gungraun::prelude::*;
 
 #[library_benchmark]
 #[bench::some_id(args = (1, 2), config = LibraryBenchmarkConfig::default())]

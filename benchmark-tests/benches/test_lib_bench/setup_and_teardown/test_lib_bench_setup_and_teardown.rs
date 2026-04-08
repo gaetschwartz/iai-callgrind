@@ -1,6 +1,6 @@
 use std::hint::black_box;
 
-use gungraun::{library_benchmark, library_benchmark_group, main};
+use gungraun::prelude::*;
 
 fn setup_two_arguments(first: u64, second: u64) -> u64 {
     first + second

@@ -1,7 +1,5 @@
-use gungraun::{
-    self, binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Dhat, Pipe,
-    Sandbox, Stdin, Stdio,
-};
+use gungraun::prelude::*;
+use gungraun::{self, Dhat, Pipe, Sandbox, Stdin, Stdio};
 
 const ECHO: &str = env!("CARGO_BIN_EXE_echo");
 const PIPE: &str = env!("CARGO_BIN_EXE_pipe");

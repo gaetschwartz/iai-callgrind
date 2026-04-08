@@ -35,8 +35,8 @@ same file in the `main!` macro:
 
 ```rust
 # extern crate gungraun;
-# use gungraun::{library_benchmark, library_benchmark_group};
-use gungraun::{main, LibraryBenchmarkConfig, CallgrindMetrics, Callgrind};
+use gungraun::prelude::*;
+use gungraun::{CallgrindMetrics, Callgrind};
 
 # #[library_benchmark] fn bench() {}
 # library_benchmark_group!(name = my_group, benchmarks = bench);
@@ -103,9 +103,8 @@ to tolerate a specific margin in the benchmark output:
 use std::collections::HashMap;
 use std::hint::black_box;
 
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig, OutputFormat,
-};
+use gungraun::prelude::*;
+use gungraun::{LibraryBenchmarkConfig, OutputFormat};
 
 fn make_hashmap(num: usize) -> HashMap<String, usize> {
     (0..num).fold(HashMap::new(), |mut acc, e| {

@@ -1,7 +1,8 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
-use gungraun::{binary_benchmark, binary_benchmark_group, main, Command, Delay, DelayKind, Stdio};
+use gungraun::prelude::*;
+use gungraun::{Delay, DelayKind, Stdio};
 
 const SUFFIX: &str = "test-file";
 const PREFIX: &str = module_path!();

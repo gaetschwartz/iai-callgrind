@@ -1,6 +1,5 @@
-use gungraun::{
-    binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Callgrind, Command,
-};
+use gungraun::prelude::*;
+use gungraun::Callgrind;
 
 #[binary_benchmark]
 #[bench::parse_output()]

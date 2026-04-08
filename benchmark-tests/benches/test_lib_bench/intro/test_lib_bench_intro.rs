@@ -7,10 +7,8 @@ use std::io::{BufRead, BufReader};
 
 // These two functions from the benchmark-tests library serve as functions we want to benchmark
 use benchmark_tests::{bubble_sort, fibonacci};
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, Callgrind, Dhat, EntryPoint, EventKind,
-    LibraryBenchmarkConfig, Massif,
-};
+use gungraun::prelude::*;
+use gungraun::{Callgrind, Dhat, EntryPoint, EventKind, Massif};
 
 // This function is used to create the worst case array we want to sort with our implementation of
 // bubble sort

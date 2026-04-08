@@ -1,7 +1,8 @@
 use std::thread::sleep;
 use std::time::Duration;
 
-use gungraun::{binary_benchmark, binary_benchmark_group, main, Pipe, Stdin};
+use gungraun::prelude::*;
+use gungraun::{Pipe, Stdin};
 
 const PIPE: &str = env!("CARGO_BIN_EXE_pipe");
 

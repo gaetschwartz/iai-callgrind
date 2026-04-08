@@ -8,7 +8,8 @@
 ///
 /// ```rust
 /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-/// use gungraun::{binary_benchmark, binary_benchmark_attribute, binary_benchmark_group};
+/// use gungraun::binary_benchmark_attribute;
+/// use gungraun::prelude::*;
 ///
 /// #[binary_benchmark]
 /// fn bench_binary() -> gungraun::Command {
@@ -89,7 +90,7 @@ macro_rules! binary_benchmark_attribute {
 /// The [`crate::main`] macro has one form to run library benchmarks:
 ///
 /// ```rust
-/// # use gungraun::{main, library_benchmark_group, library_benchmark};
+/// # use gungraun::prelude::*;
 /// # #[library_benchmark]
 /// # fn bench_fibonacci() { }
 /// # library_benchmark_group!(
@@ -120,7 +121,7 @@ macro_rules! binary_benchmark_attribute {
 /// ```rust
 /// use std::hint::black_box;
 ///
-/// use gungraun::{library_benchmark, library_benchmark_group, main};
+/// use gungraun::prelude::*;
 ///
 /// fn fibonacci(n: u64) -> u64 {
 ///     match n {
@@ -148,9 +149,8 @@ macro_rules! binary_benchmark_attribute {
 /// via [`crate::Callgrind::args`], [`crate::Dhat::args`], ...:
 ///
 /// ```rust
-/// # use gungraun::{
-/// #   main, library_benchmark_group, library_benchmark, LibraryBenchmarkConfig, Callgrind
-/// # };
+/// # use gungraun::prelude::*;
+/// # use gungraun::Callgrind;
 /// # #[library_benchmark]
 /// # fn bench_fibonacci() { }
 /// # library_benchmark_group!(
@@ -181,7 +181,7 @@ macro_rules! binary_benchmark_attribute {
 ///
 /// ```rust
 /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-/// use gungraun::{binary_benchmark, binary_benchmark_group, main};
+/// use gungraun::prelude::*;
 ///
 /// #[binary_benchmark]
 /// #[bench::hello_world("hello world")]
@@ -643,9 +643,8 @@ macro_rules! main {
 /// The following top-level arguments are accepted (in this order):
 ///
 /// ```rust
-/// # use gungraun::{
-/// #     binary_benchmark, binary_benchmark_group, BinaryBenchmarkGroup, BinaryBenchmarkConfig,
-/// # };
+/// # use gungraun::prelude::*;
+/// # use gungraun::BinaryBenchmarkGroup;
 /// # fn run_setup() {}
 /// # fn run_teardown() {}
 /// # #[binary_benchmark]
@@ -659,7 +658,7 @@ macro_rules! main {
 ///     max_parallel = 1,
 ///     setup = run_setup(),
 ///     teardown = run_teardown(),
-///     benchmarks =  [ bench_1, bench_2 ]
+///     benchmarks = [bench_1, bench_2]
 /// );
 /// # fn main() {
 /// # my_group::my_group(&mut BinaryBenchmarkGroup::default());
@@ -695,7 +694,8 @@ macro_rules! main {
 ///
 /// ```rust
 /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-/// use gungraun::{binary_benchmark, binary_benchmark_group, BinaryBenchmarkGroup};
+/// use gungraun::prelude::*;
+/// use gungraun::BinaryBenchmarkGroup;
 ///
 /// #[binary_benchmark]
 /// #[bench::hello_world("hello world")]
@@ -740,7 +740,8 @@ macro_rules! main {
 ///
 /// ```rust
 /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-/// use gungraun::{binary_benchmark_group, Bench, BinaryBenchmark};
+/// use gungraun::prelude::*;
+/// use gungraun::{Bench, BinaryBenchmark};
 ///
 /// binary_benchmark_group!(
 ///     // All the other options from the `binary_benchmark_group` are used as usual
@@ -771,7 +772,8 @@ macro_rules! main {
 /// BinaryBenchmarkGroup|` if it resides in a separate function rather than the macro itself as in
 ///
 /// ```rust
-/// use gungraun::{binary_benchmark_group, Bench, BinaryBenchmark, BinaryBenchmarkGroup};
+/// use gungraun::prelude::*;
+/// use gungraun::{Bench, BinaryBenchmark, BinaryBenchmarkGroup};
 ///
 /// fn setup_my_group(group: &mut BinaryBenchmarkGroup) {
 ///     // Enjoy all the features of your IDE ...
@@ -803,10 +805,8 @@ macro_rules! main {
 ///
 /// ```rust
 /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-/// use gungraun::{
-///     binary_benchmark, binary_benchmark_attribute, binary_benchmark_group, Bench,
-///     BinaryBenchmark, BinaryBenchmarkGroup,
-/// };
+/// use gungraun::prelude::*;
+/// use gungraun::{binary_benchmark_attribute, Bench, BinaryBenchmark, BinaryBenchmarkGroup};
 ///
 /// #[binary_benchmark]
 /// #[bench::foo("foo")]
@@ -1346,7 +1346,7 @@ macro_rules! binary_benchmark_group {
 /// annotated with `#[library_benchmark]` ([`crate::library_benchmark`]).
 ///
 /// ```rust
-/// use gungraun::{library_benchmark, library_benchmark_group};
+/// use gungraun::prelude::*;
 ///
 /// #[library_benchmark]
 /// fn bench_something() -> u64 {
@@ -1367,7 +1367,7 @@ macro_rules! binary_benchmark_group {
 /// The following top-level arguments are accepted in this order:
 ///
 /// ```rust
-/// # use gungraun::{library_benchmark, library_benchmark_group, LibraryBenchmarkConfig};
+/// # use gungraun::prelude::*;
 /// # #[library_benchmark]
 /// # fn bench_1() {}
 /// # #[library_benchmark]

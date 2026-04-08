@@ -1,8 +1,7 @@
 use std::path::PathBuf;
 
-use gungraun::{
-    binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, OutputFormat, Sandbox,
-};
+use gungraun::prelude::*;
+use gungraun::{OutputFormat, Sandbox};
 
 const FILE_EXISTS: &str = env!("CARGO_BIN_EXE_file-exists");
 

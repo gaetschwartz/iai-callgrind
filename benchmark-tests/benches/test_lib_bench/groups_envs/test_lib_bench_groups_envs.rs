@@ -3,7 +3,7 @@
 use std::hint::black_box;
 
 use benchmark_tests::print_env;
-use gungraun::{library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig};
+use gungraun::prelude::*;
 
 pub const TEST_VAR_1: &str = "__GUNGRAUN_TEST_VAR_1";
 pub const TEST_VAR_2: &str = "__GUNGRAUN_TEST_VAR_2";

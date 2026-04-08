@@ -85,7 +85,7 @@ expected:
 
 ```rust
 # extern crate gungraun;
-use gungraun::{main, library_benchmark_group, library_benchmark};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 pub mod my_lib {
@@ -128,10 +128,8 @@ the events when entering the benchmark function, not the moment
 
 ```rust
 # extern crate gungraun;
-use gungraun::{
-    main, library_benchmark_group, library_benchmark, LibraryBenchmarkConfig,
-    client_requests, EntryPoint, Callgrind
-};
+use gungraun::prelude::*;
+use gungraun::{client_requests, Callgrind, EntryPoint};
 use std::hint::black_box;
 
 pub mod my_lib {

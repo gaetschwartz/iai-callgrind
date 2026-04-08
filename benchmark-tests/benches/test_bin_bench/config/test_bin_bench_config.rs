@@ -1,6 +1,7 @@
 use std::process::Command;
 
-use gungraun::{binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Dhat};
+use gungraun::prelude::*;
+use gungraun::Dhat;
 
 fn check_args() -> Vec<String> {
     let mut default_args = vec![

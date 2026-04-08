@@ -1,5 +1,5 @@
 mod test_when_library_benchmark_as_group {
-    use gungraun::{library_benchmark, main};
+    use gungraun::prelude::*;
     #[library_benchmark]
     fn some_func() {}
 
@@ -7,7 +7,7 @@ mod test_when_library_benchmark_as_group {
 }
 
 mod test_when_invalid_config {
-    use gungraun::{library_benchmark, library_benchmark_group, main};
+    use gungraun::prelude::*;
     #[library_benchmark]
     fn some_func() {}
 

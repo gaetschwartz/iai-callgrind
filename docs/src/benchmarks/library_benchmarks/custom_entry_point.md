@@ -28,7 +28,7 @@ simplified, but conveying the basic idea, here is a commented example:
 
 # extern crate gungraun;
 # mod my_lib { pub fn bubble_sort(_: Vec<i32>) -> Vec<i32> { vec![] } }
-use gungraun::{main,library_benchmark_group, library_benchmark};
+use gungraun::prelude::*;
 use std::hint::black_box;
 
 #[library_benchmark]
@@ -62,10 +62,8 @@ works only reliably for functions which are not inlined by the compiler.
 
 ```rust
 # extern crate gungraun;
-use gungraun::{
-    main, library_benchmark_group, library_benchmark, LibraryBenchmarkConfig,
-    EntryPoint, Callgrind
-};
+use gungraun::prelude::*;
+use gungraun::{EntryPoint, Callgrind};
 use std::hint::black_box;
 
 mod my_lib {

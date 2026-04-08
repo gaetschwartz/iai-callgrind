@@ -52,9 +52,8 @@ necessary to set the entry point to the setup function (in this case, the
 # mod my_lib { pub fn bubble_sort(_: Vec<i32>) -> Vec<i32> { vec![] } }
 
 use std::hint::black_box;
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, Dhat, EntryPoint, LibraryBenchmarkConfig,
-};
+use gungraun::prelude::*;
+use gungraun::{Dhat, EntryPoint};
 
 pub fn setup_worst_case_array(start: i32) -> Vec<i32> {
     if start.is_negative() {
@@ -138,10 +137,8 @@ worse than that.
 ```rust
 # extern crate gungraun;
 # mod my_lib { pub fn bubble_sort(_: Vec<i32>) -> Vec<i32> { vec![] } }
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig,
-    Dhat, DhatMetric
-};
+use gungraun::prelude::*;
+use gungraun::{Dhat, DhatMetric};
 use std::hint::black_box;
 
 #[library_benchmark]
@@ -194,10 +191,8 @@ to understand the basic idea.
 # extern crate gungraun;
 # mod benchmark_tests { pub fn find_primes_multi_thread (_: u64) -> Vec<u64> { vec![] } }
 use std::hint::black_box;
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig,
-    ValgrindTool,
-};
+use gungraun::prelude::*;
+use gungraun::ValgrindTool;
 
 #[library_benchmark(
     config = LibraryBenchmarkConfig::default()
@@ -321,10 +316,8 @@ doesn't have to be specified) and additionally all threads which execute the
 # extern crate gungraun;
 # mod benchmark_tests { pub fn find_primes_multi_thread (_: u64) -> Vec<u64> { vec![] } }
 use std::hint::black_box;
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig,
-    ValgrindTool, Dhat
-};
+use gungraun::prelude::*;
+use gungraun::{Dhat, ValgrindTool};
 
 #[library_benchmark(
     config = LibraryBenchmarkConfig::default()
@@ -367,10 +360,8 @@ specifying a frame with `Dhat::frames`:
 # extern crate gungraun;
 # mod benchmark_tests { pub fn find_primes_multi_thread (_: u64) -> Vec<u64> { vec![] } }
 use std::hint::black_box;
-use gungraun::{
-    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig,
-    ValgrindTool, Dhat, EntryPoint
-};
+use gungraun::prelude::*;
+use gungraun::{Dhat, EntryPoint, ValgrindTool};
 
 #[library_benchmark(
     config = LibraryBenchmarkConfig::default()
