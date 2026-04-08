@@ -52,6 +52,10 @@ and this project adheres to
 - Documentation page for running Valgrind with a custom runner in the guide.
 - `--parallel` CLI option and environment variable to run benchmarks in
   parallel.
+- `gungraun::prelude` module for convenient importing of commonly used items:
+  `library_benchmark`, `library_benchmark_group`, `binary_benchmark`,
+  `binary_benchmark_group`, `main!`, `LibraryBenchmarkConfig`,
+  `BinaryBenchmarkConfig`, and `Command`.
 
 ### Changed
 
