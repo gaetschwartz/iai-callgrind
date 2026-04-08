@@ -28,56 +28,90 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-04-09
+
 ### Added
 
-- `--valgrind-runner` (env: `GUNGRAUN_VALGRIND_RUNNER`) option to run Valgrind
-  through a container or alternative execution environment.
-- `--valgrind-runner-args` (env: `GUNGRAUN_VALGRIND_RUNNER_ARGS`) to pass
-  additional arguments to the custom runner with support for environment
-  variable interpolation using `${VAR}` syntax.
-- `--valgrind-bin` (env: `GUNGRAUN_VALGRIND_BIN`) to specify the Valgrind
-  executable path.
-- `--valgrind-runner-dest` (env: `GUNGRAUN_VALGRIND_RUNNER_DEST`) to override
-  the destination directory for Valgrind output files.
-- `--valgrind-runner-root` (env: `GUNGRAUN_VALGRIND_RUNNER_ROOT`) to override
-  the workspace root directory path.
-- `--env-clear` (env: `GUNGRAUN_ENV_CLEAR`) CLI argument to control environment
-  variable clearing behavior for benchmarks.
-- `--envs` CLI argument to pass environment variables to benchmarks from the
-  command line (supports both passthrough `--envs=VAR` and explicit
-  `--envs=VAR=value`).
-- Environment variables `GUNGRAUN_VR_DEST_DIR`, `GUNGRAUN_VR_HOME`,
-  `GUNGRAUN_VR_WORKSPACE_ROOT`, `GUNGRAUN_ALLOW_ASLR` for custom valgrind
-  runners.
-- Documentation page for running Valgrind with a custom runner in the guide.
-- `--parallel` CLI option and environment variable to run benchmarks in
-  parallel.
-- `gungraun::prelude` module for convenient importing of commonly used items:
-  `library_benchmark`, `library_benchmark_group`, `binary_benchmark`,
-  `binary_benchmark_group`, `main!`, `LibraryBenchmarkConfig`,
-  `BinaryBenchmarkConfig`, and `Command`.
+- ([#565](https://github.com/gungraun/gungraun/pull/565)): `--parallel` CLI
+  option and environment variable `GUNGRAUN_PARALLEL` to run benchmarks in
+  parallel. `max_parallel` parameter in `library_benchmark_group!` and
+  `binary_benchmark_group!` to be able to limit parallelism by benchmark group.
+- ([#575](https://github.com/gungraun/gungraun/pull/575)): Support `const`
+  generic parameters in benchmark functions
+- ([#583](https://github.com/gungraun/gungraun/pull/583)): Support a custom
+  valgrind runner with command-line arguments:
+    - `--valgrind-runner` (env: `GUNGRAUN_VALGRIND_RUNNER`) option to run
+      Valgrind through a container or alternative execution environment.
+    - `--valgrind-runner-args` (env: `GUNGRAUN_VALGRIND_RUNNER_ARGS`) to pass
+      additional arguments to the custom runner with support for environment
+      variable interpolation using `${VAR}` syntax.
+    - `--valgrind-bin` (env: `GUNGRAUN_VALGRIND_BIN`) to specify a Valgrind
+      executable path.
+    - `--valgrind-runner-dest` (env: `GUNGRAUN_VALGRIND_RUNNER_DEST`) to
+      override the destination directory for Valgrind output files.
+    - `--valgrind-runner-root` (env: `GUNGRAUN_VALGRIND_RUNNER_ROOT`) to
+      override the workspace root directory path.
+    - Expose environment variables `GUNGRAUN_VR_DEST_DIR`, `GUNGRAUN_VR_HOME`,
+      `GUNGRAUN_VR_WORKSPACE_ROOT`, `GUNGRAUN_ALLOW_ASLR` for custom valgrind
+      runners.
+- ([#583](https://github.com/gungraun/gungraun/pull/583)): Customize environment
+  variables on the command-line with:
+    - `--env-clear` (env: `GUNGRAUN_ENV_CLEAR`) CLI argument to control
+      environment variable clearing behavior for benchmarks.
+    - `--envs` CLI argument to pass environment variables to benchmarks from the
+      command line (supports both passthrough `--envs=VAR` and explicit
+      `--envs=VAR=value`).
+- ([#585](https://github.com/gungraun/gungraun/pull/585)): `gungraun::prelude`
+  module for convenient importing of commonly used items: `library_benchmark`,
+  `library_benchmark_group`, `binary_benchmark`, `binary_benchmark_group`,
+  `main!`, `LibraryBenchmarkConfig`, `BinaryBenchmarkConfig`, and `Command`.
 
 ### Changed
 
-- Improved performance of serial benchmark execution:
-    - By using a temporary directory for the new data which most likely is a
-      in-memory file system like tmpfs
+- ([#565](https://github.com/gungraun/gungraun/pull/565)): Improved performance
+  of serial benchmark execution:
     - Execute the benchmark and then process and print the data while already
       executing the next benchmark.
-- Discarded printing of log file with info level.
-- `--bbv-args`, `--cachegrind-args`, `--callgrind-args`, `--dhat-args`,
-  `--drd-args`, `--helgrind-args`, `--massif-args`, `--memcheck-args`,
-  `--valgrind-args` now support specifying valgrind arguments without the `--`
-  flag for convenience. For example: `--callgrind-args='toggle-collect=some::*'`
-  instead of `--callgrind-args='--toggle-collect=some::*'`
+    - By using a temporary directory for the new valgrind data which most likely
+      is an in-memory file system like tmpfs
+- ([#565](https://github.com/gungraun/gungraun/pull/565)): Output format
+  changes: Consts arguments are shown in the DESCRIPTION of the the benchmark
+  output `module::path id:DESCRIPTION` in brackets in addition to the normal
+  benchmark function arguments (`file::group::func id:<A, B>(arg1, arg2)`). To
+  keep the output format consistent, the description now shows arguments always
+  in parentheses even when no consts were given (`a::b::c id:(arg1, arg2)`).
+  Additionally, binary benchmarks without an id now separate the DESCRIPTION
+  from the module path with a `:` as in `a::b::c :DESCRIPTION`.
+- ([#583](https://github.com/gungraun/gungraun/pull/583)): `--bbv-args`,
+  `--cachegrind-args`, `--callgrind-args`, `--dhat-args`, `--drd-args`,
+  `--helgrind-args`, `--massif-args`, `--memcheck-args`, `--valgrind-args` now
+  support specifying valgrind arguments without the `--` flag for convenience.
+  For example: `--callgrind-args='toggle-collect=some::*'` instead of
+  `--callgrind-args='--toggle-collect=some::*'`
+- Update, fix and improve the guide and other documentation in various PRs:
+  Added missing documentation, fixed typos, ...
+- Update dependencies
+
+### Removed
+
+- ([#565](https://github.com/gungraun/gungraun/pull/565)): Discarded printing of
+  log file content with log level: info.
 
 ### Fixed
 
-- `--bbv-args`, `--cachegrind-args`, `--callgrind-args`, `--dhat-args`,
-  `--drd-args`, `--helgrind-args`, `--massif-args`, `--memcheck-args`,
-  `--valgrind-args` are now parsing multiple space separated argument lists
-  correctly and split them according to POSIX shell arguments.
-- Bullet point indentation in Examples section of CLI arguments help output.
+- ([#583](https://github.com/gungraun/gungraun/pull/583)): `--bbv-args`,
+  `--cachegrind-args`, `--callgrind-args`, `--dhat-args`, `--drd-args`,
+  `--helgrind-args`, `--massif-args`, `--memcheck-args`, `--valgrind-args` are
+  now parsing multiple space separated argument lists correctly and split them
+  according to POSIX shell arguments.
+- ([#584](https://github.com/gungraun/gungraun/pull/584)): Various small fixes
+  and improvements to the `--help` output. Changed the ordering of some --flags
+  to group them according to similar functionality. Especially, the short help
+  `-h` is now fixed and shows a quick summary of the long `--help` output
+  instead of the long help itself.
+- ([#584](https://github.com/gungraun/gungraun/pull/584)): Added `--no-capture`
+  and `--no-summary` as aliases for `--nocapture` and `--nosummary`. Ignore
+  `--fail-fast` of the original rust test harness.
 
 ## [0.17.2] - 2026-02-10
 
