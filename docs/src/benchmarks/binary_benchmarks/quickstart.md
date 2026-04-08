@@ -29,10 +29,11 @@ main!(binary_benchmark_groups = my_group);
 # }
 ```
 
-If you want to try out this example with your crate's binary, put the above code
-into a file in `$WORKSPACE_ROOT/benches/binary_benchmark.rs`. Next, replace
-`my-foo` in `env!("CARGO_BIN_EXE_my-foo")` with the name of a binary of your
-crate.
+The `gungraun::prelude` contains the most important macro definitions and
+structs. If you want to try out this example with your crate's binary, put the
+above code into a file in `$WORKSPACE_ROOT/benches/binary_benchmark.rs`. Next,
+replace `my-foo` in `env!("CARGO_BIN_EXE_my-foo")` with the name of a binary of
+your crate.
 
 Note the `env!` macro is a [rust] builtin macro and `CARGO_BIN_EXE_<name>` is
 documented in [rust stdlib][cargo-env].
