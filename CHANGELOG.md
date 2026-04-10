@@ -28,6 +28,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- ([#588](https://github.com/gungraun/gungraun/issues/588)): Fix thread pool
+  causing excessive CPU usage and slowdown when using multiple benchmark groups.
+  Thread pools were not being properly shut down leaving worker threads stuck in
+  hot loops.
+
 ## [0.18.0] - 2026-04-09
 
 ### Added
