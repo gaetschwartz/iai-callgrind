@@ -28,6 +28,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.18.1] - 2026-04-10
+
 ### Fixed
 
 - ([#588](https://github.com/gungraun/gungraun/issues/588)): Fix thread pool
