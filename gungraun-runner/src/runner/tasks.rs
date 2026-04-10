@@ -175,7 +175,7 @@ struct Task {
 /// # Errors
 ///
 /// [`ThreadPool::new`] returns an error if `size` is less than 1.
-pub struct ThreadPool<T> {
+pub struct ThreadPool<T: Send + 'static> {
     force_shutdown: Arc<AtomicBool>,
     graceful_shutdown: Arc<AtomicBool>,
     job_queue: Arc<Injector<Job<T>>>,
@@ -607,7 +607,13 @@ impl<T: Send + 'static> ThreadPool<T> {
     }
 }
 
-impl<T> Iterator for ThreadPool<T> {
+impl<T: Send + 'static> Drop for ThreadPool<T> {
+    fn drop(&mut self) {
+        self.shutdown();
+    }
+}
+
+impl<T: Send + 'static> Iterator for ThreadPool<T> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -739,5 +745,26 @@ mod tests {
 
         let next = thread_pool.next();
         assert!(next.is_some());
+    }
+
+    #[rstest]
+    #[timeout(Duration::from_secs(1))]
+    fn test_thread_pool_shutdown() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        let counter = Arc::new(AtomicUsize::new(0));
+
+        let mut pool: ThreadPool<()> = ThreadPool::new(4).unwrap();
+        for _ in 0..4 {
+            let counter_clone = counter.clone();
+            pool.execute(move |_| {
+                counter_clone.fetch_add(1, Ordering::Relaxed);
+            });
+        }
+
+        pool.shutdown();
+
+        assert_eq!(counter.load(Ordering::Relaxed), 4);
+        assert!(pool.tasks.iter().all(|t| t.thread.is_none()));
     }
 }
