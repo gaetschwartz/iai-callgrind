@@ -162,4 +162,4 @@ main!(binary_benchmark_groups = my_group);
 # }
 ```
 
-[`Sandbox`]: https://docs.rs/gungraun/0.18.0/gungraun/struct.Sandbox.html
+[`Sandbox`]: https://docs.rs/gungraun/0.18.1/gungraun/struct.Sandbox.html
