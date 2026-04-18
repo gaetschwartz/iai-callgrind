@@ -335,7 +335,7 @@ where
         I: AsRef<str>,
         T: IntoIterator<Item = I>,
     {
-        for (this, other) in self.0.values_mut().zip(iter.into_iter()) {
+        for (this, other) in self.0.values_mut().zip(iter) {
             *this += other
                 .as_ref()
                 .parse::<Metric>()
