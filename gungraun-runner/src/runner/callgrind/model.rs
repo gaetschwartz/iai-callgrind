@@ -153,7 +153,7 @@ impl Positions {
         I: AsRef<str>,
         T: IntoIterator<Item = I>,
     {
-        for ((_, old), pos) in self.0.iter_mut().zip(iter.into_iter()) {
+        for ((_, old), pos) in self.0.iter_mut().zip(iter) {
             let pos = pos.as_ref();
             *old = if let Some(hex) = pos.strip_prefix("0x") {
                 u64::from_str_radix(hex, 16).unwrap()

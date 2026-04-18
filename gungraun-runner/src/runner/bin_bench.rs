@@ -441,7 +441,7 @@ impl BinBench {
 impl Command {
     fn new(module_path: &ModulePath, path: PathBuf, args: Vec<OsString>) -> Result<Self> {
         if path.as_os_str().is_empty() {
-            return Err(anyhow!("{module_path}: Empty path in command",));
+            return Err(anyhow!("{module_path}: Empty path in command"));
         }
 
         Ok(Self { args, path })

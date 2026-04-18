@@ -378,7 +378,7 @@ impl Display for Header {
         if let Some(id) = &self.id {
             match &self.description {
                 Some(description) if !description.is_empty() => {
-                    f.write_fmt(format_args!(" {}:{}", id.cyan(), description.bold().blue(),))?;
+                    f.write_fmt(format_args!(" {}:{}", id.cyan(), description.bold().blue()))?;
                 }
                 _ if !id.is_empty() => {
                     f.write_fmt(format_args!(" {}", id.cyan()))?;

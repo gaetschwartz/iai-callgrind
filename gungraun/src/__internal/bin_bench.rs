@@ -155,9 +155,9 @@ impl GroupsBuilder {
             };
             for macro_bin_bench in *macro_bin_benches {
                 let bench = InternalBinaryBenchmarkBench {
-                    id: macro_bin_bench.id_display.map(ToString::to_string),
-                    args: macro_bin_bench.args_display.map(ToString::to_string),
-                    consts_display: macro_bin_bench.consts_display.map(ToString::to_string),
+                    id: macro_bin_bench.id_display.map(str::to_owned),
+                    args: macro_bin_bench.args_display.map(str::to_owned),
+                    consts_display: macro_bin_bench.consts_display.map(str::to_owned),
                     function_name: (*function_name).to_owned(),
                     command: match macro_bin_bench.func {
                         crate::__internal::InternalBinFunctionKind::Iter(func) => {

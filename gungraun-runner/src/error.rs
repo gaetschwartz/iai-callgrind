@@ -165,7 +165,7 @@ impl Display for Error {
                         "Performance has regressed. Fail-fast is set. Aborting ...",
                     )
                 } else {
-                    write!(f, "Performance has regressed.",)
+                    write!(f, "Performance has regressed.")
                 }
             }
             Self::SandboxError(message) => {
@@ -176,7 +176,7 @@ impl Display for Error {
             }
             Self::ConfigurationError(module_path, id, message) => {
                 let header = Header::without_description(module_path, id.clone());
-                write!(f, "Misconfiguration in: {header}\nCaused by:\n  {message}",)
+                write!(f, "Misconfiguration in: {header}\nCaused by:\n  {message}")
             }
             Self::JobError(error, header, captured_output, _) => {
                 header.print();
