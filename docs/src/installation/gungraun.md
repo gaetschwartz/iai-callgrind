@@ -60,34 +60,7 @@ error.
 
 ### In the GitHub CI
 
-Since the `gungraun-runner` version must match the `gungraun` library version,
-it's best to automate this step in CI. A job step in the GitHub Actions CI could
-look like this
-
-```yaml
-- name: Install gungraun-runner
-  run: |
-      version=$(cargo metadata --format-version=1 |\
-        jq '.packages[] | select(.name == "gungraun").version' |\
-        tr -d '"'
-      )
-      cargo install gungraun-runner --version $version
-```
-
-Or, speed up the overall installation time with `binstall` using the
-[taiki-e/install-action][install-action]
-
-```yaml
-- uses: taiki-e/install-action@cargo-binstall
-- name: Install gungraun-runner
-  run: |
-      version=$(cargo metadata --format-version=1 |\
-        jq '.packages[] | select(.name == "gungraun").version' |\
-        tr -d '"'
-      )
-      cargo binstall --no-confirm gungraun-runner --version $version
-```
+For CI installation, see [CI Installation](./ci.md).
 
 [binstall]: https://github.com/cargo-bins/cargo-binstall
 [pre-built]: https://github.com/gungraun/gungraun/releases/tag/v0.18.1
-[install-action]: https://github.com/taiki-e/install-action
