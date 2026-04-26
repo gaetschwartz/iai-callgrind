@@ -16,7 +16,7 @@ gungraun = { version = "0.18.1", features = ["client_requests"] }
 
 ## The Cachegrind Feature
 
-There are two ways to use cachegrind instead of callgrind. The first and easy
+There are two ways to use Cachegrind instead of Callgrind. The first and easy
 way is to use the `cachegrind` feature, so your `gungraun` spec should finally
 look like this:
 

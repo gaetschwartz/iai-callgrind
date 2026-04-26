@@ -104,7 +104,7 @@ We use a [wildcard][callgrind-arguments] `*::my_lib::bubble_sort` for
 `EntryPoint::Custom` for demonstration purposes. You might want to tighten this
 pattern. If you don't know how the pattern looks like, use `EntryPoint::None`
 first then run the benchmark. Now, investigate the
-[callgrind output file](../../cli_and_env/output/out_directory.md). This output
+[Callgrind output file](../../cli_and_env/output/out_directory.md). This output
 file is pretty low-level but all you need to do is search for the entries which
 start with `fn=...`. In the example above this entry might look like
 `fn=algorithms::my_lib::bubble_sort` if `my_lib` would be part of the top-level

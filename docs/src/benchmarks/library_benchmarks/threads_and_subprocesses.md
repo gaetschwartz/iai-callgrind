@@ -373,7 +373,7 @@ installation instructions in [client requests](../../client_requests.md), this
 additional code is only compiled in benchmarks, not in your final
 production-ready library.
 
-Using the callgrind client request, we adjust the threads in the
+Using the Callgrind client request, we adjust the threads in the
 `find_primes_multi_thread` function like so:
 
 ```rust
@@ -707,7 +707,7 @@ Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regression
 ### Measuring Subprocesses Using Client Requests
 
 Naturally, client requests can also be used to measure subprocesses. The
-callgrind client requests are added to the code of the `cat` binary:
+Callgrind client requests are added to the code of the `cat` binary:
 
 ```rust
 # extern crate gungraun;

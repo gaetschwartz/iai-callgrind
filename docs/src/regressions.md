@@ -2,8 +2,8 @@
 
 # Detecting Performance Regressions
 
-With Gungraun you can define limits for each callgrind/cachegrind event kind or
-dhat metric over which a performance regression can be assumed. Per default,
+With Gungraun you can define limits for each Callgrind/Cachegrind event kind or
+DHAT metric over which a performance regression can be assumed. Per default,
 Gungraun does not perform regression checks, and you have to opt-in with
 `Callgrind::soft_limits`, `Callgrind::hard_limits`, `Cachegrind::soft_limits`,
 ... at benchmark level in `LibraryBenchmarkConfig::tool` or
@@ -34,7 +34,7 @@ below).
 
 In order to disambiguate between soft and hard limits, soft limits have to be
 suffixed with a `%`. Hard limits are bare numbers. For example to limit the
-total instructions executed `ir` (printed as `Instructions` in the callgrind
+total instructions executed `ir` (printed as `Instructions` in the Callgrind
 terminal output) to `5%`:
 
 ```shell
@@ -46,12 +46,12 @@ soft limits and hard limits in one go with the `|`-operator (e.g.
 `--callgrind-limits='ir=5%|10000'`) or multiple limits at once separated by a
 `,` (e.g. `--callgrind-limits='ir=5%|10000,totalrw=2%'`).
 
-For a list of all allowed callgrind metrics (like `ir`) see the docs of
-[`EventKind`], for cachegrind metrics [`CachegrindMetric`] and for dhat metrics
+For a list of all allowed Callgrind metrics (like `ir`) see the docs of
+[`EventKind`], for Cachegrind metrics [`CachegrindMetric`] and for DHAT metrics
 [`DhatMetric`]. It is sometimes more convenient to define limits for whole
 groups with the `@`-operator: `--callgrind-limits='@all=5%'`. All allowed groups
-and their members for callgrind metrics can be found in [`CallgrindMetrics`],
-for cachegrind metrics in [`CachegrindMetrics`] and dhat metrics in
+and their members for Callgrind metrics can be found in [`CallgrindMetrics`],
+for Cachegrind metrics in [`CachegrindMetrics`] and DHAT metrics in
 [`DhatMetrics`].
 
 Multiple specifications of the same `EventKind`, ... overwrite the previous one
@@ -201,7 +201,7 @@ Caused by:
 
 ## Which Event to Choose to Measure Performance Regressions?
 
-For callgrind/cachegrind and if in doubt, the answer is `Ir` (instructions
+For Callgrind/Cachegrind and if in doubt, the answer is `Ir` (instructions
 executed). If `Ir` event counts decrease _noticeable_ the function (binary) runs
 faster. The inverse statement is also true: If the `Ir` counts increase
 _noticeable_, there's a slowdown of the function (binary).

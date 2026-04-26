@@ -218,7 +218,7 @@ pub struct CommandLineArgs {
     /// Allow ASLR (Address Space Layout Randomization)
     ///
     /// If possible, ASLR is disabled on platforms that support it (linux, freebsd) because ASLR
-    /// could noise up the callgrind cache simulation results a bit. Setting this option to `true`
+    /// could noise up the Callgrind cache simulation results a bit. Setting this option to `true`
     /// runs all benchmarks with ASLR enabled.
     ///
     /// See also [kernel.org: randomize_va_space]
@@ -304,7 +304,7 @@ pub struct CommandLineArgs {
 
     #[rustfmt::skip]
     #[allow(clippy::doc_markdown)]
-    /// Set performance regression limits for specific cachegrind metrics
+    /// Set performance regression limits for specific Cachegrind metrics
     ///
     /// This is a `,` separate list of CachegrindMetric=limit or CachegrindMetrics=limit
     /// (key=value) pairs. See the description of --callgrind-limits for the details and
@@ -342,10 +342,10 @@ pub struct CommandLineArgs {
     pub cachegrind_limits: Option<ToolRegressionConfig>,
 
     #[rustfmt::skip]
-    /// Define the cachegrind metrics and the order in which they are displayed
+    /// Define the Cachegrind metrics and the order in which they are displayed
     ///
-    /// This is a `,`-separated list of cachegrind metric groups and event kinds which are allowed
-    /// to appear in the terminal output of cachegrind.
+    /// This is a `,`-separated list of Cachegrind metric groups and event kinds which are allowed
+    /// to appear in the terminal output of Cachegrind.
     ///
     /// See `--callgrind-metrics` for more details and
     /// <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetrics.html>
@@ -358,7 +358,7 @@ pub struct CommandLineArgs {
     ///
     /// Examples:
     ///   * --cachegrind-metrics='ir' to show only `Instructions`
-    ///   * --cachegrind-metrics='@all' to show all possible cachegrind metrics
+/// * --cachegrind-metrics='@all' to show all possible Cachegrind metrics
     ///   * --cachegrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
     #[arg(
         display_order = 400,
@@ -443,11 +443,11 @@ pub struct CommandLineArgs {
     pub callgrind_limits: Option<ToolRegressionConfig>,
 
     #[rustfmt::skip]
-    /// Define the callgrind metrics and the order in which they are displayed
+    /// Define the Callgrind metrics and the order in which they are displayed
     ///
-    /// This is a `,`-separated list of callgrind metric groups and event kinds which are allowed
-    /// to appear in the terminal output of callgrind. Group names need to be prefixed with '@'.
-    /// The order matters and the callgrind metrics are shown in their insertion order of this
+    /// This is a `,`-separated list of Callgrind metric groups and event kinds which are allowed
+    /// to appear in the terminal output of Callgrind. Group names need to be prefixed with '@'.
+    /// The order matters and the Callgrind metrics are shown in their insertion order of this
     /// option. More precisely, in case of duplicate metrics, the first specified one wins.
     ///
     /// The `group` names, their abbreviations if present and `event` kinds are exactly the same as
@@ -464,7 +464,7 @@ pub struct CommandLineArgs {
     ///
     /// Examples:
     ///   * --callgrind-metrics='ir' to show only `Instructions`
-    ///   * --callgrind-metrics='@all' to show all possible callgrind metrics
+/// * --callgrind-metrics='@all' to show all possible Callgrind metrics
     ///   * --callgrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
     #[arg(
         display_order = 400,
@@ -480,8 +480,8 @@ pub struct CommandLineArgs {
     #[rustfmt::skip]
     /// The default tool used to run the benchmarks
     ///
-    /// The standard tool to run the benchmarks is callgrind but can be overridden with this
-    /// option. Any valgrind tool can be used:
+    /// The standard tool to run the benchmarks is Callgrind but can be overridden with this
+    /// option. Any Valgrind tool can be used:
     ///   * callgrind
     ///   * cachegrind
     ///   * dhat
@@ -491,11 +491,11 @@ pub struct CommandLineArgs {
     ///   * massif
     ///   * exp-bbv
     ///
-    /// This argument matches the tool case-insensitive. Note that using cachegrind with this
+    /// This argument matches the tool case-insensitive. Note that using Cachegrind with this
     /// option to benchmark library functions needs adjustments to the benchmarking functions with
     /// client-requests to measure the counts correctly. If you want to switch permanently to
-    /// cachegrind, it is usually better to activate the `cachegrind` feature of gungraun in
-    /// your Cargo.toml. However, setting a tool with this option overrides cachegrind set with the
+    /// Cachegrind, it is usually better to activate the `cachegrind` feature of gungraun in
+    /// your Cargo.toml. However, setting a tool with this option overrides Cachegrind set with the
     /// gungraun feature. See the guide for all details.
     #[arg(
         display_order = 450,
@@ -526,7 +526,7 @@ pub struct CommandLineArgs {
 
     #[rustfmt::skip]
     #[allow(clippy::doc_markdown)]
-    /// Set performance regression limits for specific dhat metrics
+    /// Set performance regression limits for specific DHAT metrics
     ///
     /// This is a `,` separate list of DhatMetrics=limit or DhatMetric=limit (key=value) pairs. See
     /// the description of --callgrind-limits for the details and
@@ -570,10 +570,10 @@ pub struct CommandLineArgs {
     pub dhat_limits: Option<ToolRegressionConfig>,
 
     #[rustfmt::skip]
-    /// Define the dhat metrics and the order in which they are displayed
+    /// Define the DHAT metrics and the order in which they are displayed
     ///
-    /// This is a `,`-separated list of dhat metric groups and event kinds which are allowed to
-    /// appear in the terminal output of dhat.
+    /// This is a `,`-separated list of DHAT metric groups and event kinds which are allowed to
+    /// appear in the terminal output of DHAT.
     ///
     /// See `--callgrind-metrics` for more details and
     /// <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetrics.html> respectively
@@ -585,7 +585,7 @@ pub struct CommandLineArgs {
     ///
     /// Examples:
     ///   * --dhat-metrics='totalbytes' to show only `Total Bytes`
-    ///   * --dhat-metrics='@all' to show all possible dhat metrics
+/// * --dhat-metrics='@all' to show all possible DHAT metrics
     ///   * --dhat-metrics='@default,mb' to show maximum bytes in addition to the defaults
     #[arg(
         display_order = 400,
@@ -618,10 +618,10 @@ pub struct CommandLineArgs {
     pub drd_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
-    /// Define the drd error metrics and the order in which they are displayed
+    /// Define the DRD error metrics and the order in which they are displayed
     ///
     /// This is a `,`-separated list of error metrics which are allowed to appear in the terminal
-    /// output of drd. The `group` and `event` are the same as for `--memcheck-metrics`.
+    /// output of DRD. The `group` and `event` are the same as for `--memcheck-metrics`.
     ///
     /// See `--callgrind-metrics` for more details and
     /// <https://docs.rs/gungraun/latest/gungraun/enum.ErrorMetric.html> for valid error
@@ -744,10 +744,10 @@ pub struct CommandLineArgs {
     pub helgrind_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
-    /// Define the helgrind error metrics and the order in which they are displayed
+    /// Define the Helgrind error metrics and the order in which they are displayed
     ///
     /// This is a `,`-separated list of error metrics which are allowed to appear in the terminal
-    /// output of helgrind. The `group` and `event` are the same as for `--memcheck-metrics`.
+    /// output of Helgrind. The `group` and `event` are the same as for `--memcheck-metrics`.
     ///
     /// See `--callgrind-metrics` for more details and
     /// <https://docs.rs/gungraun/latest/gungraun/enum.ErrorMetric.html> for valid error
@@ -875,10 +875,10 @@ pub struct CommandLineArgs {
     pub memcheck_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
-    /// Define the memcheck error metrics and the order in which they are displayed
+    /// Define the Memcheck error metrics and the order in which they are displayed
     ///
     /// This is a `,`-separated list of error metrics which are allowed to appear in the terminal
-    /// output of memcheck.
+    /// output of Memcheck.
     ///
     /// Since this is a very small set of metrics, there is only one `group`: `@all`
     ///
@@ -1106,7 +1106,7 @@ pub struct CommandLineArgs {
     #[rustfmt::skip]
     /// Separate gungraun benchmark output files by target
     ///
-    /// The default output path for files created by gungraun and valgrind during the
+    /// The default output path for files created by Gungraun and Valgrind during the
     /// benchmark is
     ///
     /// `target/gungraun/$PACKAGE_NAME/$BENCHMARK_FILE/$GROUP/$BENCH_FUNCTION.$BENCH_ID`.
@@ -1153,8 +1153,8 @@ pub struct CommandLineArgs {
     #[rustfmt::skip]
     /// Show intermediate metrics from parts, subprocesses, threads, ... (Default: false)
     ///
-    /// In callgrind, threads are treated as separate units (similar to subprocesses) and the
-    /// metrics for them are dumped into an own file. Other valgrind tools usually separate the
+    /// In Callgrind, threads are treated as separate units (similar to subprocesses) and the
+    /// metrics for them are dumped into an own file. Other Valgrind tools usually separate the
     /// output files only by subprocesses. Use this option, to also show the metrics of any
     /// intermediate fragments and not just the total over all of them.
     ///
@@ -1216,9 +1216,9 @@ pub struct CommandLineArgs {
     pub tolerance: Option<f64>,
 
     #[rustfmt::skip]
-    /// A comma separated list of tools to run additionally to callgrind or another default tool
+    /// A comma separated list of tools to run additionally to Callgrind or another default tool
     ///
-    /// The tools specified here take precedence over the tools in the benchmarks. The valgrind
+    /// The tools specified here take precedence over the tools in the benchmarks. The Valgrind
     /// tools which are allowed here are the same as the ones listed in the documentation of
     /// --default-tool.
     ///
@@ -1269,7 +1269,7 @@ pub struct CommandLineArgs {
     #[rustfmt::skip]
     /// The command-line arguments to pass through to all tools
     ///
-    /// The core valgrind command-line arguments
+    /// The core Valgrind command-line arguments
     /// <https://valgrind.org/docs/manual/manual-core.html#manual-core.options> which are
     /// recognized by all tools. More specific arguments for example set with --callgrind-args
     /// override the arguments with the same name specified with this option.
@@ -1288,15 +1288,15 @@ pub struct CommandLineArgs {
     pub valgrind_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
-    /// Specify the path to the valgrind executable
+    /// Specify the path to the Valgrind executable
     ///
     /// By default, Gungraun searches for `valgrind` in the system PATH. This option
-    /// allows specifying an alternative valgrind executable. When used with
-    /// `--valgrind-runner`, this path is passed to the runner as the valgrind binary
+    /// allows specifying an alternative Valgrind executable. When used with
+    /// `--valgrind-runner`, this path is passed to the runner as the Valgrind binary
     /// to invoke.
     ///
     /// Note: The specified path is not validated for existence. If the path is invalid, the
-    /// benchmark will fail when attempting to execute valgrind.
+    /// benchmark will fail when attempting to execute Valgrind.
     ///
     /// Examples:
     ///   * `--valgrind-bin=/usr/local/bin/valgrind`
@@ -1311,17 +1311,17 @@ pub struct CommandLineArgs {
     pub valgrind_bin: Option<PathBuf>,
 
     #[rustfmt::skip]
-    /// Specify an alternative executable to run valgrind
+    /// Specify an alternative executable to run Valgrind
     ///
-    /// By default, gungraun runs the benchmark executable with valgrind directly. This option
+    /// By default, Gungraun runs the benchmark executable with Valgrind directly. This option
     /// allows specifying an alternative runner executable that will be invoked instead, with
-    /// valgrind passed as an argument to the runner.
+    /// Valgrind passed as an argument to the runner.
     ///
     /// When specified, the runner is invoked as:
     ///   `<RUNNER> [RUNNER_ARGS...] <VALGRIND_BIN> [VALGRIND_ARGS...] <BENCHMARK> [BENCHMARK_ARGS...]`
     ///
     /// The runner receives extra environment variables that provide context:
-    /// - `GUNGRAUN_VR_DEST_DIR`: The destination directory for valgrind output files
+    /// - `GUNGRAUN_VR_DEST_DIR`: The destination directory for Valgrind output files
     /// - `GUNGRAUN_VR_HOME`: The gungraun home (`--home`) directory
     /// - `GUNGRAUN_VR_WORKSPACE_ROOT`: The project's workspace root directory
     /// - `GUNGRAUN_ALLOW_ASLR`: `yes` or `no` (the default) based on `--allow-aslr` setting
@@ -1330,7 +1330,7 @@ pub struct CommandLineArgs {
     /// The interpolation priority is: `GUNGRAUN_VR_*` variables first, then `--envs` variables,
     /// then the system environment.
     ///
-    /// This is useful for running benchmarks in containers or other environments where valgrind is
+    /// This is useful for running benchmarks in containers or other environments where Valgrind is
     /// not available on the host. See the online guide for detailed examples.
     ///
     /// Examples:
@@ -1347,10 +1347,10 @@ pub struct CommandLineArgs {
     pub valgrind_runner: Option<PathBuf>,
 
     #[rustfmt::skip]
-    /// Additional arguments to pass to the valgrind runner executable
+    /// Additional arguments to pass to the Valgrind runner executable
     ///
     /// This option is only effective when `--valgrind-runner` is specified. The arguments are
-    /// passed to the runner executable after `--valgrind-runner` and before the valgrind path.
+    /// passed to the runner executable after `--valgrind-runner` and before the Valgrind path.
     ///
     /// Environment variable interpolation is supported using the `${VAR}` syntax. Variables are
     /// resolved in this order:
@@ -1380,13 +1380,13 @@ pub struct CommandLineArgs {
     pub valgrind_runner_args: Vec<RawArgs>,
 
     #[rustfmt::skip]
-    /// Override the destination directory path for valgrind runner output files
+    /// Override the destination directory path for Valgrind runner output files
     ///
-    /// This option is only effective when `--valgrind-runner` is specified. By default, valgrind
+    /// This option is only effective when `--valgrind-runner` is specified. By default, Valgrind
     /// output files are written to paths under the gungraun home directory or in temporary
     /// directories. This option allows substituting this path with a custom directory.
     ///
-    /// When specified, any occurrence of this path prefix in valgrind arguments will be replaced
+    /// When specified, any occurrence of this path prefix in Valgrind arguments will be replaced
     /// with the directory path specified by `--valgrind-runner-dest`.
     ///
     /// WARNING: Make sure the directory of this argument exists, is empty and doesn't point to a
@@ -1407,10 +1407,10 @@ pub struct CommandLineArgs {
     pub valgrind_runner_dest: Option<PathBuf>,
 
     #[rustfmt::skip]
-    /// Override the workspace root path for the valgrind runner
+    /// Override the workspace root path for the Valgrind runner
     ///
     /// This option is only effective when `--valgrind-runner` is specified. It allows substituting
-    /// the workspace root path prefix in the benchmark executable path and all other valgrind
+    /// the workspace root path prefix in the benchmark executable path and all other Valgrind
     /// arguments.
     ///
     /// This can be useful for container setups where the workspace is mounted at a different

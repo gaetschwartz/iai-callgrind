@@ -5,7 +5,7 @@ Gungraun cannot be used on platforms that are not supported by Valgrind.
 
 The default benchmarking tool is `Callgrind` and is in most cases perfectly
 suited to do the job but if you want or need to use
-[`Cachegrind`](../cachegrind.md) instead of `Callgrind` you require valgrind
+[`Cachegrind`](../cachegrind.md) instead of `Callgrind` you require Valgrind
 version `>= 3.22` and client requests (see below).
 
 ## Debug Symbols
@@ -48,8 +48,8 @@ More details on the usage and requirements of `Valgrind Client Requests` in
 ## Installation of Valgrind
 
 Gungraun is intentionally independent of a specific version of Valgrind.
-However, Gungraun was only tested with versions of valgrind >= `3.20.0`. It is
-therefore highly recommended to use a recent version of valgrind. Also, if you
+However, Gungraun was only tested with versions of Valgrind >= `3.20.0`. It is
+therefore highly recommended to use a recent version of Valgrind. Also, if you
 want or need to, [building valgrind from source][valgrind-source] is usually a
 straightforward process. Just make sure the `valgrind` binary is in your `$PATH`
 so that Gungraun can find it. See [installation in the CI](./ci.md) for tips to

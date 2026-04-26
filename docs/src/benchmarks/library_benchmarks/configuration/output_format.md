@@ -28,7 +28,7 @@ A default Gungraun benchmark run displays the following metrics:
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.49333s</code></pre>
 
 The cache and ram hits, `Total read+write` and `Estimated Cycles` are actually
-not part of the original collected callgrind metrics but calculated from them.
+not part of the original collected Callgrind metrics but calculated from them.
 If you want to see the cache misses nonetheless, you can achieve this by
 specifying the output format for example at top-level for all benchmarks in the
 same file in the `main!` macro:
@@ -82,10 +82,10 @@ The Gungraun output will then show all cache metrics:
 
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.48898s</code></pre>
 
-The callgrind output format can be fully customized showing only the metrics
+The Callgrind output format can be fully customized showing only the metrics
 you're interested in and in any order. The docs of
 [`Callgrind::format`][`Callgrind.format`] and [`CallgrindMetrics`] show all the
-possibilities for [`Callgrind`]. The output format of the other valgrind tools
+possibilities for [`Callgrind`]. The output format of the other Valgrind tools
 can be customized in the same way. More details can be found in the docs for the
 respective format (`Dhat::format`, `DhatMetric`, `Cachegrind::format`,
 `CachegrindMetric`, ...) and for their respective command-line arguments with

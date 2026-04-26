@@ -34,12 +34,12 @@ main!(
 ```
 
 The produced flamegraph `*.svg` files are located next to the respective
-callgrind output file in the `target/gungraun`
+Callgrind output file in the `target/gungraun`
 [directory](./cli_and_env/output/out_directory.md).
 
 ## Regular Flamegraphs
 
-Regular callgrind flamegraphs show the inclusive costs for functions and a
+Regular Callgrind flamegraphs show the inclusive costs for functions and a
 single `EventKind` (default is `EventKind::Ir`), similar to
 `callgrind_annotate`. Suppose the example from above is stored in a benchmark
 `gungraun_benchmark`:
