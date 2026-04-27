@@ -705,18 +705,15 @@ pub fn map_ip_to_srcloc(addr: *const (), buf64: *const ()) -> usize {
 /// enabled.
 #[inline(always)]
 pub fn disable_error_reporting() {
-    if is_def!(bindings::GR_ValgrindClientRequest::GR_CHANGE_ERR_DISABLEMENT) {
-        valgrind_do_client_request_stmt(
-            bindings::GR_ValgrindClientRequest::GR_CHANGE_ERR_DISABLEMENT as cty::c_uint,
-            1,
-            0,
-            0,
-            0,
-            0,
-        );
-    } else {
-        fatal_error("valgrind::disable_error_reporting");
-    }
+    do_client_request!(
+        "valgrind::disable_error_reporting",
+        bindings::GR_ValgrindClientRequest::GR_CHANGE_ERR_DISABLEMENT,
+        1,
+        0,
+        0,
+        0,
+        0
+    );
 }
 
 /// Re-enable error reporting
