@@ -374,6 +374,31 @@ book-term-output path:
     output=$(npx ansi-to-html -f#000 "{{ path }}" | head -c -1 | sed 's/#5F5/#42c142/g')
     echo "<pre><code class=\"hljs\">${output}</code></pre>"
 
+# Update the gungraun-runner help text in the guide (Depends on: build-runner; Uses: 'python3', 'prettier' or 'npx prettier')
+[group('guide')]
+book-update-help: build-runner
+    #!/usr/bin/env python3
+    import subprocess, pathlib
+
+    file_path = "docs/src/cli_and_env/basics.md"
+    start_marker = "<!-- start: gungraun-runner-help -->"
+    end_marker = "<!-- end: gungraun-runner-help -->"
+
+    runner = str(pathlib.Path("target/release/gungraun-runner").resolve())
+    help_text = subprocess.check_output([runner, "--help"], text=True)
+
+    with open(file_path, "r") as f:
+        content = f.read()
+
+    start_idx = content.index(start_marker) + len(start_marker)
+    end_idx = content.index(end_marker)
+
+    replacement = f"\n\n````text\n{help_text}\n````\n\n"
+    new_content = content[:start_idx] + replacement + content[end_idx:]
+
+    with open(file_path, "w") as f:
+        f.write(new_content)
+
 # Bump the gungraun version in the book (Uses: 'sed', 'find')
 [group('chore')]
 book-bump old_version new_version:
