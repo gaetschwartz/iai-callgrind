@@ -9,6 +9,7 @@
 
 - [Prerequisites](./installation/prerequisites.md)
 - [Gungraun](./installation/gungraun.md)
+- [CI](./installation/ci.md)
 
 # Benchmarks
 

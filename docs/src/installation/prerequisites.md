@@ -47,12 +47,13 @@ More details on the usage and requirements of `Valgrind Client Requests` in
 
 ## Installation of Valgrind
 
-Gungraun is intentionally independent of a specific version of valgrind.
+Gungraun is intentionally independent of a specific version of Valgrind.
 However, Gungraun was only tested with versions of valgrind >= `3.20.0`. It is
 therefore highly recommended to use a recent version of valgrind. Also, if you
 want or need to, [building valgrind from source][valgrind-source] is usually a
 straightforward process. Just make sure the `valgrind` binary is in your `$PATH`
-so that Gungraun can find it.
+so that Gungraun can find it. See [installation in the CI](./ci.md) for tips to
+install Valgrind in the CI.
 
 ### Installation of Valgrind with Your Package Manager
 

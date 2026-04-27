@@ -18,8 +18,8 @@ restrict the `EventKind`, ... by an absolute number.
 
 Note that [comparing baselines](./cli_and_env/baselines.md) also detects
 performance regressions. This can be useful, for example, when setting up
-Gungraun in the [CI](./installation/gungraun.md#in-the-github-ci) to cause a PR
-to fail when comparing to the main branch.
+Gungraun in the [CI](./installation/ci.md) to cause a PR to fail when comparing
+to the main branch.
 
 Regressions are considered errors and will cause the benchmark to fail if they
 occur, and Gungraun will exit with error code `3`.
