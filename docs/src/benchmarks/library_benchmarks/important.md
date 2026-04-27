@@ -70,6 +70,6 @@ Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regression
 
 If you prefer cache misses over cache hits or just want both metrics displayed
 you can fully customize the
-[callgrind output format](./configuration/output_format.md).
+[Callgrind output format](./configuration/output_format.md).
 
 [cli_args]: ../../cli_and_env/basics.md

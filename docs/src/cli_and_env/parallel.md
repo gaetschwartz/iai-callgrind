@@ -172,7 +172,7 @@ varies depending on:
 
 - **The tool used**: Memcheck typically has higher overhead than Callgrind or
   Cachegrind
-- **Your program's memory usage**: Valgrind's DHAT, massif, ... tracks
+- **Your program's memory usage**: Valgrind's DHAT, Massif, ... tracks
   allocations, so larger programs have more overhead
 
 ### Resource Contention

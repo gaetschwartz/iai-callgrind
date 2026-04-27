@@ -91,7 +91,7 @@ different from any [other tool](./tools.md):
 
 Either use
 [command-line arguments or environment variables](./cli_and_env/basics.md):
-`--default-tool=dhat` or `GUNGRAUN_DEFAULT_TOOL=dhat` (replaces callgrind as
+`--default-tool=dhat` or `GUNGRAUN_DEFAULT_TOOL=dhat` (replaces Callgrind as
 default tool) or `--tools=dhat` or `GUNGRAUN_TOOLS=dhat` (runs DHAT in addition
 to the default tool).
 
@@ -174,9 +174,9 @@ with error.
 ## Frames and Benchmarking Multi-Threaded Functions
 
 It is possible to specify additional `Dhat::frames` for example when
-benchmarking multi-threaded functions. Like in callgrind, each thread/subprocess
+benchmarking multi-threaded functions. Like in Callgrind, each thread/subprocess
 in DHAT is treated as a separate unit and thus requires `frames` (the Gungraun
-specific approximation of callgrind toggles) in addition to the default entry
+specific approximation of Callgrind toggles) in addition to the default entry
 point to include the interesting ones in the measurements.
 
 By example. Suppose there's a function in the `benchmark_tests` library
@@ -224,7 +224,7 @@ Running the benchmark produces the following output:
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.47449s</code></pre>
 
 The problem here is, that the spawned thread is not included in the metrics.
-Looking at the output files of the dhat output in `dh_view.html` (heavily
+Looking at the output files of the DHAT output in `dh_view.html` (heavily
 shortened to safe some space):
 
 ```text

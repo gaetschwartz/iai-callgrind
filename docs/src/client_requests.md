@@ -3,7 +3,7 @@
 Gungraun ships with its own interface to the [Valgrind's Client Request
 Mechanism][valgrind-client-req]. Gungraun's client requests have zero overhead
 (relative to the "C" implementation of Valgrind) on many targets which are also
-natively supported by valgrind. In short, Gungraun provides a complete and
+natively supported by Valgrind. In short, Gungraun provides a complete and
 performant implementation of Valgrind Client Requests.
 
 ## Installation
@@ -17,7 +17,7 @@ gungraun = { version = "0.18.1", features = ["client_requests"] }
 ```
 
 If you need the client requests in your production code, you don't want them to
-do anything when not running under valgrind with Gungraun benchmarks. You can
+do anything when not running under Valgrind with Gungraun benchmarks. You can
 achieve that by adding Gungraun with the `client_requests_defs` feature to your
 runtime dependencies and with the `client_requests` feature to your
 `dev-dependencies` like so:
@@ -46,9 +46,9 @@ gungraun = { version = "0.18.1", default-features = false, features = [
 ] }
 ```
 
-When building Gungraun with client requests, the valgrind header files must
+When building Gungraun with client requests, the Valgrind header files must
 exist in your standard include path (most of the time `/usr/include`). This is
-usually the case if you've installed valgrind with your distribution's package
+usually the case if you've installed Valgrind with your distribution's package
 manager. If not, you can point the `GUNGRAUN_VALGRIND_INCLUDE` or
 `GUNGRAUN_<triple>_VALGRIND_INCLUDE` environment variables to the include path.
 So, if the headers can be found in

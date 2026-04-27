@@ -15,10 +15,10 @@ environment variables:
 - `--valgrind-runner-args` (env: `GUNGRAUN_VALGRIND_RUNNER_ARGS`): Pass
   additional arguments to the runner (supports environment variable
   interpolation)
-- `--valgrind-bin` (env: `GUNGRAUN_VALGRIND_BIN`): Specify the valgrind
+- `--valgrind-bin` (env: `GUNGRAUN_VALGRIND_BIN`): Specify the Valgrind
   executable path.
 - `--valgrind-runner-dest` (env: `GUNGRAUN_VALGRIND_RUNNER_DEST`): Override the
-  destination directory of valgrind output files
+  destination directory of Valgrind output files
 - `--valgrind-runner-root` (env: `GUNGRAUN_VALGRIND_RUNNER_ROOT`): Override the
   path to the workspace root directory
 
@@ -52,16 +52,16 @@ Key points:
   `--cachegrind-args`, etc. are passed through to Valgrind after the runner
 - The benchmark binary is passed as Valgrind's first positional argument. After
   that all arguments to the benchmark binary are added as last arguments.
-- All paths set by Gungraun in the valgrind arguments are absolute paths
+- All paths set by Gungraun in the Valgrind arguments are absolute paths
 - Environment variables are still cleared by default. Configure this behavior
   with [`LibraryBenchmarkConfig`] or [`BinaryBenchmarkConfig`] in the benchmarks
   or in the CLI with `--env-clear` (env: `GUNGRAUN_ENV_CLEAR`)
 
 ## Environment Variables for Runners
 
-Gungraun sets the following environment variables for the custom valgrind runner
+Gungraun sets the following environment variables for the custom Valgrind runner
 process even if the environment variables have been asked to be cleared. The
-custom valgrind runner is responsible for clearing the environment variables.
+custom Valgrind runner is responsible for clearing the environment variables.
 
 - `GUNGRAUN_VR_DEST_DIR`: Destination directory for output files
 - `GUNGRAUN_VR_HOME`: The gungraun home directory
@@ -113,13 +113,13 @@ to create these directories before the first custom runner execution.
 ### `--valgrind-runner-dest`
 
 Specifies a path prefix that replaces all occurrences of the value of
-`GUNGRAUN_VR_DEST_DIR` in the valgrind command line arguments. Useful when using
+`GUNGRAUN_VR_DEST_DIR` in the Valgrind command line arguments. Useful when using
 a container volume mount that is different from the destination directory on the
 host. The destination directory on the host is guaranteed to be different for
-each benchmark and valgrind-runner execution, so it is safe to mount the
+each benchmark and Valgrind runner execution, so it is safe to mount the
 original `GUNGRAUN_VR_DEST_DIR` to the same directory for each invocation.
 However, make sure you have write permissions to that directory and it is empty
-before the first invocation of the custom valgrind runner.
+before the first invocation of the custom Valgrind runner.
 
 > **Warning** Setting this variable to a non-empty directory or to a directory
 > which contains important data will potentially destroy the contained data.
@@ -139,7 +139,7 @@ cargo bench -- \
 ### `--valgrind-runner-root`
 
 Specifies a path prefix that replaces all occurrences in paths with the value of
-`GUNGRAUN_VR_WORKSPACE_ROOT` in the valgrind command line arguments. Useful when
+`GUNGRAUN_VR_WORKSPACE_ROOT` in the Valgrind command line arguments. Useful when
 a container mount of the workspace root is different from the host workspace
 root. When running library benchmarks, the compiled benchmark binary (somewhere
 located in `${GUNGRAUN_VR_WORKSPACE_ROOT}/target/release/deps/some_name-1a2b3c`)
@@ -170,7 +170,7 @@ cargo bench -- \
 
 Then use it with Gungraun and execute the following in your workspace root (the
 directory with the top-level `Cargo.toml` file). Here, `--valgrind-bin` points
-to the valgrind executable in the container although the path might be the same
+to the Valgrind executable in the container although the path might be the same
 on the host:
 
 ```bash
