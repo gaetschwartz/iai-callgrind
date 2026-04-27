@@ -50,9 +50,10 @@
 //! Requests](https://valgrind.org/docs/manual/drd-manual.html#drd-manual.clientreqs)
 use std::ffi::CStr;
 
-use super::arch::imp::valgrind_do_client_request_expr;
-use super::arch::valgrind_do_client_request_stmt;
-use super::{bindings, fatal_error, helgrind};
+use super::{
+    bindings, fatal_error, helgrind, valgrind_do_client_request_expr,
+    valgrind_do_client_request_stmt,
+};
 
 /// Obtain the thread ID assigned by Valgrind's core
 ///

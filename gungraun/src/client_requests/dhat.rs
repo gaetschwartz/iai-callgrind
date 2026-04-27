@@ -42,8 +42,7 @@
 //!
 //! See also the [DHAT documentation](https://valgrind.org/docs/manual/dh-manual.html#dh-manual)
 
-use super::arch::valgrind_do_client_request_stmt;
-use super::{bindings, fatal_error};
+use super::{bindings, fatal_error, valgrind_do_client_request_stmt};
 
 /// Record an ad hoc event
 ///

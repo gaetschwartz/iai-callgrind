@@ -43,8 +43,7 @@
 //!
 //! See also [Helgrind Client
 //! Requests](https://valgrind.org/docs/manual/hg-manual.html#hg-manual.client-requests)
-use super::arch::valgrind_do_client_request_stmt;
-use super::{bindings, fatal_error};
+use super::{bindings, fatal_error, valgrind_do_client_request_stmt};
 
 /// Clean memory state
 ///
