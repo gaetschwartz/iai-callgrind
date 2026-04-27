@@ -334,6 +334,17 @@
       "description": "Represent values that have either a `Left` or `Right` value or `Both` values",
       "oneOf": [
         {
+          "description": "Represents a value from the left side",
+          "type": "object",
+          "properties": {
+            "Left": {
+              "$ref": "#/definitions/ProfileInfo"
+            }
+          },
+          "additionalProperties": false,
+          "required": ["Left"]
+        },
+        {
           "description": "Represents a value from both sides",
           "type": "object",
           "properties": {
@@ -353,17 +364,6 @@
           },
           "additionalProperties": false,
           "required": ["Both"]
-        },
-        {
-          "description": "Represents a value from the left side",
-          "type": "object",
-          "properties": {
-            "Left": {
-              "$ref": "#/definitions/ProfileInfo"
-            }
-          },
-          "additionalProperties": false,
-          "required": ["Left"]
         },
         {
           "description": "Represents a value from the right side",
@@ -382,6 +382,17 @@
       "description": "Represent values that have either a `Left` or `Right` value or `Both` values",
       "oneOf": [
         {
+          "description": "Represents a value from the left side",
+          "type": "object",
+          "properties": {
+            "Left": {
+              "$ref": "#/definitions/Metric"
+            }
+          },
+          "additionalProperties": false,
+          "required": ["Left"]
+        },
+        {
           "description": "Represents a value from both sides",
           "type": "object",
           "properties": {
@@ -401,17 +412,6 @@
           },
           "additionalProperties": false,
           "required": ["Both"]
-        },
-        {
-          "description": "Represents a value from the left side",
-          "type": "object",
-          "properties": {
-            "Left": {
-              "$ref": "#/definitions/Metric"
-            }
-          },
-          "additionalProperties": false,
-          "required": ["Left"]
         },
         {
           "description": "Represents a value from the right side",
