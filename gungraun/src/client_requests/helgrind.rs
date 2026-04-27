@@ -211,16 +211,16 @@ pub fn annotate_rwlock_acquired(lock: *const (), is_writer_lock: bool) {
 
 /// Report that the lock at address `lock` is about to be released
 ///
-/// If `is_writer_lock` is true then it is a writer lock else it is a reader lock.
+/// `is_writer_lock` is ignored.
 ///
 /// See also [`annotate_rwlock_create`]
 #[inline(always)]
-pub fn annotate_rwlock_released(lock: *const (), is_writer_lock: bool) {
+pub fn annotate_rwlock_released(lock: *const (), _is_writer_lock: bool) {
     do_client_request!(
         "helgrind::annotate_rwlock_released",
         bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_RWLOCK_RELEASED,
         lock as usize,
-        usize::from(is_writer_lock),
+        0,
         0,
         0,
         0
