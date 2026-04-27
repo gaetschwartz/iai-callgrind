@@ -1,4 +1,5 @@
 aarch
+abits
 ackermann
 addressibility
 ahash
@@ -12,6 +13,7 @@ attendblocks
 attendbytes
 attgmaxblocks
 attgmaxbytes
+ARANGE
 autofree
 behaviour
 Benchmarkable
@@ -21,6 +23,7 @@ bimap
 bincode
 bindgen
 binstall
+blockstart
 Boolish
 bools
 branchsim
@@ -96,6 +99,7 @@ gungraun
 hard_limit
 Hasher
 Heisler
+heapblock
 Helgrind
 hitrate
 hitrates
@@ -226,6 +230,7 @@ rustified
 RUSTSEC
 rustup
 rustversion
+RTTI
 rwlock
 RWLOCK
 rwlocks
@@ -282,6 +287,7 @@ unistd
 unmark
 unparse
 unsanitized
+HEAPBLOCK
 USERREQ
 USERSO
 usize
