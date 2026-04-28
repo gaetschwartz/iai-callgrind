@@ -356,7 +356,7 @@ pub fn enable_checking(start: *const (), len: usize) {
 /// When success, it returns the number of addressable bytes found. So, to check that a whole range
 /// is addressable, check
 ///
-/// ```rust
+/// ```ignore
 /// get_abits(addr, std::ptr::null_mut(), len) == len
 /// ```
 ///
