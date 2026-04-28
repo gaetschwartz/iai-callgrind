@@ -202,6 +202,76 @@ pub fn annotate_rwlock_released(lock: *const (), is_writer_lock: bool) {
     helgrind::annotate_rwlock_released(lock, is_writer_lock);
 }
 
+/// Tell DRD that a semaphore object is going to be initialized.
+#[inline(always)]
+pub fn annotate_sem_init_pre(sem: *const (), value: usize) {
+    do_client_request!(
+        "drd::annotate_sem_init_pre",
+        bindings::GR_DRDClientRequest::GR_DRD_ANNOTATE_SEM_INIT_PRE,
+        sem as usize,
+        value,
+        0,
+        0,
+        0
+    );
+}
+
+/// Tell DRD that a semaphore object has been destroyed.
+#[inline(always)]
+pub fn annotate_sem_destroy_post(sem: *const ()) {
+    do_client_request!(
+        "drd::annotate_sem_destroy_post",
+        bindings::GR_DRDClientRequest::GR_DRD_ANNOTATE_SEM_DESTROY_POST,
+        sem as usize,
+        0,
+        0,
+        0,
+        0
+    );
+}
+
+/// Tell DRD that a semaphore is going to be acquired.
+#[inline(always)]
+pub fn annotate_sem_wait_pre(sem: *const ()) {
+    do_client_request!(
+        "drd::annotate_sem_wait_pre",
+        bindings::GR_DRDClientRequest::GR_DRD_ANNOTATE_SEM_WAIT_PRE,
+        sem as usize,
+        0,
+        0,
+        0,
+        0
+    );
+}
+
+/// Tell DRD that a semaphore has been acquired.
+#[inline(always)]
+pub fn annotate_sem_wait_post(sem: *const ()) {
+    do_client_request!(
+        "drd::annotate_sem_wait_post",
+        bindings::GR_DRDClientRequest::GR_DRD_ANNOTATE_SEM_WAIT_POST,
+        sem as usize,
+        0,
+        0,
+        0,
+        0
+    );
+}
+
+/// Tell DRD that a semaphore is going to be released.
+#[inline(always)]
+pub fn annotate_sem_post_pre(sem: *const ()) {
+    do_client_request!(
+        "drd::annotate_sem_post_pre",
+        bindings::GR_DRDClientRequest::GR_DRD_ANNOTATE_SEM_POST_PRE,
+        sem as usize,
+        0,
+        0,
+        0,
+        0
+    );
+}
+
 /// Tell DRD that data races at the specified address are expected and must not be reported
 ///
 /// Any races detected on the specified variable are benign and hence should not be reported.
