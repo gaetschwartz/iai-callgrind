@@ -196,7 +196,7 @@ mod imp {
                 || target.os == "freebsd"
                 || (target.vendor == "apple" && target.os == "darwin")
                 || (target.os == "windows" && target.env == "gnu")
-                || ((target.vendor == "sun") || target.vendor == "pc") && target.os == "solaris")
+                || ((target.vendor == "sun" || target.vendor == "pc") && target.os == "solaris"))
         {
             Some(Support::X86_64)
         } else if target.arch == "x86"
@@ -204,7 +204,7 @@ mod imp {
                 || target.os == "freebsd"
                 || (target.vendor == "apple" && target.os == "darwin")
                 || (target.os == "windows" && target.env == "gnu")
-                || ((target.vendor == "sun") || target.vendor == "pc") && target.os == "solaris")
+                || ((target.vendor == "sun" || target.vendor == "pc") && target.os == "solaris"))
         {
             Some(Support::X86)
         } else if target.arch == "arm" && target.os == "linux" && target.env == "gnu" {
