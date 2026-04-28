@@ -4,6 +4,7 @@ ackermann
 addressibility
 ahash
 Aparicio
+ARANGE
 armv7
 aslr
 ASLR
@@ -13,7 +14,6 @@ attendblocks
 attendbytes
 attgmaxblocks
 attgmaxbytes
-ARANGE
 autofree
 behaviour
 Benchmarkable
@@ -36,8 +36,8 @@ cachemissrates
 cachesim
 cacheuse
 cachuse
-callgrind
 Callgrind
+callgrind
 CALLGRIND
 CFLAGS
 cicd
@@ -81,8 +81,8 @@ estimatedcycles
 EventKind
 exidx
 exitcode
-flamegraph
 Flamegraph
+flamegraph
 flamegraphs
 Flamegraphs
 fldcw
@@ -98,8 +98,9 @@ gungnir
 gungraun
 hard_limit
 Hasher
-Heisler
 heapblock
+HEAPBLOCK
+Heisler
 Helgrind
 hitrate
 hitrates
@@ -196,8 +197,8 @@ printenv
 println
 proccontrol
 profraw
-pthread
 PTHREAD
+pthread
 punct
 pushd
 quickstart
@@ -221,6 +222,7 @@ rposition
 rsplit
 rstest
 rstrip
+RTTI
 rustaceanvim
 rustc
 rustdoc
@@ -230,9 +232,8 @@ rustified
 RUSTSEC
 rustup
 rustversion
-RTTI
-rwlock
 RWLOCK
+rwlock
 rwlocks
 sandboxing
 sanitized
@@ -273,6 +274,7 @@ tempfile
 thiserror
 threadid
 tmpfs
+toolname
 totalblocks
 totalbytes
 totalevents
@@ -287,7 +289,6 @@ unistd
 unmark
 unparse
 unsanitized
-HEAPBLOCK
 USERREQ
 USERSO
 usize
