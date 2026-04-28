@@ -1,8 +1,8 @@
-//! The build script
+//! The build script for the `valgrind-requests` crate
 
 // spell-checker: ignore idirafter idiraftervalgrind isystem rustified
 
-#[cfg(feature = "client_requests_defs")]
+#[cfg(feature = "stubs")]
 mod imp {
     use std::borrow::Cow;
     use std::fmt::Display;
@@ -41,6 +41,10 @@ mod imp {
     }
 
     impl Target {
+        fn triple_to_env_key(&self) -> String {
+            self.triple.replace('-', "_").to_ascii_uppercase()
+        }
+
         fn from_env() -> Self {
             Self {
                 arch: std::env::var("CARGO_CFG_TARGET_ARCH").unwrap(),
@@ -53,20 +57,22 @@ mod imp {
     }
 
     pub fn print_migration_warnings() {
-        for (old, new) in std::env::vars()
-            .filter_map(|(key, _)| {
-                (key.starts_with("IAI_CALLGRIND_") && key.ends_with("VALGRIND_INCLUDE"))
-                    .then(|| (key.clone(), key.replace("IAI_CALLGRIND_", "GUNGRAUN_")))
-            })
-            .chain([(
-                "IAI_CALLGRIND_VALGRIND_PATH".to_owned(),
-                "GUNGRAUN_VALGRIND_PATH".to_owned(),
-            )])
-        {
+        for (old, new) in std::env::vars().filter_map(|(key, _)| {
+            if key.starts_with("IAI_CALLGRIND_") && key.ends_with("VALGRIND_INCLUDE") {
+                Some((
+                    key.clone(),
+                    key.replace("IAI_CALLGRIND_", "VALGRIND_REQUESTS_"),
+                ))
+            } else if key.starts_with("GUNGRAUN_") && key.ends_with("VALGRIND_INCLUDE") {
+                Some((key.clone(), key.replace("GUNGRAUN_", "VALGRIND_REQUESTS_")))
+            } else {
+                None
+            }
+        }) {
             if std::env::var(&old).is_ok() && std::env::var(&new).is_err() {
-                eprintln!(
-                    "gungraun: WARNING: With version 0.17.0, the name of the environment variable \
-                     `{old}` has changed to `{new}`."
+                println!(
+                    "cargo:warning=The name of the environment variable `{old}` has changed to \
+                     `{new}`."
                 );
             }
         }
@@ -77,12 +83,16 @@ mod imp {
     }
 
     fn include_dirs(target: &Target) -> impl Iterator<Item = String> {
+        let triple_env_key = target.triple_to_env_key();
         [
             Cow::Owned(format!(
-                "GUNGRAUN_{}_VALGRIND_INCLUDE",
-                target.triple.replace('-', "_").to_ascii_uppercase()
+                "VALGRIND_REQUESTS_{triple_env_key}_VALGRIND_INCLUDE",
             )),
+            Cow::Owned(format!("GUNGRAUN_{triple_env_key}_VALGRIND_INCLUDE")),
+            Cow::Owned(format!("IAI_CALLGRIND_{triple_env_key}_VALGRIND_INCLUDE")),
+            Cow::Borrowed("VALGRIND_REQUESTS_VALGRIND_INCLUDE"),
             Cow::Borrowed("GUNGRAUN_VALGRIND_INCLUDE"),
+            Cow::Borrowed("IAI_CALLGRIND_VALGRIND_INCLUDE"),
         ]
         .into_iter()
         .filter_map(|env| std::env::var(env.as_ref()).ok())
@@ -99,7 +109,7 @@ mod imp {
             builder.flag("-isystem/usr/local/include");
         }
 
-        if let Ok(env) = std::env::var("GUNGRAUN_CROSS_TARGET") {
+        if let Ok(env) = std::env::var("VALGRIND_REQUESTS_CROSS_TARGET") {
             let path = PathBuf::from("/valgrind/target/valgrind")
                 .join(env)
                 .join("include");
@@ -121,7 +131,7 @@ mod imp {
             builder = builder.clang_arg(format!("-isystem{env}"));
         }
 
-        if let Ok(env) = std::env::var("GUNGRAUN_CROSS_TARGET") {
+        if let Ok(env) = std::env::var("VALGRIND_REQUESTS_CROSS_TARGET") {
             let path = PathBuf::from("/valgrind/target/valgrind")
                 .join(env)
                 .join("include");
@@ -135,11 +145,11 @@ mod imp {
         let bindings = builder
             .clang_arg("-idiraftervalgrind/include")
             .header("valgrind/wrapper.h")
-            .allowlist_var("GR_IS_PLATFORM_SUPPORTED_BY_VALGRIND")
-            .allowlist_var("GR_VALGRIND_MAJOR")
-            .allowlist_var("GR_VALGRIND_MINOR")
-            .allowlist_type("GR_.*ClientRequest")
-            .rustified_enum("GR_.*ClientRequest")
+            .allowlist_var("VR_IS_PLATFORM_SUPPORTED_BY_VALGRIND")
+            .allowlist_var("VR_VALGRIND_MAJOR")
+            .allowlist_var("VR_VALGRIND_MINOR")
+            .allowlist_type("VR_.*ClientRequest")
+            .rustified_enum("VR_.*ClientRequest")
             .layout_tests(false)
             .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
             .generate()
@@ -159,10 +169,19 @@ mod imp {
     pub fn main() {
         print_migration_warnings();
 
+        let target = Target::from_env();
+        let triple_env_key = target.triple_to_env_key();
+
         println!("cargo:rerun-if-changed=valgrind/wrapper.h");
         println!("cargo:rerun-if-changed=valgrind/native.c");
+        println!("cargo:rerun-if-env-changed=VALGRIND_REQUESTS_VALGRIND_INCLUDE");
+        println!("cargo:rerun-if-env-changed=VALGRIND_REQUESTS_{triple_env_key}_VALGRIND_INCLUDE");
         println!("cargo:rerun-if-env-changed=GUNGRAUN_VALGRIND_INCLUDE");
-        println!("cargo:rerun-if-env-changed=GUNGRAUN_CROSS_TARGET");
+        println!("cargo:rerun-if-env-changed=GUNGRAUN_{triple_env_key}_VALGRIND_INCLUDE");
+        println!("cargo:rerun-if-env-changed=IAI_CALLGRIND_VALGRIND_INCLUDE");
+        println!("cargo:rerun-if-env-changed=IAI_CALLGRIND_{triple_env_key}_VALGRIND_INCLUDE");
+
+        println!("cargo:rerun-if-env-changed=VALGRIND_REQUESTS_CROSS_TARGET");
         println!("cargo:rerun-if-env-changed=TARGET");
 
         // rustc-check-cfg is introduced in rust with version 1.80 and avoids the compiler warnings
@@ -177,8 +196,6 @@ mod imp {
                 println!("cargo:rustc-check-cfg=cfg(client_requests_support,values({values}))");
             }
         }
-
-        let target = Target::from_env();
 
         // When building the docs on docs.rs we can take a shortcut
         if std::env::var("DOCS_RS").is_ok() {
@@ -217,7 +234,7 @@ mod imp {
             Some(Support::Riscv64)
         } else {
             let re = regex::Regex::new(
-                r"GR_IS_PLATFORM_SUPPORTED_BY_VALGRIND.*?=\s*(?<value>true|false)",
+                r"VR_IS_PLATFORM_SUPPORTED_BY_VALGRIND.*?=\s*(?<value>true|false)",
             )
             .expect("Regex should compile");
             let reader = BufReader::new(Cursor::new(bindings.to_string()));
@@ -250,7 +267,7 @@ mod imp {
     }
 }
 
-#[cfg(not(feature = "client_requests_defs"))]
+#[cfg(not(feature = "stubs"))]
 mod imp {
     pub fn main() {}
 }

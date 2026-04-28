@@ -9,31 +9,31 @@ export AR="${CROSS_TOOLCHAIN_PREFIX}ar"
 
 which "$CC" "$LD" "$AR"
 
-[[ -n "$GUNGRAUN_CROSS_TARGET" ]] || {
-  echo "GUNGRAUN_CROSS_TARGET environment variable is not defined"
+[[ -n "$VALGRIND_REQUESTS_CROSS_TARGET" ]] || {
+  echo "VALGRIND_REQUESTS_CROSS_TARGET environment variable is not defined"
   exit 1
 }
 
-case $GUNGRAUN_CROSS_TARGET in
+case $VALGRIND_REQUESTS_CROSS_TARGET in
 riscv64gc-unknown-linux-gnu) HOST="riscv64-linux-gnu" ;;
-*-*-*-*) HOST="$GUNGRAUN_CROSS_TARGET" ;;
-*-*-*) HOST="$GUNGRAUN_CROSS_TARGET" ;;
+*-*-*-*) HOST="$VALGRIND_REQUESTS_CROSS_TARGET" ;;
+*-*-*) HOST="$VALGRIND_REQUESTS_CROSS_TARGET" ;;
 *)
-  echo "Invalid target specification for GUNGRAUN_CROSS_TARGET: '$GUNGRAUN_CROSS_TARGET'" >&2
+  echo "Invalid target specification for VALGRIND_REQUESTS_CROSS_TARGET: '$VALGRIND_REQUESTS_CROSS_TARGET'" >&2
   exit 1
   ;;
 esac
 
-cd ~/valgrind/valgrind-"${GUNGRAUN_CROSS_VALGRIND_VERSION}"
+cd ~/valgrind/valgrind-"${VALGRIND_REQUESTS_CROSS_VALGRIND_VERSION}"
 
 dest_dir="/valgrind"
-target_dir="/target/valgrind/${GUNGRAUN_CROSS_TARGET}"
+target_dir="/target/valgrind/${VALGRIND_REQUESTS_CROSS_TARGET}"
 
 mkdir "$dest_dir"
 
 ./autogen.sh
 
-# According to valgrind/configure file, the GUNGRAUN_CROSS_TARGET is
+# According to valgrind/configure file, the VALGRIND_REQUESTS_CROSS_TARGET is
 # supported as is for the --host variable. If the target is not supported by
 # valgrind, configure will exit with an error.
 ./configure --prefix="$target_dir" \

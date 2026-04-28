@@ -1,8 +1,8 @@
 #![allow(unused_imports)]
 
 use client_request_tests::MARKER;
-use gungraun::{
-    client_requests, cstring, valgrind_printf, valgrind_println, valgrind_println_unchecked,
+use gungraun::client_requests::{
+    self, cstring, valgrind_printf, valgrind_println, valgrind_println_unchecked,
 };
 
 fn do_work(start: i32) -> i32 {

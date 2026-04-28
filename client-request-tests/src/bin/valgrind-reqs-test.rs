@@ -1,5 +1,5 @@
 use client_request_tests::MARKER;
-use gungraun::{client_requests, valgrind_println_unchecked};
+use gungraun::client_requests::{self, valgrind_println_unchecked};
 
 fn main() {
     unsafe { valgrind_println_unchecked!("{MARKER}") };

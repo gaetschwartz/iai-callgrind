@@ -1,3 +1,4 @@
+//! TODO: UPDATE DOCS
 //! The `gungraun` rustified interface to [Valgrind's Client Request
 //! Mechanism](https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq)
 //!
@@ -19,13 +20,13 @@
 //!
 //! If you encounter problems because the valgrind header files cannot be found, first ensure you
 //! have installed valgrind and your package manager's package includes the header files. If not or
-//! you use a custom build of valgrind, you can point the `GUNGRAUN_VALGRIND_INCLUDE` or the
-//! `GUNGRAUN_<triple>_VALGRIND_INCLUDE` environment variables to the include path where the
-//! valgrind headers can be found. The include directive used by `gungraun` is `#include
+//! you use a custom build of valgrind, you can point the `VALGRIND_REQUESTS_VALGRIND_INCLUDE` or
+//! the `VALGRIND_REQUESTS_<triple>_VALGRIND_INCLUDE` environment variables to the include path
+//! where the valgrind headers can be found. The include directive used by `gungraun` is `#include
 //! "valgrind/valgrind.h"` and is prefixed with `valgrind`. For example, if the valgrind header
 //! files reside in `/home/foo/repo/valgrind/{valgrind.h, callgrind.h, ...}`, then the environment
-//! variable has to point to `GUNGRAUN_VALGRIND_INCLUDE=/home/foo/repo` and not
-//! `GUNGRAUN_VALGRIND_INCLUDE=/home/foo/repo/valgrind`.
+//! variable has to point to `VALGRIND_REQUESTS_VALGRIND_INCLUDE=/home/foo/repo` and not
+//! `VALGRIND_REQUESTS_VALGRIND_INCLUDE=/home/foo/repo/valgrind`.
 //!
 //! Also, worth to consider is that the build of `gungraun` with client requests takes longer
 //! than the build without them.
@@ -46,10 +47,16 @@
 //!
 //! # Features
 //!
-//! The client requests are organized into two separate features. The `client_requests_defs` feature
-//! enables the definitions but doesn't run any code yet. To actually run the client requests you
-//! need to enable the `client_requests` feature. The `client_requests` feature implies
-//! `client_requests_defs`. For example, if you need to include the client requests into your
+//! This crate provides two feature levels:
+//!
+//! - **`stubs`**: Enables the client request definitions and build-time code generation, but all
+//!   client requests compile to no-ops that return default values. The compiler will optimize them
+//!   away entirely, making this a zero-cost option suitable for production code.
+//! - **`act`** *(default)*: Enables actual execution of client requests when running under
+//!   Valgrind. Implies `stubs`.
+//!
+//! When using the `gungraun` crate, these map to the `client_requests_defs` and `client_requests`
+//! features, respectively. For example, if you need to include the client requests into your
 //! production code, you usually don't want them to run if not running under valgrind in the
 //! `gungraun` benchmarks. In order to achieve this, the `client_requests_defs` can be safely
 //! included in the production code since the compiler will optimize them completely away. So, in
@@ -128,7 +135,9 @@
 //! Client Request
 //! mechanism](https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq)
 
-#![allow(clippy::inline_always)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![doc(test(attr(warn(unused))))]
+#![doc(test(attr(allow(unused_extern_crates))))]
 
 /// Returns `true` if a client request is defined and available in the used valgrind version.
 ///
@@ -230,7 +239,7 @@ macro_rules! format_cstring {
 }
 
 cfg_if! {
-    if #[cfg(feature = "client_requests")] {
+    if #[cfg(feature = "act")] {
         /// Allow prints to valgrind log
         ///
         /// This macro is a safe variant of the `VALGRIND_PRINTF` function, checking for `\0` bytes
@@ -245,14 +254,14 @@ cfg_if! {
                 ) {
                     Ok(c_string) => {
                         unsafe {
-                            $crate::client_requests::__valgrind_print(
+                            $crate::__valgrind_print(
                                 c_string.as_ptr()
                             );
                         }
                         Ok(())
                     },
                     Err(error) => Err(
-                        $crate::client_requests::error::ClientRequestError::from(error)
+                        $crate::error::ClientRequestError::from(error)
                     )
                 }
             }};
@@ -268,8 +277,8 @@ cfg_if! {
         macro_rules! valgrind_printf_unchecked {
             ($($args:tt)*) => {{
                 let string = format!("{}\0", format_args!($($args)*));
-                $crate::client_requests::__valgrind_print(
-                    string.as_ptr() as *const $crate::cty::c_char
+                $crate::__valgrind_print(
+                    string.as_ptr() as *const ::cty::c_char
                 );
             }};
         }
@@ -286,14 +295,14 @@ cfg_if! {
                 ) {
                     Ok(c_string) => {
                         unsafe {
-                            $crate::client_requests::__valgrind_print(
+                            $crate::__valgrind_print(
                                 c_string.as_ptr()
                             );
                         }
                         Ok(())
                     },
                     Err(error) => Err(
-                        $crate::client_requests::error::ClientRequestError::from(error)
+                        $crate::error::ClientRequestError::from(error)
                     )
                 }
             }};
@@ -307,8 +316,8 @@ cfg_if! {
             () => { $crate::valgrind_printf_unchecked!("\n") };
             ($($args:tt)*) => {{
                 let string = format!("{}\n\0", format_args!($($args)*));
-                $crate::client_requests::__valgrind_print(
-                    string.as_ptr() as *const $crate::cty::c_char
+                $crate::__valgrind_print(
+                    string.as_ptr() as *const ::cty::c_char
                 );
             }};
         }
@@ -324,14 +333,14 @@ cfg_if! {
                 ) {
                     Ok(c_string) => {
                         unsafe {
-                            $crate::client_requests::__valgrind_print_backtrace(
+                            $crate::__valgrind_print_backtrace(
                                 c_string.as_ptr()
                             );
                         }
                         Ok(())
                     },
                     Err(error) => Err(
-                        $crate::client_requests::error::ClientRequestError::from(error)
+                        $crate::error::ClientRequestError::from(error)
                     )
                 }
             }};
@@ -344,8 +353,8 @@ cfg_if! {
         macro_rules! valgrind_printf_backtrace_unchecked {
             ($($arg:tt)*) => {{
                 let string = format!("{}\0", format_args!($($arg)*));
-                $crate::client_requests::__valgrind_print_backtrace(
-                    string.as_ptr() as *const $crate::cty::c_char
+                $crate::__valgrind_print_backtrace(
+                    string.as_ptr() as *const ::cty::c_char
                 );
             }};
         }
@@ -362,14 +371,14 @@ cfg_if! {
                 ) {
                     Ok(c_string) => {
                         unsafe {
-                            $crate::client_requests::__valgrind_print_backtrace(
+                            $crate::__valgrind_print_backtrace(
                                 c_string.as_ptr()
                             );
                         }
                         Ok(())
                     },
                     Err(error) => Err(
-                        $crate::client_requests::error::ClientRequestError::from(error)
+                        $crate::error::ClientRequestError::from(error)
                     )
                 }
             }};
@@ -384,8 +393,8 @@ cfg_if! {
             ($($arg:tt)*) => {{
                 let string = format!("{}\n\0", format_args!($($arg)*));
                 unsafe {
-                    $crate::client_requests::__valgrind_print_backtrace(
-                        string.as_ptr() as *const $crate::cty::c_char
+                    $crate::__valgrind_print_backtrace(
+                        string.as_ptr() as *const ::cty::c_char
                     );
                 }
             }};
@@ -400,7 +409,7 @@ cfg_if! {
         #[macro_export]
         macro_rules! valgrind_printf {
             ($($arg:tt)*) => {{
-                let res: Result<(), $crate::client_requests::error::ClientRequestError> = Ok(());
+                let res: Result<(), $crate::error::ClientRequestError> = Ok(());
                 res
             }};
         }
@@ -413,7 +422,7 @@ cfg_if! {
         /// This variant performs better than [`crate::valgrind_printf`].
         #[macro_export]
         macro_rules! valgrind_printf_unchecked {
-            ($($arg:tt)*) => {{ $crate::client_requests::__no_op() }};
+            ($($arg:tt)*) => {{ $crate::__no_op() }};
         }
 
         /// Allow prints to valgrind log ending with a newline
@@ -422,7 +431,7 @@ cfg_if! {
         #[macro_export]
         macro_rules! valgrind_println {
             ($($arg:tt)*) => {{
-                let res: Result<(), $crate::client_requests::error::ClientRequestError> = Ok(());
+                let res: Result<(), $crate::error::ClientRequestError> = Ok(());
                 res
             }};
         }
@@ -432,7 +441,7 @@ cfg_if! {
         /// See also [`crate::valgrind_printf_unchecked`]
         #[macro_export]
         macro_rules! valgrind_println_unchecked {
-            ($($arg:tt)*) => {{ $crate::client_requests::__no_op() }};
+            ($($arg:tt)*) => {{ $crate::__no_op() }};
         }
 
         /// Allow prints to valgrind log with a backtrace
@@ -441,7 +450,7 @@ cfg_if! {
         #[macro_export]
         macro_rules! valgrind_printf_backtrace {
             ($($arg:tt)*) => {{
-                let res: Result<(), $crate::client_requests::error::ClientRequestError> = Ok(());
+                let res: Result<(), $crate::error::ClientRequestError> = Ok(());
                 res
             }};
         }
@@ -451,7 +460,7 @@ cfg_if! {
         /// See also [`crate::valgrind_printf_unchecked`]
         #[macro_export]
         macro_rules! valgrind_printf_backtrace_unchecked {
-            ($($arg:tt)*) => {{ $crate::client_requests::__no_op() }};
+            ($($arg:tt)*) => {{ $crate::__no_op() }};
         }
 
         /// Allow prints to valgrind log with a backtrace ending the formatted string with a newline
@@ -460,7 +469,7 @@ cfg_if! {
         #[macro_export]
         macro_rules! valgrind_println_backtrace {
             ($($arg:tt)*) => {{
-                let res: Result<(), $crate::client_requests::error::ClientRequestError> = Ok(());
+                let res: Result<(), $crate::error::ClientRequestError> = Ok(());
                 res
             }};
         }
@@ -470,7 +479,7 @@ cfg_if! {
         /// See also [`crate::valgrind_printf_unchecked`]
         #[macro_export]
         macro_rules! valgrind_println_backtrace_unchecked {
-            ($($arg:tt)*) => {{ $crate::client_requests::__no_op() }};
+            ($($arg:tt)*) => {{ $crate::__no_op() }};
         }
     }
 }
@@ -513,10 +522,10 @@ pub type RawFd = cty::c_int;
 /// version 3.5 or earlier. `VALGRIND_VERSION` is None is this case, else it is a tuple `(MAJOR,
 /// MINOR)`
 pub const VALGRIND_VERSION: Option<(u32, u32)> = {
-    if bindings::GR_VALGRIND_MAJOR == 0 {
+    if bindings::VR_VALGRIND_MAJOR == 0 {
         None
     } else {
-        Some((bindings::GR_VALGRIND_MAJOR, bindings::GR_VALGRIND_MINOR))
+        Some((bindings::VR_VALGRIND_MAJOR, bindings::VR_VALGRIND_MINOR))
     }
 };
 

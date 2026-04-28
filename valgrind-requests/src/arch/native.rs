@@ -1,5 +1,5 @@
 //! Provide the native implementation of `valgrind_do_client_request_expr`
-use crate::client_requests::native_bindings;
+use crate::native_bindings;
 
 /// Valgrind's native implementation of `valgrind_do_client_request_expr`
 #[inline(always)]

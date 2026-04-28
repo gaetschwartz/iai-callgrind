@@ -364,6 +364,7 @@
 //! # }
 //! ```
 //!
+//! TODO: UPDATE
 //! ## Client requests
 //!
 //! `gungraun` supports valgrind client requests. See the documentation of the
@@ -508,8 +509,6 @@ pub mod prelude {
 pub mod __internal;
 #[cfg(feature = "default")]
 mod bin_bench;
-#[cfg(feature = "client_requests_defs")]
-pub mod client_requests;
 #[cfg(feature = "default")]
 mod common;
 #[cfg(feature = "default")]
@@ -542,3 +541,6 @@ pub use gungraun_runner::api::{
 };
 #[cfg(feature = "default")]
 pub use lib_bench::LibraryBenchmarkConfig;
+// FIX: use valgrind_requests directly
+#[cfg(feature = "client_requests_defs")]
+pub use valgrind_requests as client_requests;

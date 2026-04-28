@@ -16,11 +16,14 @@ version = "0.1.0"
 [build-dependencies]
 fs_extra = { workspace = true }
 
+[features]
+_act = ["gungraun/client_requests"]
+_stubs = ["gungraun/client_requests_defs"]
+default = ["_stubs"]
+
 [dependencies]
 cty = { workspace = true }
-gungraun = { path = "../gungraun", version = "=0.18.1", default-features = false, features = [
-  "client_requests_defs",
-] }
+gungraun = { path = "../gungraun", version = "=0.18.1", default-features = false }
 lazy_static = { workspace = true }
 regex = { workspace = true }
 shlex = { workspace = true }

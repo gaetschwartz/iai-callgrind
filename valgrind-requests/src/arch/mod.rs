@@ -5,7 +5,7 @@
 
 // The `client_requests_support` cfg is set in the build script
 cfg_if::cfg_if! {
-    if #[cfg(not(feature = "client_requests"))] {
+    if #[cfg(not(feature = "act"))] {
         pub mod imp {
             #[inline(always)]
             #[allow(clippy::similar_names)]
@@ -46,7 +46,7 @@ cfg_if::cfg_if! {
 }
 
 cfg_if::cfg_if! {
-    if #[cfg(feature = "client_requests")] {
+    if #[cfg(feature = "act")] {
         #[inline(always)]
         pub fn valgrind_do_client_request_stmt(
             request: cty::c_uint,

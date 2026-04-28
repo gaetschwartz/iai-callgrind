@@ -1,10 +1,10 @@
 #![allow(unused_imports)]
 
 use client_request_tests::MARKER;
-use gungraun::{
-    client_requests, valgrind_printf, valgrind_printf_backtrace,
-    valgrind_printf_backtrace_unchecked, valgrind_printf_unchecked, valgrind_println,
-    valgrind_println_backtrace, valgrind_println_backtrace_unchecked, valgrind_println_unchecked,
+use gungraun::client_requests::{
+    self, valgrind_printf, valgrind_printf_backtrace, valgrind_printf_backtrace_unchecked,
+    valgrind_printf_unchecked, valgrind_println, valgrind_println_backtrace,
+    valgrind_println_backtrace_unchecked, valgrind_println_unchecked,
 };
 
 #[allow(unused_variables)]

@@ -8,5 +8,5 @@ cd
 
 mkdir valgrind
 cd valgrind
-wget https://sourceware.org/pub/valgrind/valgrind-"${GUNGRAUN_CROSS_VALGRIND_VERSION}".tar.bz2
-tar xf valgrind-"${GUNGRAUN_CROSS_VALGRIND_VERSION}".tar.bz2
+wget https://sourceware.org/pub/valgrind/valgrind-"${VALGRIND_REQUESTS_CROSS_VALGRIND_VERSION}".tar.bz2
+tar xf valgrind-"${VALGRIND_REQUESTS_CROSS_VALGRIND_VERSION}".tar.bz2

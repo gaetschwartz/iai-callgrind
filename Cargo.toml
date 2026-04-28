@@ -4,6 +4,7 @@ members = [
   "gungraun",
   "gungraun-runner",
   "gungraun-macros",
+  "valgrind-requests",
   "benchmark-tests",
   "client-request-tests",
   "schema-gen",
