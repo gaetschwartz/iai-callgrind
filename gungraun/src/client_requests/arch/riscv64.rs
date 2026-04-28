@@ -22,7 +22,7 @@ pub fn valgrind_do_client_request_expr(
         asm! {
             ".option push",
             ".option norvc",
-            "srli zero, zero, 3"
+            "srli zero, zero, 3",
             "srli zero, zero, 13",
             "srli zero, zero, 51",
             "srli zero, zero, 61",

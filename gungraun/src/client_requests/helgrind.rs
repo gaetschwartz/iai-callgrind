@@ -41,10 +41,224 @@
 //
 //! All public client requests from the `helgrind.h` header file
 //!
+//! The client requests which are for internal use only (e.g. condition variable, spin lock) are not
+//! available.
+//!
 //! See also [Helgrind Client
 //! Requests](https://valgrind.org/docs/manual/hg-manual.html#hg-manual.client-requests)
-use super::arch::valgrind_do_client_request_stmt;
-use super::{bindings, fatal_error};
+use super::{
+    bindings, fatal_error, valgrind_do_client_request_expr, valgrind_do_client_request_stmt,
+};
+
+/// Notify immediately after mutex creation
+///
+/// `mb_rec` indicates whether the mutex is recursive or not.
+#[inline(always)]
+pub fn mutex_init_post(mutex: *const (), mb_rec: bool) {
+    do_client_request!(
+        "helgrind::mutex_init_post",
+        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_MUTEX_INIT_POST,
+        mutex as usize,
+        usize::from(mb_rec),
+        0,
+        0,
+        0
+    );
+}
+
+/// Notify immediately before mutex acquisition
+///
+/// `is_try_lock` indicates whether this is a try-lock operation (true) or a normal lock (false).
+#[inline(always)]
+pub fn mutex_lock_pre(mutex: *const (), is_try_lock: bool) {
+    do_client_request!(
+        "helgrind::mutex_lock_pre",
+        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_MUTEX_LOCK_PRE,
+        mutex as usize,
+        usize::from(is_try_lock),
+        0,
+        0,
+        0
+    );
+}
+
+/// Notify here immediately after a successful mutex acquisition
+#[inline(always)]
+pub fn mutex_lock_post(mutex: *const ()) {
+    do_client_request!(
+        "helgrind::mutex_lock_post",
+        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_MUTEX_LOCK_POST,
+        mutex as usize,
+        0,
+        0,
+        0,
+        0
+    );
+}
+
+/// Notify here immediately before mutex release
+#[inline(always)]
+pub fn mutex_unlock_pre(mutex: *const ()) {
+    do_client_request!(
+        "helgrind::mutex_unlock_pre",
+        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_MUTEX_UNLOCK_PRE,
+        mutex as usize,
+        0,
+        0,
+        0,
+        0
+    );
+}
+
+/// Notify here immediately after mutex release
+#[inline(always)]
+pub fn mutex_unlock_post(mutex: *const ()) {
+    do_client_request!(
+        "helgrind::mutex_unlock_post",
+        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_MUTEX_UNLOCK_POST,
+        mutex as usize,
+        0,
+        0,
+        0,
+        0
+    );
+}
+
+/// Notify here immediately before mutex destruction
+#[inline(always)]
+pub fn mutex_destroy_pre(mutex: *const ()) {
+    do_client_request!(
+        "helgrind::mutex_destroy_pre",
+        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_MUTEX_DESTROY_PRE,
+        mutex as usize,
+        0,
+        0,
+        0,
+        0
+    );
+}
+
+/// Notify here immediately after semaphore creation
+///
+/// `value` is the initial value of the semaphore.
+#[inline(always)]
+pub fn sem_init_post(sem: *const (), value: usize) {
+    do_client_request!(
+        "helgrind::sem_init_post",
+        bindings::GR_HelgrindClientRequest::GR_HG_POSIX_SEM_INIT_POST,
+        sem as usize,
+        value,
+        0,
+        0,
+        0
+    );
+}
+
+/// Notify here immediately after a semaphore wait (an acquire-style operation)
+#[inline(always)]
+pub fn sem_wait_post(sem: *const ()) {
+    do_client_request!(
+        "helgrind::sem_wait_post",
+        bindings::GR_HelgrindClientRequest::GR_HG_POSIX_SEM_ACQUIRED,
+        sem as usize,
+        0,
+        0,
+        0,
+        0
+    );
+}
+
+/// Notify here immediately before semaphore post (a release-style operation)
+#[inline(always)]
+pub fn sem_post_pre(sem: *const ()) {
+    do_client_request!(
+        "helgrind::sem_post_pre",
+        bindings::GR_HelgrindClientRequest::GR_HG_POSIX_SEM_RELEASED,
+        sem as usize,
+        0,
+        0,
+        0,
+        0
+    );
+}
+
+/// Notify here immediately before semaphore destruction
+#[inline(always)]
+pub fn sem_destroy_pre(sem: *const ()) {
+    do_client_request!(
+        "helgrind::sem_destroy_pre",
+        bindings::GR_HelgrindClientRequest::GR_HG_POSIX_SEM_DESTROY_PRE,
+        sem as usize,
+        0,
+        0,
+        0,
+        0
+    );
+}
+
+/// Notify here immediately before barrier creation
+///
+/// `count` is the barrier capacity. `resizable` indicates whether the barrier may be resized
+/// or not.
+#[inline(always)]
+pub fn barrier_init_pre(bar: *const (), count: usize, resizable: bool) {
+    do_client_request!(
+        "helgrind::barrier_init_pre",
+        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_BARRIER_INIT_PRE,
+        bar as usize,
+        count,
+        usize::from(resizable),
+        0,
+        0
+    );
+}
+
+/// Notify here immediately before arrival at a barrier
+#[inline(always)]
+pub fn barrier_wait_pre(bar: *const ()) {
+    do_client_request!(
+        "helgrind::barrier_wait_pre",
+        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_BARRIER_WAIT_PRE,
+        bar as usize,
+        0,
+        0,
+        0,
+        0
+    );
+}
+
+/// Notify here immediately before a barrier resize (change of barrier capacity)
+///
+/// If `new_count` >= the existing capacity, there is no change in the state of any threads
+/// waiting at the barrier. If `new_count` < the existing capacity and >= `new_count` threads are
+/// currently waiting, this is considered to also have the effect of telling the checker that all
+/// waiting threads have now moved past the barrier.
+#[inline(always)]
+pub fn barrier_resize_pre(bar: *const (), new_count: usize) {
+    do_client_request!(
+        "helgrind::barrier_resize_pre",
+        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_BARRIER_RESIZE_PRE,
+        bar as usize,
+        new_count,
+        0,
+        0,
+        0
+    );
+}
+
+/// Notify here immediately before barrier destruction
+#[inline(always)]
+pub fn barrier_destroy_pre(bar: *const ()) {
+    do_client_request!(
+        "helgrind::barrier_destroy_pre",
+        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_BARRIER_DESTROY_PRE,
+        bar as usize,
+        0,
+        0,
+        0,
+        0
+    );
+}
 
 /// Clean memory state
 ///
@@ -61,6 +275,140 @@ pub fn clean_memory(start: *const (), len: usize) {
         bindings::GR_HelgrindClientRequest::GR_HG_CLEAN_MEMORY,
         start as usize,
         len,
+        0,
+        0,
+        0
+    );
+}
+
+/// Clean memory state for a heap block starting at `blockstart`
+///
+/// The same as [`clean_memory`] but for a heap block starting at `blockstart`. This allows
+/// painting when we only know the address of an object, but not its size, which is sometimes the
+/// case in C++ code involving inheritance, and in which RTTI is not, for whatever reason,
+/// available.
+///
+/// Returns the number of bytes painted, which can be zero for a zero-sized block. Hence, return
+/// values >= 0 indicate success (the block was found), and the value -1 indicates block not found,
+/// and -2 is returned when not running on Helgrind.
+#[inline(always)]
+#[allow(clippy::cast_possible_wrap)]
+pub fn clean_memory_heapblock(blockstart: *const ()) -> isize {
+    do_client_request!(
+        "helgrind::clean_memory_heapblock",
+        usize::MAX - 1,
+        bindings::GR_HelgrindClientRequest::GR_HG_CLEAN_MEMORY_HEAPBLOCK,
+        blockstart as usize,
+        0,
+        0,
+        0,
+        0
+    ) as isize
+}
+
+/// Tell Helgrind that an address range is not to be "tracked" until further notice.
+///
+/// This puts it in the NOACCESS state, in which case we ignore all reads and writes to it. Useful
+/// for ignoring ranges of memory where there might be races we don't want to see. If the memory is
+/// subsequently reallocated via malloc/new/stack allocation, then it is put back in the trackable
+/// state. Hence it is safe in the situation where checking is disabled, the containing area is
+/// deallocated and later reallocated for some other purpose.
+#[inline(always)]
+pub fn disable_checking(start: *const (), len: usize) {
+    do_client_request!(
+        "helgrind::disable_checking",
+        bindings::GR_HelgrindClientRequest::GR_HG_ARANGE_MAKE_UNTRACKED,
+        start as usize,
+        len,
+        0,
+        0,
+        0
+    );
+}
+
+/// Re-enable race checking for an address range.
+///
+/// That is, make it once again subject to the normal race-checking machinery. This puts it in the
+/// same state as new memory allocated by this thread -- that is, basically owned exclusively by
+/// this thread. See also [`disable_checking`]
+#[inline(always)]
+pub fn enable_checking(start: *const (), len: usize) {
+    do_client_request!(
+        "helgrind::enable_checking",
+        bindings::GR_HelgrindClientRequest::GR_HG_ARANGE_MAKE_TRACKED,
+        start as usize,
+        len,
+        0,
+        0,
+        0
+    );
+}
+
+/// Checks the accessibility bits for addresses [addr..addr+len-1].
+///
+/// If `abits` array is provided, copy the accessibility bits in `abits`.
+///
+/// Return values:
+///   -2   if not running on helgrind
+///   -1   if any part of `abits` is not addressable
+///   >= 0 : success.
+///
+/// When success, it returns the number of addressable bytes found. So, to check that a whole range
+/// is addressable, check
+///
+/// ```ignore
+/// get_abits(addr, std::ptr::null_mut(), len) == len
+/// ```
+///
+/// In addition, if you want to examine the addressability of each byte of the range, you need to
+/// provide a non null ptr as second argument, pointing to an array of unsigned char of length len.
+/// Addressable bytes are indicated with 0xff. Non-addressable bytes are indicated with 0x00.
+#[inline(always)]
+#[allow(clippy::cast_possible_wrap)]
+pub fn get_abits(addr: *const (), abits: *mut u8, len: usize) -> isize {
+    do_client_request!(
+        "helgrind::get_abits",
+        usize::MAX - 1,
+        bindings::GR_HelgrindClientRequest::GR_HG_GET_ABITS,
+        addr as usize,
+        abits as usize,
+        len,
+        0,
+        0
+    ) as isize
+}
+
+/// End-user request for Ada applications compiled with GNAT.
+///
+/// Helgrind understands the Ada concept of Ada task dependencies and terminations. See Ada
+/// Reference Manual section 9.3 "Task Dependence - Termination of Tasks".
+///
+/// However, in some cases, the master of (terminated) tasks completes only when the application
+/// exits. An example of this is dynamically allocated tasks with an access type defined at Library
+/// Level. By default, the state of such tasks in Helgrind will be 'exited but join not done yet'.
+/// Many tasks in such a state are however causing Helgrind CPU and memory to increase
+/// significantly. `gnat_dependent_master_join` can be used to indicate to Helgrind that a not yet
+/// completed master has however already 'seen' the termination of a dependent : this is
+/// conceptually the same as a `pthread_join` and causes the cleanup of the dependent as done by
+/// Helgrind when a master completes. This allows to avoid the overhead in helgrind caused by such
+/// tasks. A typical usage for a master to indicate it has done conceptually a join with a dependent
+/// task before the master completes is:
+///
+/// ```text
+///    while not Dep_Task'Terminated loop
+///       ... do whatever to wait for Dep_Task termination.
+///    end loop;
+///    gnat_dependent_master_join
+///      (Dep_Task'Identity,
+///       Ada.Task_Identification.Current_Task);
+/// ```
+#[inline(always)]
+pub fn gnat_dependent_master_join(dep: *const (), master: *const ()) {
+    do_client_request!(
+        "helgrind::gnat_dependent_master_join",
+        bindings::GR_HelgrindClientRequest::GR_HG_GNAT_DEPENDENT_MASTER_JOIN,
+        dep as usize,
+        master as usize,
         0,
         0,
         0
@@ -183,7 +531,7 @@ pub fn annotate_rwlock_create(lock: *const ()) {
 pub fn annotate_rwlock_destroy(lock: *const ()) {
     do_client_request!(
         "helgrind::annotate_rwlock_destroy",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_RWLOCK_INIT_POST,
+        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_RWLOCK_DESTROY_PRE,
         lock as usize,
         0,
         0,
@@ -212,16 +560,16 @@ pub fn annotate_rwlock_acquired(lock: *const (), is_writer_lock: bool) {
 
 /// Report that the lock at address `lock` is about to be released
 ///
-/// If `is_writer_lock` is true then it is a writer lock else it is a reader lock.
+/// `is_writer_lock` is ignored.
 ///
 /// See also [`annotate_rwlock_create`]
 #[inline(always)]
-pub fn annotate_rwlock_released(lock: *const (), is_writer_lock: bool) {
+pub fn annotate_rwlock_released(lock: *const (), _is_writer_lock: bool) {
     do_client_request!(
         "helgrind::annotate_rwlock_released",
         bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_RWLOCK_RELEASED,
         lock as usize,
-        usize::from(is_writer_lock),
+        0,
         0,
         0,
         0

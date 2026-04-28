@@ -1,6 +1,6 @@
 //! The build script
 
-// spell-checker: ignore rustified iquote iquotevalgrind
+// spell-checker: ignore idirafter idiraftervalgrind isystem rustified
 
 #[cfg(feature = "client_requests_defs")]
 mod imp {
@@ -92,21 +92,21 @@ mod imp {
         let mut builder = cc::Build::new();
 
         for env in include_dirs(target) {
-            builder.include(env);
+            builder.flag(format!("-isystem{env}"));
         }
 
         if target.os == "freebsd" {
-            builder.include("/usr/local/include");
+            builder.flag("-isystem/usr/local/include");
         }
 
         if let Ok(env) = std::env::var("GUNGRAUN_CROSS_TARGET") {
             let path = PathBuf::from("/valgrind/target/valgrind")
                 .join(env)
                 .join("include");
-            builder.include(path);
+            builder.flag(format!("-isystem{}", path.display()));
         }
 
-        builder.include("valgrind/include");
+        builder.flag("-idiraftervalgrind/include");
 
         builder
             .debug(true)
@@ -118,23 +118,22 @@ mod imp {
         let mut builder = builder();
 
         for env in include_dirs(target) {
-            builder = builder.clang_arg(format!("-iquote{env}"));
+            builder = builder.clang_arg(format!("-isystem{env}"));
         }
 
         if let Ok(env) = std::env::var("GUNGRAUN_CROSS_TARGET") {
             let path = PathBuf::from("/valgrind/target/valgrind")
                 .join(env)
                 .join("include");
-            builder = builder.clang_arg(format!("-iquote{}", path.display()));
+            builder = builder.clang_arg(format!("-isystem{}", path.display()));
         }
 
         if target.os == "freebsd" {
-            builder = builder.clang_arg("-iquote/usr/local/include");
+            builder = builder.clang_arg("-isystem/usr/local/include");
         }
 
         let bindings = builder
-            .clang_arg("-iquote/usr/include")
-            .clang_arg("-iquotevalgrind/include")
+            .clang_arg("-idiraftervalgrind/include")
             .header("valgrind/wrapper.h")
             .allowlist_var("GR_IS_PLATFORM_SUPPORTED_BY_VALGRIND")
             .allowlist_var("GR_VALGRIND_MAJOR")
@@ -197,7 +196,7 @@ mod imp {
                 || target.os == "freebsd"
                 || (target.vendor == "apple" && target.os == "darwin")
                 || (target.os == "windows" && target.env == "gnu")
-                || ((target.vendor == "sun") || target.vendor == "pc") && target.os == "solaris")
+                || ((target.vendor == "sun" || target.vendor == "pc") && target.os == "solaris"))
         {
             Some(Support::X86_64)
         } else if target.arch == "x86"
@@ -205,7 +204,7 @@ mod imp {
                 || target.os == "freebsd"
                 || (target.vendor == "apple" && target.os == "darwin")
                 || (target.os == "windows" && target.env == "gnu")
-                || ((target.vendor == "sun") || target.vendor == "pc") && target.os == "solaris")
+                || ((target.vendor == "sun" || target.vendor == "pc") && target.os == "solaris"))
         {
             Some(Support::X86)
         } else if target.arch == "arm" && target.os == "linux" && target.env == "gnu" {

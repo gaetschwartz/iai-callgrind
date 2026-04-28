@@ -118,6 +118,47 @@ pub fn discard_translations(addr: *const (), len: usize) {
     );
 }
 
+/// Returns `true` if the tool replaces malloc (e.g., memcheck).
+///
+/// Returns `false` if the tool does not replace malloc (e.g., cachegrind and callgrind) or if the
+/// executable is not running under Valgrind.
+#[inline(always)]
+pub fn replaces_malloc() -> bool {
+    do_client_request!(
+        "valgrind::replaces_malloc",
+        0,
+        bindings::GR_ValgrindClientRequest::GR_VALGRIND_REPLACES_MALLOC,
+        0,
+        0,
+        0,
+        0,
+        0
+    ) != 0
+}
+
+/// Get the running tool name as a string.
+///
+/// Returns the required length (including terminating nul) for the input `buffer`. Returns `0` and
+/// the contents of `buffer` are not modified if not running under Valgrind. `buffer` may be
+/// [`std::ptr::null_mut`], which can be used to query the required buffer length before making a
+/// real request for the tool name.
+///
+/// `len` should be the length of `buffer`. The returned string in `buffer` will be nul terminated.
+/// If `buffer` is too small to contain the tool name then the name will be truncated.
+#[inline(always)]
+pub fn get_toolname(buffer: *mut u8, len: usize) -> usize {
+    do_client_request!(
+        "valgrind::get_toolname",
+        0,
+        bindings::GR_ValgrindClientRequest::GR_VALGRIND_GET_TOOLNAME,
+        buffer as usize,
+        len,
+        0,
+        0,
+        0
+    )
+}
+
 /// Allow control to move from the simulated CPU to the real CPU, calling an arbitrary function.
 ///
 /// Note that the current [`ThreadId`] is inserted as the first argument.
@@ -705,18 +746,15 @@ pub fn map_ip_to_srcloc(addr: *const (), buf64: *const ()) -> usize {
 /// enabled.
 #[inline(always)]
 pub fn disable_error_reporting() {
-    if is_def!(bindings::GR_ValgrindClientRequest::GR_CHANGE_ERR_DISABLEMENT) {
-        valgrind_do_client_request_stmt(
-            bindings::GR_ValgrindClientRequest::GR_CHANGE_ERR_DISABLEMENT as cty::c_uint,
-            1,
-            0,
-            0,
-            0,
-            0,
-        );
-    } else {
-        fatal_error("valgrind::disable_error_reporting");
-    }
+    do_client_request!(
+        "valgrind::disable_error_reporting",
+        bindings::GR_ValgrindClientRequest::GR_CHANGE_ERR_DISABLEMENT,
+        1,
+        0,
+        0,
+        0,
+        0
+    );
 }
 
 /// Re-enable error reporting
