@@ -22,11 +22,21 @@ With the `0.17.0` version the project was renamed to `Gungraun`. The packages
 were renamed from `iai-callgrind` to `gungraun`, `iai-callgrind-runner` to
 `gungraun-runner` and `iai-callgrind-macros` to `gungraun-macros`.
 
+The `valgrind-requests` package was extracted from the `gungraun` package and is
+now an independent package with an own
+[CHANGELOG](./valgrind-requests/CHANGELOG.md) file.
+
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+
+- Extraction of the `valgrind-requests` package from the `gungraun` package. For
+  the `gungraun` package this is purely cosmetic and doesn't introduce api
+  changes.
 
 ## [0.18.1] - 2026-04-10
 
