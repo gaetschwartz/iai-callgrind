@@ -1,5 +1,5 @@
 use client_request_tests::MARKER;
-use gungraun::client_requests::{self, cstring, valgrind_println_unchecked};
+use valgrind_requests::{self, cstring, memcheck, valgrind, valgrind_println_unchecked};
 
 fn leak_memory() {
     for _ in 0..1 {
@@ -17,20 +17,20 @@ fn leak_memory() {
 fn main() {
     unsafe { valgrind_println_unchecked!("{MARKER}") };
 
-    unsafe { client_requests::valgrind::clo_change(cstring!("--leak-check=summary\0")) };
+    unsafe { valgrind::clo_change(cstring!("--leak-check=summary\0")) };
 
-    client_requests::memcheck::do_leak_check();
-    let _ = client_requests::memcheck::count_leaks();
-
-    leak_memory();
-
-    client_requests::memcheck::do_leak_check();
-    let _ = client_requests::memcheck::count_leaks();
+    memcheck::do_leak_check();
+    let _ = memcheck::count_leaks();
 
     leak_memory();
 
-    client_requests::memcheck::do_new_leak_check();
-    let _ = client_requests::memcheck::count_leaks();
+    memcheck::do_leak_check();
+    let _ = memcheck::count_leaks();
 
-    std::process::exit(client_requests::valgrind::running_on_valgrind() as i32);
+    leak_memory();
+
+    memcheck::do_new_leak_check();
+    let _ = memcheck::count_leaks();
+
+    std::process::exit(valgrind::running_on_valgrind() as i32);
 }

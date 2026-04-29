@@ -51,7 +51,7 @@ gungraun-macros = { path = "../gungraun-macros", version = "=0.8.0", optional = 
 gungraun-runner = { path = "../gungraun-runner", version = "=0.18.1", default-features = false, features = [
   "api",
 ], optional = true }
-valgrind-requests = { path = "../valgrind-requests", version = "1.0.0", optional = true, default-features = false }
+valgrind-requests = { path = "../valgrind-requests", version = "=1.0.0", optional = true, default-features = false }
 
 [dev-dependencies]
 fs_extra = { workspace = true }

@@ -1,8 +1,9 @@
 #![allow(unused_imports)]
 
 use client_request_tests::MARKER;
-use gungraun::client_requests::{
-    self, cstring, valgrind_printf, valgrind_println, valgrind_println_unchecked,
+use valgrind_requests::{
+    self, callgrind, cstring, valgrind, valgrind_printf, valgrind_println,
+    valgrind_println_unchecked,
 };
 
 fn do_work(start: i32) -> i32 {
@@ -17,13 +18,13 @@ fn do_work(start: i32) -> i32 {
 fn client_requests_1() -> i32 {
     let mut sum = do_work(0);
 
-    client_requests::callgrind::zero_stats();
+    callgrind::zero_stats();
 
     sum += do_work(sum);
-    client_requests::callgrind::dump_stats();
+    callgrind::dump_stats();
 
     sum += do_work(sum);
-    client_requests::callgrind::dump_stats_at(unsafe { cstring!("Please dump here") });
+    callgrind::dump_stats_at(unsafe { cstring!("Please dump here") });
 
     do_work(sum)
 }
@@ -31,10 +32,10 @@ fn client_requests_1() -> i32 {
 fn client_requests_2() -> i32 {
     let mut sum = client_requests_1();
 
-    client_requests::callgrind::toggle_collect();
+    callgrind::toggle_collect();
 
     sum += client_requests_1();
-    client_requests::callgrind::toggle_collect();
+    callgrind::toggle_collect();
 
     sum
 }
@@ -46,19 +47,19 @@ fn main() {
 
     client_requests_2();
 
-    client_requests::callgrind::stop_instrumentation();
+    callgrind::stop_instrumentation();
 
     client_requests_2();
 
-    client_requests::callgrind::start_instrumentation();
+    callgrind::start_instrumentation();
 
     client_requests_2();
 
-    client_requests::callgrind::stop_instrumentation();
+    callgrind::stop_instrumentation();
 
     client_requests_2();
 
-    client_requests::callgrind::start_instrumentation();
+    callgrind::start_instrumentation();
 
-    std::process::exit(client_requests::valgrind::running_on_valgrind() as i32);
+    std::process::exit(valgrind::running_on_valgrind() as i32);
 }
