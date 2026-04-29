@@ -1,0 +1,16 @@
+name: Deploy valgrind-requests
+on:
+  push:
+    tags:
+      - "valgrind-requests-v*"
+
+jobs:
+  publish:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Publish valgrind-requests
+        run: cargo publish -p valgrind-requests --token ${{ secrets.CRATES_GITHUB_TOKEN }}
