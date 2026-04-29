@@ -1,19 +1,19 @@
 [package]
 authors = ["gamma0987 <gamma0987@posteo.de>"]
-description = """
-Idiomatic Rust bindings for Valgrind client requests, with zero-indirection \
-execution and zero-cost fallback
-"""
-name = "valgrind-requests"
 categories = [
   "api-bindings",
   "development-tools::profiling",
   "development-tools::testing",
 ]
+description = """
+Idiomatic Rust bindings for Valgrind client requests, with zero-indirection \
+execution and zero-cost fallback
+"""
 edition.workspace = true
 homepage.workspace = true
 keywords = ["valgrind", "bindings", "client-requests", "memcheck", "callgrind"]
 license.workspace = true
+name = "valgrind-requests"
 repository.workspace = true
 rust-version.workspace = true
 version = "1.0.0"
