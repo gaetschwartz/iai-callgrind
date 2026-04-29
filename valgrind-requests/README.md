@@ -1,8 +1,10 @@
 # valgrind-requests
 
+STOPPED HERE
+
 <!-- FIX: Add publish workflow for valgrind-requests -->
-<!-- FIX: Add bumpversion file for valgrind-requests -->
 <!-- FIX: Update the CHANGELOG policy accordingly -->
+<!-- FIX: Update the gungraun version in valgrind-requests/src/lib.rs -->
 
 Idiomatic Rust bindings for Valgrind client requests, with zero-indirection
 execution and zero-cost fallback.
@@ -38,6 +40,8 @@ making it safe to ship in production code without conditional compilation.
 [dependencies]
 valgrind-requests = "1.0"
 ```
+
+or `cargo add valgrind-requests`.
 
 To use the zero-cost fallback for example if you want to use the client requests
 for tests or benchmarks and need to make annotations in production code:
