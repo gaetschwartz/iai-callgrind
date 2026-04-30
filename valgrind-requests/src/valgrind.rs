@@ -71,7 +71,7 @@ pub mod MempoolFlags {
     /// [`super::mempool_alloc`] The second level blocks are described using
     /// [`super::malloclike_block`]. Note that the association between the pool and the second level
     /// blocks is implicit : second level blocks will be located inside first level blocks. It is
-    /// necessary to use the `METAPOOL` flag for such 2 levels pools, as otherwise valgrind will
+    /// necessary to use the `METAPOOL` flag for such 2 levels pools, as otherwise Valgrind will
     /// detect overlapping memory blocks, and will abort execution (e.g. during leak search).
     pub const METAPOOL: u8 = 2;
 }
@@ -104,7 +104,7 @@ pub fn running_on_valgrind() -> usize {
 /// Discard translation of code in the range [addr ... addr + len - 1].
 ///
 /// Useful if you are debugging a `JITter` or some such, since it provides a way to make sure
-/// valgrind will retranslate the invalidated area.
+/// Valgrind will retranslate the invalidated area.
 #[inline(always)]
 pub fn discard_translations(addr: *const (), len: usize) {
     do_client_request!(
@@ -118,9 +118,9 @@ pub fn discard_translations(addr: *const (), len: usize) {
     );
 }
 
-/// Returns `true` if the tool replaces malloc (e.g., memcheck).
+/// Returns `true` if the tool replaces malloc (e.g., Memcheck).
 ///
-/// Returns `false` if the tool does not replace malloc (e.g., cachegrind and callgrind) or if the
+/// Returns `false` if the tool does not replace malloc (e.g., Cachegrind and Callgrind) or if the
 /// executable is not running under Valgrind.
 #[inline(always)]
 pub fn replaces_malloc() -> bool {
@@ -804,7 +804,7 @@ where
 /// Change the value of a dynamic command line option
 ///
 /// The value of some command line options can be changed dynamically while your program is running
-/// under Valgrind. The dynamically changeable options of the valgrind core and a given tool can be
+/// under Valgrind. The dynamically changeable options of the Valgrind core and a given tool can be
 /// listed using option --help-dyn-options,
 ///
 /// Note that unknown or not dynamically changeable options will cause a warning message to be

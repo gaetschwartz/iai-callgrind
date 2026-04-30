@@ -123,7 +123,7 @@ pub fn toggle_collect() {
     );
 }
 
-/// Start full callgrind instrumentation if not already switched on
+/// Start full Callgrind instrumentation if not already switched on
 ///
 /// When cache simulation is done, it will flush the simulated cache; this will lead to an
 /// artificial cache warmup phase afterward with cache misses which would not have happened in
@@ -141,12 +141,12 @@ pub fn start_instrumentation() {
     );
 }
 
-/// Stop full callgrind instrumentation if not already switched off
+/// Stop full Callgrind instrumentation if not already switched off
 ///
 /// This flushes Valgrind's translation cache, and does no additional instrumentation afterward,
 /// which effectively will run at the same speed as the "none" tool (i.e. at minimal slowdown). Use
 /// this to bypass Callgrind aggregation for uninteresting code parts. To start Callgrind in this
-/// mode to ignore the setup phase, use the valgrind command line option `--instr-atstart=no`.
+/// mode to ignore the setup phase, use the Valgrind command line option `--instr-atstart=no`.
 #[inline(always)]
 pub fn stop_instrumentation() {
     do_client_request!(
