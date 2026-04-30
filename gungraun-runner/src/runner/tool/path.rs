@@ -752,7 +752,6 @@ impl ToolOutputPath {
     /// Returns the `real` paths of a tool's output files.
     ///
     /// A tool can have many output files so [`Self::to_path`] is not enough
-    #[allow(clippy::case_sensitive_file_extension_comparisons)]
     pub fn real_paths(&self) -> Result<Vec<PathBuf>> {
         let dir = if self.is_base_path() {
             &self.dir
@@ -765,7 +764,7 @@ impl ToolOutputPath {
     /// Returns the `real` paths of a tool's output files.
     ///
     /// A tool can have many output files so [`Self::to_path`] is not enough
-    #[allow(clippy::case_sensitive_file_extension_comparisons)]
+    #[expect(clippy::case_sensitive_file_extension_comparisons)]
     pub fn real_paths_in(&self, dir: &Path) -> Result<Vec<PathBuf>> {
         let mut paths = vec![];
         for entry in self.walk_dir(Some(dir))? {
@@ -858,7 +857,7 @@ impl ToolOutputPath {
     /// `callgrind`. The header is around 10-20 lines, so this method should be still sufficiently
     /// fast. Additionally, `callgrind` might change the naming scheme of its files, so using the
     /// headers makes us more independent of a specific valgrind/callgrind version.
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::too_many_lines)]
     pub fn sanitize_callgrind(&self) -> Result<()> {
         // path, part
         type Grouped = (PathBuf, Option<u64>);
@@ -1092,8 +1091,7 @@ impl ToolOutputPath {
     ///
     /// `exp-bbv.bench_thread_in_subprocess.548365.bb.out.2` ->
     /// `exp-bbv.bench_thread_in_subprocess.548365.t2.bb.out`
-    #[allow(clippy::case_sensitive_file_extension_comparisons)]
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::too_many_lines)]
     pub fn sanitize_bbv(&self) -> Result<()> {
         // path, thread,
         type Grouped = (PathBuf, String);

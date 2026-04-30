@@ -445,7 +445,6 @@ impl ToolConfigs {
     }
 
     /// Run a benchmark with this configuration if not --load-baseline was given
-    #[allow(clippy::too_many_lines)]
     pub fn run(
         &self,
         benchmark_summary: BenchmarkSummary,

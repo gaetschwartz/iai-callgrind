@@ -94,7 +94,7 @@ pub enum TruncateDescription {
 /// These arguments are not the command line arguments passed to `gungraun-runner`. We collect
 /// the command line arguments in the `gungraun::main!` macro without the binary as first
 /// argument, that's why `no_binary_name` is set to `true`.
-#[allow(clippy::partial_pub_fields, clippy::struct_excessive_bools)]
+#[expect(clippy::partial_pub_fields, clippy::struct_excessive_bools)]
 #[derive(Parser, Debug, Clone)]
 #[command(
     author,
@@ -303,7 +303,7 @@ pub struct CommandLineArgs {
     pub cachegrind_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
-    #[allow(clippy::doc_markdown)]
+    #[expect(clippy::doc_markdown)]
     /// Set performance regression limits for specific Cachegrind metrics
     ///
     /// This is a `,` separate list of CachegrindMetric=limit or CachegrindMetrics=limit
@@ -394,7 +394,7 @@ pub struct CommandLineArgs {
     pub callgrind_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
-    #[allow(clippy::doc_markdown)]
+    #[expect(clippy::doc_markdown)]
     /// Set performance regression limits for specific `EventKinds`
     ///
     /// This is a `,` separate list of EventKind=limit or CallgrindMetrics=limit (key=value) pairs
@@ -525,7 +525,6 @@ pub struct CommandLineArgs {
     pub dhat_args: Option<RawToolArgs>,
 
     #[rustfmt::skip]
-    #[allow(clippy::doc_markdown)]
     /// Set performance regression limits for specific DHAT metrics
     ///
     /// This is a `,` separate list of DhatMetrics=limit or DhatMetric=limit (key=value) pairs. See

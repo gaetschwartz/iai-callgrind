@@ -540,7 +540,7 @@ impl Consts {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.0.as_ref().map_or(true, |(_, data)| data.is_empty())
+        self.0.as_ref().is_none_or(|(_, data)| data.is_empty())
     }
 
     pub fn exprs(&self) -> Vec<Expr> {

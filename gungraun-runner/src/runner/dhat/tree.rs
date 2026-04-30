@@ -202,7 +202,7 @@ impl Data {
                 (DhatMetric::WritesBytes, self.blocks_write),
                 (
                     DhatMetric::TotalLifetimes,
-                    #[allow(clippy::cast_possible_truncation)]
+                    #[expect(clippy::cast_possible_truncation)]
                     self.total_lifetimes.map(|a| a as u64),
                 ),
                 (DhatMetric::MaximumBytes, self.maximum_bytes),
@@ -220,7 +220,7 @@ impl Data {
                 (DhatMetric::WritesBytes, self.blocks_write),
                 (
                     DhatMetric::TotalLifetimes,
-                    #[allow(clippy::cast_possible_truncation)]
+                    #[expect(clippy::cast_possible_truncation)]
                     self.total_lifetimes.map(|a| a as u64),
                 ),
                 (DhatMetric::MaximumBytes, self.maximum_bytes),

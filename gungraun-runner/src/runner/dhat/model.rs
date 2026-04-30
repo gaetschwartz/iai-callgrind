@@ -38,7 +38,7 @@ pub enum Mode {
 
 /// The top-level data extracted from dhat json output
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[allow(clippy::arbitrary_source_item_ordering)]
+#[expect(clippy::arbitrary_source_item_ordering)]
 pub struct DhatData {
     /// Version number of the format
     #[serde(rename = "dhatFileVersion")]
@@ -112,7 +112,7 @@ pub struct DhatData {
 
 /// A `ProgramPoint`
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[allow(clippy::arbitrary_source_item_ordering)]
+#[expect(clippy::arbitrary_source_item_ordering)]
 pub struct ProgramPoint {
     /// Total bytes
     #[serde(rename = "tb")]

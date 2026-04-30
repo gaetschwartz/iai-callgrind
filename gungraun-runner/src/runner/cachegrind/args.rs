@@ -13,7 +13,6 @@ use crate::runner::tool::args::{
 use crate::util::{bool_to_yesno, yesno_to_bool};
 
 /// The command-line arguments
-#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone)]
 pub struct Args {
     cache_sim: bool,

@@ -39,7 +39,6 @@ impl<K, V> Union<K, V> {
     }
 
     /// Crate a consuming iterator over this `Union`
-    #[allow(clippy::should_implement_trait)]
     pub fn into_iter(&self) -> UnionIterator<'_, K, V>
     where
         K: Clone + core::hash::Hash + Eq,
@@ -332,7 +331,7 @@ pub fn write_all_to_stderr(bytes: &[u8]) {
             .write_all(bytes)
             .and_then(|()| writer.flush())
             .unwrap();
-        if !bytes.last().is_some_and(|l| *l == b'\n') {
+        if bytes.last().is_none_or(|l| *l != b'\n') {
             eprintln!();
         }
     }
@@ -348,7 +347,7 @@ pub fn write_all_to_stdout(bytes: &[u8]) {
             .write_all(bytes)
             .and_then(|()| writer.flush())
             .unwrap();
-        if !bytes.last().is_some_and(|l| *l == b'\n') {
+        if bytes.last().is_none_or(|l| *l != b'\n') {
             println!();
         }
     }

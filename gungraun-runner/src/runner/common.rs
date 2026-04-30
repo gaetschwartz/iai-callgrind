@@ -310,7 +310,7 @@ pub trait BenchmarkDataProcessor: std::fmt::Debug + Send {
             if let Some(old) = parsed_old {
                 Box::new(old.into_iter().map(Some))
             } else {
-                Box::new(std::iter::repeat(None).take(self.analyzers().len()))
+                Box::new(std::iter::repeat_n(None, self.analyzers().len()))
             };
 
         for (
@@ -1024,7 +1024,7 @@ impl Groups {
     /// # Errors
     ///
     /// Returns an error if any benchmark entry cannot be configured.
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::too_many_lines)]
     pub fn from_binary_benchmark(
         module_path: &ModulePath,
         benchmark_groups: BinaryBenchmarkGroups,
@@ -1185,7 +1185,7 @@ impl Groups {
     /// # Errors
     ///
     /// Returns an error if any benchmark entry cannot be configured.
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::too_many_lines)]
     pub fn from_library_benchmark(
         module_path: &ModulePath,
         benchmark_groups: LibraryBenchmarkGroups,

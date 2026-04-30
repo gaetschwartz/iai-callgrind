@@ -757,7 +757,7 @@ impl BenchmarkId {
     /// assert!(BenchmarkId::new("z_").validate().is_ok());
     /// assert!(BenchmarkId::new("some_id").validate().is_ok());
     /// ```
-    #[allow(clippy::missing_panics_doc)]
+    #[expect(clippy::missing_panics_doc)]
     pub fn validate(&self) -> Result<(), String> {
         const MAX_LENGTH_ID: usize = 255;
         if self.0.is_empty() {

@@ -106,7 +106,7 @@ impl CyclesEstimator {
     }
 
     /// Calculate the `CacheSummary` from the native metrics
-    #[allow(clippy::similar_names)]
+    #[expect(clippy::similar_names)]
     pub fn calculate(&self) -> CacheSummary {
         let ram_hits = self.l3_instructions_cache_read_misses
             + self.l3_data_cache_read_misses

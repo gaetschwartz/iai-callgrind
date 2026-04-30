@@ -632,7 +632,7 @@ impl<T: Send + 'static> Iterator for ThreadPool<T> {
                 let next = self.next.get_or_insert(0);
                 self.num_received += 1;
 
-                #[allow(clippy::else_if_without_else)]
+                #[expect(clippy::else_if_without_else)]
                 if index == *next {
                     *next += 1;
                     break Some(result);

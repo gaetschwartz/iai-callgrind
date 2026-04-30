@@ -425,7 +425,7 @@ impl From<common::BenchMode> for BenchMode {
 }
 
 impl Callee<'_> {
-    #[allow(unused)]
+    #[expect(unused)]
     fn len_inputs(&self) -> usize {
         self.0.inputs.len()
     }

@@ -43,7 +43,6 @@ pub struct CallgrindProperties {
 /// Refactor: This struct was named `Sentinel` but the usage changed and it would better be named
 /// `Needle` since it is used to seek for a specific function in the haystack of functions of the
 /// output file.
-#[allow(clippy::unsafe_derive_deserialize)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Sentinel(String);
 

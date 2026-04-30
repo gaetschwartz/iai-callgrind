@@ -1,8 +1,7 @@
 //! The module containing all elements for [`ToolArgs`]
 
 /// Module containing the Gungraun defaults for the command line arguments of all tools
-#[allow(missing_docs)]
-#[allow(clippy::arbitrary_source_item_ordering)]
+#[expect(missing_docs)]
 pub mod defaults {
     use super::FairSched;
 

@@ -34,7 +34,7 @@ pub const FIELD_WIDTH: usize = 21;
 pub const FLOAT_WIDTH: usize = DIFF_WIDTH - 1;
 /// The width in bytes of the "left" side of the separator `|`
 pub const LEFT_WIDTH: usize = METRIC_WIDTH + FIELD_WIDTH;
-#[allow(clippy::doc_link_with_quotes)]
+#[expect(clippy::doc_link_with_quotes)]
 /// The maximum line width
 ///
 /// indent + left + "|" + metric width + " " + "(" + percentage + ")" + " " + "[" + factor + "]"
