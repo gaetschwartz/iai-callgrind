@@ -11,7 +11,7 @@ were renamed from `iai-callgrind` to `gungraun`, `iai-callgrind-runner` to
 - Update all usages of `use iai_callgrind` to `use gungraun`.
 - Update the binary: Uninstall the old binary with
   `cargo uninstall iai-callgrind-runner`. Install the new binary for example
-  with binstall: `cargo binstall gungraun-runner@0.18.1`
+  with binstall: `cargo binstall gungraun-runner@0.18.2`
 - Update any scripts which installed `iai-callgrind-runner` in the CI to use
   `gungraun-runner`.
 - If you are parsing the benchmark output: The summary line has changed from
@@ -29,7 +29,7 @@ were renamed from `iai-callgrind` to `gungraun`, `iai-callgrind-runner` to
   `target/iai/my_package/my_iai_callgrind_benchmarks` to
   `target/gungraun/my_package/my_gungraun_benchmarks`
 
-From version `0.18.1` onwards the client requests were extracted into a separate
+From version `0.18.2` onwards the client requests were extracted into a separate
 package `valgrind-requests`. The following environment variables were renamed:
 
 - `IAI_CALLGRIND_VALGRIND_INCLUDE`, `IAI_CALLGRIND_.*_VALGRIND_INCLUDE`,
