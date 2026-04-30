@@ -23,7 +23,6 @@ default = ["_stubs"]
 
 [dependencies]
 cty = { workspace = true }
-lazy_static = { workspace = true }
 regex = { workspace = true }
 shlex = { workspace = true }
 valgrind-requests = { path = "../valgrind-requests", default-features = false, features = [

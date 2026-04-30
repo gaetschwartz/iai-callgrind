@@ -6,62 +6,71 @@ use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str::FromStr;
+use std::sync::LazyLock;
 
 use client_request_tests::{CROSS_TARGET, MARKER};
-use lazy_static::lazy_static;
 use regex::Regex;
 
-lazy_static! {
-    static ref STRIP_PREFIX_RE: Regex =
-        regex::Regex::new(r"^\s*(==|--|\*\*)([0-9:.]+\s+)?[0-9]+(==|--|\*\*)\s*(?<rest>.*)$")
-            .expect("Regex should compile");
-    static ref CALLGRIND_EXCLUDED_LINES_RE: Regex =
-        regex::Regex::new(r"^(For interactive control,)").expect("Regex should compile");
-    static ref CALLGRIND_RM_DUMP_TO_RE: Regex =
-        regex::Regex::new(r"^(Dump to).*$").expect("Regex should compile");
-    static ref CALLGRIND_RM_BB_NUM_RE: Regex =
-        regex::Regex::new(r"(at BB\s+)([0-9]+)(\s+.*)$").expect("Regex should compile");
-    static ref CALLGRIND_RM_ADDR_RE: Regex =
-        regex::Regex::new(r"((at|by)\s+)(0x[0-9A-Za-z]+\s*:.*)$").expect("Regex should compile");
-    static ref CALLGRIND_RM_NUM_REFS_RE: Regex =
-        regex::Regex::new(r"((I|D|LL)\s*refs:)[ 0-9,()+rdw]*$").expect("Regex should compile");
-    static ref CALLGRIND_RM_NUM_MISS_RE: Regex =
-        regex::Regex::new(r"((I1|D1|LL|LLi|LLd)\s*(misses|miss rate):)[ 0-9,()+rdw%.]*$")
-            .expect("Regex should compile");
-    static ref CALLGRIND_RM_NUM_RATE_RE: Regex =
-        regex::Regex::new(r"((Branches|Mispredicts|Mispred rate):)[ 0-9,()+condi%.]*$")
-            .expect("Regex should compile");
-    static ref CALLGRIND_RM_NUM_COLLECTED_RE: Regex =
-        regex::Regex::new(r"^(Collected\s*:)[ 0-9]*$").expect("Regex should compile");
-    static ref CALLGRIND_RM_LINE_NUM_RE: Regex =
-        regex::Regex::new(r"(\(.*:)([0-9]+)(\))\s*$").expect("Regex should compile");
-    static ref BACKTRACE_RE: Regex =
-        regex::Regex::new(r"^((at|by)\s*0x[0-9A-Za-z]+\s*:)").expect("Regex should compile");
-    static ref MEMCHECK_CHECKED_RE: Regex =
-        regex::Regex::new(r"^(\s*Checked\s*)([0-9,.]+)(\s*bytes)\s*$")
-            .expect("Regex should compile");
-    static ref MEMCHECK_TOTAL_HEAP_USAGE_RE: Regex =
-        regex::Regex::new(r"^(?i:(\s*total heap usage:\s*))(.*)$").expect("Regex should compile");
-    static ref MEMCHECK_LEAK_SUMMARY_RE: Regex = regex::Regex::new(concat!(
+static STRIP_PREFIX_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^\s*(==|--|\*\*)([0-9:.]+\s+)?[0-9]+(==|--|\*\*)\s*(?<rest>.*)$")
+        .expect("Regex should compile")
+});
+static CALLGRIND_EXCLUDED_LINES_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^(For interactive control,)").expect("Regex should compile"));
+static CALLGRIND_RM_DUMP_TO_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^(Dump to).*$").expect("Regex should compile"));
+static CALLGRIND_RM_BB_NUM_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(at BB\s+)([0-9]+)(\s+.*)$").expect("Regex should compile"));
+static CALLGRIND_RM_ADDR_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"((at|by)\s+)(0x[0-9A-Za-z]+\s*:.*)$").expect("Regex should compile")
+});
+static CALLGRIND_RM_NUM_REFS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"((I|D|LL)\s*refs:)[ 0-9,()+rdw]*$").expect("Regex should compile")
+});
+static CALLGRIND_RM_NUM_MISS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"((I1|D1|LL|LLi|LLd)\s*(misses|miss rate):)[ 0-9,()+rdw%.]*$")
+        .expect("Regex should compile")
+});
+static CALLGRIND_RM_NUM_RATE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"((Branches|Mispredicts|Mispred rate):)[ 0-9,()+condi%.]*$")
+        .expect("Regex should compile")
+});
+static CALLGRIND_RM_NUM_COLLECTED_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^(Collected\s*:)[ 0-9]*$").expect("Regex should compile"));
+static CALLGRIND_RM_LINE_NUM_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(\(.*:)([0-9]+)(\))\s*$").expect("Regex should compile"));
+static BACKTRACE_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^((at|by)\s*0x[0-9A-Za-z]+\s*:)").expect("Regex should compile"));
+static MEMCHECK_CHECKED_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^(\s*Checked\s*)([0-9,.]+)(\s*bytes)\s*$").expect("Regex should compile")
+});
+static MEMCHECK_TOTAL_HEAP_USAGE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^(?i:(\s*total heap usage:\s*))(.*)$").expect("Regex should compile")
+});
+static MEMCHECK_LEAK_SUMMARY_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(concat!(
         r"(?i:(\s*(definitely lost|indirectly lost|possibly lost|",
         r"still reachable|suppressed):\s*))([ 0-9,()+.]*)(\s*bytes in\s*)",
         r"([ 0-9,()+.]*)(\s*blocks\s*)$"
     ))
-    .expect("Regex should compile");
-    static ref MEMCHECK_RM_NUMBERS_RE: Regex =
-        regex::Regex::new(r"[+-]?[0-9][0-9,.]*").expect("Regex should compile");
-    static ref MEMORY_ADDRESS_RE: Regex =
-        regex::Regex::new(r"0x[0-9A-Za-z]+").expect("Regex should compile");
-    static ref CACHEGRIND_NUM_REFS_RE: Regex =
-        regex::Regex::new(r"((I|D|LL)\s*refs:\s*)([ 0-9,()+rdw]*)\s*$")
-            .expect("Regex should compile");
-    static ref WARNING_EXIDX_RE: Regex =
-        regex::Regex::new(r"^[ ]*Warning: whilst reading EXIDX:.*$").expect("Regex should compile");
-    static ref READING_EXIDX_RE: Regex =
-        regex::Regex::new(r"^[ ]*Reading EXIDX entries:.*$").expect("Regex should compile");
-    static ref NUMBER_RE: Regex = regex::Regex::new(r"[0-9]+").expect("Regex should compile");
-    static ref REDIR_RE: Regex = regex::Regex::new(r"^(REDIR:)(.*)").expect("Regex should compile");
-}
+    .expect("Regex should compile")
+});
+static MEMCHECK_RM_NUMBERS_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"[+-]?[0-9][0-9,.]*").expect("Regex should compile"));
+static MEMORY_ADDRESS_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"0x[0-9A-Za-z]+").expect("Regex should compile"));
+static CACHEGRIND_NUM_REFS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"((I|D|LL)\s*refs:\s*)([ 0-9,()+rdw]*)\s*$").expect("Regex should compile")
+});
+static WARNING_EXIDX_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^[ ]*Warning: whilst reading EXIDX:.*$").expect("Regex should compile")
+});
+static READING_EXIDX_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^[ ]*Reading EXIDX entries:.*$").expect("Regex should compile"));
+static NUMBER_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"[0-9]+").expect("Regex should compile"));
+static REDIR_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^(REDIR:)(.*)").expect("Regex should compile"));
 
 #[derive(Debug)]
 enum Tool {
@@ -93,7 +102,7 @@ impl Display for Tool {
 
 fn callgrind_filter(path: &Path, bytes: &[u8], writer: &mut impl Write) {
     let path_re =
-        regex::Regex::new(format!(r"({})", path.display()).as_str()).expect("Regex should compile");
+        Regex::new(format!(r"({})", path.display()).as_str()).expect("Regex should compile");
 
     #[derive(Debug, PartialEq, Eq)]
     enum State {

@@ -3,9 +3,9 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
+use std::sync::LazyLock;
 
 use anyhow::{anyhow, Context, Result};
-use lazy_static::lazy_static;
 use log::debug;
 use regex::Regex;
 
@@ -19,14 +19,12 @@ use crate::runner::tool::parser::{Parser, ParserOutput};
 use crate::runner::tool::path::ToolOutputPath;
 
 // The different regex have to consider --time-stamp=yes
-lazy_static! {
-    static ref FIXUP_NUMBERS_RE: Regex =
-        regex::Regex::new("([0-9]),([0-9])").expect("Regex should compile");
-    static ref METRICS_RE: Regex = regex::Regex::new(
-        r"^\s*(?<bytes>[0-9]+)\s*(?<unit>bytes|units)(?:\s*in\s*(?<blocks>[0-9]+))?.*$"
-    )
-    .expect("Regex should compile");
-}
+static METRICS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^\s*(?<bytes>[0-9]+)\s*(?<unit>bytes|units)(?:\s*in\s*(?<blocks>[0-9]+))?.*$")
+        .expect("Regex should compile")
+});
+static FIXUP_NUMBERS_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new("([0-9]),([0-9])").expect("Regex should compile"));
 
 #[derive(Debug, PartialEq, Eq)]
 enum State {

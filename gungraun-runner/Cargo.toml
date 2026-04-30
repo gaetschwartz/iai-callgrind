@@ -38,7 +38,6 @@ runner = [
   "dep:indexmap",
   "dep:inferno",
   "dep:itertools",
-  "dep:lazy_static",
   "dep:log",
   "dep:nix",
   "dep:num_cpus",
@@ -85,7 +84,6 @@ inferno = { workspace = true, optional = true, default-features = false, feature
   'multithreaded',
 ] }
 itertools = { workspace = true, optional = true }
-lazy_static = { workspace = true, optional = true }
 log = { workspace = true, optional = true }
 nix = { workspace = true, optional = true, features = ["signal"] }
 num_cpus = { workspace = true, optional = true }

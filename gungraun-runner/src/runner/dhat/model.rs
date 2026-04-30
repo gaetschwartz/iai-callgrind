@@ -2,18 +2,16 @@
 
 // spell-checker: ignore bklt bkacc bksu tuth ftbl tgmax
 use std::str::FromStr;
+use std::sync::LazyLock;
 
-use lazy_static::lazy_static;
 use regex::Regex;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-lazy_static! {
-    static ref FRAME_RE: Regex = regex::Regex::new(
-        r"^(?<root>\[root\])|(?<addr>0x[0-9a-fA-F]+):\s*(?<func>.*)\s\((?<in>.*)\)$"
-    )
-    .expect("Regex should compile");
-}
+static FRAME_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^(?<root>\[root\])|(?<addr>0x[0-9a-fA-F]+):\s*(?<func>.*)\s\((?<in>.*)\)$")
+        .expect("Regex should compile")
+});
 
 /// A [`Frame`] in the [`DhatData::frame_table`]
 #[derive(Debug, Clone, PartialEq, Eq)]
