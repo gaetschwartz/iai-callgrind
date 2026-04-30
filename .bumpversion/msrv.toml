@@ -14,16 +14,12 @@ search = "msrv := '{current_version}'"
 replace = "msrv := '{new_version}'"
 
 [[tool.bumpversion.files]]
-filename = ".github/workflows/cicd.yml"
+glob = ".github/workflows/*.yml"
+ignore_missing_version = true
 
 [[tool.bumpversion.files]]
-filename = "README.md"
-
-[[tool.bumpversion.files]]
-filename = "gungraun-macros/README.md"
-
-[[tool.bumpversion.files]]
-filename = "gungraun-runner/README.md"
+glob = "**/README.md"
+ignore_missing_version = true
 
 [[tool.bumpversion.files]]
 filename = ".clippy.toml"
