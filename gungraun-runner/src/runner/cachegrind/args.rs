@@ -1,4 +1,4 @@
-//! The module containing the command line arguments for cachegrind
+//! The module containing the command line arguments for Cachegrind
 
 use std::str::FromStr;
 
@@ -56,12 +56,12 @@ impl Args {
                     self.fair_sched = FairSched::from_str(value)?;
                 }
                 Some((arg, _)) if is_ignored_outfile_argument(arg) => warn!(
-                    "Ignoring cachegrind argument '{arg}': Output/Log files of tools are managed \
+                    "Ignoring Cachegrind argument '{arg}': Output/Log files of tools are managed \
                      by Gungraun",
                 ),
                 None if matches!(arg, "-v" | "--verbose") => self.verbose = true,
                 None if is_ignored_argument(arg) => {
-                    warn!("Ignoring cachegrind argument: '{arg}'");
+                    warn!("Ignoring Cachegrind argument: '{arg}'");
                 }
                 None | Some(_) => self.other.push(arg.to_owned()),
             }

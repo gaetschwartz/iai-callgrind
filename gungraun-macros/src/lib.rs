@@ -83,12 +83,12 @@ impl CargoMetadata {
 ///
 /// 1. Using the `#[library_benchmark]` attribute as a standalone without [`#[bench]`][bench] or
 ///    [`#[benches]`][benches] is fine for simple function calls without parameters.
-/// 2. We mostly need to benchmark cases which would need to be setup for example with a vector, but
-///    everything we set up within the benchmark function itself would be attributed to the event
-///    counts. The second form of this attribute macro uses the [`#[bench]`][bench] and
+/// 2. We mostly need to benchmark cases which would need to be set up for example with a vector,
+///    but everything we set up within the benchmark function itself would be attributed to the
+///    event counts. The second form of this attribute macro uses the [`#[bench]`][bench] and
 ///    [`#[benches]`][benches] attributes to set up benchmarks with different cases. The main
-///    advantage is, that the setup costs and event counts aren't attributed to the benchmark (and
-///    opposed to the old api we don't have to deal with callgrind arguments, toggles,
+///    advantage is that the setup costs and event counts aren't attributed to the benchmark (and
+///    opposed to the old API we don't have to deal with Callgrind arguments, toggles,
 ///    inline(never), ...)
 ///
 /// # The `#[bench]` attribute

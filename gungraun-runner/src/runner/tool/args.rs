@@ -66,7 +66,7 @@ pub enum FairSched {
     Try,
 }
 
-/// The arguments to pass to the valgrind tool
+/// The arguments to pass to the Valgrind tool
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ToolArgs {
     /// The error exit code for error checking tools like `Memcheck`

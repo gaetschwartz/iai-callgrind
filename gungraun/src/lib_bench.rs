@@ -28,11 +28,11 @@ use crate::__internal;
 pub struct LibraryBenchmarkConfig(__internal::InternalLibraryBenchmarkConfig);
 
 impl LibraryBenchmarkConfig {
-    /// Change the default tool to something different than callgrind
+    /// Change the default tool to something different than Callgrind
     ///
-    /// Any [`ValgrindTool`] is valid, however using cachegrind also requires to use client requests
-    /// to produce correct metrics. The guide fully describes how to use cachegrind instead of
-    /// callgrind.
+    /// Any [`ValgrindTool`] is valid, however using Cachegrind also requires to use client requests
+    /// to produce correct metrics. The guide fully describes how to use Cachegrind instead of
+    /// Callgrind.
     ///
     /// # Example for dhat
     ///
@@ -57,7 +57,7 @@ impl LibraryBenchmarkConfig {
     /// # }
     /// ```
     ///
-    /// # Example for using cachegrind as default tool on the fly
+    /// # Example for using Cachegrind as default tool on the fly
     ///
     /// `--instr-at-start=no` is required to only measure the metrics between the two client
     /// request calls.
@@ -93,7 +93,7 @@ impl LibraryBenchmarkConfig {
         self
     }
 
-    /// Pass valgrind arguments to all tools
+    /// Pass Valgrind arguments to all tools
     ///
     /// Only core [valgrind
     /// arguments](https://valgrind.org/docs/manual/manual-core.html#manual-core.options) are
@@ -104,7 +104,7 @@ impl LibraryBenchmarkConfig {
     ///
     /// # Examples
     ///
-    /// Specify `--trace-children=no` for all configured tools (including callgrind):
+    /// Specify `--trace-children=no` for all configured tools (including Callgrind):
     ///
     /// ```rust
     /// # use gungraun::{library_benchmark_group, library_benchmark};
@@ -125,7 +125,7 @@ impl LibraryBenchmarkConfig {
     /// # }
     /// ```
     ///
-    /// Overwrite the valgrind argument `--num-callers=25` for `DHAT` with `--num-callers=30`:
+    /// Overwrite the Valgrind argument `--num-callers=25` for `DHAT` with `--num-callers=30`:
     ///
     /// ```rust
     /// # use gungraun::{library_benchmark_group, library_benchmark};
@@ -177,7 +177,7 @@ impl LibraryBenchmarkConfig {
         self
     }
 
-    /// Adds an environment variables which will be available in library benchmarks.
+    /// Adds environment variables which will be available in library benchmarks.
     ///
     /// These environment variables are available independently of the setting of
     /// [`LibraryBenchmarkConfig::env_clear`].
@@ -308,7 +308,7 @@ impl LibraryBenchmarkConfig {
         self
     }
 
-    /// Adds a configuration for a valgrind tool.
+    /// Adds a configuration for a Valgrind tool.
     ///
     /// Valid configurations are [`crate::Callgrind`], [`crate::Cachegrind`], [`crate::Dhat`],
     /// [`crate::Memcheck`], [`crate::Helgrind`], [`crate::Drd`], [`crate::Massif`] and
@@ -340,16 +340,16 @@ impl LibraryBenchmarkConfig {
         self
     }
 
-    /// Override previously defined configurations of valgrind tools
+    /// Override previously defined configurations of Valgrind tools
     ///
     /// Usually, if specifying tool configurations with [`LibraryBenchmarkConfig::tool`] these tools
-    /// are appended to the configuration of a [`LibraryBenchmarkConfig`] of higher-levels.
+    /// are appended to the configuration of a [`LibraryBenchmarkConfig`] of higher levels.
     /// Specifying a tool with this method overrides previously defined configurations.
     ///
     /// # Examples
     ///
-    /// The following will run `DHAT` and `Massif` (and the default callgrind) for all benchmarks in
-    /// `main!` besides for `some_func` which will just run `Memcheck` (and callgrind).
+    /// The following will run `DHAT` and `Massif` (and the default Callgrind) for all benchmarks in
+    /// `main!` except for `some_func` which will just run `Memcheck` (and Callgrind).
     ///
     /// ```rust
     /// use gungraun::{

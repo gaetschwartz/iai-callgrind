@@ -1,4 +1,4 @@
-//! Module containing the cachegrind specific regression check configuration
+//! Module containing the Cachegrind-specific regression check configuration
 use indexmap::{IndexMap, IndexSet};
 
 use crate::api::{self, CachegrindMetric};

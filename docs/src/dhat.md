@@ -4,7 +4,7 @@
 
 ## Intro to DHAT
 
-To fully understand DHAT please read the [Valgrind docs][dhat] of DHAT. Here's
+To fully understand DHAT please read the [Valgrind docs][dhat] for DHAT. Here's
 just a short summary and quote from the docs:
 
 > DHAT is primarily a tool for examining how programs use their heap
@@ -223,9 +223,9 @@ Running the benchmark produces the following output:
 
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.47449s</code></pre>
 
-The problem here is, that the spawned thread is not included in the metrics.
+The problem here is that the spawned thread is not included in the metrics.
 Looking at the output files of the DHAT output in `dh_view.html` (heavily
-shortened to safe some space):
+shortened to save some space):
 
 ```text
 Invocation {

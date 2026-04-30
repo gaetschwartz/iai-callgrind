@@ -46,8 +46,8 @@ fn bench_bubble_sort_empty() -> Vec<i32> {
 }
 
 // This benchmark uses the `bench` attribute to set up benchmarks with different setups. The big
-// advantage is, that the setup costs and event counts aren't attributed to the benchmark (and
-// opposed to the old api we don't have to deal with callgrind arguments, toggles, ...)
+// advantage is that the setup costs and event counts aren't attributed to the benchmark (and
+// opposed to the old API we don't have to deal with Callgrind arguments, toggles, ...)
 //
 // The `bench` attribute consist of the attribute name itself, a unique id after `::` and
 // optionally arguments with expressions which are passed to the benchmark function as parameter.

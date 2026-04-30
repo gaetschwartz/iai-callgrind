@@ -17,7 +17,7 @@ use crate::util::write_all_to_stderr;
 /// The main Gungraun error type
 #[derive(Debug)]
 pub enum Error {
-    /// A error during setup of a benchmark.
+    /// An error during setup of a benchmark.
     ///
     /// `BenchmarkError(ValgrindTool, ModulePath, message)`
     BenchmarkError(ValgrindTool, ModulePath, String),

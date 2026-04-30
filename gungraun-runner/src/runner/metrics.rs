@@ -321,8 +321,8 @@ where
     /// Add metrics from an iterator over strings
     ///
     /// Adding metrics stops as soon as there are no more keys in this `Metrics` or no more values
-    /// in the iterator. This property is especially important for the metrics from the callgrind
-    /// output files. From the documentation of the callgrind format:
+    /// in the iterator. This property is especially important for the metrics from the Callgrind
+    /// output files. From the documentation of the Callgrind format:
     ///
     /// > If a cost line specifies less event counts than given in the "events" line, the
     /// > rest is assumed to be zero.

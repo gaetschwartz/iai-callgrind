@@ -1,4 +1,4 @@
-//! Module containing the callgrind flamegraph elements
+//! Module containing the Callgrind flamegraph elements
 
 use std::borrow::Cow;
 use std::cmp::Ordering;

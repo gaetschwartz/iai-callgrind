@@ -1,4 +1,4 @@
-//! This module includes all the structs to model the callgrind output
+//! This module includes all the structs to model the Callgrind output
 
 use std::borrow::Cow;
 use std::hash::Hash;
@@ -12,7 +12,7 @@ use super::CacheSummary;
 use crate::api::EventKind;
 use crate::runner::metrics::{Metric, Summarize};
 
-/// The callgrind specific `Metrics`
+/// The Callgrind-specific `Metrics`
 pub type Metrics = crate::runner::metrics::Metrics<EventKind>;
 
 /// The [`Positions`] type
@@ -65,7 +65,7 @@ impl Metrics {
     ///
     /// # Errors
     ///
-    /// If the necessary cache simulation events (when running callgrind with --cache-sim) were not
+    /// If the necessary cache simulation events (when running Callgrind with --cache-sim) were not
     /// present.
     pub fn make_summary(&mut self) -> Result<()> {
         let CacheSummary {
@@ -110,7 +110,7 @@ impl Metrics {
 
     /// Returns `true` if costs can be summarized.
     ///
-    /// This method probes for [`EventKind::I1mr`] which is present if callgrind was run with the
+    /// This method probes for [`EventKind::I1mr`] which is present if Callgrind was run with the
     /// cache simulation (`--cache-sim=yes`) enabled.
     pub fn can_summarize(&self) -> bool {
         self.metric_by_kind(&EventKind::I1mr).is_some()

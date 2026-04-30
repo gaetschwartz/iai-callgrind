@@ -17,7 +17,7 @@ use crate::util::{bool_to_yesno, yesno_to_bool};
 #[derive(Debug, Clone)]
 pub struct Args {
     cache_sim: bool,
-    /// --combine-dumps is currently not supported by the callgrind parsers, so we print a warning
+    /// --combine-dumps is currently not supported by the Callgrind parsers, so we print a warning
     combine_dumps: bool,
     compress_pos: bool,
     compress_strings: bool,

@@ -1,4 +1,4 @@
-//! Gungraun is a on-shot benchmarking harness and framework which uses Valgrind's [Callgrind],
+//! Gungraun is a one-shot benchmarking harness and framework which uses Valgrind's [Callgrind],
 //! [Cachegrind], and [DHAT] to provide extremely accurate and consistent measurements of Rust code,
 //! making it perfectly suited to run in environments like a CI. Its flexibility allows you to
 //! access all Valgrind tools, even [Memcheck], and utilize [`client_requests`] effortlessly.
@@ -34,7 +34,7 @@
 //!   visualizer [kcachegrind] to analyze the results in detail.
 //! - __Memory Profiling__: You can run other Valgrind tools like [DHAT: a dynamic heap analysis
 //!   tool][DHAT] and [Massif: a heap profiler][massif] with Gungraun. Their profiles are stored
-//!   next to the callgrind profiles and are ready to be examined with analyzing tools like
+//!   next to the Callgrind profiles and are ready to be examined with analysis tools like
 //!   `dh_view.html`, `ms_print` and others.
 //! - __Visualization__: Gungraun is capable of creating regular and differential flamegraphs from
 //!   the Callgrind output format.
@@ -95,10 +95,10 @@
 //!     black_box(bubble_sort(black_box(vec![])))
 //! }
 //!
-//! // This benchmark uses the `bench` attribute to setup benchmarks with different
-//! // setups. The big advantage is, that the setup costs and event counts aren't
-//! // attributed to the benchmark (and opposed to the old api we don't have to deal with
-//! // callgrind arguments, toggles, ...)
+//! // This benchmark uses the `bench` attribute to set up benchmarks with different
+//! // setups. The big advantage is that the setup costs and event counts aren't
+//! // attributed to the benchmark (and opposed to the old API we don't have to deal with
+//! // Callgrind arguments, toggles, ...)
 //! #[library_benchmark]
 //! #[bench::empty(vec![])]
 //! #[bench::worst_case_6(vec![6, 5, 4, 3, 2, 1])]
@@ -373,7 +373,7 @@
 //! ## Flamegraphs
 //!
 //! Flamegraphs are opt-in and can be created if you pass a [`FlamegraphConfig`] to the
-//! [`Callgrind::flamegraph`]. Callgrind flamegraphs are meant as a complement to valgrind's
+//! [`Callgrind::flamegraph`]. Callgrind flamegraphs are meant as a complement to Valgrind's
 //! visualization tools `callgrind_annotate` and `kcachegrind`.
 //!
 //! Callgrind flamegraphs show the inclusive costs for functions and a specific event type, much
@@ -381,7 +381,7 @@
 //! flamegraphs facilitate a deeper understanding of code sections which cause a bottleneck or a
 //! performance regressions etc.
 //!
-//! The produced flamegraph svg files are located next to the respective callgrind output file in
+//! The produced flamegraph svg files are located next to the respective Callgrind output file in
 //! the `target/gungraun` directory.
 //!
 //! [Cachegrind]: https://valgrind.org/docs/manual/cg-manual.html
