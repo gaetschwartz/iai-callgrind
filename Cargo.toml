@@ -4,6 +4,7 @@ members = [
   "gungraun",
   "gungraun-runner",
   "gungraun-macros",
+  "valgrind-requests",
   "benchmark-tests",
   "client-request-tests",
   "schema-gen",
@@ -27,7 +28,7 @@ bincode = { version = "1" }
 bindgen = { version = ">=0.69, <0.73" }
 bon = { version = "3" }
 cargo_metadata = { version = "0.19" }
-cc = { version = "1" }
+cc = { version = "1.0.100" }
 cfg-if = { version = "1" }
 clap = { version = "4.0.12", features = ["derive", "env"] }
 colored = { version = ">=2.2, <4" }

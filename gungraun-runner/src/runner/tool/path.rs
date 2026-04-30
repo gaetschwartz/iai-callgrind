@@ -94,7 +94,7 @@ pub enum ToolOutputPathKind {
 /// The tool specific output path(s)
 ///
 /// In the presence of a temporary directory, the temporary directory is assumed to be the output
-/// path for any new files from the valgrind tools and files in it are returned by methods like
+/// path for any new files from the Valgrind tools and files in it are returned by methods like
 /// [`ToolOutputPath::real_paths`]. Otherwise the benchmark directory contains the new and "old"
 /// files of previous benchmark runs. The temporary files need to be transferred to the benchmark
 /// directory manually for example with [`ToolOutputPath::copy_temp`] and doesn't happen on drop.
@@ -711,7 +711,7 @@ impl ToolOutputPath {
     /// Return the filename for this tool's output file
     ///
     /// The filename is constructed as `<tool_id>.<name>.<extension>`, where:
-    /// - `tool_id` is the valgrind tool identifier (e.g., "callgrind", "memcheck")
+    /// - `tool_id` is the Valgrind tool identifier (e.g., "callgrind", "memcheck")
     /// - `name` is the benchmark name
     /// - `extension` is the file extension for this tool (e.g., "out", "log")
     ///

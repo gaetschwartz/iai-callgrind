@@ -204,23 +204,33 @@ build-docs:
 
 # A thorough build of all packages with `cargo hack` and the feature powerset (Uses: 'cargo-hack')
 [group('build')]
-build-hack *args: (build-hack-runner args)
-    cargo hack --workspace --feature-powerset --exclude gungraun-runner build {{ args }}
+build-hack *args: (build-hack-runner args) (build-hack-valgrind-requests args)
+    cargo hack --workspace --feature-powerset --exclude gungraun-runner --exclude valgrind-requests build {{ args }}
 
 # A thorough build of the gungraun-runner package (Uses: 'cargo-hack')
 [group('build')]
 build-hack-runner *args:
     cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features --exclude-features api build {{ args }}
 
+# A thorough build of the valgrind-requests package (Uses: 'cargo-hack')
+[group('build')]
+build-hack-valgrind-requests *args:
+    cargo hack --package valgrind-requests --feature-powerset --exclude-no-default-features build {{ args }}
+
 # A build of the tests in all packages with `cargo hack` and the feature powerset (Uses: 'cargo-hack')
 [group('build')]
-build-tests-hack *args: build-tests-hack-runner
-    cargo hack --workspace --feature-powerset --exclude gungraun-runner test --no-run {{ args}}
+build-tests-hack *args: (build-tests-hack-runner args) (build-tests-hack-valgrind-requests args)
+    cargo hack --workspace --feature-powerset --exclude gungraun-runner --exclude valgrind-requests test --no-run {{ args}}
 
 # A build of the tests in the gungraun-runner package with `cargo hack` (Uses: 'cargo-hack')
 [group('build')]
 build-tests-hack-runner *args:
     cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features --exclude-features api test --no-run {{ args }}
+
+# A build of the tests in the valgrind-requests package with `cargo hack` (Uses: 'cargo-hack')
+[group('build')]
+build-tests-hack-valgrind-requests *args:
+    cargo hack --package valgrind-requests --feature-powerset --exclude-no-default-features test --no-run {{ args }}
 
 # Delete all gungraun benchmarks (Uses: 'coreutils')
 [group('clean')]

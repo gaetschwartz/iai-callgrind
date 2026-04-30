@@ -34,7 +34,7 @@
 // We're using a lot of the original documentation from the `valgrind.h` header file with some small
 // adjustments, so above is the original license from `valgrind.h` file.
 //
-// This file is distributed under the same License as the rest of `gungraun`.
+// This file is distributed under the same License as the rest of `valgrind-requests`.
 //
 // ----------------------------------------------------------------
 //
@@ -71,7 +71,7 @@ pub mod MempoolFlags {
     /// [`super::mempool_alloc`] The second level blocks are described using
     /// [`super::malloclike_block`]. Note that the association between the pool and the second level
     /// blocks is implicit : second level blocks will be located inside first level blocks. It is
-    /// necessary to use the `METAPOOL` flag for such 2 levels pools, as otherwise valgrind will
+    /// necessary to use the `METAPOOL` flag for such 2 levels pools, as otherwise Valgrind will
     /// detect overlapping memory blocks, and will abort execution (e.g. during leak search).
     pub const METAPOOL: u8 = 2;
 }
@@ -92,7 +92,7 @@ pub fn running_on_valgrind() -> usize {
     do_client_request!(
         "valgrind::running_on_valgrind",
         0,
-        bindings::GR_ValgrindClientRequest::GR_RUNNING_ON_VALGRIND,
+        bindings::VR_ValgrindClientRequest::VR_RUNNING_ON_VALGRIND,
         0,
         0,
         0,
@@ -104,12 +104,12 @@ pub fn running_on_valgrind() -> usize {
 /// Discard translation of code in the range [addr ... addr + len - 1].
 ///
 /// Useful if you are debugging a `JITter` or some such, since it provides a way to make sure
-/// valgrind will retranslate the invalidated area.
+/// Valgrind will retranslate the invalidated area.
 #[inline(always)]
 pub fn discard_translations(addr: *const (), len: usize) {
     do_client_request!(
         "valgrind::discard_translations",
-        bindings::GR_ValgrindClientRequest::GR_DISCARD_TRANSLATIONS,
+        bindings::VR_ValgrindClientRequest::VR_DISCARD_TRANSLATIONS,
         addr as usize,
         len,
         0,
@@ -118,16 +118,16 @@ pub fn discard_translations(addr: *const (), len: usize) {
     );
 }
 
-/// Returns `true` if the tool replaces malloc (e.g., memcheck).
+/// Returns `true` if the tool replaces malloc (e.g., Memcheck).
 ///
-/// Returns `false` if the tool does not replace malloc (e.g., cachegrind and callgrind) or if the
+/// Returns `false` if the tool does not replace malloc (e.g., Cachegrind and Callgrind) or if the
 /// executable is not running under Valgrind.
 #[inline(always)]
 pub fn replaces_malloc() -> bool {
     do_client_request!(
         "valgrind::replaces_malloc",
         0,
-        bindings::GR_ValgrindClientRequest::GR_VALGRIND_REPLACES_MALLOC,
+        bindings::VR_ValgrindClientRequest::VR_VALGRIND_REPLACES_MALLOC,
         0,
         0,
         0,
@@ -150,7 +150,7 @@ pub fn get_toolname(buffer: *mut u8, len: usize) -> usize {
     do_client_request!(
         "valgrind::get_toolname",
         0,
-        bindings::GR_ValgrindClientRequest::GR_VALGRIND_GET_TOOLNAME,
+        bindings::VR_ValgrindClientRequest::VR_VALGRIND_GET_TOOLNAME,
         buffer as usize,
         len,
         0,
@@ -180,7 +180,7 @@ pub fn non_simd_call0(func: fn(ThreadId) -> usize) -> usize {
     do_client_request!(
         "valgrind::non_simd_call0",
         0,
-        bindings::GR_ValgrindClientRequest::GR_CLIENT_CALL0,
+        bindings::VR_ValgrindClientRequest::VR_CLIENT_CALL0,
         func as *const () as usize,
         0,
         0,
@@ -197,7 +197,7 @@ pub fn non_simd_call0(func: fn(ThreadId) -> usize) -> usize {
 ///
 /// ```rust,no_run
 /// let num = 42i32;
-/// let res = gungraun::client_requests::valgrind::non_simd_call1(
+/// let res = valgrind_requests::valgrind::non_simd_call1(
 ///     |_tid, a| unsafe { ((a as *const i32).as_ref().unwrap() + 2) as usize },
 ///     (&num) as *const i32 as usize,
 /// );
@@ -209,7 +209,7 @@ pub fn non_simd_call1(func: fn(ThreadId, usize) -> usize, arg1: usize) -> usize 
     do_client_request!(
         "valgrind::non_simd_call1",
         0,
-        bindings::GR_ValgrindClientRequest::GR_CLIENT_CALL1,
+        bindings::VR_ValgrindClientRequest::VR_CLIENT_CALL1,
         func as *const () as usize,
         arg1,
         0,
@@ -231,7 +231,7 @@ pub fn non_simd_call2(
     do_client_request!(
         "valgrind::non_simd_call2",
         0,
-        bindings::GR_ValgrindClientRequest::GR_CLIENT_CALL2,
+        bindings::VR_ValgrindClientRequest::VR_CLIENT_CALL2,
         func as *const () as usize,
         arg1,
         arg2,
@@ -254,7 +254,7 @@ pub fn non_simd_call3(
     do_client_request!(
         "valgrind::non_simd_call3",
         0,
-        bindings::GR_ValgrindClientRequest::GR_CLIENT_CALL3,
+        bindings::VR_ValgrindClientRequest::VR_CLIENT_CALL3,
         func as *const () as usize,
         arg1,
         arg2,
@@ -275,7 +275,7 @@ pub fn count_errors() -> usize {
     do_client_request!(
         "valgrind::count_errors",
         0,
-        bindings::GR_ValgrindClientRequest::GR_COUNT_ERRORS,
+        bindings::VR_ValgrindClientRequest::VR_COUNT_ERRORS,
         0,
         0,
         0,
@@ -355,7 +355,7 @@ pub fn count_errors() -> usize {
 pub fn malloclike_block(addr: *const (), size: usize, redzone: usize, is_zeroed: bool) {
     do_client_request!(
         "valgrind::malloclike_block",
-        bindings::GR_ValgrindClientRequest::GR_MALLOCLIKE_BLOCK,
+        bindings::VR_ValgrindClientRequest::VR_MALLOCLIKE_BLOCK,
         addr as usize,
         size,
         redzone,
@@ -387,7 +387,7 @@ pub fn malloclike_block(addr: *const (), size: usize, redzone: usize, is_zeroed:
 pub fn resizeinplace_block(addr: *const (), old_size: usize, new_size: usize, redzone: usize) {
     do_client_request!(
         "valgrind::resizeinplace_block",
-        bindings::GR_ValgrindClientRequest::GR_RESIZEINPLACE_BLOCK,
+        bindings::VR_ValgrindClientRequest::VR_RESIZEINPLACE_BLOCK,
         addr as usize,
         old_size,
         new_size,
@@ -412,7 +412,7 @@ pub fn resizeinplace_block(addr: *const (), old_size: usize, new_size: usize, re
 pub fn freelike_block(addr: *const (), redzone: usize) {
     do_client_request!(
         "valgrind::freelike_block",
-        bindings::GR_ValgrindClientRequest::GR_FREELIKE_BLOCK,
+        bindings::VR_ValgrindClientRequest::VR_FREELIKE_BLOCK,
         addr as usize,
         redzone,
         0,
@@ -436,7 +436,7 @@ pub fn freelike_block(addr: *const (), redzone: usize) {
 pub fn create_mempool(pool: *const (), redzone: usize, is_zeroed: bool) {
     do_client_request!(
         "valgrind::create_mempool",
-        bindings::GR_ValgrindClientRequest::GR_CREATE_MEMPOOL,
+        bindings::VR_ValgrindClientRequest::VR_CREATE_MEMPOOL,
         pool as usize,
         redzone,
         usize::from(is_zeroed),
@@ -454,7 +454,7 @@ pub fn create_mempool(pool: *const (), redzone: usize, is_zeroed: bool) {
 pub fn create_mempool_ext(pool: *const (), redzone: usize, is_zeroed: bool, flags: u8) {
     do_client_request!(
         "valgrind::create_mempool_ext",
-        bindings::GR_ValgrindClientRequest::GR_CREATE_MEMPOOL,
+        bindings::VR_ValgrindClientRequest::VR_CREATE_MEMPOOL,
         pool as usize,
         redzone,
         usize::from(is_zeroed),
@@ -476,7 +476,7 @@ pub fn create_mempool_ext(pool: *const (), redzone: usize, is_zeroed: bool, flag
 pub fn destroy_mempool(pool: *const ()) {
     do_client_request!(
         "valgrind::destroy_mempool",
-        bindings::GR_ValgrindClientRequest::GR_DESTROY_MEMPOOL,
+        bindings::VR_ValgrindClientRequest::VR_DESTROY_MEMPOOL,
         pool as usize,
         0,
         0,
@@ -499,7 +499,7 @@ pub fn destroy_mempool(pool: *const ()) {
 pub fn mempool_alloc(pool: *const (), addr: *const (), size: usize) {
     do_client_request!(
         "valgrind::mempool_alloc",
-        bindings::GR_ValgrindClientRequest::GR_MEMPOOL_ALLOC,
+        bindings::VR_ValgrindClientRequest::VR_MEMPOOL_ALLOC,
         pool as usize,
         addr as usize,
         size,
@@ -520,7 +520,7 @@ pub fn mempool_alloc(pool: *const (), addr: *const (), size: usize) {
 pub fn mempool_free(pool: *const (), addr: *const ()) {
     do_client_request!(
         "valgrind::mempool_free",
-        bindings::GR_ValgrindClientRequest::GR_MEMPOOL_FREE,
+        bindings::VR_ValgrindClientRequest::VR_MEMPOOL_FREE,
         pool as usize,
         addr as usize,
         0,
@@ -552,7 +552,7 @@ pub fn mempool_free(pool: *const (), addr: *const ()) {
 pub fn mempool_trim(pool: *const (), addr: *const (), size: usize) {
     do_client_request!(
         "valgrind::mempool_trim",
-        bindings::GR_ValgrindClientRequest::GR_MEMPOOL_TRIM,
+        bindings::VR_ValgrindClientRequest::VR_MEMPOOL_TRIM,
         pool as usize,
         addr as usize,
         size,
@@ -575,7 +575,7 @@ pub fn mempool_trim(pool: *const (), addr: *const (), size: usize) {
 pub fn move_mempool(pool_a: *const (), pool_b: *const ()) {
     do_client_request!(
         "valgrind::move_mempool",
-        bindings::GR_ValgrindClientRequest::GR_MOVE_MEMPOOL,
+        bindings::VR_ValgrindClientRequest::VR_MOVE_MEMPOOL,
         pool_a as usize,
         pool_b as usize,
         0,
@@ -599,7 +599,7 @@ pub fn move_mempool(pool_a: *const (), pool_b: *const ()) {
 pub fn mempool_change(pool: *const (), addr_a: *const (), addr_b: *const (), size: usize) {
     do_client_request!(
         "valgrind::mempool_change",
-        bindings::GR_ValgrindClientRequest::GR_MEMPOOL_CHANGE,
+        bindings::VR_ValgrindClientRequest::VR_MEMPOOL_CHANGE,
         pool as usize,
         addr_a as usize,
         addr_b as usize,
@@ -622,7 +622,7 @@ pub fn mempool_exists(pool: *const ()) -> bool {
     do_client_request!(
         "valgrind::mempool_exists",
         0,
-        bindings::GR_ValgrindClientRequest::GR_MEMPOOL_EXISTS,
+        bindings::VR_ValgrindClientRequest::VR_MEMPOOL_EXISTS,
         pool as usize,
         0,
         0,
@@ -648,7 +648,7 @@ pub fn stack_register(start: usize, end: usize) -> StackId {
     do_client_request!(
         "valgrind::stack_register",
         0,
-        bindings::GR_ValgrindClientRequest::GR_STACK_REGISTER,
+        bindings::VR_ValgrindClientRequest::VR_STACK_REGISTER,
         start,
         end,
         0,
@@ -667,7 +667,7 @@ pub fn stack_register(start: usize, end: usize) -> StackId {
 pub fn stack_deregister(stack_id: StackId) {
     do_client_request!(
         "valgrind::stack_deregister",
-        bindings::GR_ValgrindClientRequest::GR_STACK_DEREGISTER,
+        bindings::VR_ValgrindClientRequest::VR_STACK_DEREGISTER,
         stack_id,
         0,
         0,
@@ -690,7 +690,7 @@ pub fn stack_deregister(stack_id: StackId) {
 pub fn stack_change(stack_id: StackId, start: usize, end: usize) {
     do_client_request!(
         "valgrind::stack_change",
-        bindings::GR_ValgrindClientRequest::GR_STACK_CHANGE,
+        bindings::VR_ValgrindClientRequest::VR_STACK_CHANGE,
         stack_id,
         start,
         end,
@@ -708,7 +708,7 @@ pub fn stack_change(stack_id: StackId, start: usize, end: usize) {
 pub fn load_pdb_debuginfo(fd: RawFd, ptr: *const (), total_size: usize, delta: usize) {
     do_client_request!(
         "valgrind::load_pdb_debuginfo",
-        bindings::GR_ValgrindClientRequest::GR_LOAD_PDB_DEBUGINFO,
+        bindings::VR_ValgrindClientRequest::VR_LOAD_PDB_DEBUGINFO,
         fd.try_into().expect("A file descriptor should be >= 0"),
         ptr as usize,
         total_size,
@@ -727,7 +727,7 @@ pub fn map_ip_to_srcloc(addr: *const (), buf64: *const ()) -> usize {
     do_client_request!(
         "valgrind::map_ip_to_srcloc",
         0,
-        bindings::GR_ValgrindClientRequest::GR_MAP_IP_TO_SRCLOC,
+        bindings::VR_ValgrindClientRequest::VR_MAP_IP_TO_SRCLOC,
         addr as usize,
         buf64 as usize,
         0,
@@ -748,7 +748,7 @@ pub fn map_ip_to_srcloc(addr: *const (), buf64: *const ()) -> usize {
 pub fn disable_error_reporting() {
     do_client_request!(
         "valgrind::disable_error_reporting",
-        bindings::GR_ValgrindClientRequest::GR_CHANGE_ERR_DISABLEMENT,
+        bindings::VR_ValgrindClientRequest::VR_CHANGE_ERR_DISABLEMENT,
         1,
         0,
         0,
@@ -764,7 +764,7 @@ pub fn disable_error_reporting() {
 pub fn enable_error_reporting() {
     do_client_request!(
         "valgrind::enable_error_reporting",
-        bindings::GR_ValgrindClientRequest::GR_CHANGE_ERR_DISABLEMENT,
+        bindings::VR_ValgrindClientRequest::VR_CHANGE_ERR_DISABLEMENT,
         usize::MAX, // The original code in `valgrind.h` used `-1` as value
         0,
         0,
@@ -792,7 +792,7 @@ where
     do_client_request!(
         "valgrind::monitor_command",
         0,
-        bindings::GR_ValgrindClientRequest::GR_GDB_MONITOR_COMMAND,
+        bindings::VR_ValgrindClientRequest::VR_GDB_MONITOR_COMMAND,
         command.as_ref().as_ptr() as usize,
         0,
         0,
@@ -804,7 +804,7 @@ where
 /// Change the value of a dynamic command line option
 ///
 /// The value of some command line options can be changed dynamically while your program is running
-/// under Valgrind. The dynamically changeable options of the valgrind core and a given tool can be
+/// under Valgrind. The dynamically changeable options of the Valgrind core and a given tool can be
 /// listed using option --help-dyn-options,
 ///
 /// Note that unknown or not dynamically changeable options will cause a warning message to be
@@ -819,7 +819,7 @@ where
 {
     do_client_request!(
         "valgrind::clo_change",
-        bindings::GR_ValgrindClientRequest::GR_CLO_CHANGE,
+        bindings::VR_ValgrindClientRequest::VR_CLO_CHANGE,
         option.as_ref().as_ptr() as usize,
         0,
         0,

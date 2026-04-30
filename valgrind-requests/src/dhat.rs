@@ -34,7 +34,7 @@
 // We're using a lot of the original documentation from the `dhat.h` header file with some
 // small adjustments, so above is the original license from `dhat.h` file.
 //
-// This file is distributed under the same License as the rest of `gungraun`.
+// This file is distributed under the same License as the rest of `valgrind-requests`.
 //
 // ----------------------------------------------------------------
 //
@@ -58,7 +58,7 @@ use super::{bindings, fatal_error, valgrind_do_client_request_stmt};
 pub fn ad_hoc_event(weight: usize) {
     do_client_request!(
         "dhat::ad_hoc_event",
-        bindings::GR_DHATClientRequest::GR_DHAT_AD_HOC_EVENT,
+        bindings::VR_DHATClientRequest::VR_DHAT_AD_HOC_EVENT,
         weight,
         0,
         0,
@@ -82,7 +82,7 @@ pub fn ad_hoc_event(weight: usize) {
 pub fn histogram_memory(addr: *const ()) {
     do_client_request!(
         "dhat::histogram_memory",
-        bindings::GR_DHATClientRequest::GR_DHAT_HISTOGRAM_MEMORY,
+        bindings::VR_DHATClientRequest::VR_DHAT_HISTOGRAM_MEMORY,
         addr as usize,
         0,
         0,

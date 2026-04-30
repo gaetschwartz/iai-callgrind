@@ -35,7 +35,7 @@ use crate::EntryPoint;
 #[derive(Debug, Clone, IntoInner, AsRef)]
 pub struct Bbv(__internal::InternalTool);
 
-/// The configuration for cachegrind
+/// The configuration for Cachegrind
 ///
 /// Can be specified in [`crate::LibraryBenchmarkConfig::tool`] or
 /// [`crate::BinaryBenchmarkConfig::tool`].
@@ -293,7 +293,7 @@ impl Bbv {
     ///
     /// Valid arguments
     /// are <https://valgrind.org/docs/manual/bbv-manual.html#bbv-manual.usage> and the core
-    /// valgrind command-line arguments
+    /// Valgrind command-line arguments
     /// <https://valgrind.org/docs/manual/manual-core.html#manual-core.options>.
     ///
     /// See also [`Callgrind::args`]
@@ -362,7 +362,7 @@ impl Cachegrind {
     ///
     /// Valid arguments
     /// are <https://valgrind.org/docs/manual/cg-manual.html#cg-manual.cgopts> and the core
-    /// valgrind command-line arguments
+    /// Valgrind command-line arguments
     /// <https://valgrind.org/docs/manual/manual-core.html#manual-core.options>.
     ///
     /// See also [`Callgrind::args`]
@@ -399,7 +399,7 @@ impl Cachegrind {
         self
     }
 
-    /// Customize the format of the cachegrind output
+    /// Customize the format of the Cachegrind output
     ///
     /// See also [`Callgrind::format`] for more details and [`crate::CachegrindMetrics`] for valid
     /// metrics.
@@ -592,12 +592,12 @@ impl Callgrind {
 
     /// Adds command-line arguments to the `Callgrind` configuration.
     ///
-    /// The command-line arguments are passed directly to the callgrind invocation. Valid arguments
+    /// The command-line arguments are passed directly to the Callgrind invocation. Valid arguments
     /// are <https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options> and the core
-    /// valgrind command-line arguments
+    /// Valgrind command-line arguments
     /// <https://valgrind.org/docs/manual/manual-core.html#manual-core.options>. Note that not all
     /// command-line arguments are supported especially the ones which change output paths.
-    /// Unsupported arguments will be ignored printing a warning.
+    /// Unsupported arguments will be ignored, printing a warning.
     ///
     /// The flags can be omitted ("collect-bus" instead of "--collect-bus").
     ///
@@ -620,8 +620,8 @@ impl Callgrind {
     /// Enable this tool. This is the default.
     ///
     /// This is mostly useful to disable a tool which has been enabled in a
-    /// [`crate::LibraryBenchmarkConfig`] (or [`crate::BinaryBenchmarkConfig`]) at a higher-level.
-    /// However, the default tool (usually callgrind) cannot be disabled.
+    /// [`crate::LibraryBenchmarkConfig`] (or [`crate::BinaryBenchmarkConfig`]) at a higher level.
+    /// However, the default tool (usually Callgrind) cannot be disabled.
     ///
     /// ```rust
     /// use gungraun::Callgrind;
@@ -882,10 +882,10 @@ impl Callgrind {
         self
     }
 
-    /// Option to produce flamegraphs from callgrind output with a [`crate::FlamegraphConfig`]
+    /// Option to produce flamegraphs from Callgrind output with a [`crate::FlamegraphConfig`]
     ///
     /// The flamegraphs are usable but still in an experimental stage. Callgrind lacks the tool like
-    /// `cg_diff` for cachegrind to compare two different profiles. Flamegraphs on the other hand
+    /// `cg_diff` for Cachegrind to compare two different profiles. Flamegraphs on the other hand
     /// can bridge the gap and be [`FlamegraphKind::Differential`] to compare two benchmark runs.
     ///
     /// # Examples
@@ -917,15 +917,15 @@ impl Callgrind {
         self
     }
 
-    /// Customize the format of the callgrind output
+    /// Customize the format of the Callgrind output
     ///
-    /// This option allows customizing the output format of callgrind metrics. It does not set any
-    /// flags for the callgrind execution (i.e. `--branch-sim=yes`) which actually enable the
+    /// This option allows customizing the output format of Callgrind metrics. It does not set any
+    /// flags for the Callgrind execution (i.e. `--branch-sim=yes`) which actually enable the
     /// collection of these metrics. Consult the docs of [`EventKind`] and [`CallgrindMetrics`] to
     /// see which flag is necessary to enable the collection of a specific metric. The rules:
     ///
     /// 1. A metric is only printed if specified here
-    /// 2. A metric is not printed if not collected by callgrind
+    /// 2. A metric is not printed if not collected by Callgrind
     /// 3. The order matters
     /// 4. In case of duplicate specifications of the same metric the first one wins.
     ///
@@ -933,13 +933,13 @@ impl Callgrind {
     /// [`EventKind`]s, to avoid having to specify all [`EventKind`]s one-by-one (although still
     /// possible with [`CallgrindMetrics::SingleEvent`]).
     ///
-    /// All command-line arguments of callgrind and which metric they collect are described in full
-    /// detail in the [callgrind
+    /// All command-line arguments of Callgrind and which metric they collect are described in full
+    /// detail in the [Callgrind
     /// documentation](https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options).
     ///
     /// # Examples
     ///
-    /// To enable printing all callgrind metrics specify [`CallgrindMetrics::All`]. `All` callgrind
+    /// To enable printing all Callgrind metrics specify [`CallgrindMetrics::All`]. `All` Callgrind
     /// metrics include the cache misses ([`EventKind::I1mr`], ...). For example in a library
     /// benchmark:
     ///
@@ -958,7 +958,7 @@ impl Callgrind {
     /// # }
     /// ```
     ///
-    /// The benchmark is executed with the callgrind arguments set by gungraun which don't
+    /// The benchmark is executed with the Callgrind arguments set by gungraun which don't
     /// collect any other metrics than cache misses (`--cache-sim=yes`), so the output will look
     /// like this:
     ///
@@ -1030,7 +1030,7 @@ impl Dhat {
     ///
     /// Valid arguments
     /// are <https://valgrind.org/docs/manual/dh-manual.html#dh-manual.options> and the core
-    /// valgrind command-line arguments
+    /// Valgrind command-line arguments
     /// <https://valgrind.org/docs/manual/manual-core.html#manual-core.options>.
     ///
     /// See also [`Callgrind::args`]
@@ -1431,7 +1431,7 @@ impl Drd {
     /// Adds command-line arguments to the `Drd` configuration.
     ///
     /// Valid arguments are <https://valgrind.org/docs/manual/drd-manual.html#drd-manual.options>
-    /// and the core valgrind command-line arguments
+    /// and the core Valgrind command-line arguments
     /// <https://valgrind.org/docs/manual/manual-core.html#manual-core.options>.
     ///
     /// See also [`Callgrind::args`]
@@ -1705,7 +1705,7 @@ impl Helgrind {
     ///
     /// Valid arguments
     /// are <https://valgrind.org/docs/manual/hg-manual.html#hg-manual.options> and the core
-    /// valgrind command-line arguments
+    /// Valgrind command-line arguments
     /// <https://valgrind.org/docs/manual/manual-core.html#manual-core.options>.
     ///
     /// See also [`Callgrind::args`]
@@ -1804,7 +1804,7 @@ impl Massif {
     ///
     /// Valid arguments
     /// are <https://valgrind.org/docs/manual/ms-manual.html#ms-manual.options> and the core
-    /// valgrind command-line arguments
+    /// Valgrind command-line arguments
     /// <https://valgrind.org/docs/manual/manual-core.html#manual-core.options>.
     ///
     /// See also [`Callgrind::args`]
@@ -1875,7 +1875,7 @@ impl Memcheck {
     ///
     /// Valid arguments
     /// are <https://valgrind.org/docs/manual/mc-manual.html#mc-manual.options> and the core
-    /// valgrind command-line arguments
+    /// Valgrind command-line arguments
     /// <https://valgrind.org/docs/manual/manual-core.html#manual-core.options>.
     ///
     /// See also [`Callgrind::args`]
@@ -1995,8 +1995,8 @@ impl OutputFormat {
 
     /// Show intermediate metrics from parts, subprocesses, threads, ... (Default: false)
     ///
-    /// In callgrind, threads are treated as separate units (similar to subprocesses) and the
-    /// metrics for them are dumped into an own file. Other valgrind tools usually separate the
+    /// In Callgrind, threads are treated as separate units (similar to subprocesses) and the
+    /// metrics for them are dumped into an own file. Other Valgrind tools usually separate the
     /// output files only by subprocesses. To also show the metrics of any intermediate fragments
     /// and not just the total over all of them, set the value of this method to `true`.
     ///
@@ -2005,7 +2005,7 @@ impl OutputFormat {
     ///
     /// # Examples
     ///
-    /// As opposed to valgrind/callgrind, `--trace-children=yes`, `--separate-threads=yes` and
+    /// As opposed to Valgrind/Callgrind, `--trace-children=yes`, `--separate-threads=yes` and
     /// `--fair-sched=try` are the defaults in Gungraun, so in the following example it's not
     /// necessary to specify `--separate-threads` to track the metrics of the spawned thread.
     /// However, it is necessary to specify an additional toggle or else the metrics of the thread

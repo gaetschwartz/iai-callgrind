@@ -4,6 +4,7 @@ perf.data
 lcov.info
 *.scip
 .opencode-tasks/
+.opencode
 
 # Swap
 [._]*.s[a-v][a-z]

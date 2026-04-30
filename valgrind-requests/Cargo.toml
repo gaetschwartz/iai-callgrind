@@ -1,71 +1,56 @@
 [package]
-authors = [
-  "Joining7943 <joining@posteo.de>",
-  "gamma0987 <gamma0987@posteo.de>",
-  "Brook Heisler <redattack34@gmail.com>",
+authors = ["gamma0987 <gamma0987@posteo.de>"]
+categories = [
+  "api-bindings",
+  "development-tools::profiling",
+  "development-tools::testing",
 ]
-categories.workspace = true
 description = """
-High-precision, one-shot and consistent benchmarking framework/harness for Rust. \
-All Valgrind tools at your fingertips.
+Idiomatic Rust bindings for Valgrind client requests, with zero-indirection \
+execution and zero-cost fallback
 """
 edition.workspace = true
 homepage.workspace = true
-keywords.workspace = true
+keywords = ["valgrind", "bindings", "client-requests", "memcheck", "callgrind"]
 license.workspace = true
-name = "gungraun"
-readme = "../README.md"
+name = "valgrind-requests"
 repository.workspace = true
 rust-version.workspace = true
-version.workspace = true
+version = "1.0.0"
 
 [features]
-benchmark = [
-  "gungraun-runner",
-  "dep:bincode",
-  "dep:gungraun-macros",
-  "dep:derive_more",
+act = ["stubs"]
+default = ["act"]
+stubs = [
+  "dep:bindgen",
+  "dep:cc",
+  "dep:cfg-if",
+  "dep:cty",
+  "dep:regex",
+  "dep:rustc_version",
+  "dep:strum",
 ]
-cachegrind = ["gungraun-macros/cachegrind", "client_requests"]
-client_requests = ["client_requests_defs", "valgrind-requests/act"]
-client_requests_defs = ["valgrind-requests/stubs", "dep:cty"]
-default = ["benchmark"]
-ui_tests = []
-# Looks like a bug to have to create a feature instead of
-# `dep:gungraun-runner` in the benchmark feature directly
-gungraun-runner = ["dep:gungraun-runner"]
 
 [package.metadata.docs.rs]
-features = ["client_requests_defs"]
+features = ["act"]
 rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
-bincode = { workspace = true, optional = true }
+cfg-if = { workspace = true, optional = true }
 cty = { workspace = true, optional = true }
-# We use the `derive_more` crate anyway in `gungraun-macros`, so there's no
-# harm in using it for this small AsRef derive macro
-derive_more = { workspace = true, default-features = false, features = [
-  "as_ref",
-], optional = true }
-gungraun-macros = { path = "../gungraun-macros", version = "=0.8.0", optional = true }
-gungraun-runner = { path = "../gungraun-runner", version = "=0.18.1", default-features = false, features = [
-  "api",
-], optional = true }
-valgrind-requests = { path = "../valgrind-requests", version = "1", optional = true, default-features = false }
 
-[dev-dependencies]
-fs_extra = { workspace = true }
-rstest = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-serial_test = { workspace = true }
-trybuild = { workspace = true }
+[build-dependencies]
+bindgen = { workspace = true, optional = true }
+cc = { workspace = true, optional = true }
+regex = { workspace = true, optional = true }
+rustc_version = { workspace = true, optional = true }
+strum = { workspace = true, optional = true, features = ["derive"] }
 
 [lints.rust]
 missing_docs = "warn"
 
 [lints.clippy]
-pedantic = "warn"
+pedantic = { priority = -1, level = "warn" }
 allow_attributes = "warn"
 arbitrary_source_item_ordering = "warn"
 assertions_on_result_states = "warn"
@@ -87,6 +72,7 @@ if_then_some_else_none = "warn"
 impl_trait_in_params = "warn"
 implicit_clone = "warn"
 infinite_loop = "warn"
+inline_always = "allow"
 iter_on_empty_collections = "warn"
 iter_on_single_items = "warn"
 iter_with_drain = "warn"

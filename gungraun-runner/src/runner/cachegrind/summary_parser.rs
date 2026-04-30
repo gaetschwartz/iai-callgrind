@@ -1,4 +1,4 @@
-//! The module containing the cachegrind summary parser
+//! The module containing the Cachegrind summary parser
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;

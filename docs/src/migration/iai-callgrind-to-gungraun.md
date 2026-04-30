@@ -28,3 +28,10 @@ were renamed from `iai-callgrind` to `gungraun`, `iai-callgrind-runner` to
   output directory changes from
   `target/iai/my_package/my_iai_callgrind_benchmarks` to
   `target/gungraun/my_package/my_gungraun_benchmarks`
+
+From version `0.18.1` onwards the client requests were extracted into a separate
+package `valgrind-requests`. The following environment variables were renamed:
+
+- `IAI_CALLGRIND_VALGRIND_INCLUDE`, `IAI_CALLGRIND_.*_VALGRIND_INCLUDE`,
+  `GUNGRAUN_VALGRIND_INCLUDE`, `GUNGRAUN_.*_VALGRIND_INCLUDE` to
+  `VALGRIND_REQUESTS_VALGRIND_INCLUDE`, `VALGRIND_REQUESTS_.*_VALGRIND_INCLUDE`

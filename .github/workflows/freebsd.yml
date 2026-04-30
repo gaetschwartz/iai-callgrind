@@ -5,8 +5,8 @@ on:
   workflow_call:
 
 env:
-  GUNGRAUN_VALGRIND_INCLUDE: "/usr/local/include"
-  GUNGRAUN_VALGRIND_PATH: "/usr/local/bin"
+  VALGRIND_REQUESTS_VALGRIND_INCLUDE: "/usr/local/include"
+  VALGRIND_REQUESTS_VALGRIND_PATH: "/usr/local/bin"
   CARGO_TERM_COLOR: always
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: cross-platform-actions/action@v1.0.0
         with:
-          environment_variables: GUNGRAUN_VALGRIND_INCLUDE GUNGRAUN_VALGRIND_PATH CARGO_TERM_COLOR
+          environment_variables: VALGRIND_REQUESTS_VALGRIND_INCLUDE VALGRIND_REQUESTS_VALGRIND_PATH CARGO_TERM_COLOR
           operating_system: freebsd
           architecture: x86-64
           version: "15.0"
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: cross-platform-actions/action@v1.0.0
         with:
-          environment_variables: GUNGRAUN_VALGRIND_INCLUDE GUNGRAUN_VALGRIND_PATH CARGO_TERM_COLOR
+          environment_variables: VALGRIND_REQUESTS_VALGRIND_INCLUDE VALGRIND_REQUESTS_VALGRIND_PATH CARGO_TERM_COLOR
           operating_system: freebsd
           architecture: x86-64
           version: "15.0"
@@ -98,7 +98,7 @@ jobs:
         env:
           RUST_BACKTRACE: "0"
         with:
-          environment_variables: GUNGRAUN_VALGRIND_INCLUDE GUNGRAUN_VALGRIND_PATH CARGO_TERM_COLOR RUST_BACKTRACE
+          environment_variables: VALGRIND_REQUESTS_VALGRIND_INCLUDE VALGRIND_REQUESTS_VALGRIND_PATH CARGO_TERM_COLOR RUST_BACKTRACE
           operating_system: freebsd
           architecture: x86-64
           version: "15.0"

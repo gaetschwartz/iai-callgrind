@@ -22,11 +22,21 @@ With the `0.17.0` version the project was renamed to `Gungraun`. The packages
 were renamed from `iai-callgrind` to `gungraun`, `iai-callgrind-runner` to
 `gungraun-runner` and `iai-callgrind-macros` to `gungraun-macros`.
 
+The `valgrind-requests` package was extracted from the `gungraun` package and is
+now an independent package with an own
+[CHANGELOG](./valgrind-requests/CHANGELOG.md) file.
+
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+
+- Extraction of the `valgrind-requests` package from the `gungraun` package. For
+  the `gungraun` package this is purely cosmetic and doesn't introduce api
+  changes.
 
 ## [0.18.1] - 2026-04-10
 
@@ -81,7 +91,7 @@ and this project adheres to
   of serial benchmark execution:
     - Execute the benchmark and then process and print the data while already
       executing the next benchmark.
-    - By using a temporary directory for the new valgrind data which most likely
+    - By using a temporary directory for the new Valgrind data which most likely
       is an in-memory file system like tmpfs
 - ([#565](https://github.com/gungraun/gungraun/pull/565)): Output format
   changes: Consts arguments are shown in the DESCRIPTION of the the benchmark
@@ -94,7 +104,7 @@ and this project adheres to
 - ([#583](https://github.com/gungraun/gungraun/pull/583)): `--bbv-args`,
   `--cachegrind-args`, `--callgrind-args`, `--dhat-args`, `--drd-args`,
   `--helgrind-args`, `--massif-args`, `--memcheck-args`, `--valgrind-args` now
-  support specifying valgrind arguments without the `--` flag for convenience.
+  support specifying Valgrind arguments without the `--` flag for convenience.
   For example: `--callgrind-args='toggle-collect=some::*'` instead of
   `--callgrind-args='--toggle-collect=some::*'`
 - Update, fix and improve the guide and other documentation in various PRs:
@@ -156,12 +166,12 @@ and this project adheres to
   usages were removed and replaced by an improved internal structure of the
   benchmark module.
 - ([#525](https://github.com/gungraun/gungraun/pull/525)): Fixed possible
-  ambiguous matches of dhat frames and functions when the default entry point
+  ambiguous matches of DHAT frames and functions when the default entry point
   was used.
-- ([#525](https://github.com/gungraun/gungraun/pull/525)): Fixed custom dhat
+- ([#525](https://github.com/gungraun/gungraun/pull/525)): Fixed custom DHAT
   frames were only matched when the default entry point was used.
 - ([#530](https://github.com/gungraun/gungraun/pull/530)): Fixed rare cases of
-  callgrind stats depending on the function name.
+  Callgrind stats depending on the function name.
 - Fixed dead links in the guide.
 
 ## [0.17.0] - 2025-09-21
@@ -198,7 +208,7 @@ Here's a migration check-list:
 
 All changes are detailed below. Notably, this version introduces two other
 significant updates: DHAT metrics now exclude setup and teardown costs, aligning
-them with the behavior of callgrind and cachegrind. Additionally, the new `iter`
+them with the behavior of Callgrind and Cachegrind. Additionally, the new `iter`
 keyword in the `#[benches]` attribute enables the creation of benchmarks from an
 iterator. For instance, `#[benches::some_id(iter = 0..3)]` generates three
 benchmarks with the inputs `0`, `1`, and `2`, while also supporting more complex
@@ -305,7 +315,7 @@ iterators.
 - ([#411](https://github.com/iai-callgrind/iai-callgrind/pull/411)): Add ability
   to set report tolerance. Thanks to @nihohit
 - ([#419](https://github.com/iai-callgrind/iai-callgrind/pull/419)): Add support
-  for the valgrind command-line arguments `--xtree-memory` and memcheck's
+  for the Valgrind command-line arguments `--xtree-memory` and memcheck's
   `--xtree-leak`. The output files extension is `.xtree` for `--xtree-memory`
   and `.xleak` for `--xtree-leak`.
 - ([#420](https://github.com/iai-callgrind/iai-callgrind/pull/420)): Add
@@ -357,9 +367,9 @@ detail below.
 
 - DHAT is now considered to be fully integrated into Iai-Callgrind and the
   default entry point in library benchmarks for DHAT is set to the benchmark
-  function similar to callgrind. This changes the metrics of the DHAT output.
+  function similar to Callgrind. This changes the metrics of the DHAT output.
 
-In contrast to callgrind, the DHAT default entry point _includes_ any
+In contrast to Callgrind, the DHAT default entry point _includes_ any
 (de-)allocations in `setup` and/or `teardown` code in order to be able to detect
 the DHAT metrics of the benchmark itself. The inclusion of `setup`/`teardown`
 metrics is a limitation of DHAT and what is possible to reliably extract from
@@ -367,7 +377,7 @@ the output files. Nevertheless, this change allows the metrics to be centered on
 the benchmark function excluding the heap operations of Iai-Callgrind needed to
 setup the benchmark (allocations fluctuating between 2000 - 2500 bytes). More
 importantly, the DHAT metrics are stabilized. This clears the way for setting
-regression limits in the same fashion as it is possible for callgrind.
+regression limits in the same fashion as it is possible for Callgrind.
 Additionally, it is possible to specify additional frames/functions to be
 included/excluded from the DHAT metrics similar to what `--toggle-collect` does
 for callgrind.
@@ -376,7 +386,7 @@ for callgrind.
 
 - Note that in DHAT library benchmarks of multi-threaded/multi-process
   functions, the threads/subprocesses are not included in the metrics anymore.
-  This is exactly equivalent to the situation in callgrind benchmarks of
+  This is exactly equivalent to the situation in Callgrind benchmarks of
   multi-threaded/multi-process functions and can be solved in the same way with
   additional `Dhat::frames`.
 
@@ -404,13 +414,13 @@ Also new: It's possible to specify soft or hard limits for whole groups like
 - ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406)): Added the
   method `Dhat::entry_point` to be able to change the default entry point
   similar to `Callgrind::entry_point` and `Dhat::frames` to be able to specify
-  additional functions in a similar way to `--toggle-collect` of callgrind.
+  additional functions in a similar way to `--toggle-collect` of Callgrind.
 - ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406)): Possibility
-  to specify dhat regression limits with the `Dhat` struct and with the
+  to specify DHAT regression limits with the `Dhat` struct and with the
   command-line argument `--dhat-limits` or environment variable
   `IAI_CALLGRIND_DHAT_LIMITS`.
-- ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406)): New dhat
-  metrics `DhatMetric::TotalUnits` and `DhatMetric::TotalEvents` for dhat
+- ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406)): New DHAT
+  metrics `DhatMetric::TotalUnits` and `DhatMetric::TotalEvents` for DHAT
   `ad-hoc` mode. They are part of the default output format of dhat.
 - ([#407](https://github.com/iai-callgrind/iai-callgrind/pull/407))!: Add
   possibility to specify hard limits in addition to soft limits. This breaks the
@@ -426,7 +436,7 @@ Also new: It's possible to specify soft or hard limits for whole groups like
 ### Changed
 
 - ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406))!: In library
-  benchmarks, the default entry point for dhat is now the benchmark function
+  benchmarks, the default entry point for DHAT is now the benchmark function
   `EntryPoint::Default`. As opposed to callgrind benchmarks, this includes the
   (de-)allocations/metrics of a `setup` and/or `teardown` function. For binary
   benchmarks nothing has changed and the default entry point is set to none with
@@ -460,7 +470,7 @@ Also new: It's possible to specify soft or hard limits for whole groups like
 ### Fixed
 
 - ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406)): Running
-  dhat in `ad-hoc` mode exited with error due to a failed assertion. Parsing the
+  DHAT in `ad-hoc` mode exited with error due to a failed assertion. Parsing the
   log file in ad-hoc mode now succeeds.
 - ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406)): Wrong error
   message `Failed to split callgrind args` when parsing of `--cachegrind-args`,
@@ -513,27 +523,27 @@ Also new: It's possible to specify soft or hard limits for whole groups like
 
 ## [0.15.0] - 2025-06-22
 
-Support running cachegrind instead of callgrind or in addition to callgrind if
+Support running Cachegrind instead of Callgrind or in addition to Callgrind if
 required. The change also allowed a more flexible way to run benchmarks with any
-valgrind tool as default tool if wished so.
+Valgrind tool as default tool if wished so.
 
 ### Added
 
 - ([#365](https://github.com/iai-callgrind/iai-callgrind/pull/365)): Adjustable
-  metrics in the terminal output of callgrind
+  metrics in the terminal output of Callgrind
 - ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): Support to
-  run cachegrind instead of callgrind or in addition to callgrind. The
+  run Cachegrind instead of Callgrind or in addition to Callgrind. The
   `cachegrind` feature of iai-callgrind allows to switch between both tools in
   the `Cargo.toml` in a more permanent way. But, it is also possible to change
-  the default tool to cachegrind (or any other valgrind tool) on the
+  the default tool to Cachegrind (or any other Valgrind tool) on the
   command-line with `--default-tool` option. The
   `LibraryBenchmarkConfig::default_tool` (`BinaryBenchmarkConfig::default_tool`)
   can be used in the benchmarks to selectively change the default tool. To be
-  able to define cachegrind limits in the same way as `--callgrind-limits` to
+  able to define Cachegrind limits in the same way as `--callgrind-limits` to
   detect regressions, the `--cachegrind-limits` options was added.
 - ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): In the same
   way as `--callgrind-args` can be used on the command-line the following
-  options were added to pass arguments to any valgrind tool: `--valgrind-args`,
+  options were added to pass arguments to any Valgrind tool: `--valgrind-args`,
   `--cachegrind-args`, `--dhat-args`, `--memcheck-args`, `--helgrind-args`,
   `--drd-args`, `--massif-args`, `--bbv-args`
 - ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): Added the
@@ -660,8 +670,8 @@ changes in the metrics without having changed the benchmarks themselves. The
 if client requests are used, so Iai-Callgrind now parses the `totals` instead.
 The `totals` might differ slightly from the `summary` and cause the difference
 in the displayed metrics. You might also see changes in the metrics because of
-the changed default values for some of the valgrind arguments. Iai-Callgrind
-changed the following default valgrind/callgrind arguments for each benchmark
+the changed default values for some of the Valgrind arguments. Iai-Callgrind
+changed the following default Valgrind/Callgrind arguments for each benchmark
 run:
 
 - `--separate-threads=no` -> `--separate-threads=yes`
@@ -679,7 +689,7 @@ If not stated otherwise the changes below were introduced in
 ### Added
 
 - Support for benchmarks of multi-threading and multi-process applications by
-  implementing the correct handling of the valgrind `--trace-children` and
+  implementing the correct handling of the Valgrind `--trace-children` and
   callgrind `--separate-threads` command line options. Per default only the
   total over all subprocesses and threads is calculated and shown. But, each
   thread and subprocess can be displayed with the new
@@ -706,7 +716,7 @@ If not stated otherwise the changes below were introduced in
   constructors of the `LibraryBenchmarkConfig`.
 - The methods `BinaryBenchmarkConfig::valgrind_args` and
   `LibraryBenchmarkConfig::valgrind_args` are introduced to be able to pass
-  valgrind core arguments to all tools.
+  Valgrind core arguments to all tools.
 
 ### Changed
 
@@ -720,7 +730,7 @@ If not stated otherwise the changes below were introduced in
   arguments which create multiple parts and threads in case of multiple threads.
   This change is backwards compatible to the file naming scheme of previous
   Iai-Callgrind releases for all tools but `exp-bbv`.
-- Error metrics from tools like drd, helgrind and memcheck are now listed and
+- Error metrics from tools like DRD, Helgrind and Memcheck are now listed and
   compared like the other metrics in a vertical format. For example
 
     ```text
@@ -755,7 +765,7 @@ If not stated otherwise the changes below were introduced in
     - `syn` -> 2.0.79
     - `tempfile` -> 3.13.0
 - ([#288](https://github.com/iai-callgrind/iai-callgrind/pull/288)): The default
-  include path for the valgrind headers has changed to `/usr/local/include` on
+  include path for the Valgrind headers has changed to `/usr/local/include` on
   freebsd instead of `/usr/local`.
 - ([#289](https://github.com/iai-callgrind/iai-callgrind/pull/289)): Update
   `derive_more` -> `1.0` in `Cargo.toml` but not in lock file.
@@ -780,7 +790,7 @@ If not stated otherwise the changes below were introduced in
 
 - Iai-Callgrind doesn't support combined dumps via `--combine-dumps` anymore.
 - The `Tool::outfile_modifier` method was removed. The `%p` modifier for
-  valgrind output and log files is now applied automatically when using the
+  Valgrind output and log files is now applied automatically when using the
   `--trace-children=yes` command line argument.
 - The output and log file paths in the terminal output were removed.
 
@@ -792,7 +802,7 @@ If not stated otherwise the changes below were introduced in
   by client requests and report the correct costs. This change is mostly
   internal but might introduce some (small) changes in the metrics reported by
   Iai-Callgrind.
-- The error metrics of drd, helgrind and memcheck were only shown correctly if
+- The error metrics of DRD, Helgrind and Memcheck were only shown correctly if
   they consisted of a single digit.
 - ([#297](https://github.com/iai-callgrind/iai-callgrind/pull/297)): Added the
   derive `Clone` impl for `gungraun::LibraryBenchmarkConfig`
@@ -1201,7 +1211,7 @@ to `EventKind::Ir` so, if you're updating from a previous version of
   cost summary similar to the summary of callgrind events in the benchmark run
   output. Thanks to @dewert99.
 - ([#80](https://github.com/iai-callgrind/iai-callgrind/issues/80)): Add
-  pre-built `iai-callgrind-runner` binaries for most valgrind supported targets
+  pre-built `iai-callgrind-runner` binaries for most Valgrind-supported targets
   to the github release pages. `iai-callgrind-runner` can now also be installed
   with `cargo binstall`.
 - ([#88](https://github.com/iai-callgrind/iai-callgrind/issues/88)): Support
@@ -1209,7 +1219,7 @@ to `EventKind::Ir` so, if you're updating from a previous version of
   filter can be given as positional argument in `cargo bench -- FILTER`.
   Specifying command-line arguments in addition to the `FILTER` still works.
 - ([#144](https://github.com/iai-callgrind/iai-callgrind/pull/144)): Verify
-  compatibility with latest valgrind release 3.23.0 and update client requests
+  compatibility with latest Valgrind release 3.23.0 and update client requests
   to newly supported target arm64/freebsd.
 - ([#152](https://github.com/iai-callgrind/iai-callgrind/pull/152)): Support
   comparison of benches in library benchmark functions by id.
@@ -1273,7 +1283,7 @@ to `EventKind::Ir` so, if you're updating from a previous version of
 ### Added
 
 - ([#42](https://github.com/iai-callgrind/iai-callgrind/issues/42)): Support
-  valgrind client requests. The client requests are available in the
+  Valgrind client requests. The client requests are available in the
   `iai-callgrind` package and can be activated via feature flags
   (`client_requests` and `client_requests_defs`).
 - ([#38](https://github.com/iai-callgrind/iai-callgrind/issues/38)): Add support
@@ -1343,7 +1353,7 @@ to `EventKind::Ir` so, if you're updating from a previous version of
   order from `ID.BINARY` to `BINARY.ID` to match the file naming scheme
   `FUNCTION.ID` of library benchmarks.
 - ([#35](https://github.com/iai-callgrind/iai-callgrind/issues/35)): The
-  terminal output of other valgrind tool runs (like Memcheck, DRD, ...) is now
+  terminal output of other Valgrind tool runs (like Memcheck, DRD, ...) is now
   more informative and also shows the content of the log file, if any. If not
   specified otherwise, Memcheck, DRD and Helgrind now run with
   `--error-exitcode=201`. If any errors are detected by these tools, setting
@@ -1358,11 +1368,11 @@ to `EventKind::Ir` so, if you're updating from a previous version of
 
 - The `iai-callgrind-runner` dependencies `regex` and `glob` were removed from
   the `iai-callgrind` dependencies.
-- The `stderr` output from a valgrind run wasn't shown in case of an error
+- The `stderr` output from a Valgrind run wasn't shown in case of an error
   during the benchmark run because of the change to use `--log-file` to store
-  valgrind output in log files. However, not all valgrind output goes into the
+  Valgrind output in log files. However, not all valgrind output goes into the
   log file in case of an error, so it is still necessary to print the `stderr`
-  output after the log file content to see all error output of valgrind.
+  output after the log file content to see all error output of Valgrind.
 - Update the yanked wasm-bindgen `0.2.88` to `0.2.89`
 
 ## [0.8.0] - 2023-11-10
@@ -1412,14 +1422,14 @@ to `EventKind::Ir` so, if you're updating from a previous version of
 ### Fixed
 
 - Fix examples README to show the correct summary costs of events
-- Fix error handling if valgrind terminates abnormally or with a signal instead
+- Fix error handling if Valgrind terminates abnormally or with a signal instead
   of an exit code
 - Fixed missing flamegraph creation when running setup, after, before and
   teardown functions in binary benchmarks if `bench` is set to `true`.
 - Running callgrind with `--compress-pos=yes` is currently incompatible with
   iai-callgrind's parsing of callgrind output files. If this option is given, it
   will be ignored.
-- Running iai-callgrind with valgrind's options `--help`, `-h`, `--help-debug`,
+- Running iai-callgrind with Valgrind's options `--help`, `-h`, `--help-debug`,
   `--help-dyn-options`, `--version` may cause problems and these arguments are
   now ignored.
 
@@ -1450,7 +1460,7 @@ to `EventKind::Ir` so, if you're updating from a previous version of
 ### Fixed
 
 - ([#20](https://github.com/iai-callgrind/iai-callgrind/issues/20)): Clearing
-  the environment variables with `env_clear` may break finding valgrind.
+  the environment variables with `env_clear` may break finding Valgrind.
 
 ## [0.7.0] - 2023-09-21
 
@@ -1626,7 +1636,7 @@ binary benchmark run at all levels from top-level `main!` via
 ### Fixed
 
 - If running with ASLR disabled, proccontrol on freebsd was missing to run the
-  valgrind binary
+  Valgrind binary
 
 ## [0.4.0] - 2023-07-19
 
@@ -1693,9 +1703,9 @@ advantage of some new features.
 ## [0.2.0] - 2023-03-10
 
 This version is mostly compatible with `v0.1.0` but needs some additional setup.
-See [Installation](README.md#installation) in the README. Benchmarks created
-with `v0.1.0` should not need any changes but can maybe be improved with the
-additional features from this version.
+See Installation in the README. Benchmarks created with `v0.1.0` should not need
+any changes but can maybe be improved with the additional features from this
+version.
 
 ### Changed
 

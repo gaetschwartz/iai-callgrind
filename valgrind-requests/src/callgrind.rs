@@ -34,7 +34,7 @@
 // We're using a lot of the original documentation from the `callgrind.h` header file with some
 // small adjustments, so above is the original license from `callgrind.h` file.
 //
-// This file is distributed under the same License as the rest of `gungraun`.
+// This file is distributed under the same License as the rest of `valgrind-requests`.
 //
 // ----------------------------------------------------------------
 //
@@ -55,7 +55,7 @@ use super::{bindings, fatal_error, valgrind_do_client_request_stmt};
 pub fn dump_stats() {
     do_client_request!(
         "callgrind::dump_stats",
-        bindings::GR_CallgrindClientRequest::GR_DUMP_STATS,
+        bindings::VR_CallgrindClientRequest::VR_DUMP_STATS,
         0,
         0,
         0,
@@ -78,7 +78,7 @@ where
 {
     do_client_request!(
         "callgrind::dump_stats_at",
-        bindings::GR_CallgrindClientRequest::GR_DUMP_STATS_AT,
+        bindings::VR_CallgrindClientRequest::VR_DUMP_STATS_AT,
         c_str.as_ref().as_ptr() as usize,
         0,
         0,
@@ -94,7 +94,7 @@ where
 pub fn zero_stats() {
     do_client_request!(
         "callgrind::zero_stats",
-        bindings::GR_CallgrindClientRequest::GR_ZERO_STATS,
+        bindings::VR_CallgrindClientRequest::VR_ZERO_STATS,
         0,
         0,
         0,
@@ -114,7 +114,7 @@ pub fn zero_stats() {
 pub fn toggle_collect() {
     do_client_request!(
         "callgrind::toggle_collect",
-        bindings::GR_CallgrindClientRequest::GR_TOGGLE_COLLECT,
+        bindings::VR_CallgrindClientRequest::VR_TOGGLE_COLLECT,
         0,
         0,
         0,
@@ -123,7 +123,7 @@ pub fn toggle_collect() {
     );
 }
 
-/// Start full callgrind instrumentation if not already switched on
+/// Start full Callgrind instrumentation if not already switched on
 ///
 /// When cache simulation is done, it will flush the simulated cache; this will lead to an
 /// artificial cache warmup phase afterward with cache misses which would not have happened in
@@ -132,7 +132,7 @@ pub fn toggle_collect() {
 pub fn start_instrumentation() {
     do_client_request!(
         "callgrind::start_instrumentation",
-        bindings::GR_CallgrindClientRequest::GR_START_INSTRUMENTATION,
+        bindings::VR_CallgrindClientRequest::VR_START_INSTRUMENTATION,
         0,
         0,
         0,
@@ -141,17 +141,17 @@ pub fn start_instrumentation() {
     );
 }
 
-/// Stop full callgrind instrumentation if not already switched off
+/// Stop full Callgrind instrumentation if not already switched off
 ///
 /// This flushes Valgrind's translation cache, and does no additional instrumentation afterward,
 /// which effectively will run at the same speed as the "none" tool (i.e. at minimal slowdown). Use
 /// this to bypass Callgrind aggregation for uninteresting code parts. To start Callgrind in this
-/// mode to ignore the setup phase, use the valgrind command line option `--instr-atstart=no`.
+/// mode to ignore the setup phase, use the Valgrind command line option `--instr-atstart=no`.
 #[inline(always)]
 pub fn stop_instrumentation() {
     do_client_request!(
         "callgrind::stop_instrumentation",
-        bindings::GR_CallgrindClientRequest::GR_STOP_INSTRUMENTATION,
+        bindings::VR_CallgrindClientRequest::VR_STOP_INSTRUMENTATION,
         0,
         0,
         0,

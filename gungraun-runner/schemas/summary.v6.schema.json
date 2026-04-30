@@ -1025,12 +1025,12 @@
       "description": "The `ToolMetricSummary` contains the `MetricsSummary` distinguished by tool and metric kinds",
       "oneOf": [
         {
-          "description": "If there are no metrics extracted (currently massif, bbv)",
+          "description": "If there are no metrics extracted (currently Massif, BBV)",
           "type": "string",
           "const": "None"
         },
         {
-          "description": "The error summary of tools which reports errors (memcheck, helgrind, drd)",
+          "description": "The error summary of tools which reports errors (Memcheck, Helgrind, DRD)",
           "type": "object",
           "properties": {
             "ErrorTool": {
@@ -1052,7 +1052,7 @@
           "required": ["Dhat"]
         },
         {
-          "description": "The callgrind summary",
+          "description": "The Callgrind summary",
           "type": "object",
           "properties": {
             "Callgrind": {
@@ -1063,7 +1063,7 @@
           "required": ["Callgrind"]
         },
         {
-          "description": "The cachegrind summary",
+          "description": "The Cachegrind summary",
           "type": "object",
           "properties": {
             "Cachegrind": {

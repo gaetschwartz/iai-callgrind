@@ -35,7 +35,7 @@
 // We're using a lot of the original documentation from the `helgrind.h` header file with some
 // small adjustments, so above is the original license from `helgrind.h` file.
 //
-// This file is distributed under the same License as the rest of `gungraun`.
+// This file is distributed under the same License as the rest of `valgrind-requests`.
 //
 // ----------------------------------------------------------------
 //
@@ -57,7 +57,7 @@ use super::{
 pub fn mutex_init_post(mutex: *const (), mb_rec: bool) {
     do_client_request!(
         "helgrind::mutex_init_post",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_MUTEX_INIT_POST,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_MUTEX_INIT_POST,
         mutex as usize,
         usize::from(mb_rec),
         0,
@@ -73,7 +73,7 @@ pub fn mutex_init_post(mutex: *const (), mb_rec: bool) {
 pub fn mutex_lock_pre(mutex: *const (), is_try_lock: bool) {
     do_client_request!(
         "helgrind::mutex_lock_pre",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_MUTEX_LOCK_PRE,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_MUTEX_LOCK_PRE,
         mutex as usize,
         usize::from(is_try_lock),
         0,
@@ -87,7 +87,7 @@ pub fn mutex_lock_pre(mutex: *const (), is_try_lock: bool) {
 pub fn mutex_lock_post(mutex: *const ()) {
     do_client_request!(
         "helgrind::mutex_lock_post",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_MUTEX_LOCK_POST,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_MUTEX_LOCK_POST,
         mutex as usize,
         0,
         0,
@@ -101,7 +101,7 @@ pub fn mutex_lock_post(mutex: *const ()) {
 pub fn mutex_unlock_pre(mutex: *const ()) {
     do_client_request!(
         "helgrind::mutex_unlock_pre",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_MUTEX_UNLOCK_PRE,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_MUTEX_UNLOCK_PRE,
         mutex as usize,
         0,
         0,
@@ -115,7 +115,7 @@ pub fn mutex_unlock_pre(mutex: *const ()) {
 pub fn mutex_unlock_post(mutex: *const ()) {
     do_client_request!(
         "helgrind::mutex_unlock_post",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_MUTEX_UNLOCK_POST,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_MUTEX_UNLOCK_POST,
         mutex as usize,
         0,
         0,
@@ -129,7 +129,7 @@ pub fn mutex_unlock_post(mutex: *const ()) {
 pub fn mutex_destroy_pre(mutex: *const ()) {
     do_client_request!(
         "helgrind::mutex_destroy_pre",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_MUTEX_DESTROY_PRE,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_MUTEX_DESTROY_PRE,
         mutex as usize,
         0,
         0,
@@ -145,7 +145,7 @@ pub fn mutex_destroy_pre(mutex: *const ()) {
 pub fn sem_init_post(sem: *const (), value: usize) {
     do_client_request!(
         "helgrind::sem_init_post",
-        bindings::GR_HelgrindClientRequest::GR_HG_POSIX_SEM_INIT_POST,
+        bindings::VR_HelgrindClientRequest::VR_HG_POSIX_SEM_INIT_POST,
         sem as usize,
         value,
         0,
@@ -159,7 +159,7 @@ pub fn sem_init_post(sem: *const (), value: usize) {
 pub fn sem_wait_post(sem: *const ()) {
     do_client_request!(
         "helgrind::sem_wait_post",
-        bindings::GR_HelgrindClientRequest::GR_HG_POSIX_SEM_ACQUIRED,
+        bindings::VR_HelgrindClientRequest::VR_HG_POSIX_SEM_ACQUIRED,
         sem as usize,
         0,
         0,
@@ -173,7 +173,7 @@ pub fn sem_wait_post(sem: *const ()) {
 pub fn sem_post_pre(sem: *const ()) {
     do_client_request!(
         "helgrind::sem_post_pre",
-        bindings::GR_HelgrindClientRequest::GR_HG_POSIX_SEM_RELEASED,
+        bindings::VR_HelgrindClientRequest::VR_HG_POSIX_SEM_RELEASED,
         sem as usize,
         0,
         0,
@@ -187,7 +187,7 @@ pub fn sem_post_pre(sem: *const ()) {
 pub fn sem_destroy_pre(sem: *const ()) {
     do_client_request!(
         "helgrind::sem_destroy_pre",
-        bindings::GR_HelgrindClientRequest::GR_HG_POSIX_SEM_DESTROY_PRE,
+        bindings::VR_HelgrindClientRequest::VR_HG_POSIX_SEM_DESTROY_PRE,
         sem as usize,
         0,
         0,
@@ -204,7 +204,7 @@ pub fn sem_destroy_pre(sem: *const ()) {
 pub fn barrier_init_pre(bar: *const (), count: usize, resizable: bool) {
     do_client_request!(
         "helgrind::barrier_init_pre",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_BARRIER_INIT_PRE,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_BARRIER_INIT_PRE,
         bar as usize,
         count,
         usize::from(resizable),
@@ -218,7 +218,7 @@ pub fn barrier_init_pre(bar: *const (), count: usize, resizable: bool) {
 pub fn barrier_wait_pre(bar: *const ()) {
     do_client_request!(
         "helgrind::barrier_wait_pre",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_BARRIER_WAIT_PRE,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_BARRIER_WAIT_PRE,
         bar as usize,
         0,
         0,
@@ -237,7 +237,7 @@ pub fn barrier_wait_pre(bar: *const ()) {
 pub fn barrier_resize_pre(bar: *const (), new_count: usize) {
     do_client_request!(
         "helgrind::barrier_resize_pre",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_BARRIER_RESIZE_PRE,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_BARRIER_RESIZE_PRE,
         bar as usize,
         new_count,
         0,
@@ -251,7 +251,7 @@ pub fn barrier_resize_pre(bar: *const (), new_count: usize) {
 pub fn barrier_destroy_pre(bar: *const ()) {
     do_client_request!(
         "helgrind::barrier_destroy_pre",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_BARRIER_DESTROY_PRE,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_BARRIER_DESTROY_PRE,
         bar as usize,
         0,
         0,
@@ -272,7 +272,7 @@ pub fn barrier_destroy_pre(bar: *const ()) {
 pub fn clean_memory(start: *const (), len: usize) {
     do_client_request!(
         "helgrind::clean_memory",
-        bindings::GR_HelgrindClientRequest::GR_HG_CLEAN_MEMORY,
+        bindings::VR_HelgrindClientRequest::VR_HG_CLEAN_MEMORY,
         start as usize,
         len,
         0,
@@ -297,7 +297,7 @@ pub fn clean_memory_heapblock(blockstart: *const ()) -> isize {
     do_client_request!(
         "helgrind::clean_memory_heapblock",
         usize::MAX - 1,
-        bindings::GR_HelgrindClientRequest::GR_HG_CLEAN_MEMORY_HEAPBLOCK,
+        bindings::VR_HelgrindClientRequest::VR_HG_CLEAN_MEMORY_HEAPBLOCK,
         blockstart as usize,
         0,
         0,
@@ -317,7 +317,7 @@ pub fn clean_memory_heapblock(blockstart: *const ()) -> isize {
 pub fn disable_checking(start: *const (), len: usize) {
     do_client_request!(
         "helgrind::disable_checking",
-        bindings::GR_HelgrindClientRequest::GR_HG_ARANGE_MAKE_UNTRACKED,
+        bindings::VR_HelgrindClientRequest::VR_HG_ARANGE_MAKE_UNTRACKED,
         start as usize,
         len,
         0,
@@ -335,7 +335,7 @@ pub fn disable_checking(start: *const (), len: usize) {
 pub fn enable_checking(start: *const (), len: usize) {
     do_client_request!(
         "helgrind::enable_checking",
-        bindings::GR_HelgrindClientRequest::GR_HG_ARANGE_MAKE_TRACKED,
+        bindings::VR_HelgrindClientRequest::VR_HG_ARANGE_MAKE_TRACKED,
         start as usize,
         len,
         0,
@@ -369,7 +369,7 @@ pub fn get_abits(addr: *const (), abits: *mut u8, len: usize) -> isize {
     do_client_request!(
         "helgrind::get_abits",
         usize::MAX - 1,
-        bindings::GR_HelgrindClientRequest::GR_HG_GET_ABITS,
+        bindings::VR_HelgrindClientRequest::VR_HG_GET_ABITS,
         addr as usize,
         abits as usize,
         len,
@@ -406,7 +406,7 @@ pub fn get_abits(addr: *const (), abits: *mut u8, len: usize) -> isize {
 pub fn gnat_dependent_master_join(dep: *const (), master: *const ()) {
     do_client_request!(
         "helgrind::gnat_dependent_master_join",
-        bindings::GR_HelgrindClientRequest::GR_HG_GNAT_DEPENDENT_MASTER_JOIN,
+        bindings::VR_HelgrindClientRequest::VR_HG_GNAT_DEPENDENT_MASTER_JOIN,
         dep as usize,
         master as usize,
         0,
@@ -437,7 +437,7 @@ pub fn gnat_dependent_master_join(dep: *const (), master: *const ()) {
 pub fn annotate_happens_before(obj: *const ()) {
     do_client_request!(
         "helgrind::annotate_happens_before",
-        bindings::GR_HelgrindClientRequest::GR_HG_USERSO_SEND_PRE,
+        bindings::VR_HelgrindClientRequest::VR_HG_USERSO_SEND_PRE,
         obj as usize,
         0,
         0,
@@ -451,7 +451,7 @@ pub fn annotate_happens_before(obj: *const ()) {
 pub fn annotate_happens_after(obj: *const ()) {
     do_client_request!(
         "helgrind::annotate_happens_after",
-        bindings::GR_HelgrindClientRequest::GR_HG_USERSO_RECV_POST,
+        bindings::VR_HelgrindClientRequest::VR_HG_USERSO_RECV_POST,
         obj as usize,
         0,
         0,
@@ -474,7 +474,7 @@ pub fn annotate_happens_after(obj: *const ()) {
 pub fn annotate_happens_before_forget_all(obj: *const ()) {
     do_client_request!(
         "helgrind::annotate_happens_before_forget_all",
-        bindings::GR_HelgrindClientRequest::GR_HG_USERSO_FORGET_ALL,
+        bindings::VR_HelgrindClientRequest::VR_HG_USERSO_FORGET_ALL,
         obj as usize,
         0,
         0,
@@ -493,7 +493,7 @@ pub fn annotate_happens_before_forget_all(obj: *const ()) {
 pub fn annotate_new_memory(addr: *const (), size: usize) {
     do_client_request!(
         "helgrind::annotate_new_memory",
-        bindings::GR_HelgrindClientRequest::GR_HG_CLEAN_MEMORY,
+        bindings::VR_HelgrindClientRequest::VR_HG_CLEAN_MEMORY,
         addr as usize,
         size,
         0,
@@ -515,7 +515,7 @@ pub fn annotate_new_memory(addr: *const (), size: usize) {
 pub fn annotate_rwlock_create(lock: *const ()) {
     do_client_request!(
         "helgrind::annotate_rwlock_create",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_RWLOCK_INIT_POST,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_RWLOCK_INIT_POST,
         lock as usize,
         0,
         0,
@@ -531,7 +531,7 @@ pub fn annotate_rwlock_create(lock: *const ()) {
 pub fn annotate_rwlock_destroy(lock: *const ()) {
     do_client_request!(
         "helgrind::annotate_rwlock_destroy",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_RWLOCK_DESTROY_PRE,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_RWLOCK_DESTROY_PRE,
         lock as usize,
         0,
         0,
@@ -549,7 +549,7 @@ pub fn annotate_rwlock_destroy(lock: *const ()) {
 pub fn annotate_rwlock_acquired(lock: *const (), is_writer_lock: bool) {
     do_client_request!(
         "helgrind::annotate_rwlock_acquired",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_RWLOCK_ACQUIRED,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_RWLOCK_ACQUIRED,
         lock as usize,
         usize::from(is_writer_lock),
         0,
@@ -567,7 +567,7 @@ pub fn annotate_rwlock_acquired(lock: *const (), is_writer_lock: bool) {
 pub fn annotate_rwlock_released(lock: *const (), _is_writer_lock: bool) {
     do_client_request!(
         "helgrind::annotate_rwlock_released",
-        bindings::GR_HelgrindClientRequest::GR_HG_PTHREAD_RWLOCK_RELEASED,
+        bindings::VR_HelgrindClientRequest::VR_HG_PTHREAD_RWLOCK_RELEASED,
         lock as usize,
         0,
         0,

@@ -34,7 +34,7 @@
 //!   visualizer [kcachegrind] to analyze the results in detail.
 //! - __Memory Profiling__: You can run other Valgrind tools like [DHAT: a dynamic heap analysis
 //!   tool][DHAT] and [Massif: a heap profiler][massif] with Gungraun. Their profiles are stored
-//!   next to the callgrind profiles and are ready to be examined with analyzing tools like
+//!   next to the Callgrind profiles and are ready to be examined with analysis tools like
 //!   `dh_view.html`, `ms_print` and others.
 //! - __Visualization__: Gungraun is capable of creating regular and differential flamegraphs from
 //!   the Callgrind output format.
@@ -95,10 +95,10 @@
 //!     black_box(bubble_sort(black_box(vec![])))
 //! }
 //!
-//! // This benchmark uses the `bench` attribute to setup benchmarks with different
-//! // setups. The big advantage is, that the setup costs and event counts aren't
-//! // attributed to the benchmark (and opposed to the old api we don't have to deal with
-//! // callgrind arguments, toggles, ...)
+//! // This benchmark uses the `bench` attribute to set up benchmarks with different
+//! // setups. The big advantage is that the setup costs and event counts aren't
+//! // attributed to the benchmark (and opposed to the old API we don't have to deal with
+//! // Callgrind arguments, toggles, ...)
 //! #[library_benchmark]
 //! #[bench::empty(vec![])]
 //! #[bench::worst_case_6(vec![6, 5, 4, 3, 2, 1])]
@@ -168,14 +168,14 @@
 //!
 //! The [`gungraun::prelude`](crate::prelude) contains the most important macro definitions and
 //! structs. Note that it is important to annotate the benchmark functions with
-//! [`#[library_benchmark]`].
+//! [`#[library_benchmark]`][crate::library_benchmark].
 //!
 //! ### Configuration (#library-benchmarks)
 //!
 //! It's possible to configure some of the behavior of `gungraun`. See the docs of
 //! [`LibraryBenchmarkConfig`] for more details. Configure library benchmarks at
 //! top-level with the [`main!`] macro, at group level within the
-//! [`library_benchmark_group!`], at [`#[library_benchmark]`] level
+//! [`library_benchmark_group!`], at [`#[library_benchmark]`][crate::library_benchmark] level
 //!
 //! and at `bench` level:
 //!
@@ -212,12 +212,12 @@
 //! #### Quickstart (#binary-benchmarks)
 //!
 //! There are two apis to set up binary benchmarks, but we only describe the high-level api using
-//! the [`#[binary_benchmark]`] attribute here. See the docs of
+//! the [`#[binary_benchmark]`][crate::binary_benchmark] attribute here. See the docs of
 //! [`binary_benchmark_group!`] for more details about the low level api. The `#[binary_benchmark]`
 //! attribute works almost the same as the `#[library_benchmark]` attribute. You will find the same
 //! parameters `setup`, `teardown`, `config`, `consts`, etc. in `#[binary_benchmark]` as in
-//! `#[library_benchmark]` and the inner attributes `#[bench]`, `#[benches]`. But, there are also
-//! substantial [differences][#differences-to-library-benchmarks].
+//! [`#[library_benchmark]`][crate::library_benchmark] and the inner attributes `#[bench]`,
+//! `#[benches]`. But, there are also substantial [differences][#differences-to-library-benchmarks].
 //!
 //! Suppose your crate's binaries are named `my-foo` and `my-bar`
 //!
@@ -288,7 +288,7 @@
 //! As opposed to library benchmarks the function annotated with the `binary_benchmark` attribute
 //! always returns a `gungraun::Command`. More specifically, this function is not a benchmark
 //! function, since we don't benchmark functions anymore but [`Command`]s instead which are the
-//! return value of the [`#[binary_benchmark]`] function.
+//! return value of the [`#[binary_benchmark]`][crate::binary_benchmark] function.
 //!
 //! This change has far-reaching consequences but also simplifies things. Since the function itself
 //! is not benchmarked you can put any code into this function, and it does not influence the
@@ -300,7 +300,7 @@
 //!
 //! In library benchmarks the `setup` parameter only takes a path to a function, more specifically
 //! the function pointer. In binary benchmarks however, the `setup` (and `teardown`) parameters of
-//! the [`#[binary_benchmark]`], `#[bench]` and `#[benches]` attribute
+//! the [`#[binary_benchmark]`][crate::binary_benchmark], `#[bench]` and `#[benches]` attribute
 //! take expressions which includes function calls for example `setup = my_setup()`. Only in the
 //! special case that the expression is a function pointer, we pass the `args` of the `#[bench]` and
 //! `#[benches]` attributes into the `setup`, `teardown` __and__ the function itself. Also, these
@@ -366,13 +366,14 @@
 //!
 //! ## Client requests
 //!
-//! `gungraun` supports valgrind client requests. See the documentation of the
-//! [`client_requests`] module for all the details.
+//! `gungraun` supports Valgrind client requests. See the documentation of the
+//! [`valgrind-requests`][valgrind-requests] crate for all the details. The client requests are
+//! accessible through the [`client_requests`] module
 //!
 //! ## Flamegraphs
 //!
 //! Flamegraphs are opt-in and can be created if you pass a [`FlamegraphConfig`] to the
-//! [`Callgrind::flamegraph`]. Callgrind flamegraphs are meant as a complement to valgrind's
+//! [`Callgrind::flamegraph`]. Callgrind flamegraphs are meant as a complement to Valgrind's
 //! visualization tools `callgrind_annotate` and `kcachegrind`.
 //!
 //! Callgrind flamegraphs show the inclusive costs for functions and a specific event type, much
@@ -380,7 +381,7 @@
 //! flamegraphs facilitate a deeper understanding of code sections which cause a bottleneck or a
 //! performance regressions etc.
 //!
-//! The produced flamegraph svg files are located next to the respective callgrind output file in
+//! The produced flamegraph svg files are located next to the respective Callgrind output file in
 //! the `target/gungraun` directory.
 //!
 //! [Cachegrind]: https://valgrind.org/docs/manual/cg-manual.html
@@ -396,21 +397,19 @@
 //! [client-req]: https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
 //! [kcachegrind]: https://kcachegrind.github.io/html/Home.html
 //! [massif]: https://valgrind.org/docs/manual/ms-manual.html
-//!
-//! [`#[binary_benchmark]`]: `crate::binary_benchmark`
-//! [`#[library_benchmark]`]: `crate::library_benchmark`
-//! [`BinaryBenchmarkConfig`]: `crate::BinaryBenchmarkConfig`
-//! [`BinaryBenchmarkConfig::env_clear`]: `crate::BinaryBenchmarkConfig::env_clear`
-//! [`BinaryBenchmarkConfig::tool`]: `crate::BinaryBenchmarkConfig::tool`
-//! [`Callgrind::flamegraph`]: `crate::Callgrind::flamegraph`
-//! [`Command`]: `crate::Command`
-//! [`FlamegraphConfig`]: `crate::FlamegraphConfig`
-//! [`LibraryBenchmarkConfig`]: `crate::LibraryBenchmarkConfig`
-//! [`LibraryBenchmarkConfig::tool`]: `crate::LibraryBenchmarkConfig::tool`
-//! [`binary_benchmark_group!`]: `crate::binary_benchmark_group`
-//! [`client_requests`]: `crate::client_requests`
-//! [`library_benchmark_group!`]: `crate::library_benchmark_group`
-//! [`main!`]: `crate::main`
+//! [valgrind-requests]: https://docs.rs/valgrind-requests/latest/valgrind-requests
+//! [`BinaryBenchmarkConfig`]: crate::BinaryBenchmarkConfig
+//! [`BinaryBenchmarkConfig::env_clear`]: crate::BinaryBenchmarkConfig::env_clear
+//! [`BinaryBenchmarkConfig::tool`]: crate::BinaryBenchmarkConfig::tool
+//! [`Callgrind::flamegraph`]: crate::Callgrind::flamegraph
+//! [`Command`]: crate::Command
+//! [`FlamegraphConfig`]: crate::FlamegraphConfig
+//! [`LibraryBenchmarkConfig`]: crate::LibraryBenchmarkConfig
+//! [`LibraryBenchmarkConfig::tool`]: crate::LibraryBenchmarkConfig::tool
+//! [`binary_benchmark_group!`]: crate::binary_benchmark_group
+//! [`client_requests`]: crate::client_requests
+//! [`library_benchmark_group!`]: crate::library_benchmark_group
+//! [`main!`]: crate::main
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc(test(attr(warn(unused))))]
@@ -508,8 +507,6 @@ pub mod prelude {
 pub mod __internal;
 #[cfg(feature = "default")]
 mod bin_bench;
-#[cfg(feature = "client_requests_defs")]
-pub mod client_requests;
 #[cfg(feature = "default")]
 mod common;
 #[cfg(feature = "default")]
@@ -542,3 +539,5 @@ pub use gungraun_runner::api::{
 };
 #[cfg(feature = "default")]
 pub use lib_bench::LibraryBenchmarkConfig;
+#[cfg(feature = "client_requests_defs")]
+pub use valgrind_requests as client_requests;

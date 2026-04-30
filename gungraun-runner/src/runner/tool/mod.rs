@@ -1,5 +1,5 @@
 //! The generic tool module. Contains all the basic modules to be expanded and used in the more
-//! specific `callgrind`, `cachegrind`, ... modules
+//! specific `Callgrind`, `Cachegrind`, ... modules
 
 pub mod args;
 pub mod config;

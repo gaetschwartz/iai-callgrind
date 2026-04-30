@@ -1,4 +1,4 @@
-//! Module containing the callgrind specific regression check configuration
+//! Module containing the Callgrind-specific regression check configuration
 use indexmap::{IndexMap, IndexSet};
 
 use crate::api::{self, EventKind};

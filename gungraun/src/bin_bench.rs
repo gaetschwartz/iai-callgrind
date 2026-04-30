@@ -153,7 +153,7 @@ pub struct BinaryBenchmark {
 /// Provide the [`Command`] to be benchmarked
 ///
 /// `Command` is a builder for the binary which is going to be benchmarked providing fine-grained
-/// control over how the `Command` for the valgrind benchmark should be executed.
+/// control over how the `Command` for the Valgrind benchmark should be executed.
 ///
 /// The default configuration is created with [`Command::new`] providing a path to an executable.
 /// Adding a crate's binary is usually done with `env!("CARGO_BIN_EXE_<name>")` where `<name>` is
@@ -1028,11 +1028,11 @@ impl PartialEq for BinaryBenchmark {
 }
 
 impl BinaryBenchmarkConfig {
-    /// Change the default tool to something different than callgrind
+    /// Change the default tool to something different than Callgrind
     ///
     /// See also [`crate::LibraryBenchmarkConfig::default_tool`].
     ///
-    /// # Example for using cachegrind on the fly
+    /// # Example for using Cachegrind on the fly
     ///
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
@@ -1059,7 +1059,7 @@ impl BinaryBenchmarkConfig {
         self
     }
 
-    /// Pass valgrind arguments to all tools
+    /// Pass Valgrind arguments to all tools
     ///
     /// Only core [valgrind
     /// arguments](https://valgrind.org/docs/manual/manual-core.html#manual-core.options) are
@@ -1090,7 +1090,7 @@ impl BinaryBenchmarkConfig {
     /// # }
     /// ```
     ///
-    /// Overwrite the valgrind argument `--num-callers=25` for `DHAT` with `--num-callers=30`:
+    /// Overwrite the Valgrind argument `--num-callers=25` for `DHAT` with `--num-callers=30`:
     ///
     /// ```rust
     /// # use gungraun::{binary_benchmark_group};
@@ -1368,7 +1368,7 @@ impl BinaryBenchmarkConfig {
         self
     }
 
-    /// Adds a configuration for a valgrind tool.
+    /// Adds a configuration for a Valgrind tool.
     ///
     /// Valid configurations are [`crate::Callgrind`], [`crate::Cachegrind`], [`crate::Dhat`],
     /// [`crate::Memcheck`], [`crate::Helgrind`], [`crate::Drd`], [`crate::Massif`] and
@@ -1400,14 +1400,14 @@ impl BinaryBenchmarkConfig {
         self
     }
 
-    /// Override previously defined configurations of valgrind tools
+    /// Override previously defined configurations of Valgrind tools
     ///
     /// See also [`crate::LibraryBenchmarkConfig::tool_override`] for more details.
     ///
     /// # Example
     ///
-    /// The following will run `DHAT` and `Massif` (and the default callgrind) for all benchmarks
-    /// in `main!` besides for `foo` which will just run `Memcheck` (and callgrind).
+    /// The following will run `DHAT` and `Massif` (and the default Callgrind) for all benchmarks
+    /// in `main!` except for `foo` which will just run `Memcheck` (and Callgrind).
     ///
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
@@ -1644,14 +1644,14 @@ impl BinaryBenchmarkGroup {
 }
 
 impl Command {
-    /// Create a new [`Command`] which is run under valgrind.
+    /// Create a new [`Command`] which is run under Valgrind.
     ///
     /// Use [`env!("CARGO_BIN_EXE_<name>)`][env-cargo-exe]
     /// to provide the path to an executable of your project instead of `target/release/<name>`.
     ///
     /// This `Command` is a builder for the binary which is going to be benchmarked but is not
     /// executed right away. We simply gather all the information to be finally able to execute the
-    /// command under valgrind, later (after we collected all the commands in this benchmark file).
+    /// command under Valgrind, later (after we collected all the commands in this benchmark file).
     /// As opposed to [`std::process::Command`], the build is finalized with [`Command::build`].
     ///
     /// # Relative paths

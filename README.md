@@ -137,7 +137,7 @@ silent. The last syllable `raun` can be pronounced like the english word `rain`.
   benchmarks.
 - [dhat-rs]: Provides heap profiling and ad hoc profiling capabilities to Rust
   programs, similar to those provided by DHAT.
-- [cargo-valgrind]: A cargo subcommand, that runs valgrind and collects its
+- [cargo-valgrind]: A cargo subcommand, that runs Valgrind and collects its
   output in a helpful manner.
 
 ## Credits

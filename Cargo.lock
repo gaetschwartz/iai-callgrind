@@ -393,13 +393,13 @@ dependencies = [
  "assert_cmd",
  "cty",
  "fs_extra",
- "gungraun",
  "lazy_static",
  "predicates",
  "regex",
  "rstest",
  "shlex",
  "tempfile",
+ "valgrind-requests",
  "version-compare",
  "which",
 ]
@@ -758,22 +758,17 @@ name = "gungraun"
 version = "0.18.1"
 dependencies = [
  "bincode",
- "bindgen",
- "cc",
- "cfg-if",
  "cty",
  "derive_more",
  "fs_extra",
  "gungraun-macros",
  "gungraun-runner",
- "regex",
  "rstest",
- "rustc_version",
  "serde",
  "serde_json",
  "serial_test",
- "strum",
  "trybuild",
+ "valgrind-requests",
 ]
 
 [[package]]
@@ -2191,6 +2186,19 @@ dependencies = [
  "getrandom",
  "js-sys",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "valgrind-requests"
+version = "1.0.0"
+dependencies = [
+ "bindgen",
+ "cc",
+ "cfg-if",
+ "cty",
+ "regex",
+ "rustc_version",
+ "strum",
 ]
 
 [[package]]

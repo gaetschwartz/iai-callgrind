@@ -83,7 +83,7 @@ impl Parser for ErrorMetricLogfileParser {
                                 )?;
 
                             // There might be multiple `ERROR SUMMARY` lines. We only use the last.
-                            // The comments in the valgrind source code (`coregrind/m_errormgr.c`)
+                            // The comments in the Valgrind source code (`coregrind/m_errormgr.c`)
                             // state that the error summary line is only reprinted to avoid having
                             // to scroll up.
                             let mut new_metrics: Metrics<ErrorMetric> = metrics_prototype.clone();

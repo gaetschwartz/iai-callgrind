@@ -1,4 +1,4 @@
-//! The module containing the callgrind summary/total parser
+//! The module containing the Callgrind summary/total parser
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};

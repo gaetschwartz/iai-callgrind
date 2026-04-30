@@ -912,7 +912,7 @@ pub struct CommandLineArgs {
     ///
     /// Possible values are one of [true, false, stdout, stderr].
     ///
-    /// This option is currently restricted to the `callgrind` run of benchmarks. The output of
+    /// This option is currently restricted to the Callgrind run of benchmarks. The output of
     /// additional tool runs like DHAT, Memcheck, ... is still captured, to prevent showing the
     /// same output of benchmarks multiple times. Use `GUNGRAUN_LOG=info` to also show
     /// captured and logged output.
@@ -1549,7 +1549,7 @@ fn convert_metric<T: Display + TypeChecker + Copy>(
     }
 }
 
-/// Same as `parse_callgrind_limits` but for cachegrind
+/// Same as `parse_callgrind_limits` but for Cachegrind
 fn parse_cachegrind_limits(value: &str) -> Result<ToolRegressionConfig, String> {
     let (soft_limits, hard_limits) = parse_limits(value, |key, metric| {
         let metrics = key
@@ -1570,7 +1570,7 @@ fn parse_cachegrind_limits(value: &str) -> Result<ToolRegressionConfig, String> 
     Ok(config)
 }
 
-/// Parse the cachegrind metrics
+/// Parse the Cachegrind metrics
 fn parse_cachegrind_metrics(value: &str) -> Result<IndexSet<CachegrindMetric>, String> {
     parse_tool_metrics(value, |item| {
         item.parse::<CachegrindMetrics>()
@@ -1579,7 +1579,7 @@ fn parse_cachegrind_metrics(value: &str) -> Result<IndexSet<CachegrindMetric>, S
     })
 }
 
-/// Parse the callgrind limits from the command-line
+/// Parse the Callgrind limits from the command-line
 ///
 /// This method (and the other `parse_dhat_limits`, ...) parses soft and hard limits in one go. The
 /// format is described in the --help message above in [`CommandLineArgs`].
@@ -1606,7 +1606,7 @@ fn parse_callgrind_limits(value: &str) -> Result<ToolRegressionConfig, String> {
     Ok(config)
 }
 
-/// Parse the callgrind metrics
+/// Parse the Callgrind metrics
 fn parse_callgrind_metrics(value: &str) -> Result<IndexSet<EventKind>, String> {
     parse_tool_metrics(value, |item| {
         item.parse::<CallgrindMetrics>()
@@ -1753,7 +1753,7 @@ fn parse_limits<T: Eq + Hash>(
     Ok((soft_limits, hard_limits))
 }
 
-/// Parse the memcheck metrics as error metrics
+/// Parse the Memcheck metrics as error metrics
 fn parse_memcheck_metrics(value: &str) -> Result<IndexSet<ErrorMetric>, String> {
     parse_tool_metrics(value, parse_error_metrics)
 }

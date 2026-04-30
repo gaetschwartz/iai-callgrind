@@ -13,9 +13,9 @@ if ! grep 'libc6-dbg' /linux-image.sh; then
   rm -f /qemu/initrd.gz /qemu/kernel
 fi
 
-case $GUNGRAUN_CROSS_TARGET in
+case $VALGRIND_REQUESTS_CROSS_TARGET in
 riscv64gc-unknown-linux-gnu) arch="riscv64" ;;
-*) arch="${GUNGRAUN_CROSS_TARGET%%-*}" ;;
+*) arch="${VALGRIND_REQUESTS_CROSS_TARGET%%-*}" ;;
 esac
 
 /linux-image.sh "$arch"

@@ -26,7 +26,7 @@ Gungraun Pros:
 
 - Support of memory profiling with `DHAT` and `Massif`.
 
-- Running error checking [valgrind tools](../tools.md) is a few keystrokes away
+- Running error checking [Valgrind tools](../tools.md) is a few keystrokes away
   if you really need them.
 
 - The Callgrind output files are much more focused on the benchmark function and

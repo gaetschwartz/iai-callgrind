@@ -36,7 +36,7 @@ pub enum ToolFlamegraphConfig {
 /// The [`ToolConfig`] containing the basic configuration values to run the benchmark for this tool
 #[derive(Debug, Clone)]
 pub struct ToolConfig {
-    /// The arguments to pass to the valgrind executable
+    /// The arguments to pass to the Valgrind executable
     pub args: ToolArgs,
     /// The [`EntryPoint`] of this tool
     pub entry_point: EntryPoint,

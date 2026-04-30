@@ -79,9 +79,9 @@ pub struct ToolCommandChild {
     pub executable: PathBuf,
     /// The expected exit behavior (exit code or signal), or `None` if any exit is acceptable
     pub exit_with: Option<ExitWith>,
-    /// The path where valgrind will write its output log files
+    /// The path where Valgrind will write its output log files
     pub log_path: ToolOutputPath,
-    /// The valgrind tool running this process (e.g., memcheck, callgrind, massif)
+    /// The Valgrind tool running this process (e.g., Memcheck, Callgrind, Massif)
     pub tool: ValgrindTool,
 }
 

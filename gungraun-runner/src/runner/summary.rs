@@ -65,35 +65,35 @@ pub enum SummaryFormat {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum ToolMetricSummary {
-    /// If there are no metrics extracted (currently massif, bbv)
+    /// If there are no metrics extracted (currently Massif, BBV)
     #[default]
     None,
-    /// The error summary of tools which reports errors (memcheck, helgrind, drd)
+    /// The error summary of tools which reports errors (Memcheck, Helgrind, DRD)
     ErrorTool(MetricsSummary<ErrorMetric>),
     /// The dhat summary
     Dhat(MetricsSummary<DhatMetric>),
-    /// The callgrind summary
+    /// The Callgrind summary
     Callgrind(MetricsSummary<EventKind>),
-    /// The cachegrind summary
+    /// The Cachegrind summary
     Cachegrind(MetricsSummary<CachegrindMetric>),
 }
 
 /// The metrics distinguished per tool class
 ///
-/// The tool classes are: dhat, error metrics from memcheck, drd, helgrind and callgrind
+/// The tool classes are: DHAT, error metrics from Memcheck, DRD, Helgrind and Callgrind
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum ToolMetrics {
-    /// If there were no metrics extracted from a tool (currently massif, bbv)
+    /// If there are no metrics extracted from a tool (currently Massif, BBV)
     #[default]
     None,
     /// The metrics of a dhat benchmark
     Dhat(Metrics<DhatMetric>),
-    /// The metrics of a tool run which reports errors (memcheck, helgrind, drd)
+    /// The metrics of a tool run which reports errors (Memcheck, Helgrind, DRD)
     ErrorTool(Metrics<ErrorMetric>),
-    /// The metrics of a callgrind benchmark
+    /// The metrics of a Callgrind benchmark
     Callgrind(Metrics<EventKind>),
-    /// The metrics of a cachegrind benchmark
+    /// The metrics of a Cachegrind benchmark
     Cachegrind(Metrics<CachegrindMetric>),
 }
 

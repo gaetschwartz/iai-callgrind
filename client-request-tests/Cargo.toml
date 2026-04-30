@@ -16,23 +16,26 @@ version = "0.1.0"
 [build-dependencies]
 fs_extra = { workspace = true }
 
+[features]
+_act = ["valgrind-requests/act"]
+_stubs = ["valgrind-requests/stubs"]
+default = ["_stubs"]
+
 [dependencies]
 cty = { workspace = true }
-gungraun = { path = "../gungraun", version = "=0.18.1", default-features = false, features = [
-  "client_requests_defs",
-] }
 lazy_static = { workspace = true }
 regex = { workspace = true }
 shlex = { workspace = true }
+valgrind-requests = { path = "../valgrind-requests", default-features = false, features = [
+  "stubs",
+] }
 which = { workspace = true }
 
 [dev-dependencies]
 assert_cmd = { workspace = true }
 fs_extra = { workspace = true }
-gungraun = { path = "../gungraun", version = "=0.18.1", default-features = false, features = [
-  "client_requests",
-] }
 predicates = { workspace = true }
 rstest = { workspace = true }
 tempfile = { workspace = true }
+valgrind-requests = { path = "../valgrind-requests" }
 version-compare = { workspace = true }

@@ -34,7 +34,7 @@
 // We're using a lot of the original documentation from the `cachegrind.h` header file with some
 // small adjustments, so above is the original license from `cachegrind.h` file.
 //
-// This file is distributed under the same License as the rest of `gungraun`.
+// This file is distributed under the same License as the rest of `valgrind-requests`.
 //
 // ----------------------------------------------------------------
 //
@@ -53,7 +53,7 @@ use super::{bindings, fatal_error, valgrind_do_client_request_stmt};
 pub fn start_instrumentation() {
     do_client_request!(
         "cachegrind::start_instrumentation",
-        bindings::GR_CachegrindClientRequest::GR_CG_START_INSTRUMENTATION,
+        bindings::VR_CachegrindClientRequest::VR_CG_START_INSTRUMENTATION,
         0,
         0,
         0,
@@ -70,7 +70,7 @@ pub fn start_instrumentation() {
 pub fn stop_instrumentation() {
     do_client_request!(
         "cachegrind::stop_instrumentation",
-        bindings::GR_CachegrindClientRequest::GR_CG_STOP_INSTRUMENTATION,
+        bindings::VR_CachegrindClientRequest::VR_CG_STOP_INSTRUMENTATION,
         0,
         0,
         0,

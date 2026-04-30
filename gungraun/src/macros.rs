@@ -145,7 +145,7 @@ macro_rules! binary_benchmark_attribute {
 /// # }
 /// ```
 ///
-/// If you need to pass arguments to valgrind's callgrind or other tools, you can specify arguments
+/// If you need to pass arguments to Valgrind's Callgrind or other tools, you can specify arguments
 /// via [`crate::Callgrind::args`], [`crate::Dhat::args`], ...:
 ///
 /// ```rust

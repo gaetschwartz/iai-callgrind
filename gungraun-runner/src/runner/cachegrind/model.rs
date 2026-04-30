@@ -1,4 +1,4 @@
-//! This module includes all the structs to model the cachegrind output
+//! This module includes all the structs to model the Cachegrind output
 use std::borrow::Cow;
 
 use anyhow::Result;
@@ -8,7 +8,7 @@ use crate::api::CachegrindMetric;
 use crate::runner::callgrind::{CacheSummary, CyclesEstimator};
 use crate::runner::metrics::{Metric, Summarize};
 
-/// The cachegrind specific `Metrics`
+/// The Cachegrind-specific `Metrics`
 pub type Metrics = crate::runner::metrics::Metrics<CachegrindMetric>;
 
 impl TryFrom<&Metrics> for CacheSummary {
@@ -47,7 +47,7 @@ impl Metrics {
     ///
     /// # Errors
     ///
-    /// If the necessary cache simulation events (when running cachegrind with --cache-sim) were not
+    /// If the necessary cache simulation events (when running Cachegrind with --cache-sim) were not
     /// present.
     pub fn make_summary(&mut self) -> Result<()> {
         let CacheSummary {
@@ -94,7 +94,7 @@ impl Metrics {
 
     /// Returns `true` if costs can be summarized.
     ///
-    /// This method probes for [`crate::api::EventKind::I1mr`] which is present if cachegrind was
+    /// This method probes for [`crate::api::EventKind::I1mr`] which is present if Cachegrind was
     /// run with the cache simulation (`--cache-sim=yes`) enabled.
     pub fn can_summarize(&self) -> bool {
         self.metric_by_kind(&CachegrindMetric::I1mr).is_some()
