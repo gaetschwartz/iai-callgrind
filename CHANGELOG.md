@@ -32,11 +32,19 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.18.2] - 2026-04-30
+
 ### Changed
 
-- Extraction of the `valgrind-requests` package from the `gungraun` package. For
-  the `gungraun` package this is purely cosmetic and doesn't introduce api
-  changes.
+- ([#604](https://github.com/gungraun/gungraun/pull/604)): Extraction of the
+  `valgrind-requests` package from the `gungraun` package. For the `gungraun`
+  package this is purely cosmetic and doesn't introduce api changes.
+- Update dependencies
+
+### Fixed
+
+- Small documentation fixes in the libraries and guide across multiple prs:
+  Typos, capitalization, wrong indentation in code blocks, ...
 
 ## [0.18.1] - 2026-04-10
 
