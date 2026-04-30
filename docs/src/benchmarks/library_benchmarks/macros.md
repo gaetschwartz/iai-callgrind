@@ -66,7 +66,7 @@ use std::hint::black_box;
 #[library_benchmark(
     config = LibraryBenchmarkConfig::default()
         .output_format(OutputFormat::default()
-           .truncate_description(None)
+            .truncate_description(None)
         )
 )]
 #[bench::one(vec![1])]

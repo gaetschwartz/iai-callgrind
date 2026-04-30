@@ -128,23 +128,23 @@ use gungraun::{Callgrind, EntryPoint};
 use std::hint::black_box;
 
 pub mod my_lib {
-     use gungraun::client_requests::callgrind;
+    use gungraun::client_requests::callgrind;
 
-     #[inline(never)]
-     fn bubble_sort(input: Vec<i32>) -> Vec<i32> {
-         // The algorithm
-#        input
-     }
+    #[inline(never)]
+    fn bubble_sort(input: Vec<i32>) -> Vec<i32> {
+        // The algorithm
+#       input
+    }
 
-     pub fn pre_bubble_sort(input: Vec<i32>) -> Vec<i32> {
-         println!("Doing something before the function call");
-         callgrind::start_instrumentation();
+    pub fn pre_bubble_sort(input: Vec<i32>) -> Vec<i32> {
+        println!("Doing something before the function call");
+        callgrind::start_instrumentation();
 
-         let result = bubble_sort(input);
+        let result = bubble_sort(input);
 
-         callgrind::stop_instrumentation();
-         result
-     }
+        callgrind::stop_instrumentation();
+        result
+    }
 }
 
 #[library_benchmark(
