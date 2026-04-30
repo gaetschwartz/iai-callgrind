@@ -181,3 +181,11 @@ note: function defined here
     |
 152 |     fn bench_binary(value: u64) -> gungraun::Command {
     |        ^^^^^^^^^^^^ ----------
+
+warning: unused variable: `value`
+   --> tests/ui/both/test_file_parameter_when_invalid.rs:152:21
+    |
+152 |     fn bench_binary(value: u64) -> gungraun::Command {
+    |                     ^^^^^ help: if this is intentional, prefix it with an underscore: `_value`
+    |
+    = note: `#[warn(unused_variables)]` on by default
