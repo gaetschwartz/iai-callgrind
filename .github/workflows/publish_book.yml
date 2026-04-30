@@ -4,8 +4,12 @@ on:
   push:
     branches:
       - mdbook
+      - main
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+    paths:
+      - docs/src/**
+      - docs/book.toml
 
 jobs:
   deploy:
