@@ -1703,9 +1703,9 @@ advantage of some new features.
 ## [0.2.0] - 2023-03-10
 
 This version is mostly compatible with `v0.1.0` but needs some additional setup.
-See [Installation](README.md#installation) in the README. Benchmarks created
-with `v0.1.0` should not need any changes but can maybe be improved with the
-additional features from this version.
+See Installation in the README. Benchmarks created with `v0.1.0` should not need
+any changes but can maybe be improved with the additional features from this
+version.
 
 ### Changed
 
