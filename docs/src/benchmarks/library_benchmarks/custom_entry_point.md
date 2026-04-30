@@ -67,16 +67,16 @@ use gungraun::{EntryPoint, Callgrind};
 use std::hint::black_box;
 
 mod my_lib {
-     #[inline(never)]
-     fn bubble_sort(input: Vec<i32>) -> Vec<i32> {
-         // The algorithm
+    #[inline(never)]
+    fn bubble_sort(input: Vec<i32>) -> Vec<i32> {
+        // The algorithm
 #        input
-     }
+    }
 
-     pub fn access_point(input: Vec<i32>) -> Vec<i32> {
-         println!("Doing something before the function call");
-         bubble_sort(input)
-     }
+    pub fn access_point(input: Vec<i32>) -> Vec<i32> {
+        println!("Doing something before the function call");
+        bubble_sort(input)
+    }
 }
 
 #[library_benchmark(
