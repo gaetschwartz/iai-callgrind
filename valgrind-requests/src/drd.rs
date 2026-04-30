@@ -37,7 +37,7 @@
 // We're using a lot of the original documentation from the `drd.h` header file with some
 // small adjustments, so above is the original license from `drd.h` file.
 //
-// This file is distributed under the same License as the rest of `gungraun`.
+// This file is distributed under the same License as the rest of `valgrind-requests`.
 //
 // ----------------------------------------------------------------
 //

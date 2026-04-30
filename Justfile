@@ -1,6 +1,5 @@
 # spell-checker: ignore nofile nocapture
 
-# FIX: Update to use valgrind-requests package
 prettier_bin := ```
     if command -V prettier 2>&1 | grep -q 'not found'; then
         echo -n npx prettier

@@ -35,7 +35,7 @@
 // We're using a lot of the original documentation from the `helgrind.h` header file with some
 // small adjustments, so above is the original license from `helgrind.h` file.
 //
-// This file is distributed under the same License as the rest of `gungraun`.
+// This file is distributed under the same License as the rest of `valgrind-requests`.
 //
 // ----------------------------------------------------------------
 //

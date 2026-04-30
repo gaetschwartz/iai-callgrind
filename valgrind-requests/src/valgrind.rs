@@ -34,7 +34,7 @@
 // We're using a lot of the original documentation from the `valgrind.h` header file with some small
 // adjustments, so above is the original license from `valgrind.h` file.
 //
-// This file is distributed under the same License as the rest of `gungraun`.
+// This file is distributed under the same License as the rest of `valgrind-requests`.
 //
 // ----------------------------------------------------------------
 //
@@ -197,7 +197,7 @@ pub fn non_simd_call0(func: fn(ThreadId) -> usize) -> usize {
 ///
 /// ```rust,no_run
 /// let num = 42i32;
-/// let res = gungraun::client_requests::valgrind::non_simd_call1(
+/// let res = valgrind_requests::valgrind::non_simd_call1(
 ///     |_tid, a| unsafe { ((a as *const i32).as_ref().unwrap() + 2) as usize },
 ///     (&num) as *const i32 as usize,
 /// );

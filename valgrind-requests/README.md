@@ -1,10 +1,5 @@
 # valgrind-requests
 
-STOPPED HERE
-
-<!-- FIX: Add publish workflow for valgrind-requests -->
-<!-- FIX: Update the gungraun version in valgrind-requests/src/lib.rs -->
-
 Idiomatic Rust bindings for Valgrind client requests, with zero-indirection
 execution and zero-cost fallback.
 

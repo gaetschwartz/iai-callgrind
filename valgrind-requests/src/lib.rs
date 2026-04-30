@@ -1,9 +1,7 @@
-//! TODO: UPDATE DOCS
-//! The `gungraun` rustified interface to [Valgrind's Client Request
+//! Idiomatic Rust bindings for [Valgrind's Client Request
 //! Mechanism](https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq)
 //!
-//! You can use these methods to manipulate and query Valgrind's execution inside `gungraun`
-//! benchmarks or your own programs.
+//! You can use these methods to manipulate and query Valgrind's execution inside your own programs.
 //!
 //! Valgrind has a trapdoor mechanism via which the client program can pass all manner of requests
 //! and queries to Valgrind and the current tool. The so-called client requests are provided to
@@ -15,83 +13,72 @@
 //!
 //! The client requests need to be built with the valgrind header files. Usually, these header files
 //! are installed by your distribution's package manager with the valgrind package into a global
-//! include path, and you don't need to do anything but activating the `client_requests` feature
-//! (see below) of the `gungraun` dependency.
+//! include path, and you don't need to do anything but activating the `act` feature (see below).
 //!
 //! If you encounter problems because the valgrind header files cannot be found, first ensure you
 //! have installed valgrind and your package manager's package includes the header files. If not or
 //! you use a custom build of valgrind, you can point the `VALGRIND_REQUESTS_VALGRIND_INCLUDE` or
 //! the `VALGRIND_REQUESTS_<triple>_VALGRIND_INCLUDE` environment variables to the include path
-//! where the valgrind headers can be found. The include directive used by `gungraun` is `#include
-//! "valgrind/valgrind.h"` and is prefixed with `valgrind`. For example, if the valgrind header
-//! files reside in `/home/foo/repo/valgrind/{valgrind.h, callgrind.h, ...}`, then the environment
-//! variable has to point to `VALGRIND_REQUESTS_VALGRIND_INCLUDE=/home/foo/repo` and not
+//! where the valgrind headers can be found. For example, if the valgrind header files reside in
+//! `/home/foo/repo/valgrind/{valgrind.h, callgrind.h, ...}`, then the environment variable has to
+//! point to `VALGRIND_REQUESTS_VALGRIND_INCLUDE=/home/foo/repo` and not
 //! `VALGRIND_REQUESTS_VALGRIND_INCLUDE=/home/foo/repo/valgrind`.
-//!
-//! Also, worth to consider is that the build of `gungraun` with client requests takes longer
-//! than the build without them.
 //!
 //! # Module Organization
 //!
 //! The client requests are organized into modules representing the source header file. So, if you
 //! search for a client request originating from the `valgrind.h` header file, the client request
-//! can be found in the [`crate::client_requests::valgrind`] module. Instead of using macros like in
+//! can be found in the [`crate::valgrind`] module. Instead of using macros like in
 //! valgrind we're using functions and small letter names, stripping the prefix if it is equal to
 //! the enclosing module. For example the client request `RUNNING_ON_VALGRIND` from the `valgrind.h`
-//! file equals [`crate::client_requests::valgrind::running_on_valgrind`] and
+//! file equals [`crate::valgrind::running_on_valgrind`] and
 //! `VALGRIND_COUNT_ERRORS` from the same `valgrind.h` header file equals
-//! [`crate::client_requests::valgrind::count_errors`].
+//! [`crate::valgrind::count_errors`].
 //!
 //! The only exception to this rule are the [`crate::valgrind_printf`] macro and its descendents
-//! like [`crate::valgrind_printf_unchecked`] which can be found in the root of `gungraun`.
+//! like [`crate::valgrind_printf_unchecked`] which can be found in the crate root.
 //!
 //! # Features
 //!
 //! This crate provides two feature levels:
 //!
+//! - **`act`** *(default)*: Enables actual execution of client requests when running under
+//!   Valgrind. Implies `stubs`.
 //! - **`stubs`**: Enables the client request definitions and build-time code generation, but all
 //!   client requests compile to no-ops that return default values. The compiler will optimize them
 //!   away entirely, making this a zero-cost option suitable for production code.
-//! - **`act`** *(default)*: Enables actual execution of client requests when running under
-//!   Valgrind. Implies `stubs`.
 //!
-//! When using the `gungraun` crate, these map to the `client_requests_defs` and `client_requests`
-//! features, respectively. For example, if you need to include the client requests into your
-//! production code, you usually don't want them to run if not running under valgrind in the
-//! `gungraun` benchmarks. In order to achieve this, the `client_requests_defs` can be safely
-//! included in the production code since the compiler will optimize them completely away. So, in
-//! your `Cargo.toml` file, you can do
+//! To use the zero-cost fallback, for example if you want to use the client requests for tests or
+//! benchmarks and need to make annotations in production code:
 //!
 //! ```toml
 //! [dependencies]
-//! gungraun = { version = "0.18.1", default-features = false, features = [
-//!     "client_requests_defs"
-//! ]}
+//! valgrind-requests = { version = "1.0", default-features = false, features = ["stubs"] }
 //!
 //! [dev-dependencies]
-//! gungraun = { version = "0.18.1", features = ["client_requests"] }
+//! valgrind-requests = { version = "1.0" }
 //! ```
 //!
-//! If you would only need the client requests in `gungraun` benchmarks, you only need to add
-//! `gungraun` with the `client_requests` feature to your `dev-dependencies`.
+//! The stubs compile down to nothing and your production code is as performant as without any
+//! annotations.
 //!
 //! # Performance and implementation details
 //!
-//! Depending on the target, the client requests are optimized to run with the same overhead as
-//! the original valgrind client requests in C code. The optimizations are based on inline assembly
-//! with the `asm!` macro and depend on the availability of it on a specific target. Since inline
-//! assembly is not stable on all targets which are supported by valgrind, we cannot provide
+//! Depending on the target, the client requests are optimized to run with the same overhead as the
+//! original valgrind client requests in C code. The optimizations are based on inline assembly with
+//! the `asm!` macro and depend on the availability of it on a specific target. Since inline
+//! assembly is not stable on all targets which are supported by Valgrind, we cannot provide
 //! optimized client requests for them. But, you can still use the non-optimized version on all
-//! platforms which would be natively supported by valgrind. In the end, all targets which are
-//! covered by valgrind are also covered by `gungraun`.
+//! platforms which would be natively supported by valgrind. So, all targets which are covered by
+//! valgrind are also covered by `valgrind-requests`.
 //!
 //! The non-optimized version add overhead because we need to wrap the macro from the header file in
 //! a function call. This additional function call equals the additional overhead compared to the
 //! original valgrind implementation. Although this is usually not much, we try hard to avoid any
-//! overhead to not slow down the benchmarks.
+//! overhead to not slow down benchmarks and other high performance code.
 //!
 //! Here's a short overview on which targets the optimized client requests are available and why
-//! not (Valgrind version = `3.22`)
+//! not:
 //!
 //! | Target                | Optimized | Reason  |
 //! | --------------------- | --------- | ------- |
@@ -113,9 +100,9 @@
 //! | `s390x/linux`         | no  | needs MSRV 1.84.0
 //! | `mips32/linux`        | no  | unstable inline assembly
 //! | `mips64/linux`        | no  | unstable inline assembly
-//! | `powerpc/linux`       | no  | unstable inline assembly
-//! | `powerpc64/linux`     | no  | unstable inline assembly
-//! | `powerpc64le/linux`   | no  | unstable inline assembly
+//! | `powerpc/linux`       | no  | needs MSRV 1.95.0
+//! | `powerpc64/linux`     | no  | needs MSRV 1.95.0
+//! | `powerpc64le/linux`   | no  | needs MSRV 1.95.0
 //! | `nanomips/linux`      | no  | valgrind only
 //!
 //! All other targets you don't find in the table above are also not supported by valgrind, yet.
@@ -123,7 +110,7 @@
 //! Note this table might quickly become outdated with higher versions of valgrind, and you should
 //! not rely on it to be up-to-date. As indicated above, the bindings are created dynamically in
 //! such a way, that always all targets which are covered by valgrind are also covered by
-//! `gungraun`. They just might not have been optimized, yet. If you need to know if your
+//! `valgrind-requests`. They just might not have been optimized, yet. If you need to know if your
 //! target is supported you should consult the `valgrind.h` header file in the [Valgrind
 //! Repository](https://sourceware.org/git/?p=valgrind.git) or have a look at the [Valgrind Release
 //! Notes](https://valgrind.org/downloads/current.html)
