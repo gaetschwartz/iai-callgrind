@@ -541,6 +541,5 @@ pub use gungraun_runner::api::{
 };
 #[cfg(feature = "default")]
 pub use lib_bench::LibraryBenchmarkConfig;
-// FIX: use valgrind_requests directly
 #[cfg(feature = "client_requests_defs")]
 pub use valgrind_requests as client_requests;

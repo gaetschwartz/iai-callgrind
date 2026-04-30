@@ -217,23 +217,28 @@ Licensed under Apache-2.0 or MIT, at your option.
 
 [`callgrind`]:
     https://docs.rs/valgrind-requests/latest/valgrind_requests/callgrind
-[callgrind-docs]: https://valgrind.org/docs/manual/cl-manual.html
+[callgrind-docs]:
+    https://valgrind.org/docs/manual/cl-manual.html#cl-manual.clientrequests
 [`cachegrind`]:
     https://docs.rs/valgrind-requests/latest/valgrind_requests/cachegrind
-[cachegrind-docs]: https://valgrind.org/docs/manual/cg-manual.html
+[cachegrind-docs]:
+    https://valgrind.org/docs/manual/cg-manual.html#cg-manual.clientrequests
 [client-requests]:
     https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
 [`dhat`]: https://docs.rs/valgrind-requests/latest/valgrind_requests/dhat
 [dhat-docs]: https://valgrind.org/docs/manual/dh-manual.html
 [`drd`]: https://docs.rs/valgrind-requests/latest/valgrind_requests/drd
-[drd-docs]: https://valgrind.org/docs/manual/drd-manual.html
+[drd-docs]:
+    https://valgrind.org/docs/manual/drd-manual.html#drd-manual.clientreqs
 [Gungraun]: https://github.com/gungraun/gungraun
 [`helgrind`]:
     https://docs.rs/valgrind-requests/latest/valgrind_requests/helgrind
-[helgrind-docs]: https://valgrind.org/docs/manual/hg-manual.html
+[helgrind-docs]:
+    https://valgrind.org/docs/manual/hg-manual.html#hg-manual.client-requests
 [`memcheck`]:
     https://docs.rs/valgrind-requests/latest/valgrind_requests/memcheck
-[memcheck-docs]: https://valgrind.org/docs/manual/mc-manual.html
+[memcheck-docs]:
+    https://valgrind.org/docs/manual/mc-manual.html#mc-manual.clientreqs
 [`valgrind`]:
     https://docs.rs/valgrind-requests/latest/valgrind_requests/valgrind
 [`valgrind_println!`]:
