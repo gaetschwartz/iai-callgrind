@@ -1,4 +1,4 @@
-//! Gungraun is a one-shot benchmarking harness and framework which uses Valgrind's [Callgrind],
+//! Gungraun is a on-shot benchmarking harness and framework which uses Valgrind's [Callgrind],
 //! [Cachegrind], and [DHAT] to provide extremely accurate and consistent measurements of Rust code,
 //! making it perfectly suited to run in environments like a CI. Its flexibility allows you to
 //! access all Valgrind tools, even [Memcheck], and utilize [`client_requests`] effortlessly.
@@ -168,14 +168,14 @@
 //!
 //! The [`gungraun::prelude`](crate::prelude) contains the most important macro definitions and
 //! structs. Note that it is important to annotate the benchmark functions with
-//! [`#[library_benchmark]`].
+//! [`#[library_benchmark]`][crate::library_benchmark].
 //!
 //! ### Configuration (#library-benchmarks)
 //!
 //! It's possible to configure some of the behavior of `gungraun`. See the docs of
 //! [`LibraryBenchmarkConfig`] for more details. Configure library benchmarks at
 //! top-level with the [`main!`] macro, at group level within the
-//! [`library_benchmark_group!`], at [`#[library_benchmark]`] level
+//! [`library_benchmark_group!`], at [`#[library_benchmark]`][crate::library_benchmark] level
 //!
 //! and at `bench` level:
 //!
@@ -212,12 +212,12 @@
 //! #### Quickstart (#binary-benchmarks)
 //!
 //! There are two apis to set up binary benchmarks, but we only describe the high-level api using
-//! the [`#[binary_benchmark]`] attribute here. See the docs of
+//! the [`#[binary_benchmark]`][crate::binary_benchmark] attribute here. See the docs of
 //! [`binary_benchmark_group!`] for more details about the low level api. The `#[binary_benchmark]`
 //! attribute works almost the same as the `#[library_benchmark]` attribute. You will find the same
 //! parameters `setup`, `teardown`, `config`, `consts`, etc. in `#[binary_benchmark]` as in
-//! `#[library_benchmark]` and the inner attributes `#[bench]`, `#[benches]`. But, there are also
-//! substantial [differences][#differences-to-library-benchmarks].
+//! [`#[library_benchmark]`][crate::library_benchmark] and the inner attributes `#[bench]`,
+//! `#[benches]`. But, there are also substantial [differences][#differences-to-library-benchmarks].
 //!
 //! Suppose your crate's binaries are named `my-foo` and `my-bar`
 //!
@@ -288,7 +288,7 @@
 //! As opposed to library benchmarks the function annotated with the `binary_benchmark` attribute
 //! always returns a `gungraun::Command`. More specifically, this function is not a benchmark
 //! function, since we don't benchmark functions anymore but [`Command`]s instead which are the
-//! return value of the [`#[binary_benchmark]`] function.
+//! return value of the [`#[binary_benchmark]`][crate::binary_benchmark] function.
 //!
 //! This change has far-reaching consequences but also simplifies things. Since the function itself
 //! is not benchmarked you can put any code into this function, and it does not influence the
@@ -300,7 +300,7 @@
 //!
 //! In library benchmarks the `setup` parameter only takes a path to a function, more specifically
 //! the function pointer. In binary benchmarks however, the `setup` (and `teardown`) parameters of
-//! the [`#[binary_benchmark]`], `#[bench]` and `#[benches]` attribute
+//! the [`#[binary_benchmark]`][crate::binary_benchmark], `#[bench]` and `#[benches]` attribute
 //! take expressions which includes function calls for example `setup = my_setup()`. Only in the
 //! special case that the expression is a function pointer, we pass the `args` of the `#[bench]` and
 //! `#[benches]` attributes into the `setup`, `teardown` __and__ the function itself. Also, these
@@ -364,11 +364,11 @@
 //! # }
 //! ```
 //!
-//! TODO: UPDATE
 //! ## Client requests
 //!
-//! `gungraun` supports valgrind client requests. See the documentation of the
-//! [`client_requests`] module for all the details.
+//! `gungraun` supports Valgrind client requests. See the documentation of the
+//! [`valgrind-requests`][valgrind-requests] crate for all the details. The client requests are
+//! accessible through the [`client_requests`] module
 //!
 //! ## Flamegraphs
 //!
@@ -397,24 +397,22 @@
 //! [client-req]: https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
 //! [kcachegrind]: https://kcachegrind.github.io/html/Home.html
 //! [massif]: https://valgrind.org/docs/manual/ms-manual.html
-//!
-//! [`#[binary_benchmark]`]: `crate::binary_benchmark`
-//! [`#[library_benchmark]`]: `crate::library_benchmark`
-//! [`BinaryBenchmarkConfig`]: `crate::BinaryBenchmarkConfig`
-//! [`BinaryBenchmarkConfig::env_clear`]: `crate::BinaryBenchmarkConfig::env_clear`
-//! [`BinaryBenchmarkConfig::tool`]: `crate::BinaryBenchmarkConfig::tool`
-//! [`Callgrind::flamegraph`]: `crate::Callgrind::flamegraph`
-//! [`Command`]: `crate::Command`
-//! [`FlamegraphConfig`]: `crate::FlamegraphConfig`
-//! [`LibraryBenchmarkConfig`]: `crate::LibraryBenchmarkConfig`
-//! [`LibraryBenchmarkConfig::tool`]: `crate::LibraryBenchmarkConfig::tool`
-//! [`binary_benchmark_group!`]: `crate::binary_benchmark_group`
-//! [`client_requests`]: `crate::client_requests`
-//! [`library_benchmark_group!`]: `crate::library_benchmark_group`
-//! [`main!`]: `crate::main`
+//! [valgrind-requests]: https://docs.rs/valgrind-requests/latest/valgrind-requests
+//! [`BinaryBenchmarkConfig`]: crate::BinaryBenchmarkConfig
+//! [`BinaryBenchmarkConfig::env_clear`]: crate::BinaryBenchmarkConfig::env_clear
+//! [`BinaryBenchmarkConfig::tool`]: crate::BinaryBenchmarkConfig::tool
+//! [`Callgrind::flamegraph`]: crate::Callgrind::flamegraph
+//! [`Command`]: crate::Command
+//! [`FlamegraphConfig`]: crate::FlamegraphConfig
+//! [`LibraryBenchmarkConfig`]: crate::LibraryBenchmarkConfig
+//! [`LibraryBenchmarkConfig::tool`]: crate::LibraryBenchmarkConfig::tool
+//! [`binary_benchmark_group!`]: crate::binary_benchmark_group
+//! [`client_requests`]: crate::client_requests
+//! [`library_benchmark_group!`]: crate::library_benchmark_group
+//! [`main!`]: crate::main
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![doc(test(attr(warn(unused))))]
+#![doc(test(attr(arn(unused))))]
 #![doc(test(attr(allow(unused_extern_crates))))]
 
 /// Import the basic macros and configuration structs for benchmarking
