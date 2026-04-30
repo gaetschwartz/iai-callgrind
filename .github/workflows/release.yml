@@ -40,7 +40,8 @@ jobs:
       - name: Create release if it does not exist
         run: |
           if ! gh release view $VERSION &>/dev/null; then
-            gh release create $VERSION --draft --verify-tag --title $VERSION -F CHANGELOG.md
+            scripts/extract_release_notes.py "$VERSION" CHANGELOG.md > /tmp/release_notes.md
+            gh release create $VERSION --draft --verify-tag --title $VERSION --notes-file /tmp/release_notes.md
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
