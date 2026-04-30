@@ -36,11 +36,10 @@ strip = false
 
 ## Valgrind Client Requests
 
-If you want to make use of [Valgrind Client Requests][valgrind-client-req]
-shipped with Gungraun, you also need `libclang` (clang >= 5.0) installed. See
-also the requirements of [bindgen] and of [cc]. It's worth noting that you can
-use the `Valgrind Client Requests` of Gungraun without the rest of Gungraun by
-specifying the `client_requests` feature and disabling the default features.
+If you want to make use of the [Valgrind Client Requests][valgrind-client-req]
+which are a re-export of the [valgrind-requests] package, you also need
+`libclang` (clang >= 5.0) installed. See also the requirements of [bindgen] and
+of [cc].
 
 More details on the usage and requirements of `Valgrind Client Requests` in
 [this](../client_requests.md) chapter of the guide.
@@ -108,5 +107,6 @@ For detailed instructions and more examples, see
 [Valgrind]: https://www.valgrind.org
 [valgrind-client-req]:
     https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
+[valgrind-requests]: https://docs.rs/valgrind-requests/latest/valgrind-requests
 [valgrind-source]:
     https://sourceware.org/git/?p=valgrind.git;a=blob;f=README;h=eabcc6ad88c8cab6dfe73cfaaaf5543023c2e941;hb=HEAD

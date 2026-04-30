@@ -1,17 +1,16 @@
 # Valgrind Client Requests
 
-<!-- TODO: Document that they are actually their own separate package -->
-
-Gungraun ships with its own interface to the [Valgrind's Client Request
-Mechanism][valgrind-client-req]. Gungraun's client requests have zero overhead
-(relative to the "C" implementation of Valgrind) on many targets which are also
-natively supported by Valgrind. In short, Gungraun provides a complete and
-performant implementation of Valgrind Client Requests.
+Gungraun ships with its own package [valgrind-requests] for [Valgrind's Client
+Request Mechanism][valgrind-client-req]. Gungraun's client requests have zero
+overhead (relative to the "C" implementation of Valgrind) on many targets which
+are also natively supported by Valgrind. In short, Gungraun provides a complete
+and performant implementation of Valgrind Client Requests.
 
 ## Installation
 
-Client requests are deactivated by default but can be activated with the
-`client_requests` feature.
+[valgrind-requests] is a standalone package but is integrated and re-exported in
+Gungraun under the `client_requests` module. Client requests are deactivated by
+default but can be activated with the `client_requests` feature.
 
 ```toml
 [dev-dependencies]
@@ -20,9 +19,9 @@ gungraun = { version = "0.18.1", features = ["client_requests"] }
 
 If you need the client requests in your production code, you don't want them to
 do anything when not running under Valgrind with Gungraun benchmarks. You can
-achieve that by adding Gungraun with the `client_requests_defs` feature to your
+achieve this by adding Gungraun with the `client_requests_defs` feature to your
 runtime dependencies and with the `client_requests` feature to your
-`dev-dependencies` like so:
+`dev-dependencies`:
 
 ```toml
 [dependencies]
@@ -36,22 +35,13 @@ gungraun = { version = "0.18.1", features = ["client_requests"] }
 
 With just the `client_requests_defs` feature activated, the client requests
 compile down to nothing and don't add any overhead to your production code. It
-simply provides the "definitions", method signatures and macros without body.
-Only with the activated `client_requests` feature they will be actually
-executed. Note that the client requests do not depend on any other part of
-Gungraun, so you could even use the client requests without the rest of Gungraun
-by disabling the default-features:
+simply provides the "stubs", method signatures and macros without body. Only
+with the activated `client_requests` feature they will be actually executed.
 
-```toml
-gungraun = { version = "0.18.1", default-features = false, features = [
-    "client_requests"
-] }
-```
-
-When building Gungraun with client requests, the Valgrind header files must
-exist in your standard include path (most of the time `/usr/include`). This is
-usually the case if you've installed Valgrind with your distribution's package
-manager. If not, you can point the `VALGRIND_REQUESTS_VALGRIND_INCLUDE` or
+When using Gungraun with client requests, the Valgrind header files must exist
+in your standard include path (most of the time `/usr/include`). This is usually
+the case if you've installed Valgrind with your distribution's package manager.
+If not, you can point the `VALGRIND_REQUESTS_VALGRIND_INCLUDE` or
 `VALGRIND_REQUESTS_<triple>_VALGRIND_INCLUDE` environment variables to the
 include path. So, if the headers can be found in
 `/home/foo/repo/valgrind/{valgrind.h, callgrind.h, ...}`, the correct include
@@ -64,17 +54,17 @@ Use them in your code for example like so:
 
 ```rust
 # extern crate gungraun;
-use gungraun::client_requests;
+use gungraun::client_requests::callgrind;
 
 # fn main() {
 fn main() {
     // Start callgrind event counting if not already started earlier
-    client_requests::callgrind::start_instrumentation();
+    callgrind::start_instrumentation();
 
     // do something important
 
     // Switch event counting off
-    client_requests::callgrind::stop_instrumentation();
+    callgrind::stop_instrumentation();
 }
 # }
 ```
@@ -88,24 +78,27 @@ expected:
 ```rust
 # extern crate gungraun;
 use gungraun::prelude::*;
+
 use std::hint::black_box;
 
 pub mod my_lib {
-     #[inline(never)]
-     fn bubble_sort(input: Vec<i32>) -> Vec<i32> {
-         // The algorithm
-#        input
-     }
+    use gungraun::client_requests::callgrind;
 
-     pub fn pre_bubble_sort(input: Vec<i32>) -> Vec<i32> {
-         println!("Doing something before the function call");
-         gungraun::client_requests::callgrind::start_instrumentation();
+    #[inline(never)]
+    fn bubble_sort(input: Vec<i32>) -> Vec<i32> {
+        // The algorithm
+#       input
+    }
 
-         let result = bubble_sort(input);
+    pub fn pre_bubble_sort(input: Vec<i32>) -> Vec<i32> {
+        println!("Doing something before the function call");
+        callgrind::start_instrumentation();
 
-         gungraun::client_requests::callgrind::stop_instrumentation();
-         result
-     }
+        let result = bubble_sort(input);
+
+        callgrind::stop_instrumentation();
+        result
+    }
 }
 
 #[library_benchmark]
@@ -131,10 +124,12 @@ the events when entering the benchmark function, not the moment
 ```rust
 # extern crate gungraun;
 use gungraun::prelude::*;
-use gungraun::{client_requests, Callgrind, EntryPoint};
+use gungraun::{Callgrind, EntryPoint};
 use std::hint::black_box;
 
 pub mod my_lib {
+     use gungraun::client_requests::callgrind;
+
      #[inline(never)]
      fn bubble_sort(input: Vec<i32>) -> Vec<i32> {
          // The algorithm
@@ -143,11 +138,11 @@ pub mod my_lib {
 
      pub fn pre_bubble_sort(input: Vec<i32>) -> Vec<i32> {
          println!("Doing something before the function call");
-         gungraun::client_requests::callgrind::start_instrumentation();
+         callgrind::start_instrumentation();
 
          let result = bubble_sort(input);
 
-         gungraun::client_requests::callgrind::stop_instrumentation();
+         callgrind::stop_instrumentation();
          result
      }
 }
@@ -182,3 +177,4 @@ Please see the [`docs`][api-docs] for more details!
 [EntryPoint]: https://docs.rs/gungraun/0.18.1/gungraun/enum.EntryPoint.html
 [valgrind-client-req]:
     https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
+[valgrind-requests]: https://docs.rs/valgrind-requests/latest/valgrind-requests
