@@ -3,7 +3,6 @@
 # spell-checker:ignore tlsv connrefused copyback toolsdirectory ghcup rustdocflags
 # spell-checker:ignore androideabi binutils
 
-# FIX: test client requests of new package.
 name: Build and Check
 
 on:

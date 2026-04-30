@@ -412,7 +412,7 @@
 //! [`main!`]: crate::main
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![doc(test(attr(arn(unused))))]
+#![doc(test(attr(warn(unused))))]
 #![doc(test(attr(allow(unused_extern_crates))))]
 
 /// Import the basic macros and configuration structs for benchmarking
