@@ -9,7 +9,7 @@ use std::hash::Hash;
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
 use std::str::FromStr;
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use either_or_both::EitherOrBoth;
 use indexmap::IndexMap;
 #[cfg(feature = "schema")]
@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 
 use super::summary::Diffs;
 use crate::api::{self, CachegrindMetric, DhatMetric, ErrorMetric, EventKind};
-use crate::util::{to_string_unsigned_short, Union};
+use crate::util::{Union, to_string_unsigned_short};
 
 /// The metric measured by valgrind or derived from one or more other metrics
 ///
@@ -112,11 +112,6 @@ impl Metric {
     /// No difference is made between negative 0.0 and positive 0.0 os rhs value. The result is
     /// always positive 0.0.
     #[must_use]
-    // FIX: Check after msrv update
-    // These allow rules are due to the msrv of 1.74.1 which prints a warning. In later versions the
-    // floating point comparison in the match arm are fine.
-    #[expect(renamed_and_removed_lints)]
-    #[expect(illegal_floating_point_literal_pattern)]
     pub fn div0(self, rhs: Self) -> Self {
         match (self, rhs) {
             (_, Self::Int(0) | Self::Float(0.0f64)) => Self::Float(0.0f64),

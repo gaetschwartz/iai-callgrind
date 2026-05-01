@@ -9,7 +9,7 @@ use std::sync::LazyLock;
 use anyhow::{Context, Result};
 use regex::Regex;
 
-use super::logfile_parser::{parse_header, EMPTY_LINE_RE, EXTRACT_FIELDS_RE, STRIP_PREFIX_RE};
+use super::logfile_parser::{EMPTY_LINE_RE, EXTRACT_FIELDS_RE, STRIP_PREFIX_RE, parse_header};
 use super::parser::{Parser, ParserOutput};
 use super::path::ToolOutputPath;
 use crate::api::ErrorMetric;

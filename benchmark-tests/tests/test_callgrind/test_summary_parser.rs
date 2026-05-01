@@ -6,7 +6,7 @@ use gungraun_runner::runner::tool::path::ToolOutputPathKind;
 use pretty_assertions::assert_eq;
 use rstest::rstest;
 
-use crate::util::common::{assert_parse_error, Fixtures};
+use crate::util::common::{Fixtures, assert_parse_error};
 
 // Ir Dr Dw I1mr D1mr D1mw ILmr DLmr DLmw
 #[rstest]

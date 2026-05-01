@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-extern "C" {
+unsafe extern "C" {
     pub fn valgrind_do_client_request_expr(
         default: usize,
         request: usize,

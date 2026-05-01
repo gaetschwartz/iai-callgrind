@@ -45,7 +45,7 @@ use std::fmt::Display;
 use std::path::Path;
 use std::str::FromStr;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use log::warn;
 use nix::NixPath;
 

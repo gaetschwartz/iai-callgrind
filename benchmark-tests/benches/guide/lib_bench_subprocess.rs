@@ -3,8 +3,8 @@ use std::io;
 use std::path::PathBuf;
 use std::process::ExitStatus;
 
-use gungraun::prelude::*;
 use gungraun::OutputFormat;
+use gungraun::prelude::*;
 
 /// Suppose this is your library
 pub mod my_lib {

@@ -8,7 +8,7 @@ use log::{log_enabled, warn};
 use crate::api::{RawToolArgs, ValgrindTool};
 use crate::error::Error;
 use crate::runner::tool::args::{
-    defaults, is_ignored_argument, is_ignored_outfile_argument, FairSched, ToolArgs,
+    FairSched, ToolArgs, defaults, is_ignored_argument, is_ignored_outfile_argument,
 };
 use crate::util::{bool_to_yesno, yesno_to_bool};
 

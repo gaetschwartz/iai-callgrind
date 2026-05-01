@@ -5,7 +5,7 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 
 use assert_cmd::Command;
-use tempfile::{tempdir, TempDir};
+use tempfile::{TempDir, tempdir};
 use version_compare::Cmp;
 
 pub const VALGRIND_WRAPPER: &str = env!("CARGO_BIN_EXE_valgrind-wrapper");

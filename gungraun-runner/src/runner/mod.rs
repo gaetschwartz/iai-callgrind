@@ -35,7 +35,7 @@ pub mod tool;
 
 use std::env::ArgsOs;
 use std::ffi::OsString;
-use std::io::{stdin, Read};
+use std::io::{Read, stdin};
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};

@@ -4,14 +4,14 @@ use std::collections::{HashMap, VecDeque};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Output};
+use std::sync::Arc;
 use std::sync::atomic::{self, AtomicBool};
 use std::sync::mpsc::{self, Receiver, Sender};
-use std::sync::Arc;
-use std::thread::{sleep, JoinHandle};
+use std::thread::{JoinHandle, sleep};
 use std::time::Duration;
 use std::{iter, thread};
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use crossbeam::deque::{Injector, Steal, Stealer, Worker};
 use log::debug;
 use nix::sys::signal;
@@ -23,7 +23,7 @@ use crate::runner::args::NoCapture;
 use crate::runner::common::{Assistant, CapturedOutput, Config, ModulePath};
 use crate::runner::tool::config::ToolConfig;
 use crate::runner::tool::path::ToolOutputPath;
-use crate::runner::tool::run::{check_exit, RunOptions, ToolCommand, ToolCommandChild};
+use crate::runner::tool::run::{RunOptions, ToolCommand, ToolCommandChild, check_exit};
 
 type Channel<T> = (Sender<(JobId, T)>, Receiver<(JobId, T)>);
 type Job<T> = (JobId, JobClosure<T>);
@@ -142,8 +142,8 @@ struct Task {
 /// # }
 /// # fn process_summary(_s: usize) {}
 /// # let benchmarks = [1, 2];
-/// use std::sync::atomic::{AtomicBool, Ordering};
 /// use std::sync::Arc;
+/// use std::sync::atomic::{AtomicBool, Ordering};
 ///
 /// use gungraun_runner::runner::tasks::ThreadPool;
 ///
@@ -620,7 +620,8 @@ impl<T: Send + 'static> Iterator for ThreadPool<T> {
         loop {
             if self.next == self.total_jobs {
                 break None;
-            } else if self.total_jobs.is_some_and(|c| c == self.num_received) {
+            }
+            if self.total_jobs.is_some_and(|c| c == self.num_received) {
                 if let Some(next) = self.next.as_mut() {
                     let result = self.results.remove(next);
                     *next += 1;
@@ -628,23 +629,27 @@ impl<T: Send + 'static> Iterator for ThreadPool<T> {
                 }
 
                 break None;
-            } else if let Ok((index, result)) = self.result_receiver.recv() {
-                let next = self.next.get_or_insert(0);
-                self.num_received += 1;
+            }
+            match self.result_receiver.recv() {
+                Ok((index, result)) => {
+                    let next = self.next.get_or_insert(0);
+                    self.num_received += 1;
 
-                #[expect(clippy::else_if_without_else)]
-                if index == *next {
-                    *next += 1;
-                    break Some(result);
-                } else if let Some(r) = self.results.remove(next) {
+                    if index == *next {
+                        *next += 1;
+                        break Some(result);
+                    }
+                    if let Some(r) = self.results.remove(next) {
+                        self.results.insert(index, result);
+                        *next += 1;
+                        break Some(r);
+                    }
+
                     self.results.insert(index, result);
-                    *next += 1;
-                    break Some(r);
                 }
-
-                self.results.insert(index, result);
-            } else {
-                break None;
+                _ => {
+                    break None;
+                }
             }
         }
     }

@@ -335,7 +335,7 @@
 //!
 //! ```rust
 //! use gungraun::prelude::*;
-//! use gungraun::{main, Dhat};
+//! use gungraun::{Dhat, main};
 //! # #[library_benchmark]
 //! # fn some_func() {}
 //! # library_benchmark_group!(name = some_group, benchmarks = some_func);
@@ -352,7 +352,7 @@
 //!
 //! ```rust
 //! use gungraun::prelude::*;
-//! use gungraun::{main, ValgrindTool};
+//! use gungraun::{ValgrindTool, main};
 //! # #[library_benchmark]
 //! # fn some_func() {}
 //! # library_benchmark_group!(name = some_group, benchmarks = some_func);
@@ -497,8 +497,8 @@ pub mod prelude {
     // Shows actual source location instead of prelude, making items easier to find for the user
     #[doc(no_inline)]
     pub use crate::{
-        binary_benchmark, binary_benchmark_group, library_benchmark, library_benchmark_group, main,
-        BinaryBenchmarkConfig, Command, LibraryBenchmarkConfig,
+        BinaryBenchmarkConfig, Command, LibraryBenchmarkConfig, binary_benchmark,
+        binary_benchmark_group, library_benchmark, library_benchmark_group, main,
     };
 }
 

@@ -9,11 +9,11 @@ members = [
   "client-request-tests",
   "schema-gen",
 ]
-resolver = "2"
+resolver = "3"
 
 [workspace.package]
 categories = ["development-tools::profiling", "development-tools::testing"]
-edition = "2021"
+edition = "2024"
 homepage = "https://github.com/gungraun/gungraun"
 keywords = ["performance", "benchmark", "profiling", "valgrind", "callgrind"]
 license = "Apache-2.0 OR MIT"

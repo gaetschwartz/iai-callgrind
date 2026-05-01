@@ -1,5 +1,5 @@
 //! Module containing the basic cachegrind parser elements
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use log::trace;
 
 use super::model::Metrics;

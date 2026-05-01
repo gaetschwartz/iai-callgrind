@@ -7,8 +7,8 @@ use std::ffi::OsString;
 use std::fmt::Debug;
 use std::marker::{Send, Sync};
 use std::path::Path;
-use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 
 use anyhow::Result;
 

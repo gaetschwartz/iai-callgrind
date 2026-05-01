@@ -31,7 +31,7 @@ use std::str::FromStr;
 use anyhow::Result;
 use clap::builder::{BoolishValueParser, PathBufValueParser, TypedValueParser};
 use clap::{ArgAction, Parser};
-use indexmap::{indexset, IndexMap, IndexSet};
+use indexmap::{IndexMap, IndexSet, indexset};
 use simplematch::{DoWild, Options};
 use strum::IntoEnumIterator;
 
@@ -1869,7 +1869,7 @@ mod tests {
     use std::os::unix::fs::PermissionsExt;
 
     use rstest::rstest;
-    use tempfile::{tempdir, NamedTempFile};
+    use tempfile::{NamedTempFile, tempdir};
 
     use super::*;
     use crate::api::EventKind::*;
@@ -1991,7 +1991,10 @@ mod tests {
     #[serial_test::serial]
     fn test_callgrind_args_env() {
         let test_arg = "--just-testing=yes";
-        std::env::set_var("GUNGRAUN_CALLGRIND_ARGS", test_arg);
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_CALLGRIND_ARGS", test_arg);
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(
             result.callgrind_args,
@@ -2020,7 +2023,10 @@ mod tests {
     fn test_callgrind_args_cli_takes_precedence_over_env() {
         let test_arg_yes = "--just-testing=yes";
         let test_arg_no = "--just-testing=no";
-        std::env::set_var("GUNGRAUN_CALLGRIND_ARGS", test_arg_yes);
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_CALLGRIND_ARGS", test_arg_yes);
+        }
         let result = CommandLineArgs::parse_from([format!("--callgrind-args={test_arg_no}")]);
         assert_eq!(
             result.callgrind_args,
@@ -2031,7 +2037,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_save_summary_env() {
-        std::env::set_var("GUNGRAUN_SAVE_SUMMARY", "json");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_SAVE_SUMMARY", "json");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(result.save_summary, Some(SummaryFormat::Json));
     }
@@ -2052,7 +2061,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_allow_aslr_env() {
-        std::env::set_var("GUNGRAUN_ALLOW_ASLR", "yes");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_ALLOW_ASLR", "yes");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(result.allow_aslr, Some(true));
     }
@@ -2073,7 +2085,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_separate_targets_env() {
-        std::env::set_var("GUNGRAUN_SEPARATE_TARGETS", "yes");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_SEPARATE_TARGETS", "yes");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert!(result.separate_targets);
     }
@@ -2094,7 +2109,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_home_env() {
-        std::env::set_var("GUNGRAUN_HOME", "/tmp/my_gungraun_home");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_HOME", "/tmp/my_gungraun_home");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(result.home, Some(PathBuf::from("/tmp/my_gungraun_home")));
     }
@@ -2129,7 +2147,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_nocapture_env() {
-        std::env::set_var("GUNGRAUN_NOCAPTURE", "true");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_NOCAPTURE", "true");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(result.nocapture, NoCapture::True);
     }
@@ -2228,7 +2249,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_arg_callgrind_metrics_when_env() {
-        std::env::set_var("GUNGRAUN_CALLGRIND_METRICS", "ir");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_CALLGRIND_METRICS", "ir");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(
             result.callgrind_metrics,
@@ -2262,7 +2286,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_arg_cachegrind_metrics_when_env() {
-        std::env::set_var("GUNGRAUN_CACHEGRIND_METRICS", "ir");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_CACHEGRIND_METRICS", "ir");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(
             result.cachegrind_metrics,
@@ -2292,7 +2319,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_arg_dhat_metrics_when_env() {
-        std::env::set_var("GUNGRAUN_DHAT_METRICS", "totalbytes");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_DHAT_METRICS", "totalbytes");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(
             result.dhat_metrics,
@@ -2327,7 +2357,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_arg_drd_metrics_when_env() {
-        std::env::set_var("GUNGRAUN_DRD_METRICS", "errors");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_DRD_METRICS", "errors");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(
             result.drd_metrics,
@@ -2362,7 +2395,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_arg_memcheck_metrics_when_env() {
-        std::env::set_var("GUNGRAUN_MEMCHECK_METRICS", "errors");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_MEMCHECK_METRICS", "errors");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(
             result.memcheck_metrics,
@@ -2397,7 +2433,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_arg_helgrind_metrics_when_env() {
-        std::env::set_var("GUNGRAUN_HELGRIND_METRICS", "errors");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_HELGRIND_METRICS", "errors");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(
             result.helgrind_metrics,
@@ -2416,7 +2455,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_arg_tolerance_when_env() {
-        std::env::set_var("GUNGRAUN_TOLERANCE", "2.0");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_TOLERANCE", "2.0");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(result.tolerance, Some(2.0));
     }
@@ -2433,7 +2475,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_arg_show_intermediate_when_env() {
-        std::env::set_var("GUNGRAUN_SHOW_INTERMEDIATE", "yes");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_SHOW_INTERMEDIATE", "yes");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(result.show_intermediate, Some(true));
     }
@@ -2450,7 +2495,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_arg_show_grid_when_env() {
-        std::env::set_var("GUNGRAUN_SHOW_GRID", "yes");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_SHOW_GRID", "yes");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(result.show_grid, Some(true));
     }
@@ -2468,7 +2516,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_arg_truncate_description_when_env() {
-        std::env::set_var("GUNGRAUN_TRUNCATE_DESCRIPTION", "no");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_TRUNCATE_DESCRIPTION", "no");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(result.truncate_description, Some(TruncateDescription::None));
     }
@@ -2549,7 +2600,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_env_clear_default() {
-        std::env::remove_var("GUNGRAUN_ENV_CLEAR");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::remove_var("GUNGRAUN_ENV_CLEAR");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(result.env_clear, None);
     }
@@ -2557,10 +2611,16 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_env_clear_env() {
-        std::env::set_var("GUNGRAUN_ENV_CLEAR", "yes");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_ENV_CLEAR", "yes");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(result.env_clear, Some(true));
-        std::env::remove_var("GUNGRAUN_ENV_CLEAR");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::remove_var("GUNGRAUN_ENV_CLEAR");
+        }
     }
 
     #[rstest]
@@ -2602,13 +2662,19 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_envs_arg_from_config_env() {
-        std::env::set_var("GUNGRAUN_ENVS", "FROM_CONFIG=yes");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("GUNGRAUN_ENVS", "FROM_CONFIG=yes");
+        }
         let result = CommandLineArgs::parse_from::<[_; 0], &str>([]);
         assert_eq!(
             result.envs[0],
             vec![(OsString::from("FROM_CONFIG"), OsString::from("yes"))]
         );
-        std::env::remove_var("GUNGRAUN_ENVS");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::remove_var("GUNGRAUN_ENVS");
+        }
     }
 
     #[test]
@@ -2620,7 +2686,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_envs_arg_mixed_resolution() {
-        std::env::set_var("MIXED_TEST_VAR", "from_env");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("MIXED_TEST_VAR", "from_env");
+        }
         let result =
             CommandLineArgs::try_parse_from(["--envs='KEY=val MIXED_TEST_VAR OTHER=set'"]).unwrap();
         assert_eq!(
@@ -2631,7 +2700,10 @@ mod tests {
                 (OsString::from("OTHER"), OsString::from("set")),
             ]
         );
-        std::env::remove_var("MIXED_TEST_VAR");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::remove_var("MIXED_TEST_VAR");
+        }
     }
 
     #[test]
@@ -2662,14 +2734,20 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_envs_arg_partial_resolve() {
-        std::env::set_var("PARTIAL_EXISTS", "yes");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("PARTIAL_EXISTS", "yes");
+        }
         let result =
             CommandLineArgs::try_parse_from(["--envs='PARTIAL_EXISTS NONEXISTENT_XYZ'"]).unwrap();
         assert_eq!(
             result.envs[0],
             vec![(OsString::from("PARTIAL_EXISTS"), OsString::from("yes"))]
         );
-        std::env::remove_var("PARTIAL_EXISTS");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::remove_var("PARTIAL_EXISTS");
+        }
     }
 
     #[test]
@@ -2684,7 +2762,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_envs_arg_resolve_from_env() {
-        std::env::set_var("RESOLVE_ME_VAR", "env_value");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("RESOLVE_ME_VAR", "env_value");
+        }
         let result = CommandLineArgs::try_parse_from(["--envs=RESOLVE_ME_VAR"]).unwrap();
         assert_eq!(
             result.envs[0],
@@ -2693,7 +2774,10 @@ mod tests {
                 OsString::from("env_value")
             )]
         );
-        std::env::remove_var("RESOLVE_ME_VAR");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::remove_var("RESOLVE_ME_VAR");
+        }
     }
 
     #[rstest]
@@ -2762,7 +2846,10 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn test_parse_env_from_env_var() {
-        std::env::set_var("TEST_PARSE_ENV_VAR", "resolved_value");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var("TEST_PARSE_ENV_VAR", "resolved_value");
+        }
         let result = parse_envs("TEST_PARSE_ENV_VAR").unwrap();
         assert_eq!(
             result,
@@ -2771,7 +2858,10 @@ mod tests {
                 OsString::from("resolved_value")
             )]
         );
-        std::env::remove_var("TEST_PARSE_ENV_VAR");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::remove_var("TEST_PARSE_ENV_VAR");
+        }
     }
 
     #[test]

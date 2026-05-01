@@ -725,7 +725,7 @@ impl ToolOutputPath {
     }
 
     /// Walk the benchmark directory (non-recursive)
-    pub fn walk_dir(&self, dir: Option<&Path>) -> Result<impl Iterator<Item = DirEntry>> {
+    pub fn walk_dir(&self, dir: Option<&Path>) -> Result<impl Iterator<Item = DirEntry> + use<>> {
         let dir = if let Some(dir) = dir {
             dir
         } else if self.is_base_path() {
@@ -1577,11 +1577,13 @@ mod tests {
         )
         .unwrap();
 
-        assert!(output_path
-            .log_path_of(&PathBuf::from(
-                "/root/not/here/bench_thread_in_subprocess.two/callgrind.\
-                 bench_thread_in_subprocess.two.out"
-            ))
-            .is_none());
+        assert!(
+            output_path
+                .log_path_of(&PathBuf::from(
+                    "/root/not/here/bench_thread_in_subprocess.two/callgrind.\
+                     bench_thread_in_subprocess.two.out"
+                ))
+                .is_none()
+        );
     }
 }

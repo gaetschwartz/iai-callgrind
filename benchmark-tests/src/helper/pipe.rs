@@ -2,7 +2,7 @@
 //!
 //! Reads all content from stdin until EOF, then prints a header followed by the content.
 
-use std::io::{stdin, stdout, Read, Write};
+use std::io::{Read, Write, stdin, stdout};
 
 fn main() {
     let mut stdin = stdin().lock();

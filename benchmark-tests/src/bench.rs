@@ -2,7 +2,7 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 use std::fs::File;
-use std::io::{stderr, stdout, BufRead, Read, Write as IOWrite};
+use std::io::{BufRead, Read, Write as IOWrite, stderr, stdout};
 use std::os::unix::process::ExitStatusExt;
 use std::panic::{self, AssertUnwindSafe};
 use std::path::{Path, PathBuf};
@@ -20,7 +20,7 @@ use regex::{Captures, Regex};
 use rustc_version::{Channel, VersionMeta};
 use serde::{Deserialize, Serialize};
 use simplematch::DoWild;
-use tempfile::{tempdir, TempDir};
+use tempfile::{TempDir, tempdir};
 use valico::json_schema;
 use valico::json_schema::schema::ScopedSchema;
 
@@ -328,10 +328,12 @@ impl Benchmark {
         teardown: Option<&str>,
     ) -> BenchmarkOutput {
         let stdio = if capture {
-            std::env::set_var("GUNGRAUN_COLOR", "never");
+            // SAFETY: Benchmarks are run serially
+            unsafe { std::env::set_var("GUNGRAUN_COLOR", "never") };
             Stdio::piped
         } else {
-            std::env::set_var("GUNGRAUN_COLOR", "auto");
+            // SAFETY: Benchmarks are run serially
+            unsafe { std::env::set_var("GUNGRAUN_COLOR", "auto") };
             Stdio::inherit
         };
 
@@ -990,13 +992,17 @@ impl BenchmarkRunner {
     pub fn run(&self) -> Result<(), String> {
         // We need the `summary.json` files to verify that not all costs are zero. Extracting this
         // info from the summary is much easier than doing it from the output.
-        std::env::set_var("GUNGRAUN_SAVE_SUMMARY", "json");
-        std::env::set_var(
-            "GUNGRAUN_RUNNER",
-            self.metadata
-                .target_directory
-                .join("release/gungraun-runner"),
-        );
+        // SAFETY: Benchmarks are run serially
+        unsafe { std::env::set_var("GUNGRAUN_SAVE_SUMMARY", "json") };
+        // SAFETY: Benchmarks are run serially
+        unsafe {
+            std::env::set_var(
+                "GUNGRAUN_RUNNER",
+                self.metadata
+                    .target_directory
+                    .join("release/gungraun-runner"),
+            )
+        };
 
         let schema: serde_json::Value = serde_json::from_reader(
             File::open(

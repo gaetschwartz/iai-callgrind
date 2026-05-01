@@ -281,7 +281,7 @@ impl Serialize for Mode {
 #[cfg(test)]
 mod tests {
     use rstest::rstest;
-    use serde_test::{assert_tokens, Token};
+    use serde_test::{Token, assert_tokens};
 
     use super::*;
 

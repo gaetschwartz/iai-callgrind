@@ -94,8 +94,6 @@ file:
         "rust-analyzer.rustfmt.overrideCommand": [
             "rustfmt",
             "+nightly",
-            "--edition",
-            "2021",
             "--emit",
             "stdout"
         ]
@@ -127,8 +125,6 @@ same:
         overrideCommand = {
             "rustfmt",
             "+nightly",
-            "--edition",
-            "2021",
             "--emit",
             "stdout",
         },

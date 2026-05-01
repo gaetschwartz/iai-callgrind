@@ -1,7 +1,7 @@
+use ValgrindTool::*;
 use gungraun::ValgrindTool;
 use rstest::rstest;
 use tempfile::tempdir;
-use ValgrindTool::*;
 
 use crate::util::fixtures::tool_output_path_f;
 

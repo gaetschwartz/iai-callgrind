@@ -3,11 +3,11 @@
 use std::collections::HashMap;
 use std::ffi::OsString;
 use std::path::Path;
-use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 use std::time::Duration;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 
 use super::super::common::Assistant;
 use super::args::ToolArgs;
@@ -22,7 +22,7 @@ use crate::runner::format::OutputFormat;
 use crate::runner::meta::Metadata;
 use crate::runner::summary::BenchmarkSummary;
 use crate::runner::tasks::ProcessHandler;
-use crate::runner::{cachegrind, callgrind, DEFAULT_TOGGLE};
+use crate::runner::{DEFAULT_TOGGLE, cachegrind, callgrind};
 
 /// The tool specific flamegraph configuration
 #[derive(Debug, Clone, PartialEq)]

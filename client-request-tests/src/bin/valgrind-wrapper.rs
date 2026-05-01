@@ -1,7 +1,7 @@
 // spell-checker: ignore redir
 use std::borrow::Cow;
 use std::fmt::Display;
-use std::io::{stderr, BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader, Write, stderr};
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::process::Command;

@@ -108,9 +108,9 @@ use std::time::Duration;
 #[cfg(feature = "runner")]
 use anyhow::anyhow;
 #[cfg(feature = "runner")]
-use indexmap::indexset;
-#[cfg(feature = "runner")]
 use indexmap::IndexSet;
+#[cfg(feature = "runner")]
+use indexmap::indexset;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

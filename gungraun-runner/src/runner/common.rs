@@ -10,15 +10,15 @@ use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fmt::Display;
 use std::fs::File;
-use std::io::{stderr, stdout, Seek, Write};
+use std::io::{Seek, Write, stderr, stdout};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio as StdStdio};
-use std::sync::{atomic, Arc};
+use std::sync::{Arc, atomic};
 use std::time::{Duration, Instant};
 
-use anyhow::{anyhow, Context, Result};
-use log::{debug, log_enabled, warn, Level};
-use tempfile::{tempfile, TempDir};
+use anyhow::{Context, Result, anyhow};
+use log::{Level, debug, log_enabled, warn};
+use tempfile::{TempDir, tempfile};
 
 use super::format::{OutputFormatKind, SummaryFormatter};
 use super::meta::Metadata;
@@ -1655,7 +1655,7 @@ impl BenchmarkDataProcessor for SaveBaselineDataProcessor {
             .and_then(|()| self.sanitize())
             .and_then(|()| self.parse(benchmark_summary, config, header, Some(parsed_old)))
             .and_then(|()| self.copy_temp()) // for the flamegraphs which are created in the
-                                             // temporary directory
+        // temporary directory
     }
 
     fn has_benchmarks(&self) -> bool {

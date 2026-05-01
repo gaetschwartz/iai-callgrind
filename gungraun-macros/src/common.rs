@@ -6,14 +6,14 @@ use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::vec::Vec;
 
-use proc_macro2::{Span, TokenStream};
 use proc_macro_error2::{abort, emit_error};
-use quote::{format_ident, quote, quote_spanned, ToTokens, TokenStreamExt};
+use proc_macro2::{Span, TokenStream};
+use quote::{ToTokens, TokenStreamExt, format_ident, quote, quote_spanned};
 use syn::parse::Parse;
 use syn::spanned::Spanned;
 use syn::{
-    parse2, parse_quote_spanned, Expr, ExprArray, ExprPath, GenericParam, Generics, Ident, LitStr,
-    MetaList, MetaNameValue, Pat, Token,
+    Expr, ExprArray, ExprPath, GenericParam, Generics, Ident, LitStr, MetaList, MetaNameValue, Pat,
+    Token, parse_quote_spanned, parse2,
 };
 
 use crate::CargoMetadata;

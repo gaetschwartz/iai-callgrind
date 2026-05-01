@@ -79,8 +79,8 @@ pub mod MempoolFlags {
 use std::ffi::CStr;
 
 use super::{
-    bindings, fatal_error, valgrind_do_client_request_expr, valgrind_do_client_request_stmt, RawFd,
-    StackId, ThreadId,
+    RawFd, StackId, ThreadId, bindings, fatal_error, valgrind_do_client_request_expr,
+    valgrind_do_client_request_stmt,
 };
 
 /// Returns the number of Valgrinds this code is running under

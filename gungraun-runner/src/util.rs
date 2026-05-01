@@ -8,10 +8,10 @@ use std::ops::Neg;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use either_or_both::EitherOrBoth;
 use indexmap::IndexMap;
-use log::{debug, log_enabled, trace, Level};
+use log::{Level, debug, log_enabled, trace};
 use which::{which, which_in};
 
 use crate::error::Error;

@@ -14,13 +14,13 @@ use std::fmt::Debug;
 use std::io::ErrorKind::WouldBlock;
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr, TcpStream, UdpSocket};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::{self, RecvTimeoutError};
-use std::sync::Arc;
 use std::time::Duration;
 use std::{panic, thread};
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use log::{debug, warn};
 
 use super::format::{BinaryBenchmarkHeader, OutputFormat};

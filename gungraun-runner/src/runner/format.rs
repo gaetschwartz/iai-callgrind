@@ -9,7 +9,7 @@ use std::time::Duration;
 
 use colored::{Color, ColoredString, Colorize};
 use either_or_both::EitherOrBoth;
-use indexmap::{indexset, IndexSet};
+use indexmap::{IndexSet, indexset};
 
 use super::args::NoCapture;
 use super::bin_bench::BinBench;

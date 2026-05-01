@@ -1,8 +1,8 @@
 //! A hashmap parser for callgrind output files
 
 use std::cmp::Ordering;
-use std::collections::hash_map::Iter;
 use std::collections::HashMap;
+use std::collections::hash_map::Iter;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -13,7 +13,7 @@ use log::trace;
 use serde::{Deserialize, Serialize};
 
 use super::model::Metrics;
-use super::parser::{parse_header, CallgrindParser, CallgrindProperties, Sentinel};
+use super::parser::{CallgrindParser, CallgrindProperties, Sentinel, parse_header};
 use crate::error::Error;
 
 /// The possible paths found in the output file

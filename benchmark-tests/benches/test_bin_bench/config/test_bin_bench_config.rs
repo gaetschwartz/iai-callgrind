@@ -1,7 +1,7 @@
 use std::process::Command;
 
-use gungraun::prelude::*;
 use gungraun::Dhat;
+use gungraun::prelude::*;
 
 fn check_args() -> Vec<String> {
     let mut default_args = vec![

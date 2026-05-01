@@ -2,15 +2,15 @@ use std::fmt::Display;
 use std::ops::Deref;
 
 use derive_more::{Deref as DerefDerive, DerefMut as DerefMutDerive};
-use proc_macro2::TokenStream;
 use proc_macro_error2::abort;
-use quote::{format_ident, quote, ToTokens, TokenStreamExt};
+use proc_macro2::TokenStream;
+use quote::{ToTokens, TokenStreamExt, format_ident, quote};
 use syn::parse::Parse;
 use syn::punctuated::Punctuated;
-use syn::{parse2, parse_quote, Attribute, Expr, Generics, Ident, ItemFn, MetaNameValue, Token};
+use syn::{Attribute, Expr, Generics, Ident, ItemFn, MetaNameValue, Token, parse_quote, parse2};
 
-use crate::common::{self, format_ident, truncate_str_utf8, BenchesArgs, BenchesConsts, File};
-use crate::{defaults, CargoMetadata};
+use crate::common::{self, BenchesArgs, BenchesConsts, File, format_ident, truncate_str_utf8};
+use crate::{CargoMetadata, defaults};
 
 #[derive(Debug)]
 enum BenchMode {
@@ -170,30 +170,31 @@ impl Bench {
         let mut setup = Setup::default();
         let mut teardown = Teardown::default();
 
-        if let Ok(pairs) =
-            meta.parse_args_with(Punctuated::<MetaNameValue, Token![,]>::parse_terminated)
-        {
-            for pair in pairs {
-                if pair.path.is_ident("args") {
-                    args.parse_pair(&pair)?;
-                } else if pair.path.is_ident("consts") {
-                    consts.parse_pair(&pair)?;
-                } else if pair.path.is_ident("config") {
-                    config.parse_pair(&pair);
-                } else if pair.path.is_ident("setup") {
-                    setup.parse_pair(&pair);
-                } else if pair.path.is_ident("teardown") {
-                    teardown.parse_pair(&pair);
-                } else {
-                    abort!(
-                        pair, "Invalid parameter: {}", pair.path.require_ident()?;
-                        help = "Valid parameters are: `args`, `consts`, `config`, `setup`, \
-                        `teardown`"
-                    );
+        match meta.parse_args_with(Punctuated::<MetaNameValue, Token![,]>::parse_terminated) {
+            Ok(pairs) => {
+                for pair in pairs {
+                    if pair.path.is_ident("args") {
+                        args.parse_pair(&pair)?;
+                    } else if pair.path.is_ident("consts") {
+                        consts.parse_pair(&pair)?;
+                    } else if pair.path.is_ident("config") {
+                        config.parse_pair(&pair);
+                    } else if pair.path.is_ident("setup") {
+                        setup.parse_pair(&pair);
+                    } else if pair.path.is_ident("teardown") {
+                        teardown.parse_pair(&pair);
+                    } else {
+                        abort!(
+                            pair, "Invalid parameter: {}", pair.path.require_ident()?;
+                            help = "Valid parameters are: `args`, `consts`, `config`, `setup`, \
+                            `teardown`"
+                        );
+                    }
                 }
             }
-        } else {
-            args.parse_meta_list(meta)?;
+            _ => {
+                args.parse_meta_list(meta)?;
+            }
         }
 
         setup.update(other_setup);
@@ -234,34 +235,35 @@ impl Bench {
         let mut iter = common::Iter::default();
         let mut consts = BenchesConsts::new(expected_num_consts);
 
-        if let Ok(pairs) =
-            meta.parse_args_with(Punctuated::<MetaNameValue, Token![,]>::parse_terminated)
-        {
-            for pair in pairs {
-                if pair.path.is_ident("args") {
-                    args.parse_pair(&pair)?;
-                } else if pair.path.is_ident("consts") {
-                    consts.parse_pair(&pair)?;
-                } else if pair.path.is_ident("config") {
-                    config.parse_pair(&pair);
-                } else if pair.path.is_ident("setup") {
-                    setup.parse_pair(&pair);
-                } else if pair.path.is_ident("teardown") {
-                    teardown.parse_pair(&pair);
-                } else if pair.path.is_ident("file") {
-                    file.parse_pair(&pair)?;
-                } else if pair.path.is_ident("iter") {
-                    iter.parse_pair(&pair);
-                } else {
-                    abort!(
-                        pair, "Invalid parameter: {}", pair.path.require_ident()?;
-                        help = "Valid parameters are: `args`, `consts`, `file`, `iter`, `config`, \
-                        `setup`, `teardown`"
-                    );
+        match meta.parse_args_with(Punctuated::<MetaNameValue, Token![,]>::parse_terminated) {
+            Ok(pairs) => {
+                for pair in pairs {
+                    if pair.path.is_ident("args") {
+                        args.parse_pair(&pair)?;
+                    } else if pair.path.is_ident("consts") {
+                        consts.parse_pair(&pair)?;
+                    } else if pair.path.is_ident("config") {
+                        config.parse_pair(&pair);
+                    } else if pair.path.is_ident("setup") {
+                        setup.parse_pair(&pair);
+                    } else if pair.path.is_ident("teardown") {
+                        teardown.parse_pair(&pair);
+                    } else if pair.path.is_ident("file") {
+                        file.parse_pair(&pair)?;
+                    } else if pair.path.is_ident("iter") {
+                        iter.parse_pair(&pair);
+                    } else {
+                        abort!(
+                            pair, "Invalid parameter: {}", pair.path.require_ident()?;
+                            help = "Valid parameters are: `args`, `consts`, `file`, `iter`, `config`, \
+                            `setup`, `teardown`"
+                        );
+                    }
                 }
             }
-        } else {
-            args = BenchesArgs::from_meta_list(meta, expected_num_args)?;
+            _ => {
+                args = BenchesArgs::from_meta_list(meta, expected_num_args)?;
+            }
         }
 
         setup.update(other_setup);
