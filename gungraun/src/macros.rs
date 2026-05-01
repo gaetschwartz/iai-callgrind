@@ -270,7 +270,9 @@ macro_rules! main {
             )+
 
             let groups = groups_builder.build()?;
-            let encoded = $crate::bincode::serialize(&groups).expect("Encoded benchmark");
+            let encoded = $crate::bincode::serde::encode_to_vec(
+                &groups, $crate::bincode::config::legacy()
+            ).expect("Encoded benchmark");
             runner.exec(encoded)
         }
 
@@ -476,8 +478,9 @@ macro_rules! main {
                 );
             )+
 
-            let encoded = $crate::bincode::serialize(&groups_builder.build())
-                .expect("Encoded benchmark");
+            let encoded = $crate::bincode::serde::encode_to_vec(
+                groups_builder.build(), $crate::bincode::config::legacy()
+            ).expect("Encoded benchmark");
 
             if let Err(errors) = runner.exec(encoded) {
                 eprintln!("{errors}");

@@ -328,7 +328,7 @@ pub fn get_runner_version() -> Version {
     meta.packages
         .iter()
         .find_map(|p| {
-            p.name.eq("gungraun-runner").then_some(Version {
+            p.name.as_str().eq("gungraun-runner").then_some(Version {
                 major: p.version.major,
                 minor: p.version.minor,
                 patch: p.version.patch,

@@ -24,10 +24,10 @@ version = "0.18.2"
 [workspace.dependencies]
 anyhow = { version = "1.0.46" }
 assert_cmd = { version = "2.0" }
-bincode = { version = "1" }
+bincode = { version = "2", features = ["serde"] }
 bindgen = { version = ">=0.69, <0.73" }
 bon = { version = "3" }
-cargo_metadata = { version = "0.19" }
+cargo_metadata = { version = "0.20" }
 cc = { version = "1.0.100" }
 cfg-if = { version = "1" }
 clap = { version = "4.0.12", features = ["derive", "env"] }

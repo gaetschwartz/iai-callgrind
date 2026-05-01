@@ -112,7 +112,7 @@ impl Metadata {
         let package = meta
             .packages
             .iter()
-            .find(|p| p.name == package_name)
+            .find(|p| p.name.as_str() == package_name)
             .expect("The package name should exist");
         let bench_name = package
             .targets

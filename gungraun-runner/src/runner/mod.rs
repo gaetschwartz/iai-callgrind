@@ -35,7 +35,7 @@ pub mod tool;
 
 use std::env::ArgsOs;
 use std::ffi::OsString;
-use std::io::{Read, stdin};
+use std::io::{BufReader, stdin};
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -233,24 +233,14 @@ where
 ///
 /// gungraun uses elements from the [`crate::api`], so the runner can understand which elements
 /// can be received by this method
-pub fn receive_benchmark<T>(num_bytes: usize) -> Result<T>
+///
+/// With bincode update to 2 the length checked was dropped and `_num_bytes` is ignored.
+pub fn receive_benchmark<T>(_num_bytes: usize) -> Result<T>
 where
     T: serde::de::DeserializeOwned,
 {
-    let mut encoded = vec![];
-    let mut stdin = stdin();
-    stdin
-        .read_to_end(&mut encoded)
-        .with_context(|| "Failed to read encoded configuration")?;
-    assert_eq!(
-        encoded.len(),
-        num_bytes,
-        "Bytes mismatch when decoding configuration: Expected {num_bytes} bytes but received: {} \
-         bytes",
-        encoded.len()
-    );
-
-    bincode::deserialize(&encoded).with_context(|| "Failed to decode configuration")
+    bincode::serde::decode_from_reader(BufReader::new(stdin().lock()), bincode::config::legacy())
+        .with_context(|| "Failed to decode configuration")
 }
 
 /// Run this benchmark
