@@ -316,7 +316,7 @@ impl Benchmark {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     pub fn run_bench(
         &self,
         cargo_args: &[String],
@@ -423,7 +423,7 @@ impl Benchmark {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     pub fn run_template(
         &self,
         template_path: &Path,
