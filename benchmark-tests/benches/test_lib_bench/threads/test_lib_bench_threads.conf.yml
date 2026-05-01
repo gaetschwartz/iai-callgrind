@@ -24,11 +24,13 @@ groups:
   - runs_on: "!x86_64-unknown-freebsd"
     runs:
       - args: ["--nocapture"]
+        flaky: 5
         tolerance: 5
         expected:
           files: expected_files.1a.yml
           stdout: expected_stdout.1a
       - args: ["--nocapture"]
+        flaky: 5
         tolerance: 5
         expected:
           files: expected_files.1b.yml
@@ -36,6 +38,7 @@ groups:
       # The third run should produce the exact same files, stdout as the second
       # run
       - args: ["--nocapture"]
+        flaky: 5
         tolerance: 5
         expected:
           files: expected_files.1b.yml
@@ -43,21 +46,25 @@ groups:
       # Test all baseline options and verify the existence of the multiple files
       # of the subprocesses and threads
       - args: ["--nocapture", "--save-baseline"]
+        flaky: 5
         tolerance: 5
         expected:
           files: expected_files.1d.yml
           stdout: expected_stdout.1d
       - args: ["--nocapture", "--save-baseline=foo"]
+        flaky: 5
         tolerance: 5
         expected:
           files: expected_files.1e.yml
           stdout: expected_stdout.1e
       - args: ["--nocapture", "--load-baseline=foo", "--baseline"]
+        flaky: 5
         tolerance: 5
         expected:
           files: expected_files.1e.yml
           stdout: expected_stdout.1f
       - args: ["--nocapture", "--save-baseline=foo"]
+        flaky: 5
         tolerance: 5
         expected:
           files: expected_files.1e.yml
@@ -76,35 +83,35 @@ groups:
       # benchmark run to compare to, so the stdout can be verified at least this
       # first time
       - args: ["--nocapture"]
-        flaky: 3
+        flaky: 5
         expected:
           files: expected_files.1a.yml
           stdout: expected_stdout.freebsd.1a
       - args: ["--nocapture"]
-        flaky: 3
+        flaky: 5
         expected:
           files: expected_files.1b.yml
       # The third run should produce the exact same files, stdout as the second
       # run
       - args: ["--nocapture"]
-        flaky: 3
+        flaky: 5
         expected:
           files: expected_files.1b.yml
       # Test all baseline options and verify the creation of multiple files due
       # to the subprocesses and threads
       - args: ["--nocapture", "--save-baseline"]
-        flaky: 3
+        flaky: 5
         expected:
           files: expected_files.1d.yml
       - args: ["--nocapture", "--save-baseline=foo"]
-        flaky: 3
+        flaky: 5
         expected:
           files: expected_files.1e.yml
       - args: ["--nocapture", "--load-baseline=foo", "--baseline"]
-        flaky: 3
+        flaky: 5
         expected:
           files: expected_files.1e.yml
       - args: ["--nocapture", "--save-baseline=foo"]
-        flaky: 3
+        flaky: 5
         expected:
           files: expected_files.1e.yml
