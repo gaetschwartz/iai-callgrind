@@ -1,34 +1,33 @@
 //! The module containing the basic elements for parsing log files
 
 use std::path::Path;
+use std::sync::LazyLock;
 
 use anyhow::{Context, Result};
-use lazy_static::lazy_static;
 use regex::Regex;
 
 use super::parser::Header;
 use crate::error::Error;
 
 // The different regex have to consider --time-stamp=yes which adds a timestamp into the prefix
-lazy_static! {
-    /// Regex to extract `key: value` based lines
-    pub static ref EXTRACT_FIELDS_RE: Regex = regex::Regex::new(
-        r"^\s*(==|--)([0-9:.]+\s+)?[0-9]+(==|--)\s*(?<key>.*?)\s*:\s*(?<value>.*)\s*$"
-    )
-    .expect("Regex should compile");
-    /// The regex matching an empty line which contains just the prefix
-    pub static ref EMPTY_LINE_RE: Regex =
-        regex::Regex::new(r"^\s*(==|--)([0-9:.]+\s+)?[0-9]+(==|--)\s*$")
-            .expect("Regex should compile");
-    /// A regex to strip the prefix
-    pub static ref STRIP_PREFIX_RE: Regex =
-        regex::Regex::new(r"^\s*(==|--)([0-9:.]+\s+)?[0-9]+(==|--) (?<rest>.*)$")
-            .expect("Regex should compile");
-    /// Regex to extract the pid from the prefix
-    static ref EXTRACT_PID_RE: Regex =
-        regex::Regex::new(r"^\s*(==|--)([0-9:.]+\s+)?(?<pid>[0-9]+)(==|--).*")
-            .expect("Regex should compile");
-}
+/// Regex to extract `key: value` based lines
+pub static EXTRACT_FIELDS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^\s*(==|--)([0-9:.]+\s+)?[0-9]+(==|--)\s*(?<key>.*?)\s*:\s*(?<value>.*)\s*$")
+        .expect("Regex should compile")
+});
+/// The regex matching an empty line which contains just the prefix
+pub static EMPTY_LINE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^\s*(==|--)([0-9:.]+\s+)?[0-9]+(==|--)\s*$").expect("Regex should compile")
+});
+/// A regex to strip the prefix
+pub static STRIP_PREFIX_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^\s*(==|--)([0-9:.]+\s+)?[0-9]+(==|--) (?<rest>.*)$")
+        .expect("Regex should compile")
+});
+/// Regex to extract the pid from the prefix
+static EXTRACT_PID_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^\s*(==|--)([0-9:.]+\s+)?(?<pid>[0-9]+)(==|--).*").expect("Regex should compile")
+});
 
 /// Utility function to extract the pid from a `line` of a logfile
 pub fn extract_pid(line: &str) -> Result<i32> {

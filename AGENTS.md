@@ -38,7 +38,7 @@ Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
 
 ### General
 
-- **Rust Edition:** 2021
+- **Rust Edition:** 2024
 - **Line Length:** 100 characters for comments (enforced by rustfmt).
 - **Newlines:** Unix style (`\n`).
 

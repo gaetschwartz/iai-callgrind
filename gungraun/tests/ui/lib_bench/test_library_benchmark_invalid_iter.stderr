@@ -96,6 +96,10 @@ note: required by a bound in `Option::<T>::map`
    |     where
    |         F: FnOnce(T) -> U,
    |            ^^^^^^^^^^^^^^ required by this bound in `Option::<T>::map`
+help: consider wrapping the function in a closure
+   |
+75 |     #[benches::some(iter = 1..=2, setup = |arg0| setup(/* String */))]
+   |                                           ++++++      ++++++++++++++
 
 error[E0308]: mismatched types
   --> tests/ui/lib_bench/test_library_benchmark_invalid_iter.rs:89:46

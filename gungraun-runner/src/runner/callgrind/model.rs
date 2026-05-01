@@ -4,8 +4,8 @@ use std::borrow::Cow;
 use std::hash::Hash;
 use std::str::FromStr;
 
-use anyhow::{anyhow, Result};
-use indexmap::{indexmap, IndexMap};
+use anyhow::{Result, anyhow};
+use indexmap::{IndexMap, indexmap};
 use serde::{Deserialize, Serialize};
 
 use super::CacheSummary;

@@ -3,7 +3,7 @@
 //! Prints all provided arguments to stdout joined by spaces, followed by a newline.
 
 use std::ffi::OsString;
-use std::io::{stdout, BufWriter, Write};
+use std::io::{BufWriter, Write, stdout};
 use std::os::unix::ffi::OsStrExt;
 
 fn main() {

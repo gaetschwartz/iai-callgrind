@@ -292,7 +292,7 @@ pub fn clean_memory(start: *const (), len: usize) {
 /// values >= 0 indicate success (the block was found), and the value -1 indicates block not found,
 /// and -2 is returned when not running on Helgrind.
 #[inline(always)]
-#[allow(clippy::cast_possible_wrap)]
+#[expect(clippy::cast_possible_wrap)]
 pub fn clean_memory_heapblock(blockstart: *const ()) -> isize {
     do_client_request!(
         "helgrind::clean_memory_heapblock",
@@ -364,7 +364,7 @@ pub fn enable_checking(start: *const (), len: usize) {
 /// provide a non null ptr as second argument, pointing to an array of unsigned char of length len.
 /// Addressable bytes are indicated with 0xff. Non-addressable bytes are indicated with 0x00.
 #[inline(always)]
-#[allow(clippy::cast_possible_wrap)]
+#[expect(clippy::cast_possible_wrap)]
 pub fn get_abits(addr: *const (), abits: *mut u8, len: usize) -> isize {
     do_client_request!(
         "helgrind::get_abits",

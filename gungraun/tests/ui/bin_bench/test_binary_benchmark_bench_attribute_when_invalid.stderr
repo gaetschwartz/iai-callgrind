@@ -76,9 +76,9 @@ error[E0277]: the trait bound `InternalBinaryBenchmarkConfig: From<&str>` is not
   |     ^^^^^^^^^^^^^^^^^^^ the trait `From<&str>` is not implemented for `InternalBinaryBenchmarkConfig`
   |
   = help: the following other types implement trait `From<T>`:
-            <InternalBinaryBenchmarkConfig as From<BinaryBenchmarkConfig>>
-            <InternalBinaryBenchmarkConfig as From<&BinaryBenchmarkConfig>>
-            <InternalBinaryBenchmarkConfig as From<&mut BinaryBenchmarkConfig>>
+            `InternalBinaryBenchmarkConfig` implements `From<&BinaryBenchmarkConfig>`
+            `InternalBinaryBenchmarkConfig` implements `From<&mut BinaryBenchmarkConfig>`
+            `InternalBinaryBenchmarkConfig` implements `From<BinaryBenchmarkConfig>`
   = note: required for `&str` to implement `Into<InternalBinaryBenchmarkConfig>`
   = note: this error originates in the attribute macro `binary_benchmark` (in Nightly builds, run with -Z macro-backtrace for more info)
 

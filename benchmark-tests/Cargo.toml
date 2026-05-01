@@ -28,7 +28,6 @@ fs_extra = { workspace = true }
 glob = { workspace = true }
 gungraun = { path = "../gungraun", features = ["client_requests"] }
 gungraun-runner = { path = "../gungraun-runner" }
-lazy_static = { workspace = true }
 minijinja = { workspace = true }
 once_cell = { workspace = true }
 pretty_assertions = { workspace = true }
@@ -46,7 +45,6 @@ version-compare = { workspace = true }
 [dev-dependencies]
 bon = { workspace = true }
 glob = { workspace = true }
-lazy_static = { workspace = true }
 rstest = { workspace = true }
 
 [[bin]]

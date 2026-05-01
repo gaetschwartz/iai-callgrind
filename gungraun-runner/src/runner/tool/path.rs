@@ -6,10 +6,9 @@ use std::fs::{DirEntry, File};
 use std::io::{BufRead, BufReader, Write};
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use anyhow::{Context, Result};
-use lazy_static::lazy_static;
 use log::{debug, log_enabled};
 use regex::Regex;
 use tempfile::{Builder, TempDir};
@@ -20,47 +19,47 @@ use crate::runner::common::ModulePath;
 use crate::runner::summary::{BaselineKind, BaselineName};
 use crate::util::truncate_str_utf8;
 
-lazy_static! {
-    // This regex matches the original file name without the prefix as it is created by callgrind.
-    // The baseline <name> (base@<name>) can only consist of ascii and underscore characters.
-    // Flamegraph files are ignored by this regex
-    //
-    // Note callgrind doesn't support xtree, xleak files
-    static ref CALLGRIND_ORIG_FILENAME_RE: Regex = Regex::new(
-        concat!(
-            "^(?<type>[.](out|log))(?<base>[.](old|base@[^.-]+))?",
-            "(?<pid>[.][#][0-9]+)?(?<part>[.][0-9]+)?(?<thread>-[0-9]+)?$"
-        )
-    )
-    .expect("Regex should compile");
+// This regex matches the original file name without the prefix as it is created by callgrind.
+// The baseline <name> (base@<name>) can only consist of ascii and underscore characters.
+// Flamegraph files are ignored by this regex
+//
+// Note callgrind doesn't support xtree, xleak files
+static CALLGRIND_ORIG_FILENAME_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(concat!(
+        "^(?<type>[.](out|log))(?<base>[.](old|base@[^.-]+))?",
+        "(?<pid>[.][#][0-9]+)?(?<part>[.][0-9]+)?(?<thread>-[0-9]+)?$"
+    ))
+    .expect("Regex should compile")
+});
 
-    /// This regex matches the original file name without the prefix as it is created by bbv
-    ///
-    /// Note bbv doesn't support xtree, xleak files
-    static ref BBV_ORIG_FILENAME_RE: Regex = Regex::new(
-        concat!(
-            "^(?<type>[.](?:out|log))(?<base>[.](old|base@[^.]+))?",
-            "(?<bbv_type>[.](?:bb|pc))?(?<pid>[.][#][0-9]+)?(?<thread>[.][0-9]+)?$"
-        )
-    )
-    .expect("Regex should compile");
+/// This regex matches the original file name without the prefix as it is created by bbv
+///
+/// Note bbv doesn't support xtree, xleak files
+static BBV_ORIG_FILENAME_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(concat!(
+        "^(?<type>[.](?:out|log))(?<base>[.](old|base@[^.]+))?",
+        "(?<bbv_type>[.](?:bb|pc))?(?<pid>[.][#][0-9]+)?(?<thread>[.][0-9]+)?$"
+    ))
+    .expect("Regex should compile")
+});
 
-    /// This regex matches the original file name without the prefix as it is created by all tools
-    /// other than callgrind and bbv.
-    static ref GENERIC_ORIG_FILENAME_RE: Regex = Regex::new(
-        "^(?<type>[.](?:out|log|xtree|xleak))(?<base>[.](old|base@[^.]+))?(?<pid>[.][#][0-9]+)?$"
+/// This regex matches the original file name without the prefix as it is created by all tools
+/// other than callgrind and bbv.
+static GENERIC_ORIG_FILENAME_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        "^(?<type>[.](?:out|log|xtree|xleak))(?<base>[.](old|base@[^.]+))?(?<pid>[.][#][0-9]+)?$",
     )
-    .expect("Regex should compile");
+    .expect("Regex should compile")
+});
 
-    static ref REAL_FILENAME_RE: Regex = Regex::new(
-        concat!(
-            "^(?:[.](?<pid>[0-9]+))?(?:[.]t(?<tid>[0-9]+))?(?:[.]p(?<part>[0-9]+))?",
-            "(?:[.](?<bbv>bb|pc))?(?:[.](?<type>out|log|xtree|xleak))",
-            "(?:[.](?<base>old|base@[^.]+))?$"
-        )
-    )
-    .expect("Regex should compile");
-}
+static REAL_FILENAME_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(concat!(
+        "^(?:[.](?<pid>[0-9]+))?(?:[.]t(?<tid>[0-9]+))?(?:[.]p(?<part>[0-9]+))?",
+        "(?:[.](?<bbv>bb|pc))?(?:[.](?<type>out|log|xtree|xleak))",
+        "(?:[.](?<base>old|base@[^.]+))?$"
+    ))
+    .expect("Regex should compile")
+});
 
 /// The different output path kinds
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -726,7 +725,7 @@ impl ToolOutputPath {
     }
 
     /// Walk the benchmark directory (non-recursive)
-    pub fn walk_dir(&self, dir: Option<&Path>) -> Result<impl Iterator<Item = DirEntry>> {
+    pub fn walk_dir(&self, dir: Option<&Path>) -> Result<impl Iterator<Item = DirEntry> + use<>> {
         let dir = if let Some(dir) = dir {
             dir
         } else if self.is_base_path() {
@@ -752,7 +751,6 @@ impl ToolOutputPath {
     /// Returns the `real` paths of a tool's output files.
     ///
     /// A tool can have many output files so [`Self::to_path`] is not enough
-    #[allow(clippy::case_sensitive_file_extension_comparisons)]
     pub fn real_paths(&self) -> Result<Vec<PathBuf>> {
         let dir = if self.is_base_path() {
             &self.dir
@@ -765,7 +763,7 @@ impl ToolOutputPath {
     /// Returns the `real` paths of a tool's output files.
     ///
     /// A tool can have many output files so [`Self::to_path`] is not enough
-    #[allow(clippy::case_sensitive_file_extension_comparisons)]
+    #[expect(clippy::case_sensitive_file_extension_comparisons)]
     pub fn real_paths_in(&self, dir: &Path) -> Result<Vec<PathBuf>> {
         let mut paths = vec![];
         for entry in self.walk_dir(Some(dir))? {
@@ -858,7 +856,7 @@ impl ToolOutputPath {
     /// `callgrind`. The header is around 10-20 lines, so this method should be still sufficiently
     /// fast. Additionally, `callgrind` might change the naming scheme of its files, so using the
     /// headers makes us more independent of a specific valgrind/callgrind version.
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::too_many_lines)]
     pub fn sanitize_callgrind(&self) -> Result<()> {
         // path, part
         type Grouped = (PathBuf, Option<u64>);
@@ -1092,8 +1090,7 @@ impl ToolOutputPath {
     ///
     /// `exp-bbv.bench_thread_in_subprocess.548365.bb.out.2` ->
     /// `exp-bbv.bench_thread_in_subprocess.548365.t2.bb.out`
-    #[allow(clippy::case_sensitive_file_extension_comparisons)]
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::too_many_lines)]
     pub fn sanitize_bbv(&self) -> Result<()> {
         // path, thread,
         type Grouped = (PathBuf, String);
@@ -1580,11 +1577,13 @@ mod tests {
         )
         .unwrap();
 
-        assert!(output_path
-            .log_path_of(&PathBuf::from(
-                "/root/not/here/bench_thread_in_subprocess.two/callgrind.\
-                 bench_thread_in_subprocess.two.out"
-            ))
-            .is_none());
+        assert!(
+            output_path
+                .log_path_of(&PathBuf::from(
+                    "/root/not/here/bench_thread_in_subprocess.two/callgrind.\
+                     bench_thread_in_subprocess.two.out"
+                ))
+                .is_none()
+        );
     }
 }

@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 
 use gungraun::prelude::*;
-use gungraun::{__internal, binary_benchmark_attribute, Bench, BenchmarkId};
+use gungraun::{__internal, Bench, BenchmarkId, binary_benchmark_attribute};
 
 static CURRENT: Mutex<String> = Mutex::new(String::new());
 
@@ -122,7 +122,6 @@ fn test_with_setup_and_teardown() {
 #[test]
 // To make the accesses to CURRENT safe we run this test serially
 #[serial_test::serial]
-#[allow(clippy::too_many_lines)]
 fn test_with_setup_and_teardown_overwrite() {
     let benchmark = binary_benchmark_attribute!(with_setup_and_teardown_overwrite);
     assert_eq!(

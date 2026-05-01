@@ -3,7 +3,7 @@ use std::collections::BinaryHeap;
 use std::fmt::Write;
 use std::path::{Path, PathBuf};
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use log::debug;
 
 use super::hashmap_parser::{CallgrindMap, HashMapParser, SourcePath};

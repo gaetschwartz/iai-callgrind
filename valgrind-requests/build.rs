@@ -9,8 +9,8 @@ mod imp {
     use std::io::{BufRead, BufReader, Cursor};
     use std::path::PathBuf;
 
-    use bindgen::{builder, Bindings};
-    use rustc_version::{version, Version};
+    use bindgen::{Bindings, builder};
+    use rustc_version::{Version, version};
     use strum::{EnumIter, IntoEnumIterator};
 
     #[derive(Debug)]
@@ -82,7 +82,7 @@ mod imp {
         println!("cargo:rustc-cfg=client_requests_support=\"{value}\"");
     }
 
-    fn include_dirs(target: &Target) -> impl Iterator<Item = String> {
+    fn include_dirs(target: &Target) -> impl Iterator<Item = String> + use<> {
         let triple_env_key = target.triple_to_env_key();
         [
             Cow::Owned(format!(

@@ -59,7 +59,7 @@ impl GroupsBuilder {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     pub fn add_group(
         &mut self,
         group: crate::BinaryBenchmarkGroup,

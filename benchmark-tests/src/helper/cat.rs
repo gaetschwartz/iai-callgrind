@@ -8,7 +8,7 @@
 //! * `<file>` - Path to the file to read and print to stdout.
 
 use std::fs::File;
-use std::io::{copy, stdout, BufReader, BufWriter, Write};
+use std::io::{BufReader, BufWriter, Write, copy, stdout};
 
 fn main() {
     let mut args_iter = std::env::args().skip(1);

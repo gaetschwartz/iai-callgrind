@@ -1,4 +1,4 @@
-use std::io::{stderr, Write};
+use std::io::{Write, stderr};
 
 use version_compare::Cmp;
 

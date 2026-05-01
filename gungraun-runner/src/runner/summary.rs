@@ -6,7 +6,7 @@ use std::io::stdout;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use derive_more::AsRef;
 use either_or_both::EitherOrBoth;
 use glob::glob;
@@ -25,7 +25,7 @@ use crate::api::{CachegrindMetric, DhatMetric, ErrorMetric, EventKind, ValgrindT
 use crate::error::Error;
 use crate::runner::args::NoCapture;
 use crate::runner::common::{CapturedOutput, Config};
-use crate::runner::format::{print_no_capture_footer, print_regressions, Header};
+use crate::runner::format::{Header, print_no_capture_footer, print_regressions};
 use crate::util::{factor_diff, make_absolute, percentage_diff};
 
 /// The version of the summary json schema

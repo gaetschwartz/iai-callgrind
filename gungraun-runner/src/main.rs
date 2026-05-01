@@ -1,7 +1,7 @@
 //! The `gungraun-runner` binary
 use std::io::Write;
 
-use colored::{control, Colorize};
+use colored::{Colorize, control};
 use env_logger::Env;
 use gungraun_runner::error::Error;
 use gungraun_runner::runner::envs;

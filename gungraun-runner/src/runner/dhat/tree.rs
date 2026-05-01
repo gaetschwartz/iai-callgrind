@@ -3,14 +3,14 @@
 use std::cmp::Ordering;
 use std::ops::Add;
 
-use polonius_the_crab::{polonius, ForLt, PoloniusResult};
+use polonius_the_crab::{ForLt, PoloniusResult, polonius};
 use simplematch::DoWild;
 
 use super::model::{DhatData, Frame, Mode, ProgramPoint};
 use crate::api::{DhatMetric, EntryPoint};
+use crate::runner::DEFAULT_TOGGLE;
 use crate::runner::metrics::Metrics;
 use crate::runner::summary::ToolMetrics;
-use crate::runner::DEFAULT_TOGGLE;
 
 /// The [`Data`] of each [`Node`]
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
@@ -202,7 +202,7 @@ impl Data {
                 (DhatMetric::WritesBytes, self.blocks_write),
                 (
                     DhatMetric::TotalLifetimes,
-                    #[allow(clippy::cast_possible_truncation)]
+                    #[expect(clippy::cast_possible_truncation)]
                     self.total_lifetimes.map(|a| a as u64),
                 ),
                 (DhatMetric::MaximumBytes, self.maximum_bytes),
@@ -220,7 +220,7 @@ impl Data {
                 (DhatMetric::WritesBytes, self.blocks_write),
                 (
                     DhatMetric::TotalLifetimes,
-                    #[allow(clippy::cast_possible_truncation)]
+                    #[expect(clippy::cast_possible_truncation)]
                     self.total_lifetimes.map(|a| a as u64),
                 ),
                 (DhatMetric::MaximumBytes, self.maximum_bytes),

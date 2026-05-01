@@ -1,7 +1,7 @@
 use std::hint::black_box;
 
-use gungraun::prelude::*;
 use gungraun::Callgrind;
+use gungraun::prelude::*;
 
 fn fibonacci(n: u64) -> u64 {
     match n {

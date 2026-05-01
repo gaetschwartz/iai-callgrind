@@ -46,20 +46,27 @@ pub enum InternalLibFunctionKind {
     Default(fn()),
 }
 
-// This allow is fine as long as we don't compare the function pointers themselves. The allow for
-// `unknown_lints` is needed for the msrv.
-#[allow(unknown_lints)]
-#[allow(unpredictable_function_pointer_comparisons)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Eq)]
 pub enum InternalBinAssistantKind {
     Iter(fn(Option<usize>)),
     Default(fn()),
     None,
 }
 
+impl PartialEq for InternalBinAssistantKind {
+    fn eq(&self, other: &Self) -> bool {
+        matches!(
+            (self, other),
+            (Self::Iter(_), Self::Iter(_))
+                | (Self::Default(_), Self::Default(_))
+                | (Self::None, Self::None)
+        )
+    }
+}
+
 impl InternalBinAssistantKind {
     pub fn is_some(&self) -> bool {
-        *self != Self::None
+        !matches!(*self, Self::None)
     }
 }
 

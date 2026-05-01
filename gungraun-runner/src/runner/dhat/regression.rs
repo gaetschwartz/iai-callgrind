@@ -96,10 +96,10 @@ impl TryFrom<api::DhatRegressionConfig> for DhatRegressionConfig {
 
 #[cfg(test)]
 mod tests {
+    use DhatMetric::*;
     use either_or_both::EitherOrBoth;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
-    use DhatMetric::*;
 
     use super::*;
     use crate::runner::metrics::Metrics;

@@ -4,16 +4,16 @@ use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use log::{trace, warn};
 use serde::{Deserialize, Serialize};
 use simplematch::DoWild;
 
 use super::model::{Metrics, Positions};
 use crate::api::EventKind;
+use crate::runner::DEFAULT_TOGGLE;
 use crate::runner::tool::parser::ParserOutput;
 use crate::runner::tool::path::ToolOutputPath;
-use crate::runner::DEFAULT_TOGGLE;
 
 /// The properties and header data of a callgrind output file
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -43,7 +43,6 @@ pub struct CallgrindProperties {
 /// Refactor: This struct was named `Sentinel` but the usage changed and it would better be named
 /// `Needle` since it is used to seek for a specific function in the haystack of functions of the
 /// output file.
-#[allow(clippy::unsafe_derive_deserialize)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Sentinel(String);
 

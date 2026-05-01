@@ -4,7 +4,7 @@ use core::arch::asm;
 
 /// The optimized implementation of `valgrind_do_client_request_expr`
 #[inline(always)]
-#[allow(clippy::similar_names)]
+#[expect(clippy::similar_names)]
 pub fn valgrind_do_client_request_expr(
     default: usize,
     request: cty::c_uint,

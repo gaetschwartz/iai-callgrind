@@ -2,6 +2,8 @@
 set -e
 
 if command -V just; then
+  just test-all
+  just build-docs
   just schema-gen-diff
 else
   echo "Please install 'just' to properly run this hook"

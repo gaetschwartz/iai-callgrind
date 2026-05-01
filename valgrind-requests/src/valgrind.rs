@@ -44,7 +44,7 @@
 //! mechanism](https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq)
 
 /// The `MempoolFlags` usable in [`create_mempool_ext`] as `flags`.
-#[allow(non_snake_case)]
+#[expect(non_snake_case)]
 pub mod MempoolFlags {
     /// When `MempoolFlags` is `DEFAULT`, the behavior is identical to [`super::create_mempool`].
     pub const DEFAULT: u8 = 0;
@@ -79,8 +79,8 @@ pub mod MempoolFlags {
 use std::ffi::CStr;
 
 use super::{
-    bindings, fatal_error, valgrind_do_client_request_expr, valgrind_do_client_request_stmt, RawFd,
-    StackId, ThreadId,
+    RawFd, StackId, ThreadId, bindings, fatal_error, valgrind_do_client_request_expr,
+    valgrind_do_client_request_stmt,
 };
 
 /// Returns the number of Valgrinds this code is running under
@@ -174,7 +174,7 @@ pub fn get_toolname(buffer: *mut u8, len: usize) -> usize {
 /// with them that subsequently calls `printf()`, there's a high chance Valgrind will crash.
 /// Generally, your prospects of these working are made higher if the called function does not refer
 /// to any global variables, and does not refer to other functions (print! et al.).
-#[allow(clippy::fn_to_numeric_cast_any)]
+#[expect(clippy::fn_to_numeric_cast_any)]
 #[inline(always)]
 pub fn non_simd_call0(func: fn(ThreadId) -> usize) -> usize {
     do_client_request!(
@@ -203,7 +203,7 @@ pub fn non_simd_call0(func: fn(ThreadId) -> usize) -> usize {
 /// );
 /// assert_eq!(res, 44);
 /// ```
-#[allow(clippy::fn_to_numeric_cast_any)]
+#[expect(clippy::fn_to_numeric_cast_any)]
 #[inline(always)]
 pub fn non_simd_call1(func: fn(ThreadId, usize) -> usize, arg1: usize) -> usize {
     do_client_request!(
@@ -221,7 +221,7 @@ pub fn non_simd_call1(func: fn(ThreadId, usize) -> usize, arg1: usize) -> usize 
 /// Allow control to move from the simulated CPU to the real CPU, calling an arbitrary function.
 ///
 /// See also [`non_simd_call0`] and [`non_simd_call1`]
-#[allow(clippy::fn_to_numeric_cast_any)]
+#[expect(clippy::fn_to_numeric_cast_any)]
 #[inline(always)]
 pub fn non_simd_call2(
     func: fn(ThreadId, usize, usize) -> usize,
@@ -243,7 +243,7 @@ pub fn non_simd_call2(
 /// Allow control to move from the simulated CPU to the real CPU, calling an arbitrary function.
 ///
 /// See also [`non_simd_call0`] and [`non_simd_call1`]
-#[allow(clippy::fn_to_numeric_cast_any)]
+#[expect(clippy::fn_to_numeric_cast_any)]
 #[inline(always)]
 pub fn non_simd_call3(
     func: fn(ThreadId, usize, usize, usize) -> usize,

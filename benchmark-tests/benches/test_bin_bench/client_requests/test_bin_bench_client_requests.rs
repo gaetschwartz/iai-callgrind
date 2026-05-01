@@ -1,5 +1,5 @@
-use gungraun::prelude::*;
 use gungraun::Callgrind;
+use gungraun::prelude::*;
 
 #[binary_benchmark]
 #[bench::parse_output()]

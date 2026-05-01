@@ -7,7 +7,7 @@ use anyhow::Result;
 use log::{debug, trace};
 
 use super::model::Metrics;
-use super::parser::{parse_header, CallgrindParser, CallgrindProperties};
+use super::parser::{CallgrindParser, CallgrindProperties, parse_header};
 use crate::error::Error;
 use crate::runner::summary::ToolMetrics::Callgrind;
 use crate::runner::tool::parser::{Header, Parser, ParserOutput};

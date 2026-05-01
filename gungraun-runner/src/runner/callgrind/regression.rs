@@ -97,9 +97,9 @@ impl TryFrom<api::CallgrindRegressionConfig> for CallgrindRegressionConfig {
 
 #[cfg(test)]
 mod tests {
+    use EventKind::*;
     use either_or_both::EitherOrBoth;
     use rstest::rstest;
-    use EventKind::*;
 
     use super::*;
     use crate::api::{CallgrindMetrics, Limit};

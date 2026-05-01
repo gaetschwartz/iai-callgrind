@@ -32,7 +32,7 @@ pub struct BenchmarkId(String);
 /// # use gungraun::binary_benchmark_group;
 /// # binary_benchmark_group!(name = some_group,
 /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
-/// use gungraun::{main, BinaryBenchmarkConfig, Callgrind};
+/// use gungraun::{BinaryBenchmarkConfig, Callgrind, main};
 ///
 /// main!(
 ///     config = BinaryBenchmarkConfig::default()
@@ -103,7 +103,7 @@ pub struct Bench {
 ///
 /// ```rust
 /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-/// use gungraun::{binary_benchmark, binary_benchmark_attribute, binary_benchmark_group, Bench};
+/// use gungraun::{Bench, binary_benchmark, binary_benchmark_attribute, binary_benchmark_group};
 ///
 /// #[binary_benchmark]
 /// #[bench::foo("foo")]
@@ -552,9 +552,10 @@ impl Bench {
     /// Suppose your cargo's binary is named `my-echo` and you want to convert a file with inputs
     /// `benches/inputs` into commands and each line is the only argument for your `my-echo` binary:
     ///
+    /// // FIX: Use prelude where possible
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-    /// use gungraun::{binary_benchmark_group, Bench, BinaryBenchmark};
+    /// use gungraun::{Bench, BinaryBenchmark, binary_benchmark_group};
     ///
     /// binary_benchmark_group!(
     ///     name = my_group,
@@ -667,7 +668,7 @@ impl BenchmarkId {
     /// # use gungraun::main;
     /// use std::ffi::OsStr;
     ///
-    /// use gungraun::{binary_benchmark_group, Bench, BenchmarkId, BinaryBenchmark, Command};
+    /// use gungraun::{Bench, BenchmarkId, BinaryBenchmark, Command, binary_benchmark_group};
     ///
     /// binary_benchmark_group!(
     ///     name = low_level_group,
@@ -757,7 +758,7 @@ impl BenchmarkId {
     /// assert!(BenchmarkId::new("z_").validate().is_ok());
     /// assert!(BenchmarkId::new("some_id").validate().is_ok());
     /// ```
-    #[allow(clippy::missing_panics_doc)]
+    #[expect(clippy::missing_panics_doc)]
     pub fn validate(&self) -> Result<(), String> {
         const MAX_LENGTH_ID: usize = 255;
         if self.0.is_empty() {
@@ -1037,7 +1038,7 @@ impl BinaryBenchmarkConfig {
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
     /// use gungraun::{
-    ///     binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, ValgrindTool,
+    ///     BinaryBenchmarkConfig, ValgrindTool, binary_benchmark, binary_benchmark_group, main,
     /// };
     ///
     /// #[binary_benchmark(
@@ -1078,7 +1079,7 @@ impl BinaryBenchmarkConfig {
     /// #    name = my_group,
     /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {}
     /// # );
-    /// use gungraun::{main, BinaryBenchmarkConfig, Dhat};
+    /// use gungraun::{BinaryBenchmarkConfig, Dhat, main};
     ///
     /// # fn main() {
     /// main!(
@@ -1097,7 +1098,7 @@ impl BinaryBenchmarkConfig {
     /// # binary_benchmark_group!(
     /// #    name = my_group,
     /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
-    /// use gungraun::{main, BinaryBenchmarkConfig, Dhat};
+    /// use gungraun::{BinaryBenchmarkConfig, Dhat, main};
     ///
     /// # fn main() {
     /// main!(
@@ -1131,7 +1132,7 @@ impl BinaryBenchmarkConfig {
     /// # binary_benchmark_group!(
     /// #    name = my_group,
     /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
-    /// use gungraun::{main, BinaryBenchmarkConfig};
+    /// use gungraun::{BinaryBenchmarkConfig, main};
     ///
     /// # fn main() {
     /// main!(
@@ -1158,7 +1159,7 @@ impl BinaryBenchmarkConfig {
     /// # binary_benchmark_group!(
     /// #    name = my_group,
     /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
-    /// use gungraun::{main, BinaryBenchmarkConfig};
+    /// use gungraun::{BinaryBenchmarkConfig, main};
     ///
     /// # fn main() {
     /// main!(
@@ -1197,7 +1198,7 @@ impl BinaryBenchmarkConfig {
     /// # binary_benchmark_group!(
     /// #    name = my_group,
     /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
-    /// use gungraun::{main, BinaryBenchmarkConfig};
+    /// use gungraun::{BinaryBenchmarkConfig, main};
     ///
     /// # fn main() {
     /// main!(
@@ -1225,7 +1226,7 @@ impl BinaryBenchmarkConfig {
     /// # binary_benchmark_group!(
     /// #    name = my_group,
     /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
-    /// use gungraun::{main, BinaryBenchmarkConfig};
+    /// use gungraun::{BinaryBenchmarkConfig, main};
     ///
     /// # fn main() {
     /// main!(
@@ -1254,7 +1255,7 @@ impl BinaryBenchmarkConfig {
     /// # binary_benchmark_group!(
     /// #    name = my_group,
     /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
-    /// use gungraun::{main, BinaryBenchmarkConfig};
+    /// use gungraun::{BinaryBenchmarkConfig, main};
     ///
     /// # fn main() {
     /// main!(
@@ -1282,7 +1283,7 @@ impl BinaryBenchmarkConfig {
     /// # binary_benchmark_group!(
     /// #    name = my_group,
     /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
-    /// use gungraun::{main, BinaryBenchmarkConfig};
+    /// use gungraun::{BinaryBenchmarkConfig, main};
     ///
     /// # fn main() {
     /// main!(
@@ -1300,7 +1301,7 @@ impl BinaryBenchmarkConfig {
     /// # binary_benchmark_group!(
     /// #    name = my_group,
     /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
-    /// use gungraun::{main, BinaryBenchmarkConfig, Sandbox};
+    /// use gungraun::{BinaryBenchmarkConfig, Sandbox, main};
     ///
     /// # fn main() {
     /// main!(
@@ -1334,7 +1335,7 @@ impl BinaryBenchmarkConfig {
     /// # binary_benchmark_group!(
     /// #    name = my_group,
     /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
-    /// use gungraun::{main, BinaryBenchmarkConfig, ExitWith};
+    /// use gungraun::{BinaryBenchmarkConfig, ExitWith, main};
     ///
     /// # fn main() {
     /// main!(
@@ -1351,7 +1352,7 @@ impl BinaryBenchmarkConfig {
     /// # binary_benchmark_group!(
     /// #    name = my_group,
     /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
-    /// use gungraun::{main, BinaryBenchmarkConfig, ExitWith};
+    /// use gungraun::{BinaryBenchmarkConfig, ExitWith, main};
     ///
     /// # fn main() {
     /// main!(
@@ -1383,7 +1384,7 @@ impl BinaryBenchmarkConfig {
     /// # binary_benchmark_group!(
     /// #    name = my_group,
     /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
-    /// use gungraun::{main, BinaryBenchmarkConfig, Dhat, ValgrindTool};
+    /// use gungraun::{BinaryBenchmarkConfig, Dhat, ValgrindTool, main};
     ///
     /// # fn main() {
     /// main!(
@@ -1412,8 +1413,8 @@ impl BinaryBenchmarkConfig {
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
     /// use gungraun::{
-    ///     binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Dhat, Massif,
-    ///     Memcheck,
+    ///     BinaryBenchmarkConfig, Dhat, Massif, Memcheck, binary_benchmark, binary_benchmark_group,
+    ///     main,
     /// };
     ///
     /// #[binary_benchmark]
@@ -1470,7 +1471,7 @@ impl BinaryBenchmarkConfig {
     /// # binary_benchmark_group!(
     /// #    name = my_group,
     /// #    benchmarks = |_group: &mut BinaryBenchmarkGroup| {});
-    /// use gungraun::{main, BinaryBenchmarkConfig, Sandbox};
+    /// use gungraun::{BinaryBenchmarkConfig, Sandbox, main};
     ///
     /// # fn main() {
     /// main!(
@@ -1492,7 +1493,7 @@ impl BinaryBenchmarkConfig {
     /// # Examples
     ///
     /// ```rust
-    /// use gungraun::{main, BinaryBenchmarkConfig, OutputFormat};
+    /// use gungraun::{BinaryBenchmarkConfig, OutputFormat, main};
     /// # use gungraun::{binary_benchmark, binary_benchmark_group};
     /// # #[binary_benchmark]
     /// # fn some_func() -> gungraun::Command { gungraun::Command::new("some/path") }
@@ -1529,8 +1530,8 @@ impl BinaryBenchmarkConfig {
     /// use std::time::Duration;
     ///
     /// use gungraun::{
-    ///     binary_benchmark, binary_benchmark_group, main, BinaryBenchmarkConfig, Command, Delay,
-    ///     DelayKind,
+    ///     BinaryBenchmarkConfig, Command, Delay, DelayKind, binary_benchmark, binary_benchmark_group,
+    ///     main,
     /// };
     ///
     /// fn setup_tcp_server() {
@@ -1583,7 +1584,7 @@ impl BinaryBenchmarkGroup {
     ///
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-    /// use gungraun::{binary_benchmark_group, Bench, BinaryBenchmark, BinaryBenchmarkGroup};
+    /// use gungraun::{Bench, BinaryBenchmark, BinaryBenchmarkGroup, binary_benchmark_group};
     ///
     /// fn setup_my_group(group: &mut BinaryBenchmarkGroup) {
     ///     group.binary_benchmark(
@@ -1712,7 +1713,7 @@ impl Command {
     ///
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-    /// use gungraun::{binary_benchmark, binary_benchmark_group, main, Command, Delay, DelayKind};
+    /// use gungraun::{Command, Delay, DelayKind, binary_benchmark, binary_benchmark_group, main};
     ///
     /// fn start_server() {
     ///     // action to start the server, creates pid file
@@ -1756,7 +1757,7 @@ impl Command {
     /// use std::thread;
     /// use std::time::Duration;
     ///
-    /// use gungraun::{binary_benchmark, binary_benchmark_group, main, Command, Delay, DelayKind};
+    /// use gungraun::{Command, Delay, DelayKind, binary_benchmark, binary_benchmark_group, main};
     ///
     /// fn setup_tcp_server() {
     ///     thread::sleep(Duration::from_millis(300));
@@ -1885,7 +1886,7 @@ impl Command {
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
     /// # use gungraun::main;
-    /// use gungraun::{binary_benchmark, binary_benchmark_group, Stdio};
+    /// use gungraun::{Stdio, binary_benchmark, binary_benchmark_group};
     ///
     /// #[binary_benchmark]
     /// fn bench_binary() -> gungraun::Command {
@@ -1905,7 +1906,7 @@ impl Command {
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
     /// # use gungraun::main;
-    /// use gungraun::{binary_benchmark, binary_benchmark_group, Pipe, Stdin};
+    /// use gungraun::{Pipe, Stdin, binary_benchmark, binary_benchmark_group};
     ///
     /// fn setup_pipe() {
     ///     // All output to Stdout of this function will be piped into the Stdin of `my-exe`
@@ -1946,7 +1947,7 @@ impl Command {
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
     /// # use gungraun::main;
-    /// use gungraun::{binary_benchmark, binary_benchmark_group, Stdio};
+    /// use gungraun::{Stdio, binary_benchmark, binary_benchmark_group};
     ///
     /// #[binary_benchmark]
     /// fn bench_binary() -> gungraun::Command {
@@ -1968,7 +1969,7 @@ impl Command {
     /// # use gungraun::main;
     /// use std::path::PathBuf;
     ///
-    /// use gungraun::{binary_benchmark, binary_benchmark_group, Stdio};
+    /// use gungraun::{Stdio, binary_benchmark, binary_benchmark_group};
     ///
     /// #[binary_benchmark]
     /// fn bench_binary() -> gungraun::Command {
@@ -2005,7 +2006,7 @@ impl Command {
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
     /// # use gungraun::main;
-    /// use gungraun::{binary_benchmark, binary_benchmark_group, Stdio};
+    /// use gungraun::{Stdio, binary_benchmark, binary_benchmark_group};
     ///
     /// #[binary_benchmark]
     /// fn bench_binary() -> gungraun::Command {
@@ -2027,7 +2028,7 @@ impl Command {
     /// # use gungraun::main;
     /// use std::path::PathBuf;
     ///
-    /// use gungraun::{binary_benchmark, binary_benchmark_group, Stdio};
+    /// use gungraun::{Stdio, binary_benchmark, binary_benchmark_group};
     ///
     /// #[binary_benchmark]
     /// fn bench_binary() -> gungraun::Command {
@@ -2157,7 +2158,7 @@ impl Command {
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
     /// # use gungraun::main;
-    /// use gungraun::{binary_benchmark, binary_benchmark_group, BinaryBenchmarkConfig, Sandbox};
+    /// use gungraun::{BinaryBenchmarkConfig, Sandbox, binary_benchmark, binary_benchmark_group};
     ///
     /// fn setup_sandbox() {
     ///     std::fs::create_dir("fixtures").unwrap();
@@ -2198,7 +2199,7 @@ impl Command {
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
     /// # use gungraun::main;
-    /// use gungraun::{binary_benchmark, binary_benchmark_group, ExitWith};
+    /// use gungraun::{ExitWith, binary_benchmark, binary_benchmark_group};
     ///
     /// #[binary_benchmark]
     /// fn bench_binary() -> gungraun::Command {
@@ -2218,7 +2219,7 @@ impl Command {
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
     /// # use gungraun::main;
-    /// use gungraun::{binary_benchmark, binary_benchmark_group, ExitWith};
+    /// use gungraun::{ExitWith, binary_benchmark, binary_benchmark_group};
     ///
     /// #[binary_benchmark]
     /// fn bench_binary() -> gungraun::Command {
@@ -2450,7 +2451,7 @@ impl Sandbox {
     /// Enables the sandbox for all benchmarks.
     ///
     /// ```rust
-    /// use gungraun::{main, BinaryBenchmarkConfig, Sandbox};
+    /// use gungraun::{BinaryBenchmarkConfig, Sandbox, main};
     /// # use gungraun::binary_benchmark_group;
     /// # binary_benchmark_group!(name = my_group, benchmarks = |_group| {});
     /// # fn main() {
@@ -2482,7 +2483,7 @@ impl Sandbox {
     /// ```rust
     /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
     /// # use gungraun::{binary_benchmark_group, main};
-    /// use gungraun::{binary_benchmark, BinaryBenchmarkConfig, Sandbox};
+    /// use gungraun::{BinaryBenchmarkConfig, Sandbox, binary_benchmark};
     ///
     /// #[binary_benchmark]
     /// #[bench::fix_1(

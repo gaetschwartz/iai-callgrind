@@ -4,25 +4,25 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
+use std::sync::LazyLock;
 
 use anyhow::{Context, Result};
-use lazy_static::lazy_static;
 use regex::Regex;
 
-use super::logfile_parser::{parse_header, EMPTY_LINE_RE, EXTRACT_FIELDS_RE, STRIP_PREFIX_RE};
+use super::logfile_parser::{EMPTY_LINE_RE, EXTRACT_FIELDS_RE, STRIP_PREFIX_RE, parse_header};
 use super::parser::{Parser, ParserOutput};
 use super::path::ToolOutputPath;
 use crate::api::ErrorMetric;
 use crate::runner::metrics::Metrics;
 use crate::runner::summary::ToolMetrics;
 
-lazy_static! {
-    static ref EXTRACT_ERROR_SUMMARY_RE: Regex = regex::Regex::new(
+static EXTRACT_ERROR_SUMMARY_RE: LazyLock<Regex> = LazyLock::new(|| {
+    regex::Regex::new(
         "^[^0-9]*(?<errs>[0-9]+)[^0-9]*(?<ctxs>[0-9]+)[^0-9]*(?<s_errs>[0-9]+)[^0-9]*(?\
-         <s_ctxs>[0-9]+).*$"
+         <s_ctxs>[0-9]+).*$",
     )
-    .expect("Regex should compile");
-}
+    .expect("Regex should compile")
+});
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum State {

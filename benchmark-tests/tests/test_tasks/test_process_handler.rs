@@ -11,8 +11,8 @@ use tempfile::tempdir;
 
 use crate::assert_not_elapsed;
 use crate::util::common::{
-    cleanup_test_process_handler, BENCH_BIN_FAKE_EXE, ECHO_EXE, EXIT_WITH_EXE, FILE_EXISTS_EXE,
-    TIMEOUT_EXE,
+    BENCH_BIN_FAKE_EXE, ECHO_EXE, EXIT_WITH_EXE, FILE_EXISTS_EXE, TIMEOUT_EXE,
+    cleanup_test_process_handler,
 };
 use crate::util::fixtures::{
     assistant_f, config_f, force_shutdown_f, module_path_f, process_handler_f, run_options_f,
@@ -48,12 +48,14 @@ fn test_start_assistant_when_setup() {
         .expect("An output should be present");
 
     assert!(output.status.success());
-    assert!(std::str::from_utf8(&output.stdout)
-        .unwrap()
-        .lines()
-        .next()
-        .unwrap()
-        .ends_with("bench-bin-fake"));
+    assert!(
+        std::str::from_utf8(&output.stdout)
+            .unwrap()
+            .lines()
+            .next()
+            .unwrap()
+            .ends_with("bench-bin-fake")
+    );
 }
 
 #[test]
@@ -84,12 +86,14 @@ fn test_start_assistant_when_teardown() {
         .expect("An output should be present");
 
     assert!(output.status.success());
-    assert!(std::str::from_utf8(&output.stdout)
-        .unwrap()
-        .lines()
-        .next()
-        .unwrap()
-        .ends_with("bench-bin-fake"));
+    assert!(
+        std::str::from_utf8(&output.stdout)
+            .unwrap()
+            .lines()
+            .next()
+            .unwrap()
+            .ends_with("bench-bin-fake")
+    );
 }
 
 #[rstest]

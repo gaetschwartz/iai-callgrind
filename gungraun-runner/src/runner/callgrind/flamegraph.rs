@@ -38,7 +38,6 @@ pub struct BaselineFlamegraphGenerator {
 
 /// The main configuration for a flamegraph
 #[derive(Debug, Clone, PartialEq)]
-#[allow(clippy::struct_excessive_bools)]
 pub struct Config {
     /// The direction of the flamegraph. Top to bottom or vice versa
     pub direction: Direction,

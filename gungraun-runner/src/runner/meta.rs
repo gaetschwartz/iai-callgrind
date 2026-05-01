@@ -7,7 +7,7 @@ use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use cargo_metadata::TargetKind;
 use clap::Parser;
 use log::debug;
@@ -112,7 +112,7 @@ impl Metadata {
         let package = meta
             .packages
             .iter()
-            .find(|p| p.name == package_name)
+            .find(|p| p.name.as_str() == package_name)
             .expect("The package name should exist");
         let bench_name = package
             .targets
@@ -389,7 +389,7 @@ fn interpolate_argument(
                     return Err(anyhow!(
                         "Failed to interpolate the variable at column '{index}': Premature end of \
                          variable declaration"
-                    ))
+                    ));
                 }
                 (char, b'$') if next_index + 1 < chars.len() => {
                     result.push(char);
@@ -494,11 +494,17 @@ mod tests {
     #[serial_test::serial]
     fn test_interpolate_argument_std_env_is_used() {
         const VAR_NAME: &str = "GUNGRAUN_TEST_INTERPOLATE_VAR";
-        std::env::set_var(VAR_NAME, "from_real_env");
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::set_var(VAR_NAME, "from_real_env");
+        }
         let envs = HashMap::new();
         let additional_envs = HashMap::new();
         let result = interpolate_argument(&format!("${{{VAR_NAME}}}"), &envs, &additional_envs);
-        std::env::remove_var(VAR_NAME);
+        // SAFETY: This test is run serially
+        unsafe {
+            std::env::remove_var(VAR_NAME);
+        }
         assert_eq!(result.unwrap(), OsString::from("from_real_env"));
     }
 

@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         toolchain:
-          - "1.74.1" # MSRV
+          - "1.85.1" # MSRV
           - stable
           - nightly
     steps:
@@ -34,7 +34,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Update dependencies
-        if: matrix.toolchain != '1.74.1'
+        if: matrix.toolchain != '1.85.1'
         run: cargo update
       - name: Build
         run: just build-hack
@@ -45,7 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         toolchain:
-          - "1.74.1" # MSRV
+          - "1.85.1" # MSRV
           - stable
           - nightly
     runs-on: ubuntu-latest
@@ -55,7 +55,7 @@ jobs:
         with:
           toolchain: ${{ matrix.toolchain }}
       - name: "Prepare: Run cargo update"
-        if: matrix.toolchain != '1.74.1'
+        if: matrix.toolchain != '1.85.1'
         run: |
           cargo update
       - uses: taiki-e/install-action@cargo-hack
@@ -79,7 +79,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: "1.74.1"
+          toolchain: "1.85.1"
           components: rust-src
       - uses: taiki-e/install-action@just
       - uses: Swatinem/rust-cache@v2

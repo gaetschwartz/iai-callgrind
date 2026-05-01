@@ -231,7 +231,7 @@ pub fn check_value_is_defined<T>(value: &T) -> usize {
         "memcheck::check_value_is_defined",
         0,
         bindings::VR_MemcheckClientRequest::VR_CHECK_MEM_IS_DEFINED,
-        value as *const T as usize,
+        std::ptr::from_ref::<T>(value) as usize,
         core::mem::size_of::<T>(),
         0,
         0,

@@ -2,7 +2,8 @@
 set -e
 
 if command -V just; then
-  just check-fmt lint
+  just check-fmt-all
+  just lint
 else
   echo "Please install 'just' to properly run this hook"
 fi

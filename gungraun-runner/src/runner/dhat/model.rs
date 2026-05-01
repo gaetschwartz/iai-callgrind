@@ -2,18 +2,16 @@
 
 // spell-checker: ignore bklt bkacc bksu tuth ftbl tgmax
 use std::str::FromStr;
+use std::sync::LazyLock;
 
-use lazy_static::lazy_static;
 use regex::Regex;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-lazy_static! {
-    static ref FRAME_RE: Regex = regex::Regex::new(
-        r"^(?<root>\[root\])|(?<addr>0x[0-9a-fA-F]+):\s*(?<func>.*)\s\((?<in>.*)\)$"
-    )
-    .expect("Regex should compile");
-}
+static FRAME_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^(?<root>\[root\])|(?<addr>0x[0-9a-fA-F]+):\s*(?<func>.*)\s\((?<in>.*)\)$")
+        .expect("Regex should compile")
+});
 
 /// A [`Frame`] in the [`DhatData::frame_table`]
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -38,7 +36,7 @@ pub enum Mode {
 
 /// The top-level data extracted from dhat json output
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[allow(clippy::arbitrary_source_item_ordering)]
+#[expect(clippy::arbitrary_source_item_ordering)]
 pub struct DhatData {
     /// Version number of the format
     #[serde(rename = "dhatFileVersion")]
@@ -112,7 +110,7 @@ pub struct DhatData {
 
 /// A `ProgramPoint`
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[allow(clippy::arbitrary_source_item_ordering)]
+#[expect(clippy::arbitrary_source_item_ordering)]
 pub struct ProgramPoint {
     /// Total bytes
     #[serde(rename = "tb")]
@@ -283,7 +281,7 @@ impl Serialize for Mode {
 #[cfg(test)]
 mod tests {
     use rstest::rstest;
-    use serde_test::{assert_tokens, Token};
+    use serde_test::{Token, assert_tokens};
 
     use super::*;
 

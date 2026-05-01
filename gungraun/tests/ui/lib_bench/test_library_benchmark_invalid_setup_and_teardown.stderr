@@ -14,7 +14,7 @@ error[E0061]: this function takes 1 argument but 0 arguments were supplied
   --> tests/ui/lib_bench/test_library_benchmark_invalid_setup_and_teardown.rs:28:29
    |
 28 | #[library_benchmark(setup = setup_string)]
-   |                             ^^^^^^^^^^^^ an argument of type `u64` is missing
+   |                             ^^^^^^^^^^^^ argument #1 of type `u64` is missing
    |
 note: function defined here
   --> tests/ui/lib_bench/test_library_benchmark_invalid_setup_and_teardown.rs:7:4

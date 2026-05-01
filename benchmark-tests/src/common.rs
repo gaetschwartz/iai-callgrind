@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::path::Path;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use either_or_both::EitherOrBoth;
 use gungraun_runner::runner::metrics::Metric;
 use gungraun_runner::runner::summary::{BenchmarkSummary, ToolMetricSummary};

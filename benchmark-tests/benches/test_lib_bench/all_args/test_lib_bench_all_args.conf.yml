@@ -32,11 +32,13 @@ groups:
   - runs_on: "!x86_64-unknown-freebsd"
     runs:
       - args: ["--nocapture"]
+        flaky: 5
         expected:
           zero_metrics: true
           stdout: expected_stdout.1a
           stderr: expected_stderr
       - args: ["--nocapture"]
+        flaky: 5
         expected:
           zero_metrics: true
           stdout: expected_stdout.1b

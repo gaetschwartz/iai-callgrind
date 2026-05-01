@@ -4,13 +4,13 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
+use std::sync::LazyLock;
 
 use anyhow::Result;
 use gungraun::ValgrindTool;
 use gungraun_runner::runner::summary::BaselineKind;
 use gungraun_runner::runner::tasks::ProcessHandler;
 use gungraun_runner::runner::tool::path::{ToolOutputPath, ToolOutputPathKind};
-use lazy_static::lazy_static;
 use pretty_assertions::assert_eq;
 use serde::{Deserialize, Serialize};
 
@@ -28,16 +28,19 @@ macro_rules! assert_not_elapsed {
     }};
 }
 
-lazy_static! {
-    pub static ref BENCH_BIN_FAKE_EXE: PathBuf =
-        PathBuf::from(env!("CARGO_BIN_EXE_bench-bin-fake"));
-    pub static ref ECHO_EXE: PathBuf = PathBuf::from(env!("CARGO_BIN_EXE_echo"));
-    pub static ref TIMEOUT_EXE: PathBuf = PathBuf::from(env!("CARGO_BIN_EXE_timeout"));
-    pub static ref DELAY_EXE: PathBuf = PathBuf::from(env!("CARGO_BIN_EXE_delay"));
-    pub static ref CAT_EXE: PathBuf = PathBuf::from(env!("CARGO_BIN_EXE_cat"));
-    pub static ref EXIT_WITH_EXE: PathBuf = PathBuf::from(env!("CARGO_BIN_EXE_exit-with"));
-    pub static ref FILE_EXISTS_EXE: PathBuf = PathBuf::from(env!("CARGO_BIN_EXE_file-exists"));
-}
+pub static BENCH_BIN_FAKE_EXE: LazyLock<PathBuf> =
+    LazyLock::new(|| PathBuf::from(env!("CARGO_BIN_EXE_bench-bin-fake")));
+pub static ECHO_EXE: LazyLock<PathBuf> =
+    LazyLock::new(|| PathBuf::from(env!("CARGO_BIN_EXE_echo")));
+pub static TIMEOUT_EXE: LazyLock<PathBuf> =
+    LazyLock::new(|| PathBuf::from(env!("CARGO_BIN_EXE_timeout")));
+pub static DELAY_EXE: LazyLock<PathBuf> =
+    LazyLock::new(|| PathBuf::from(env!("CARGO_BIN_EXE_delay")));
+pub static CAT_EXE: LazyLock<PathBuf> = LazyLock::new(|| PathBuf::from(env!("CARGO_BIN_EXE_cat")));
+pub static EXIT_WITH_EXE: LazyLock<PathBuf> =
+    LazyLock::new(|| PathBuf::from(env!("CARGO_BIN_EXE_exit-with")));
+pub static FILE_EXISTS_EXE: LazyLock<PathBuf> =
+    LazyLock::new(|| PathBuf::from(env!("CARGO_BIN_EXE_file-exists")));
 
 #[derive(Debug)]
 pub struct Fixtures;
@@ -325,7 +328,7 @@ pub fn get_runner_version() -> Version {
     meta.packages
         .iter()
         .find_map(|p| {
-            p.name.eq("gungraun-runner").then_some(Version {
+            p.name.as_str().eq("gungraun-runner").then_some(Version {
                 major: p.version.major,
                 minor: p.version.minor,
                 patch: p.version.patch,

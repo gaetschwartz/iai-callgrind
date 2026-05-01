@@ -19,7 +19,7 @@ cspell_bin := ```
 schema_path := 'summary.schema.json'
 this_dir := `realpath .`
 book_build_dir := this_dir + "/docs/book"
-msrv := '1.74.1'
+msrv := '1.85.1'
 mdbook_version := '0.4.40'
 required_tools := 'valgrind|the essential tool
 clang|to be able to build Gungraun with the client-requests feature'

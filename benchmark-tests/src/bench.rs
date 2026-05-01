@@ -2,25 +2,25 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 use std::fs::File;
-use std::io::{stderr, stdout, BufRead, Read, Write as IOWrite};
+use std::io::{BufRead, Read, Write as IOWrite, stderr, stdout};
 use std::os::unix::process::ExitStatusExt;
 use std::panic::{self, AssertUnwindSafe};
 use std::path::{Path, PathBuf};
 use std::process::{Output, Stdio};
+use std::sync::LazyLock;
 
 use benchmark_tests::common::Summary;
 use benchmark_tests::serde::runs_on::RunsOn;
 use colored::Colorize;
 use fs_extra::dir::CopyOptions;
 use glob::glob;
-use lazy_static::lazy_static;
 use minijinja::Environment;
 use once_cell::sync::OnceCell;
 use regex::{Captures, Regex};
 use rustc_version::{Channel, VersionMeta};
 use serde::{Deserialize, Serialize};
 use simplematch::DoWild;
-use tempfile::{tempdir, TempDir};
+use tempfile::{TempDir, tempdir};
 use valico::json_schema;
 use valico::json_schema::schema::ScopedSchema;
 
@@ -38,74 +38,91 @@ static TEMPLATE_DATA: OnceCell<HashMap<String, minijinja::Value>> = OnceCell::ne
 // The regex patterns working on the `stdout` must not include the indentation. The indentation can
 // be different depending on the `show_grid` option and starts either with 2 spaces (`  `) or if
 // `show_grid` is `true` with a pipe character (`|`)
-lazy_static! {
-    static ref NUMBERS_RE: Regex = Regex::new(
+static NUMBERS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
         r"(?x)
             (?<desc>.+:\s*)(?<comp1>[0-9.]+|N/A)\|(?<comp2>[0-9.]+|N/A)
             (?<diff>
                 (?<diff_percent>(?<white1>\s*)(?<percent>\(.*\)))
                 (?<diff_factor>(?<white2>\s*)(?<factor>\[.*\]))?
-            )?"
+            )?",
     )
-    .expect("Regex should compile");
-    static ref RUNNING_RE: Regex = Regex::new(r"^[ ]+Running .*$").expect("Regex should compile");
-    static ref PROCESS_DID_NOT_EXIT_SUCCESSFULLY_RE: Regex =
-        Regex::new(r"^([ ]+process didn't exit successfully: `)(.*)(` \(exit status: .*\).*)$")
-            .expect("Regex should compile");
-    // Performance has regressed: Instructions (133 -> 196) regressed by +47.3684% (>+0.00000%)
-    // $1<__NUM__>$3<__NUM__>$5<__PERCENT__>$7<__NUM__>$9
-    static ref REGRESSION_SOFT_RE: Regex =
-        Regex::new(
-            r"(?x)
+    .expect("Regex should compile")
+});
+static RUNNING_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^[ ]+Running .*$").expect("Regex should compile"));
+static PROCESS_DID_NOT_EXIT_SUCCESSFULLY_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^([ ]+process didn't exit successfully: `)(.*)(` \(exit status: .*\).*)$")
+        .expect("Regex should compile")
+});
+// Performance has regressed: Instructions (133 -> 196) regressed by +47.3684% (>+0.00000%)
+// $1<__NUM__>$3<__NUM__>$5<__PERCENT__>$7<__NUM__>$9
+static REGRESSION_SOFT_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?x)
                 ^(Performance\ has\ regressed:\s*[^0-9]+\()
                 ([0-9]+)(\s*->\s*)([0-9]+)
                 (\)\s*regressed\s*by\s*[+-])
                 ([0-9.]+)(%\s*\([><][+-])([0-9.]+)(%\)\s*)
-              $"
-        )
-        .expect("Regex should compile");
-    static ref REGRESSION_HARD_RE: Regex =
-        Regex::new(concat!(r"^(Performance has regressed:\s*[^0-9]+\()([0-9]+)",
-            r"(\)\s*exceeds limit by\s*)([0-9.]+)(\s*\([><])([0-9.]+)(\)\s*)$"))
-        .expect("Regex should compile");
-    // Instructions (357182 -> 357704): +0.14614% exceeds limit of +0.00000%
-    // $1<__NUM__>$3<__NUM__>$5<__PERCENT__>$7<__PERCENT__>$9
-    static ref SUMMARY_REGRESSION_SOFT_RE: Regex =
-        Regex::new(concat!(r"^(\s*[^0-9]+\()([0-9]+)(\s*->\s*)([0-9]+)(\):\s*[+-])",
-            r"([0-9.]+)(%\s*exceeds limit of [+-])([0-9.]+)(%\s*)$"))
-        .expect("Regex should compile");
-    // Callgrind: Instructions (70021): 70021 exceeds limit of 200 by 69821
-    static ref SUMMARY_REGRESSION_HARD_RE: Regex =
-        Regex::new(concat!(r"^(\s*[^0-9]+\()([0-9]+)(\):\s*)([0-9.]+)",
-            r"(\s*exceeds limit of\s*)([0-9.]+)(\s*by\s*)([0-9.]+)(\s*)$"))
-        .expect("Regex should compile");
-    // Command: target/release/deps/test_lib_bench_threads-c2a88f916ff580f9
-    static ref COMMAND_RE: Regex =
-        Regex::new(r"^(Command:)(\s*target/release/deps/test_(lib|bin)_bench_.+-[a-z0-9]+\s*.*)$")
-            .expect("Regex should compile");
-    static ref PID_RE: Regex =
-        Regex::new(r"(p?pid:\s*)([0-9]+)(\s+)?").expect("Regex should compile");
-    static ref DETAILS_RE: Regex =
-        Regex::new(r"^Details:").expect("Regex should compile");
-    static ref NOT_DETAILS_RE: Regex =
-        Regex::new(r"^(?:(?:\S)|(?:[a-zA-Z]))").expect("Regex should compile");
-    // `  ## pid: <__PID__> part: 1 thread: 3   |pid: <__PID__> part: 1 thread: 3`
-    static ref FRAGMENT_HEADER_RE: Regex =
-        Regex::new(r"^(##(?: \S+: \S+)+)(\s*)([|].*)$").expect("Regex should compile");
-    static ref ABSOLUTE_PATH_RE: Regex =
-        Regex::new(r"(\s+|^|')([/][^/]*)+").expect("Regex should compile");
-    // Gungraun result: Success. 2 completed without regressions; 0 regressed; 0 filtered;
-    // 2 benchmarks finished in 0.296s
-    static ref SUMMARY_LINE_RE: Regex =
-        Regex::new(r"^(Gungraun result:.*finished in\s*)([0-9.]+)(s$)")
-            .expect("Regex should compile");
-    static ref THREAD_PANICKED: Regex =
-        Regex::new(concat!(r"^(?<start>thread '.*' )(?<pid>\([0-9]+\))?",
-            r"(?<end>\s*panicked at .*)$"))
-        .expect("Regex should compile");
-    static ref ABSOLUTE_PATH_APOSTROPHE_RE: Regex =
-        Regex::new(r"[']([/][^/']+)+[']").expect("Regex should compile");
-}
+              $",
+    )
+    .expect("Regex should compile")
+});
+static REGRESSION_HARD_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(concat!(
+        r"^(Performance has regressed:\s*[^0-9]+\()([0-9]+)",
+        r"(\)\s*exceeds limit by\s*)([0-9.]+)(\s*\([><])([0-9.]+)(\)\s*)$"
+    ))
+    .expect("Regex should compile")
+});
+// Instructions (357182 -> 357704): +0.14614% exceeds limit of +0.00000%
+// $1<__NUM__>$3<__NUM__>$5<__PERCENT__>$7<__PERCENT__>$9
+static SUMMARY_REGRESSION_SOFT_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(concat!(
+        r"^(\s*[^0-9]+\()([0-9]+)(\s*->\s*)([0-9]+)(\):\s*[+-])",
+        r"([0-9.]+)(%\s*exceeds limit of [+-])([0-9.]+)(%\s*)$"
+    ))
+    .expect("Regex should compile")
+});
+// Callgrind: Instructions (70021): 70021 exceeds limit of 200 by 69821
+static SUMMARY_REGRESSION_HARD_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(concat!(
+        r"^(\s*[^0-9]+\()([0-9]+)(\):\s*)([0-9.]+)",
+        r"(\s*exceeds limit of\s*)([0-9.]+)(\s*by\s*)([0-9.]+)(\s*)$"
+    ))
+    .expect("Regex should compile")
+});
+// Command: target/release/deps/test_lib_bench_threads-c2a88f916ff580f9
+static COMMAND_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^(Command:)(\s*target/release/deps/test_(lib|bin)_bench_.+-[a-z0-9]+\s*.*)$")
+        .expect("Regex should compile")
+});
+static PID_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(p?pid:\s*)([0-9]+)(\s+)?").expect("Regex should compile"));
+static DETAILS_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^Details:").expect("Regex should compile"));
+static NOT_DETAILS_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^(?:(?:\S)|(?:[a-zA-Z]))").expect("Regex should compile"));
+// `  ## pid: <__PID__> part: 1 thread: 3   |pid: <__PID__> part: 1 thread: 3`
+static FRAGMENT_HEADER_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^(##(?: \S+: \S+)+)(\s*)([|].*)$").expect("Regex should compile")
+});
+static ABSOLUTE_PATH_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(\s+|^|')([/][^/]*)+").expect("Regex should compile"));
+// Gungraun result: Success. 2 completed without regressions; 0 regressed; 0 filtered;
+// 2 benchmarks finished in 0.296s
+static SUMMARY_LINE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^(Gungraun result:.*finished in\s*)([0-9.]+)(s$)").expect("Regex should compile")
+});
+static THREAD_PANICKED: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(concat!(
+        r"^(?<start>thread '.*' )(?<pid>\([0-9]+\))?",
+        r"(?<end>\s*panicked at .*)$"
+    ))
+    .expect("Regex should compile")
+});
+static ABSOLUTE_PATH_APOSTROPHE_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"[']([/][^/']+)+[']").expect("Regex should compile"));
 
 #[derive(Debug, Clone)]
 struct Benchmark {
@@ -311,10 +328,12 @@ impl Benchmark {
         teardown: Option<&str>,
     ) -> BenchmarkOutput {
         let stdio = if capture {
-            std::env::set_var("GUNGRAUN_COLOR", "never");
+            // SAFETY: Benchmarks are run serially
+            unsafe { std::env::set_var("GUNGRAUN_COLOR", "never") };
             Stdio::piped
         } else {
-            std::env::set_var("GUNGRAUN_COLOR", "auto");
+            // SAFETY: Benchmarks are run serially
+            unsafe { std::env::set_var("GUNGRAUN_COLOR", "auto") };
             Stdio::inherit
         };
 
@@ -443,15 +462,17 @@ impl Benchmark {
         meta: &Metadata,
         schema: &ScopedSchema<'_>,
     ) {
-        if !group.runs_on.as_ref().map_or(true, |(is_target, target)| {
+        if !group.runs_on.as_ref().is_none_or(|(is_target, target)| {
             if *is_target {
                 target == env!("GR_BUILD_TRIPLE")
             } else {
                 target != env!("GR_BUILD_TRIPLE")
             }
-        }) || !group.rust_version.as_ref().map_or(true, |(cmp, version)| {
-            meta.compare_rust_version(*cmp, version)
-        }) {
+        }) || !group
+            .rust_version
+            .as_ref()
+            .is_none_or(|(cmp, version)| meta.compare_rust_version(*cmp, version))
+        {
             return;
         }
 
@@ -462,15 +483,16 @@ impl Benchmark {
             .runs
             .iter()
             .filter(|r| {
-                r.runs_on.as_ref().map_or(true, |(is_target, target)| {
+                r.runs_on.as_ref().is_none_or(|(is_target, target)| {
                     if *is_target {
                         target == env!("GR_BUILD_TRIPLE")
                     } else {
                         target != env!("GR_BUILD_TRIPLE")
                     }
-                }) && r.rust_version.as_ref().map_or(true, |(cmp, version)| {
-                    meta.compare_rust_version(*cmp, version)
-                })
+                }) && r
+                    .rust_version
+                    .as_ref()
+                    .is_none_or(|(cmp, version)| meta.compare_rust_version(*cmp, version))
             })
             .enumerate()
         {
@@ -970,13 +992,17 @@ impl BenchmarkRunner {
     pub fn run(&self) -> Result<(), String> {
         // We need the `summary.json` files to verify that not all costs are zero. Extracting this
         // info from the summary is much easier than doing it from the output.
-        std::env::set_var("GUNGRAUN_SAVE_SUMMARY", "json");
-        std::env::set_var(
-            "GUNGRAUN_RUNNER",
-            self.metadata
-                .target_directory
-                .join("release/gungraun-runner"),
-        );
+        // SAFETY: Benchmarks are run serially
+        unsafe { std::env::set_var("GUNGRAUN_SAVE_SUMMARY", "json") };
+        // SAFETY: Benchmarks are run serially
+        unsafe {
+            std::env::set_var(
+                "GUNGRAUN_RUNNER",
+                self.metadata
+                    .target_directory
+                    .join("release/gungraun-runner"),
+            )
+        };
 
         let schema: serde_json::Value = serde_json::from_reader(
             File::open(
