@@ -22,7 +22,7 @@ version.workspace = true
 [features]
 benchmark = [
   "gungraun-runner",
-  "dep:bincode",
+  "dep:bincode-next",
   "dep:gungraun-macros",
   "dep:derive_more",
 ]
@@ -40,7 +40,7 @@ features = ["client_requests_defs"]
 rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
-bincode = { workspace = true, optional = true }
+bincode-next = { workspace = true, optional = true }
 cty = { workspace = true, optional = true }
 # We use the `derive_more` crate anyway in `gungraun-macros`, so there's no
 # harm in using it for this small AsRef derive macro
