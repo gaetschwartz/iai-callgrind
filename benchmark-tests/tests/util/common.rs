@@ -119,7 +119,6 @@ impl Fixtures {
         reader.lines().map(std::result::Result::unwrap).collect()
     }
 
-    #[allow(unused)]
     pub fn save_serialized<T, N>(name: N, value: &T) -> Result<(), serde_yaml::Error>
     where
         T: Serialize,
@@ -173,14 +172,12 @@ impl Default for Runner {
 
 impl RunnerOutput {
     #[track_caller]
-    #[allow(unused)]
     pub fn assert_stderr(&self, expected: &str) -> &Self {
         assert_eq!(std::str::from_utf8(&self.0.stderr).unwrap(), expected);
         self
     }
 
     #[track_caller]
-    #[allow(unused)]
     pub fn assert_stdout(&self, expected: &str) -> &Self {
         assert_eq!(std::str::from_utf8(&self.0.stdout).unwrap(), expected);
         self
@@ -193,7 +190,6 @@ impl RunnerOutput {
     }
 
     #[track_caller]
-    #[allow(unused)]
     pub fn assert_stdout_bytes(&self, expected: &[u8]) -> &Self {
         assert_eq!(&self.0.stdout, expected);
         self
@@ -211,7 +207,6 @@ impl RunnerOutput {
 }
 
 impl Version {
-    #[allow(clippy::needless_collect)]
     pub fn new(version: &str) -> Self {
         let [major, minor, patch] = version
             .split('.')

@@ -8,7 +8,7 @@ cfg_if::cfg_if! {
     if #[cfg(not(feature = "act"))] {
         pub mod imp {
             #[inline(always)]
-            #[allow(clippy::similar_names)]
+            #[expect(clippy::similar_names)]
             pub fn valgrind_do_client_request_expr(
                 default: usize,
                 _request: cty::c_uint,

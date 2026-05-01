@@ -7,7 +7,6 @@ use valgrind_requests::{
     valgrind_println_backtrace, valgrind_println_backtrace_unchecked, valgrind_println_unchecked,
 };
 
-#[allow(unused_variables)]
 fn main() {
     let invalid_cstring = "INV\0LID";
     let valid_cstring = "foo";

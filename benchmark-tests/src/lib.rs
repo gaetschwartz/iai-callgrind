@@ -11,7 +11,7 @@ use std::rc::Rc;
 use gungraun::client_requests;
 
 struct Left(Option<Rc<Right>>);
-#[allow(dead_code)]
+#[expect(dead_code)]
 struct Right(Option<Rc<RefCell<Left>>>);
 
 pub fn is_prime(num: u64) -> bool {
