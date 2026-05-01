@@ -239,8 +239,11 @@ pub fn receive_benchmark<T>(_num_bytes: usize) -> Result<T>
 where
     T: serde::de::DeserializeOwned,
 {
-    bincode::serde::decode_from_reader(BufReader::new(stdin().lock()), bincode::config::legacy())
-        .with_context(|| "Failed to decode configuration")
+    bincode_next::serde::decode_from_reader(
+        BufReader::new(stdin().lock()),
+        bincode_next::config::legacy(),
+    )
+    .with_context(|| "Failed to decode configuration")
 }
 
 /// Run this benchmark

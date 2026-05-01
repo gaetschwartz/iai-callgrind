@@ -519,7 +519,7 @@ pub use bin_bench::{
     Delay, Sandbox,
 };
 #[cfg(feature = "default")]
-pub use bincode;
+pub use bincode_next as bincode;
 #[cfg(feature = "default")]
 pub use common::{
     Bbv, Cachegrind, Callgrind, Dhat, Drd, FlamegraphConfig, Helgrind, Massif, Memcheck,
