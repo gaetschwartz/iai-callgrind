@@ -37,8 +37,8 @@ cachesim
 cacheuse
 cachuse
 callgrind
-Callgrind
 CALLGRIND
+Callgrind
 CFLAGS
 cicd
 Clearify
@@ -121,8 +121,8 @@ isystem
 Itamar
 itertools
 jcnd
-JITter
 jitter
+JITter
 jsonschema
 Justfile
 kcachegrind
@@ -205,8 +205,8 @@ pthread
 PTHREAD
 punct
 pushd
-quickstart
 Quickstart
+quickstart
 ramhitrate
 ramhits
 raun
@@ -236,8 +236,8 @@ rustified
 RUSTSEC
 rustup
 rustversion
-RWLOCK
 rwlock
+RWLOCK
 rwlocks
 sandboxing
 sanitized
@@ -286,6 +286,7 @@ totallifetimes
 totalrw
 totalunits
 Trauring's
+trixie
 trybuild
 trycmd
 unaddressable
@@ -298,8 +299,8 @@ USERSO
 usize
 valgrind
 Valgrind
-valgrind's
 Valgrind's
+valgrind's
 Valgrinds
 valico
 valist
