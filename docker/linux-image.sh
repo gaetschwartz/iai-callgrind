@@ -172,7 +172,8 @@ main() {
     ;;
   riscv64)
     kernel='6.*-riscv64'
-    debsource="deb http://deb.debian.org/debian unstable main"
+    debsource="deb http://http.debian.net/debian/ trixie main"
+    debsource="${debsource}\ndeb http://security.debian.org/ trixie-security main"
     deps=(libcrypt1:"${arch}")
     ;;
   s390x)
@@ -235,10 +236,10 @@ main() {
   # Use a single connection per url which is slower but should fix the
   # intermittent error: curl: (16) Error in the HTTP2 framing layer
   for url in \
-    'https://www.ports.debian.org/archive_'{2020,2021,2022,2023,2024,2025}.key \
-    'https://ftp-master.debian.org/keys/release-'{7,8,9,10,11,12}.asc \
-    'https://ftp-master.debian.org/keys/archive-key-'{8,9,10,11,12}-security.asc \
-    'https://ftp-master.debian.org/keys/archive-key-'{7.0,8,9,10,11,12}.asc; do
+    'https://www.ports.debian.org/archive_'{2020,2021,2022,2023,2024,2025,2026}.key \
+    'https://ftp-master.debian.org/keys/release-'{7,8,9,10,11,12,13}.asc \
+    'https://ftp-master.debian.org/keys/archive-key-'{8,9,10,11,12,13}-security.asc \
+    'https://ftp-master.debian.org/keys/archive-key-'{7.0,8,9,10,11,12,13}.asc; do
     curl --retry 3 -sSfL "$url" -O
   done
 
@@ -282,13 +283,6 @@ main() {
     "linux-image-${kernel}:${arch}" \
     ncurses-base"${ncurses}" \
     "zlib1g:${arch}"
-
-  if [[ "$arch" == "riscv64" ]]; then
-    apt-get -d --no-install-recommends download \
-      "linux-base-${kernel}:${arch}" \
-      "linux-binary-${kernel}:${arch}" \
-      "linux-modules-${kernel}:${arch}"
-  fi
 
   if [[ "${arch}" != "${dpkg_arch}" ]]; then
     apt-get -d --no-install-recommends download "${libgcc_packages[@]}"
