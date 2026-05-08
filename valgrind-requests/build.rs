@@ -227,7 +227,9 @@ mod imp {
         } else if target.arch == "arm" && target.os == "linux" && target.env == "gnu" {
             Some(Support::Arm)
         } else if target.arch == "aarch64"
-            && (target.os == "freebsd" || (target.os == "linux" && target.env == "gnu"))
+            && (target.os == "freebsd"
+                || (target.os == "linux" && target.env == "gnu")
+                || (target.vendor == "apple" && target.os == "macos"))
         {
             Some(Support::Aarch64)
         } else if target.arch == "riscv64gc" && target.os == "linux" {
