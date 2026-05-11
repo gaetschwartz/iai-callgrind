@@ -31,7 +31,6 @@ fn main() {
     println!("cargo:rerun-if-env-changed=RUSTC");
     println!("cargo:rerun-if-env-changed=CARGO_MANIFEST_DIR");
     println!("cargo:rerun-if-env-changed=CROSS_RUNNER");
-    println!("cargo:rerun-if-env-changed=VALGRIND_REQUESTS_CROSS_TARGET");
 
     let fixtures = PathBuf::from(
         std::env::var("CARGO_MANIFEST_DIR")
@@ -66,10 +65,6 @@ fn main() {
         );
     }
 
-    set_env_var(
-        "VALGRIND_REQUESTS_CROSS_TARGET",
-        std::env::var("TARGET").expect("Environment variable TARGET should be present"),
-    );
     let rust_version = get_rust_version();
     set_env_var("CLIENT_REQUEST_TESTS_RUST_VERSION", rust_version);
 }
