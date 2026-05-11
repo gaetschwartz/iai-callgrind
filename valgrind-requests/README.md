@@ -182,35 +182,35 @@ introduces at least an additional frame on the stack and the costs for the
 function call. That means all targets covered by Valgrind are also covered by
 `valgrind-requests`. Targets not supported by Valgrind produce a compile error.
 
-| Target               | Zero-indirection | Notes                                         |
-| -------------------- | ---------------- | --------------------------------------------- |
-| `x86_64/linux`       | yes              | except the x32 ABI                            |
-| `x86_64/android`     | yes              | except the x32 ABI                            |
-| `x86_64/freebsd`     | yes              | -                                             |
-| `x86_64/macos`       | yes              | the versions supported by Valgrind            |
-| `x86_64/windows+gnu` | yes              | -                                             |
-| `x86_64/solaris`     | yes              | -                                             |
-| `x86/linux`          | yes              | -                                             |
-| `x86/android`        | yes              | -                                             |
-| `x86/freebsd`        | yes              | -                                             |
-| `x86/macos`          | yes              | the versions supported by Valgrind            |
-| `x86/windows+gnu`    | yes              | -                                             |
-| `x86/solaris`        | yes              | -                                             |
-| `arm/linux`          | yes              | -                                             |
-| `arm/android`        | yes              | -                                             |
-| `aarch64/linux`      | yes              | -                                             |
-| `aarch64/android`    | yes              | -                                             |
-| `aarch64/freebsd`    | yes              | -                                             |
-| `aarch64/macos`      | yes              | [LouisBrunner/valgrind-macos][valgrind-macos] |
-| `riscv64/linux`      | yes              | -                                             |
-| `s390x/linux`        | yes              | -                                             |
-| `powerpc/linux`      | yes              | rust >= 1.95.0                                |
-| `powerpc64/linux`    | yes              | rust >= 1.95.0                                |
-| `powerpc64le/linux`  | yes              | rust >= 1.95.0                                |
-| `mips32/linux`       | no               | no rust inline assembly available             |
-| `mips64/linux`       | no               | no rust inline assembly available             |
-| `nanomips/linux`     | no               | no zero-indirection planned                   |
-| `x86/windows+msvc`   | no               | no zero-indirection planned                   |
+| Target               | Zero-indirection | Notes                                                                                |
+| -------------------- | ---------------- | ------------------------------------------------------------------------------------ |
+| `x86_64/linux`       | yes              | except the x32 ABI                                                                   |
+| `x86_64/android`     | yes              | except the x32 ABI                                                                   |
+| `x86_64/freebsd`     | yes              | -                                                                                    |
+| `x86_64/macos`       | yes              | the versions supported by Valgrind and [LouisBrunner/valgrind-macos][valgrind-macos] |
+| `x86_64/windows+gnu` | yes              | -                                                                                    |
+| `x86_64/solaris`     | yes              | -                                                                                    |
+| `x86/linux`          | yes              | -                                                                                    |
+| `x86/android`        | yes              | -                                                                                    |
+| `x86/freebsd`        | yes              | -                                                                                    |
+| `x86/macos`          | yes              | the versions supported by Valgrind and [LouisBrunner/valgrind-macos][valgrind-macos] |
+| `x86/windows+gnu`    | yes              | -                                                                                    |
+| `x86/solaris`        | yes              | -                                                                                    |
+| `arm/linux`          | yes              | -                                                                                    |
+| `arm/android`        | yes              | -                                                                                    |
+| `aarch64/linux`      | yes              | -                                                                                    |
+| `aarch64/android`    | yes              | -                                                                                    |
+| `aarch64/freebsd`    | yes              | -                                                                                    |
+| `aarch64/macos`      | yes              | [LouisBrunner/valgrind-macos][valgrind-macos]                                        |
+| `riscv64/linux`      | yes              | -                                                                                    |
+| `s390x/linux`        | yes              | -                                                                                    |
+| `powerpc/linux`      | yes              | rust >= 1.95.0                                                                       |
+| `powerpc64/linux`    | yes              | rust >= 1.95.0                                                                       |
+| `powerpc64le/linux`  | yes              | rust >= 1.95.0                                                                       |
+| `mips32/linux`       | no               | no rust inline assembly available                                                    |
+| `mips64/linux`       | no               | no rust inline assembly available                                                    |
+| `nanomips/linux`     | no               | no zero-indirection planned                                                          |
+| `x86/windows+msvc`   | no               | no zero-indirection planned                                                          |
 
 To disable the native C FFI binding as fallback you can set the environment
 variable `VALGRIND_REQUESTS_STRATEGY=strict` (possible values are: `strict`,
