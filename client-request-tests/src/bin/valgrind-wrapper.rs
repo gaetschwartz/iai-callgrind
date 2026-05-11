@@ -8,7 +8,7 @@ use std::process::Command;
 use std::str::FromStr;
 use std::sync::LazyLock;
 
-use client_request_tests::{CROSS_TARGET, MARKER};
+use client_request_tests::MARKER;
 use regex::Regex;
 
 static STRIP_PREFIX_RE: LazyLock<Regex> = LazyLock::new(|| {
@@ -254,14 +254,10 @@ pub fn get_valgrind_command() -> Command {
     let valgrind = if let Ok(dir) = std::env::var("VALGRIND_REQUESTS_VALGRIND_PATH") {
         PathBuf::from(dir).join("valgrind")
     } else {
-        // TODO: Don't use a partly hardcoded path to the valgrind binary if running the tests with
-        // cross
-        PathBuf::from("/target/valgrind")
-            .join(CROSS_TARGET)
-            .join("bin/valgrind")
+        // This works inside the qemu image during a cross run, too
+        PathBuf::from("valgrind")
     };
 
-    assert!(valgrind.exists(), "Valgrind binary not found");
     Command::new(valgrind)
 }
 

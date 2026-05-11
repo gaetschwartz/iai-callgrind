@@ -105,17 +105,8 @@ mod imp {
             builder.flag(format!("-isystem{env}"));
         }
 
-        if target.os == "freebsd" {
-            builder.flag("-isystem/usr/local/include");
-        }
-
-        if let Ok(env) = std::env::var("VALGRIND_REQUESTS_CROSS_TARGET") {
-            let path = PathBuf::from("/valgrind/target/valgrind")
-                .join(env)
-                .join("include");
-            builder.flag(format!("-isystem{}", path.display()));
-        }
-
+        builder.flag("-isystem/usr/local/include");
+        builder.flag("-isystem/usr/include");
         builder.flag("-idiraftervalgrind/include");
 
         builder
@@ -131,19 +122,14 @@ mod imp {
             builder = builder.clang_arg(format!("-isystem{env}"));
         }
 
-        if let Ok(env) = std::env::var("VALGRIND_REQUESTS_CROSS_TARGET") {
-            let path = PathBuf::from("/valgrind/target/valgrind")
-                .join(env)
-                .join("include");
-            builder = builder.clang_arg(format!("-isystem{}", path.display()));
-        }
-
-        if target.os == "freebsd" {
-            builder = builder.clang_arg("-isystem/usr/local/include");
-        }
+        // The default includes are not working in cross because the sysroot is set to a target
+        // specific path like /usr/x86_64-linux-gnu/usr/include but the valgrind headers are
+        // target-agnostic and usually installed in /usr/{local/}include.
+        builder = builder.clang_arg("-isystem/usr/local/include");
+        builder = builder.clang_arg("-isystem/usr/include");
+        builder = builder.clang_arg("-idiraftervalgrind/include");
 
         let bindings = builder
-            .clang_arg("-idiraftervalgrind/include")
             .header("valgrind/wrapper.h")
             .allowlist_var("VR_IS_PLATFORM_SUPPORTED_BY_VALGRIND")
             .allowlist_var("VR_VALGRIND_MAJOR")
@@ -181,7 +167,6 @@ mod imp {
         println!("cargo:rerun-if-env-changed=IAI_CALLGRIND_VALGRIND_INCLUDE");
         println!("cargo:rerun-if-env-changed=IAI_CALLGRIND_{triple_env_key}_VALGRIND_INCLUDE");
 
-        println!("cargo:rerun-if-env-changed=VALGRIND_REQUESTS_CROSS_TARGET");
         println!("cargo:rerun-if-env-changed=TARGET");
 
         // rustc-check-cfg is introduced in rust with version 1.80 and avoids the compiler warnings

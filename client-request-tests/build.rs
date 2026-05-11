@@ -31,9 +31,6 @@ fn main() {
     println!("cargo:rerun-if-env-changed=RUSTC");
     println!("cargo:rerun-if-env-changed=CARGO_MANIFEST_DIR");
     println!("cargo:rerun-if-env-changed=CROSS_RUNNER");
-    println!("cargo:rerun-if-env-changed=VALGRIND_REQUESTS_CROSS_TARGET");
-    println!("cargo:rerun-if-env-changed=VALGRIND_REQUESTS_CROSS_VALGRIND_TEMPDIR");
-    println!("cargo:rerun-if-env-changed=VALGRIND_REQUESTS_CROSS_VALGRIND_DESTDIR");
 
     let fixtures = PathBuf::from(
         std::env::var("CARGO_MANIFEST_DIR")
@@ -65,41 +62,6 @@ fn main() {
         set_env_var(
             "CLIENT_REQUEST_TESTS_FIXTURES",
             fixtures.display().to_string(),
-        );
-    }
-
-    // If Ok, then we're building with cross
-    if let Ok(cross_target) = std::env::var("VALGRIND_REQUESTS_CROSS_TARGET") {
-        set_env_var("VALGRIND_REQUESTS_CROSS_TARGET", cross_target);
-
-        let temp_dir = PathBuf::from(
-            std::env::var("VALGRIND_REQUESTS_CROSS_VALGRIND_TEMPDIR").expect(
-                "Environment variable 'VALGRIND_REQUESTS_CROSS_VALGRIND_TEMPDIR' should exist",
-            ),
-        );
-        let dest_dir = PathBuf::from(
-            std::env::var("VALGRIND_REQUESTS_CROSS_VALGRIND_DESTDIR").expect(
-                "Environment variable 'VALGRIND_REQUESTS_CROSS_VALGRIND_DESTDIR' should exist",
-            ),
-        );
-
-        if temp_dir.exists() {
-            if dest_dir.exists() {
-                std::fs::remove_dir_all(dest_dir).unwrap();
-            }
-
-            let options = CopyOptions::new(); //Initialize default values for CopyOptions
-            fs_extra::copy_items(&[temp_dir], "/", &options).unwrap();
-        } else {
-            panic!(
-                "Temporary valgrind installation path '{}' does not exist",
-                temp_dir.display()
-            );
-        }
-    } else {
-        set_env_var(
-            "VALGRIND_REQUESTS_CROSS_TARGET",
-            std::env::var("TARGET").expect("Environment variable TARGET should be present"),
         );
     }
 
