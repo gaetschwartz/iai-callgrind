@@ -3,132 +3,76 @@
 ################
 [target.x86_64-unknown-linux-gnu]
 runner = "qemu-system"
-
-[target.x86_64-unknown-linux-gnu.dockerfile]
-file = "docker/Dockerfile"
-context = "docker"
-build-args = { VALGRIND_REQUESTS_CROSS_TARGET = "x86_64-unknown-linux-gnu" }
-
-[target.x86_64-unknown-linux-gnu.env]
-passthrough = ["BINDGEN_EXTRA_CLANG_ARGS_x86_64_unknown_linux_gnu='--verbose'"]
+image = "ghcr.io/gungraun/x86_64-unknown-linux-gnu:latest"
 
 ################
 # i686
 ################
 [target.i686-unknown-linux-gnu]
 runner = "qemu-system"
-
-[target.i686-unknown-linux-gnu.dockerfile]
-file = "docker/Dockerfile"
-context = "docker"
-build-args = { VALGRIND_REQUESTS_CROSS_TARGET = "i686-unknown-linux-gnu" }
-
-[target.i686-unknown-linux-gnu.env]
-passthrough = ["BINDGEN_EXTRA_CLANG_ARGS_i686_unknown_linux_gnu='--verbose'"]
+image = "ghcr.io/gungraun/i686-unknown-linux-gnu:latest"
 
 ################
 # s390x
 ################
 [target.s390x-unknown-linux-gnu]
 runner = "qemu-system"
-
-[target.s390x-unknown-linux-gnu.dockerfile]
-file = "docker/Dockerfile"
-context = "docker"
-build-args = { VALGRIND_REQUESTS_CROSS_TARGET = "s390x-unknown-linux-gnu" }
-
-[target.s390x-unknown-linux-gnu.env]
-passthrough = ["BINDGEN_EXTRA_CLANG_ARGS_s390x_unknown_linux_gnu='--verbose'"]
+image = "ghcr.io/gungraun/s390x-unknown-linux-gnu:latest"
 
 ################
 # aarch64
 ################
 [target.aarch64-unknown-linux-gnu]
 runner = "qemu-system"
-
-[target.aarch64-unknown-linux-gnu.dockerfile]
-file = "docker/Dockerfile"
-context = "docker"
-build-args = { VALGRIND_REQUESTS_CROSS_TARGET = "aarch64-unknown-linux-gnu" }
-
-[target.aarch64-unknown-linux-gnu.env]
-passthrough = ["BINDGEN_EXTRA_CLANG_ARGS_aarch64_unknown_linux_gnu='--verbose'"]
+image = "ghcr.io/gungraun/aarch64-unknown-linux-gnu:latest"
 
 ################
 # armv7
 ################
 [target.armv7-unknown-linux-gnueabihf]
 runner = "qemu-system"
-
-[target.armv7-unknown-linux-gnueabihf.dockerfile]
-file = "docker/Dockerfile"
-context = "docker"
-build-args = { VALGRIND_REQUESTS_CROSS_TARGET = "armv7-unknown-linux-gnueabihf" }
-
-[target.armv7-unknown-linux-gnueabihf.env]
-passthrough = [
-  "BINDGEN_EXTRA_CLANG_ARGS_armv7_unknown_linux_gnueabihf='--verbose'",
-  "RUSTFLAGS",
-]
+image = "ghcr.io/gungraun/armv7-unknown-linux-gnueabihf:latest"
 
 ################
 # powerpc
 ################
 [target.powerpc-unknown-linux-gnu]
 runner = "qemu-system"
-
-[target.powerpc-unknown-linux-gnu.dockerfile]
-file = "docker/Dockerfile"
-context = "docker"
-build-args = { VALGRIND_REQUESTS_CROSS_TARGET = "powerpc-unknown-linux-gnu" }
-
-[target.powerpc-unknown-linux-gnu.env]
-passthrough = ["BINDGEN_EXTRA_CLANG_ARGS_powerpc_unknown_linux_gnu='--verbose'"]
+image = "ghcr.io/gungraun/powerpc-unknown-linux-gnu:latest"
 
 ################
 # powerpc64
 ################
 [target.powerpc64-unknown-linux-gnu]
 runner = "qemu-system"
-
-[target.powerpc64-unknown-linux-gnu.dockerfile]
-file = "docker/Dockerfile"
-context = "docker"
-build-args = { VALGRIND_REQUESTS_CROSS_TARGET = "powerpc64-unknown-linux-gnu" }
-
-[target.powerpc64-unknown-linux-gnu.env]
-passthrough = [
-  "BINDGEN_EXTRA_CLANG_ARGS_powerpc64_unknown_linux_gnu='--verbose'",
-]
+image = "ghcr.io/gungraun/powerpc64-unknown-linux-gnu:latest"
 
 ################
 # powerpc64le
 ################
 [target.powerpc64le-unknown-linux-gnu]
 runner = "qemu-system"
-
-[target.powerpc64le-unknown-linux-gnu.dockerfile]
-file = "docker/Dockerfile"
-context = "docker"
-build-args = { VALGRIND_REQUESTS_CROSS_TARGET = "powerpc64le-unknown-linux-gnu" }
-
-[target.powerpc64le-unknown-linux-gnu.env]
-passthrough = [
-  "BINDGEN_EXTRA_CLANG_ARGS_powerpc64le_unknown_linux_gnu='--verbose'",
-]
+image = "ghcr.io/gungraun/powerpc64le-unknown-linux-gnu:latest"
 
 ################
 # riscv64gc
 ################
 [target.riscv64gc-unknown-linux-gnu]
 runner = "qemu-system"
+image = "ghcr.io/gungraun/riscv64-unknown-linux-gnu:latest"
 
-[target.riscv64gc-unknown-linux-gnu.dockerfile]
-file = "docker/Dockerfile"
-context = "docker"
-build-args = { VALGRIND_REQUESTS_CROSS_TARGET = "riscv64gc-unknown-linux-gnu" }
+################
+# mips64el-unknown-linux-gnuabi64
+################
+[target.mips64el-unknown-linux-gnuabi64]
+build-std = true
+runner = "qemu-system"
+image = "ghcr.io/gungraun/mips64el-unknown-linux-gnuabi64:latest"
 
-[target.riscv64gc-unknown-linux-gnu.env]
-passthrough = [
-  "BINDGEN_EXTRA_CLANG_ARGS_riscv64gc_unknown_linux_gnu='--verbose'",
-]
+################
+# mipsel-unknown-linux-gnu
+################
+[target.mipsel-unknown-linux-gnu]
+build-std = true
+runner = "qemu-system"
+image = "ghcr.io/gungraun/mipsel-unknown-linux-gnu:latest"
