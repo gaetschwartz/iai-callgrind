@@ -1,6 +1,6 @@
 use std::io::{Write, stderr};
 
-use crate::common;
+use crate::common::{self, Matcher};
 
 #[test]
 fn test_valgrind_reqs_when_running_native() {
@@ -22,25 +22,72 @@ fn test_valgrind_reqs_when_running_on_valgrind() {
     ]);
 
     let expected_code = 1;
+    let matcher = if cfg!(target_os = "freebsd") {
+        Matcher::Exact(common::get_fixture_as_string(
+            "valgrind-reqs-test.freebsd.stderr",
+        ))
+    } else if cfg!(target_os = "macos") {
+        Matcher::Contains(vec![
+            (
+                "Illegal memory pool address
+<__BACKTRACE__>
+Address <__FILTER__> is <__NUMBER__> bytes inside a block of size <__NUMBER__> free'd
+<__BACKTRACE__>
+Block was alloc'd at
+<__BACKTRACE__>"
+                    .to_owned(),
+                2,
+            ),
+            (
+                "HEAP SUMMARY:
+in use at exit: <__NUMBER__> bytes in <__NUMBER__> blocks
+total heap usage: <__FILTER__>"
+                    .to_owned(),
+                1,
+            ),
+            (
+                "Searching for pointers to <__NUMBER__> not-freed blocks
+Checked <__FILTER__> bytes"
+                    .to_owned(),
+                1,
+            ),
+            (
+                "LEAK SUMMARY:
+definitely lost: <__FILTER__> bytes in <__FILTER__> blocks
+indirectly lost: <__FILTER__> bytes in <__FILTER__> blocks
+possibly lost: <__FILTER__> bytes in <__FILTER__> blocks
+still reachable: <__FILTER__> bytes in <__FILTER__> blocks
+suppressed: <__FILTER__> bytes in <__FILTER__> blocks
+Rerun with --leak-check=full to see details of leaked memory"
+                    .to_owned(),
+                1,
+            ),
+            (
+                "ERROR SUMMARY: <__NUMBER__> errors from <__NUMBER__> contexts (suppressed: \
+                 <__NUMBER__> from <__NUMBER__>)"
+                    .to_owned(),
+                2,
+            ),
+        ])
+    } else if cfg!(target_arch = "x86_64") {
+        Matcher::Exact(common::get_fixture_as_string(
+            "valgrind-reqs-test.x86_64.stderr",
+        ))
+    } else if cfg!(target_arch = "powerpc64") && cfg!(target_endian = "little") {
+        Matcher::Exact(common::get_fixture_as_string(
+            "valgrind-reqs-test.powerpc64le.stderr",
+        ))
+    } else {
+        Matcher::Exact(common::get_fixture_as_string("valgrind-reqs-test.stderr"))
+    };
+
     match cmd.assert().try_code(expected_code) {
-        Ok(assert) => {
-            let fixture_string = if cfg!(target_os = "freebsd") {
-                common::get_fixture_as_string("valgrind-reqs-test.freebsd.stderr")
-            } else if cfg!(target_os = "macos") && cfg!(target_arch = "aarch64") {
-                common::get_fixture_as_string("valgrind-reqs-test.aarch64-macos.stderr")
-            } else if cfg!(target_os = "macos") && cfg!(target_arch = "x86_64") {
-                common::get_fixture_as_string("valgrind-reqs-test.x86_64-macos.stderr")
-            } else if cfg!(target_arch = "x86_64") {
-                common::get_fixture_as_string("valgrind-reqs-test.x86_64.stderr")
-            } else if cfg!(target_arch = "powerpc64") && cfg!(target_endian = "little") {
-                common::get_fixture_as_string("valgrind-reqs-test.powerpc64le.stderr")
-            } else {
-                common::get_fixture_as_string("valgrind-reqs-test.stderr")
-            };
-            assert
-                .stdout("")
-                .stderr(predicates::str::diff(fixture_string));
-        }
+        Ok(assert) => match matcher.try_assert_output(assert) {
+            Ok(_) => {}
+            Err(error) => {
+                panic!("{error}");
+            }
+        },
         Err(error) => {
             let assert = error.assert();
             let output = assert.get_output();

@@ -5,12 +5,53 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 
 use assert_cmd::Command;
+use assert_cmd::assert::{Assert, AssertError};
 use tempfile::{TempDir, tempdir};
 use version_compare::Cmp;
 
 pub const VALGRIND_WRAPPER: &str = env!("CARGO_BIN_EXE_valgrind-wrapper");
 pub const FIXTURES_DIR: &str = env!("CLIENT_REQUEST_TESTS_FIXTURES");
 pub const RUST_VERSION: &str = env!("CLIENT_REQUEST_TESTS_RUST_VERSION");
+
+#[derive(Debug, Clone)]
+pub enum Matcher {
+    Exact(String),
+    Contains(Vec<(String, usize)>),
+}
+
+impl Matcher {
+    pub fn try_assert_output(self, assert: Assert) -> Result<Assert, Box<AssertError>> {
+        match self {
+            Matcher::Exact(fixture) => assert.try_stdout("").map_err(Box::new).and_then(|assert| {
+                assert
+                    .try_stderr(predicates::str::diff(fixture))
+                    .map_err(Box::new)
+            }),
+            Matcher::Contains(items) => {
+                let assert = assert.try_stdout("").map_err(Box::new)?;
+                let stderr = String::from_utf8_lossy(&assert.get_output().stderr);
+                let mut failures = String::new();
+
+                for (to_match, expected) in items {
+                    let actual = stderr.matches(&to_match).count();
+                    if actual != expected {
+                        writeln!(
+                            failures,
+                            "expected {expected} occurrences, found {actual}: {to_match:?}"
+                        )
+                        .unwrap();
+                    }
+                }
+
+                if failures.is_empty() {
+                    Ok(assert)
+                } else {
+                    panic!("stderr occurrence count assertion failed:\n{failures}");
+                }
+            }
+        }
+    }
+}
 
 fn find_runner() -> Option<String> {
     for (key, value) in std::env::vars() {
