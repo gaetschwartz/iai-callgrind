@@ -20,7 +20,7 @@ fn make_hashmap(num: usize) -> HashMap<String, usize> {
 //
 // --simulate-wb=yes does not work together with --cacheuse=yes, so it is excluded here
 #[cfg(any(target_vendor = "apple", target_os = "freebsd"))]
-pub fn config_with_all_data_collection_options() -> LibraryBenchmarkConfig {
+pub fn base_config() -> LibraryBenchmarkConfig {
     LibraryBenchmarkConfig::default()
         .tool(Callgrind::with_args([
             "collect-jumps=yes",

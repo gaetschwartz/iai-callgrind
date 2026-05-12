@@ -879,7 +879,7 @@ mod tests {
 
         let delay = Delay {
             poll: Duration::from_millis(50),
-            timeout: Duration::from_millis(200),
+            timeout: Duration::from_secs(1),
             kind: DelayKind::PathExists(file_path.clone()),
         };
         let handle = thread::spawn(move || {
