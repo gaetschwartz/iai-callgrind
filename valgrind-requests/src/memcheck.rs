@@ -43,7 +43,7 @@
 //! See also [Memcheck Client
 //! Requests](https://valgrind.org/docs/manual/mc-manual.html#mc-manual.clientreqs)
 
-use std::ffi::CStr;
+use core::ffi::CStr;
 
 use super::{
     bindings, fatal_error, valgrind_do_client_request_expr, valgrind_do_client_request_stmt,
@@ -136,9 +136,9 @@ pub fn make_mem_defined_if_addressable(addr: *const (), len: usize) -> usize {
 
 /// Create a [`BlockHandle`].
 ///
-/// The `desc` is a [`std::ffi::CString`] which is included in any messages pertaining to addresses
-/// within the specified memory range. This client request has no other effect on the properties of
-/// the memory range.
+/// The `desc` is a C string which is included in any messages pertaining to addresses within the
+/// specified memory range. This client request has no other effect on the properties of the memory
+/// range.
 ///
 /// The specified address range is associated with the `desc` string. When Memcheck reports
 /// invalid access to an address in the range, it will describe it in terms of this block rather
@@ -231,7 +231,7 @@ pub fn check_value_is_defined<T>(value: &T) -> usize {
         "memcheck::check_value_is_defined",
         0,
         bindings::VR_MemcheckClientRequest::VR_CHECK_MEM_IS_DEFINED,
-        std::ptr::from_ref::<T>(value) as usize,
+        core::ptr::from_ref::<T>(value) as usize,
         core::mem::size_of::<T>(),
         0,
         0,
@@ -328,10 +328,10 @@ pub fn count_leaks() -> LeakCounts {
     do_client_request!(
         "memcheck::count_leaks",
         bindings::VR_MemcheckClientRequest::VR_COUNT_LEAKS,
-        std::ptr::addr_of!(leaks.leaked) as usize,
-        std::ptr::addr_of!(leaks.dubious) as usize,
-        std::ptr::addr_of!(leaks.reachable) as usize,
-        std::ptr::addr_of!(leaks.suppressed) as usize,
+        core::ptr::addr_of!(leaks.leaked) as usize,
+        core::ptr::addr_of!(leaks.dubious) as usize,
+        core::ptr::addr_of!(leaks.reachable) as usize,
+        core::ptr::addr_of!(leaks.suppressed) as usize,
         0
     );
     leaks
@@ -345,10 +345,10 @@ pub fn count_leak_blocks() -> LeakCounts {
     do_client_request!(
         "memcheck::count_leak_blocks",
         bindings::VR_MemcheckClientRequest::VR_COUNT_LEAK_BLOCKS,
-        std::ptr::addr_of!(leaks.leaked) as usize,
-        std::ptr::addr_of!(leaks.dubious) as usize,
-        std::ptr::addr_of!(leaks.reachable) as usize,
-        std::ptr::addr_of!(leaks.suppressed) as usize,
+        core::ptr::addr_of!(leaks.leaked) as usize,
+        core::ptr::addr_of!(leaks.dubious) as usize,
+        core::ptr::addr_of!(leaks.reachable) as usize,
+        core::ptr::addr_of!(leaks.suppressed) as usize,
         0
     );
     leaks

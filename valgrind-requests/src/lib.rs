@@ -68,13 +68,17 @@
 //!
 //! # Features
 //!
-//! This crate provides two feature levels:
+//! This crate provides two execution feature levels:
 //!
 //! - **`act`** *(default)*: Enables actual execution of client requests when running under
 //!   Valgrind. Implies `stubs`.
-//! - **`stubs`**: Enables the client request definitions and build-time code generation, but all
+//! - **`stubs`**: Enables the same public API surface and build-time code generation, but all
 //!   client requests compile to no-ops that return default values. The compiler will optimize them
 //!   away entirely, making this a zero-cost option suitable for production code.
+//!
+//! Formatting convenience macros such as [`valgrind_printf`] and [`valgrind_println`] require the
+//! **`alloc`** feature because they allocate owned C strings. In allocation-free builds, use
+//! [`valgrind_print`] or [`valgrind_print_backtrace`] instead.
 //!
 //! To use the zero-cost fallback, for example if you want to use the client requests for tests or
 //! benchmarks and need to make annotations in production code:
@@ -88,7 +92,8 @@
 //! ```
 //!
 //! The stubs compile down to nothing and your production code is as performant as without any
-//! annotations.
+//! annotations. If your production code uses the formatting convenience macros, enable both `stubs`
+//! and `alloc` with `features = ["stubs", "alloc"]`.
 //!
 //! # Performance and implementation details
 //!
@@ -156,6 +161,17 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc(test(attr(warn(unused))))]
 #![doc(test(attr(allow(unused_extern_crates))))]
+#![cfg_attr(not(feature = "std"), no_std)]
+#![expect(clippy::arbitrary_source_item_ordering)]
+
+#[cfg(feature = "alloc")]
+#[doc(hidden)]
+pub extern crate alloc as __alloc;
+#[cfg(feature = "std")]
+extern crate std;
+
+#[cfg(not(feature = "stubs"))]
+compile_error!("valgrind-requests requires either the `stubs` or `act` feature");
 
 /// Returns `true` if a client request is defined and available in the used Valgrind version.
 ///
@@ -222,49 +238,65 @@ macro_rules! do_client_request {
     }};
 }
 
-/// Convenience macro to create a `\0`-byte terminated [`std::ffi::CString`] from a literal string
+/// Convenience macro to create a `\0`-byte terminated `alloc::ffi::CString` from a literal string
+///
+/// This macro requires the `alloc` feature. In allocation-free builds, use [`valgrind_print`]
+/// instead.
 ///
 /// The string literal passed to this macro must not contain or end with a `\0`-byte. If you need a
-/// checked version of [`std::ffi::CString`] you can use [`std::ffi::CString::new`].
+/// checked version of `alloc::ffi::CString` you can use `alloc::ffi::CString::new`.
 ///
 /// # Safety
 ///
 /// This macro is unsafe but convenient and efficient. It is your responsibility to ensure that the
 /// input string literal does not contain any `\0` bytes.
+#[cfg(feature = "alloc")]
 #[macro_export]
 macro_rules! cstring {
-    ($string:literal) => {{ std::ffi::CString::from_vec_with_nul_unchecked(concat!($string, "\0").as_bytes().to_vec()) }};
+    ($string:literal) => {{
+        $crate::__alloc::ffi::CString::from_vec_with_nul_unchecked(
+            concat!($string, "\0").as_bytes().to_vec(),
+        )
+    }};
 }
 
-/// Convenience macro to create a `\0`-byte terminated [`std::ffi::CString`] from a format string
+/// Convenience macro to create a `\0`-byte terminated `alloc::ffi::CString` from a format string
+///
+/// This macro requires the `alloc` feature. In allocation-free builds, use [`valgrind_print`]
+/// instead.
 ///
 /// The format string passed to this macro must not contain or end with a `\0`-byte.
 ///
 /// # Safety
 ///
 /// The same safety conditions as to the [`cstring`] macro apply here
+#[cfg(feature = "alloc")]
 #[macro_export]
 macro_rules! format_cstring {
     ($($args:tt)*) => {{
-        std::ffi::CString::from_vec_with_nul_unchecked(
-            format!("{}\0", format_args!($($args)*)).into_bytes()
+        $crate::__alloc::ffi::CString::from_vec_with_nul_unchecked(
+            $crate::__alloc::format!("{}\0", format_args!($($args)*)).into_bytes()
         )
     }};
 }
 
 cfg_if! {
     if #[cfg(feature = "act")] {
-        /// Allow prints to Valgrind log
+        /// Prints to the Valgrind log.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print`] instead.
         ///
         /// This macro is a safe variant of the `VALGRIND_PRINTF` function, checking for `\0` bytes
         /// in the formatting string. However, if you're sure there are no `\0` bytes present you
         /// can safely use [`crate::valgrind_printf_unchecked`] which performs better compared to
         /// this macro.
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_printf {
             ($($args:tt)*) => {{
-                match std::ffi::CString::from_vec_with_nul(
-                    format!("{}\0", format_args!($($args)*)).into_bytes()
+                match $crate::__alloc::ffi::CString::from_vec_with_nul(
+                    $crate::__alloc::format!("{}\0", format_args!($($args)*)).into_bytes()
                 ) {
                     Ok(c_string) => {
                         unsafe {
@@ -281,31 +313,39 @@ cfg_if! {
             }};
         }
 
-        /// Allow prints to Valgrind log
+        /// Prints to the Valgrind log.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print`] instead.
         ///
         /// Use this macro only if you are sure there are no `\0`-bytes in the formatted string. If
         /// unsure use the safe [`crate::valgrind_printf`] variant.
         ///
         /// This variant performs better than [`crate::valgrind_printf`].
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_printf_unchecked {
             ($($args:tt)*) => {{
-                let string = format!("{}\0", format_args!($($args)*));
+                let string = $crate::__alloc::format!("{}\0", format_args!($($args)*));
                 $crate::__valgrind_print(
-                    string.as_ptr() as *const ::cty::c_char
+                    string.as_ptr() as *const $crate::__cty::c_char
                 );
             }};
         }
 
-        /// Allow prints to Valgrind log ending with a newline
+        /// Prints to the Valgrind log ending with a newline.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print`] instead.
         ///
         /// See also [`crate::valgrind_printf`]
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_println {
             () => { $crate::valgrind_printf!("\n") };
             ($($arg:tt)*) => {{
-                match std::ffi::CString::from_vec_with_nul(
-                    format!("{}\n\0", format_args!($($arg)*)).into_bytes()
+                match $crate::__alloc::ffi::CString::from_vec_with_nul(
+                    $crate::__alloc::format!("{}\n\0", format_args!($($arg)*)).into_bytes()
                 ) {
                     Ok(c_string) => {
                         unsafe {
@@ -322,28 +362,36 @@ cfg_if! {
             }};
         }
 
-        /// Allow prints to Valgrind log ending with a newline
+        /// Prints to the Valgrind log ending with a newline.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print`] instead.
         ///
         /// See also [`crate::valgrind_printf_unchecked`]
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_println_unchecked {
             () => { $crate::valgrind_printf_unchecked!("\n") };
             ($($args:tt)*) => {{
-                let string = format!("{}\n\0", format_args!($($args)*));
+                let string = $crate::__alloc::format!("{}\n\0", format_args!($($args)*));
                 $crate::__valgrind_print(
-                    string.as_ptr() as *const ::cty::c_char
+                    string.as_ptr() as *const $crate::__cty::c_char
                 );
             }};
         }
 
-        /// Allow prints to Valgrind log with a backtrace
+        /// Prints to the Valgrind log with a backtrace.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print_backtrace`] instead.
         ///
         /// See also [`crate::valgrind_printf`]
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_printf_backtrace {
             ($($arg:tt)*) => {{
-                match std::ffi::CString::from_vec_with_nul(
-                    format!("{}\0", format_args!($($arg)*)).into_bytes()
+                match $crate::__alloc::ffi::CString::from_vec_with_nul(
+                    $crate::__alloc::format!("{}\0", format_args!($($arg)*)).into_bytes()
                 ) {
                     Ok(c_string) => {
                         unsafe {
@@ -360,28 +408,36 @@ cfg_if! {
             }};
         }
 
-        /// Allow prints to Valgrind log with a backtrace
+        /// Prints to the Valgrind log with a backtrace.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print_backtrace`] instead.
         ///
         /// See also [`crate::valgrind_printf_unchecked`]
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_printf_backtrace_unchecked {
             ($($arg:tt)*) => {{
-                let string = format!("{}\0", format_args!($($arg)*));
+                let string = $crate::__alloc::format!("{}\0", format_args!($($arg)*));
                 $crate::__valgrind_print_backtrace(
-                    string.as_ptr() as *const ::cty::c_char
+                    string.as_ptr() as *const $crate::__cty::c_char
                 );
             }};
         }
 
-        /// Allow prints to Valgrind log with a backtrace ending the formatted string with a newline
+        /// Prints to the Valgrind log with a backtrace, ending the formatted string with a newline.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print_backtrace`] instead.
         ///
         /// See also [`crate::valgrind_printf`]
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_println_backtrace {
             () => { $crate::valgrind_printf_backtrace!("\n") };
             ($($arg:tt)*) => {{
-                match std::ffi::CString::from_vec_with_nul(
-                    format!("{}\n\0", format_args!($($arg)*)).into_bytes()
+                match $crate::__alloc::ffi::CString::from_vec_with_nul(
+                    $crate::__alloc::format!("{}\n\0", format_args!($($arg)*)).into_bytes()
                 ) {
                     Ok(c_string) => {
                         unsafe {
@@ -398,28 +454,36 @@ cfg_if! {
             }};
         }
 
-        /// Allow prints to Valgrind log with a backtrace ending the formatted string with a newline
+        /// Prints to the Valgrind log with a backtrace, ending the formatted string with a newline.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print_backtrace`] instead.
         ///
         /// See also [`crate::valgrind_printf_unchecked`]
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_println_backtrace_unchecked {
             () => { $crate::valgrind_printf_backtrace_unchecked!("\n") };
             ($($arg:tt)*) => {{
-                let string = format!("{}\n\0", format_args!($($arg)*));
+                let string = $crate::__alloc::format!("{}\n\0", format_args!($($arg)*));
                 unsafe {
                     $crate::__valgrind_print_backtrace(
-                        string.as_ptr() as *const ::cty::c_char
+                        string.as_ptr() as *const $crate::__cty::c_char
                     );
                 }
             }};
         }
     } else {
-        /// Allow prints to Valgrind log
+        /// No-op variant of [`valgrind_printf`] for stub builds.
+        ///
+        /// This macro requires the `alloc` feature to preserve the same fallible API as the active
+        /// formatting macro. In allocation-free builds, use [`valgrind_print`] instead.
         ///
         /// This macro is a safe variant of the `VALGRIND_PRINTF` function, checking for `\0` bytes
         /// in the formatting string. However, if you're sure there are no `\0` bytes present you
         /// can safely use [`crate::valgrind_printf_unchecked`] which performs better compared to
         /// this macro.
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_printf {
             ($($arg:tt)*) => {{
@@ -428,20 +492,28 @@ cfg_if! {
             }};
         }
 
-        /// Allow prints to Valgrind log
+        /// No-op variant of [`valgrind_printf_unchecked`] for stub builds.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print`] instead.
         ///
         /// Use this macro only if you are sure there are no `\0`-bytes in the formatted string. If
         /// unsure use the safe [`crate::valgrind_printf`] variant.
         ///
         /// This variant performs better than [`crate::valgrind_printf`].
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_printf_unchecked {
             ($($arg:tt)*) => {{ $crate::__no_op() }};
         }
 
-        /// Allow prints to Valgrind log ending with a newline
+        /// No-op variant of [`valgrind_println`] for stub builds.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print`] instead.
         ///
         /// See also [`crate::valgrind_printf`]
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_println {
             ($($arg:tt)*) => {{
@@ -450,17 +522,25 @@ cfg_if! {
             }};
         }
 
-        /// Allow prints to Valgrind log ending with a newline
+        /// No-op variant of [`valgrind_println_unchecked`] for stub builds.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print`] instead.
         ///
         /// See also [`crate::valgrind_printf_unchecked`]
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_println_unchecked {
             ($($arg:tt)*) => {{ $crate::__no_op() }};
         }
 
-        /// Allow prints to Valgrind log with a backtrace
+        /// No-op variant of [`valgrind_printf_backtrace`] for stub builds.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print_backtrace`] instead.
         ///
         /// See also [`crate::valgrind_printf`]
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_printf_backtrace {
             ($($arg:tt)*) => {{
@@ -469,17 +549,25 @@ cfg_if! {
             }};
         }
 
-        /// Allow prints to Valgrind log with a backtrace
+        /// No-op variant of [`valgrind_printf_backtrace_unchecked`] for stub builds.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print_backtrace`] instead.
         ///
         /// See also [`crate::valgrind_printf_unchecked`]
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_printf_backtrace_unchecked {
             ($($arg:tt)*) => {{ $crate::__no_op() }};
         }
 
-        /// Allow prints to Valgrind log with a backtrace ending the formatted string with a newline
+        /// No-op variant of [`valgrind_println_backtrace`] for stub builds.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print_backtrace`] instead.
         ///
         /// See also [`crate::valgrind_printf`]
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_println_backtrace {
             ($($arg:tt)*) => {{
@@ -488,9 +576,13 @@ cfg_if! {
             }};
         }
 
-        /// Allow prints to Valgrind log with a backtrace ending the formatted string with a newline
+        /// No-op variant of [`valgrind_println_backtrace_unchecked`] for stub builds.
+        ///
+        /// This macro requires the `alloc` feature. In allocation-free builds, use
+        /// [`valgrind_print_backtrace`] instead.
         ///
         /// See also [`crate::valgrind_printf_unchecked`]
+        #[cfg(feature = "alloc")]
         #[macro_export]
         macro_rules! valgrind_println_backtrace_unchecked {
             ($($arg:tt)*) => {{ $crate::__no_op() }};
@@ -504,20 +596,25 @@ pub mod cachegrind;
 pub mod callgrind;
 pub mod dhat;
 pub mod drd;
+#[cfg(feature = "alloc")]
 pub mod error;
 pub mod helgrind;
 pub mod memcheck;
+#[cfg(feature = "act")]
 mod native_bindings;
 pub mod valgrind;
+use core::ffi::CStr;
 
 use arch::imp::valgrind_do_client_request_expr;
 use arch::valgrind_do_client_request_stmt;
 use cfg_if::cfg_if;
+#[doc(hidden)]
+pub use cty as __cty;
 
 /// The `ThreadId` is used by some client requests to represent the `tid` which Valgrind uses or
 /// returns
 ///
-/// This type has no relationship to [`std::thread::ThreadId`]!
+/// This type has no relationship to `std::thread::ThreadId`!
 pub type ThreadId = usize;
 
 /// The `StackId` is used and returned by some client requests and represents an id on Valgrind's
@@ -544,19 +641,98 @@ pub const VALGRIND_VERSION: Option<(u32, u32)> = {
 };
 
 fn fatal_error(func: &str) -> ! {
-    panic!(
-        "{0}: FATAL: {0}::{func} not available! You may need to update your installed Valgrind \
-         version or don't use this client request. The Valgrind version of the `valgrind.h` \
-         header file is {1}. Aborting...",
-        module_path!(),
-        if let Some((major, minor)) = VALGRIND_VERSION {
-            format!("{major}.{minor}")
-        } else {
-            "< 3.6".to_owned()
-        }
-    );
+    if let Some((major, minor)) = VALGRIND_VERSION {
+        panic!(
+            "{0}: FATAL: {0}::{func} not available! You may need to update your installed \
+             Valgrind version or don't use this client request. The Valgrind version of the \
+             `valgrind.h` header file is {major}.{minor}. Aborting...",
+            module_path!(),
+        );
+    } else {
+        panic!(
+            "{0}: FATAL: {0}::{func} not available! You may need to update your installed \
+             Valgrind version or don't use this client request. The Valgrind version of the \
+             `valgrind.h` header file is <3.6. Aborting...",
+            module_path!(),
+        );
+    }
 }
 
+cfg_if! {
+    if #[cfg(feature = "act")] {
+        /// Prints a C string to the Valgrind log.
+        ///
+        /// This function is the allocation-free equivalent of [`valgrind_printf_unchecked`]. It
+        /// accepts any value that can be borrowed as a [`CStr`], so it can be used in `no_std`
+        /// builds without the `alloc` feature. The stub implementation of this function is a no-op
+        /// and compiles away.
+        ///
+        /// The provided string must be NUL-terminated and must not contain interior NUL bytes, as
+        /// required by [`CStr`].
+        ///
+        /// # Examples
+        ///
+        /// ```rust
+        /// valgrind_requests::valgrind_print(c"hello from Valgrind\n");
+        /// ```
+        #[inline]
+        pub fn valgrind_print<T>(c_string: T)
+        where
+            T: AsRef<CStr>,
+        {
+            // SAFETY: `CStr` guarantees a valid NUL-terminated byte sequence for the duration of
+            // the call.
+            unsafe { __valgrind_print(c_string.as_ref().as_ptr()) }
+        }
+
+        /// Prints a C string with a backtrace to the Valgrind log.
+        ///
+        /// This function is the allocation-free equivalent of
+        /// [`valgrind_printf_backtrace_unchecked`]. It accepts any value that can be borrowed as a
+        /// [`CStr`], so it can be used in `no_std` builds without the `alloc` feature. The stub
+        /// implementation of this function is a no-op and compiles away.
+        ///
+        /// The provided string must be NUL-terminated and must not contain interior NUL bytes, as
+        /// required by [`CStr`].
+        ///
+        /// # Examples
+        ///
+        /// ```rust
+        /// valgrind_requests::valgrind_print_backtrace(c"important checkpoint\n");
+        /// ```
+        #[inline]
+        pub fn valgrind_print_backtrace<T>(c_string: T)
+        where
+            T: AsRef<CStr>,
+        {
+            // SAFETY: `CStr` guarantees a valid NUL-terminated byte sequence for the duration of
+            // the call.
+            unsafe { __valgrind_print_backtrace(c_string.as_ref().as_ptr()) }
+        }
+    } else {
+        /// No-op variant of [`valgrind_print`] for stub builds.
+        ///
+        /// This function preserves the same allocation-free API surface as active builds and
+        /// compiles away entirely.
+        #[inline]
+        pub fn valgrind_print<T>(_c_string: T)
+        where
+            T: AsRef<CStr>,
+        {}
+
+        /// No-op variant of [`valgrind_print_backtrace`] for stub builds.
+        ///
+        /// This function preserves the same allocation-free API surface as active builds and
+        /// compiles away entirely.
+        #[inline]
+        pub fn valgrind_print_backtrace<T>(_c_string: T)
+        where
+            T: AsRef<CStr>,
+        {}
+    }
+}
+
+#[cfg(feature = "act")]
 #[doc(hidden)]
 #[inline(always)]
 pub unsafe fn __valgrind_print(ptr: *const cty::c_char) {
@@ -566,6 +742,7 @@ pub unsafe fn __valgrind_print(ptr: *const cty::c_char) {
     }
 }
 
+#[cfg(feature = "act")]
 #[doc(hidden)]
 #[inline(always)]
 pub unsafe fn __valgrind_print_backtrace(ptr: *const cty::c_char) {

@@ -129,6 +129,7 @@ mod imp {
         .filter_map(|env| std::env::var(env.as_ref()).ok())
     }
 
+    #[cfg(feature = "act")]
     fn build_native(target: &Target) {
         let mut builder = cc::Build::new();
 
@@ -146,6 +147,9 @@ mod imp {
             .compile("native");
     }
 
+    #[cfg(not(feature = "act"))]
+    fn build_native(_target: &Target) {}
+
     fn build_bindings(target: &Target) -> Bindings {
         let mut builder = builder();
 
@@ -161,6 +165,8 @@ mod imp {
         builder = builder.clang_arg("-idiraftervalgrind/include");
 
         let bindings = builder
+            .use_core()
+            .ctypes_prefix("cty")
             .header("valgrind/wrapper.h")
             .allowlist_var("VR_IS_PLATFORM_SUPPORTED_BY_VALGRIND")
             .allowlist_var("VR_VALGRIND_MAJOR")

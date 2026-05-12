@@ -27,6 +27,7 @@ regex = { workspace = true }
 shlex = { workspace = true }
 valgrind-requests = { path = "../valgrind-requests", default-features = false, features = [
   "stubs",
+  "std",
 ] }
 which = { workspace = true }
 

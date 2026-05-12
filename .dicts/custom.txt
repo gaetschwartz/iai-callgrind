@@ -6,8 +6,8 @@ ahash
 Aparicio
 ARANGE
 armv7
-aslr
 ASLR
+aslr
 Assche
 Assert
 atstart
@@ -53,6 +53,7 @@ coreutils
 cpus
 crabgrind
 cstring
+ctypes_prefix
 deallocations
 debuginfo
 DEBUGINFOD
@@ -84,8 +85,8 @@ euxo
 EventKind
 exidx
 exitcode
-Flamegraph
 flamegraph
+Flamegraph
 flamegraphs
 Flamegraphs
 fldcw
@@ -102,8 +103,8 @@ gungnir
 gungraun
 hard_limit
 Hasher
-heapblock
 HEAPBLOCK
+heapblock
 Heisler
 Helgrind
 hitrate
@@ -118,8 +119,8 @@ ilmr
 ilog
 iname
 indexmap
-IndexSet
 indexset
+IndexSet
 inlines
 instrs
 iquote
@@ -148,8 +149,8 @@ llhitrate
 llhits
 llimissrate
 llmissrate
-logfile
 Logfile
+logfile
 logfiles
 LouisBrunner
 malloc
@@ -216,8 +217,8 @@ pthread
 PTHREAD
 punct
 pushd
-quickstart
 Quickstart
+quickstart
 ramhitrate
 ramhits
 raun

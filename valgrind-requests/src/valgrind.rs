@@ -76,7 +76,7 @@ pub mod MempoolFlags {
     pub const METAPOOL: u8 = 2;
 }
 
-use std::ffi::CStr;
+use core::ffi::CStr;
 
 use super::{
     RawFd, StackId, ThreadId, bindings, fatal_error, valgrind_do_client_request_expr,
@@ -140,7 +140,7 @@ pub fn replaces_malloc() -> bool {
 ///
 /// Returns the required length (including terminating nul) for the input `buffer`. Returns `0` and
 /// the contents of `buffer` are not modified if not running under Valgrind. `buffer` may be
-/// [`std::ptr::null_mut`], which can be used to query the required buffer length before making a
+/// [`core::ptr::null_mut`], which can be used to query the required buffer length before making a
 /// real request for the tool name.
 ///
 /// `len` should be the length of `buffer`. The returned string in `buffer` will be nul terminated.

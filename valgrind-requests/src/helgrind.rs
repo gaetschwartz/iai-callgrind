@@ -357,7 +357,7 @@ pub fn enable_checking(start: *const (), len: usize) {
 /// is addressable, check
 ///
 /// ```ignore
-/// get_abits(addr, std::ptr::null_mut(), len) == len
+/// get_abits(addr, core::ptr::null_mut(), len) == len
 /// ```
 ///
 /// In addition, if you want to examine the addressability of each byte of the range, you need to

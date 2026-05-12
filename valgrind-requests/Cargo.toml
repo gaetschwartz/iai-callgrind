@@ -20,7 +20,9 @@ version = "1.0.0"
 
 [features]
 act = ["stubs"]
-default = ["act"]
+alloc = []
+default = ["act", "std"]
+std = ["alloc"]
 stubs = [
   "dep:bindgen",
   "dep:cc",
