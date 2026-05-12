@@ -13,8 +13,11 @@ mod imp {
     use rustc_version::{Version, version};
     use strum::{EnumIter, IntoEnumIterator};
 
+    use crate::BuildResult;
+
     #[derive(Debug)]
     struct Target {
+        abi: String,
         arch: String,
         env: String,
         os: String,
@@ -29,8 +32,35 @@ mod imp {
         X86,
         X86_64,
         Riscv64,
+        S390x,
+        Powerpc,
+        Powerpc64, // little and big endian
         Native,
         No,
+    }
+
+    #[derive(Debug, PartialEq, Eq)]
+    enum Strategy {
+        Strict,
+        Fallback,
+    }
+
+    impl Strategy {
+        fn from_env() -> BuildResult<Self> {
+            match std::env::var("VALGRIND_REQUESTS_STRATEGY") {
+                Ok(value) => match value.as_str() {
+                    "strict" => Ok(Self::Strict),
+                    "fallback" => Ok(Self::Fallback),
+                    _ => Err(format!(
+                        "invalid value for VALGRIND_REQUESTS_STRATEGY: {value}; valid values: \
+                         'strict', 'fallback'"
+                    )
+                    .into()),
+                },
+                Err(std::env::VarError::NotPresent) => Ok(Self::Fallback),
+                Err(error) => Err(format!("invalid VALGRIND_REQUESTS_STRATEGY: {error}").into()),
+            }
+        }
     }
 
     impl Display for Support {
@@ -47,6 +77,7 @@ mod imp {
 
         fn from_env() -> Self {
             Self {
+                abi: std::env::var("CARGO_CFG_TARGET_ABI").unwrap(),
                 arch: std::env::var("CARGO_CFG_TARGET_ARCH").unwrap(),
                 env: std::env::var("CARGO_CFG_TARGET_ENV").unwrap(),
                 os: std::env::var("CARGO_CFG_TARGET_OS").unwrap(),
@@ -152,11 +183,12 @@ mod imp {
         version().ok()
     }
 
-    pub fn main() {
+    pub fn main() -> BuildResult<()> {
         print_migration_warnings();
 
         let target = Target::from_env();
         let triple_env_key = target.triple_to_env_key();
+        let strategy = Strategy::from_env()?;
 
         println!("cargo:rerun-if-changed=valgrind/wrapper.h");
         println!("cargo:rerun-if-changed=valgrind/native.c");
@@ -168,57 +200,74 @@ mod imp {
         println!("cargo:rerun-if-env-changed=IAI_CALLGRIND_{triple_env_key}_VALGRIND_INCLUDE");
 
         println!("cargo:rerun-if-env-changed=TARGET");
+        println!("cargo:rerun-if-env-changed=VALGRIND_REQUESTS_STRATEGY");
 
-        // rustc-check-cfg is introduced in rust with version 1.80 and avoids the compiler warnings
-        // in version >= 1.80.0. Printing it when compiling with versions < 1.80 triggers a warning,
-        // too. To get the best of both worlds we check against the currently active rust version.
-        if let Some(rust_version) = get_rust_version() {
-            if rust_version.major >= 1 && rust_version.minor >= 80 {
-                let values = Support::iter()
-                    .map(|s| format!("\"{s}\""))
-                    .collect::<Vec<String>>()
-                    .join(",");
-                println!("cargo:rustc-check-cfg=cfg(client_requests_support,values({values}))");
-            }
-        }
+        let rust_version = get_rust_version();
+
+        let values = Support::iter()
+            .map(|s| format!("\"{s}\""))
+            .collect::<Vec<String>>()
+            .join(",");
+        println!("cargo:rustc-check-cfg=cfg(client_requests_support,values({values}))");
 
         // When building the docs on docs.rs we can take a shortcut
         if std::env::var("DOCS_RS").is_ok() {
             print_client_requests_support(&Support::X86_64);
             build_bindings(&target);
             build_native(&target);
-            return;
+            return Ok(());
         }
 
         let bindings = build_bindings(&target);
 
-        // These guards mirror the checks in the `valgrind.h` header file
+        // Note this table uses Valgrind support as priority. For example some targets might not be
+        // supported by Rust like i686-unknown-illumos. They are added nonetheless to this table
+        // because Valgrind supports them and they might be added by Rust in the future.
         let support = if target.arch == "x86_64"
-            && (target.os == "linux"
+            && (((target.os == "linux" || target.os == "android") && target.abi != "x32")
                 || target.os == "freebsd"
-                || (target.vendor == "apple" && target.os == "darwin")
+                || (target.vendor == "apple" && target.os == "macos")
                 || (target.os == "windows" && target.env == "gnu")
+                || target.os == "illumos"
                 || ((target.vendor == "sun" || target.vendor == "pc") && target.os == "solaris"))
         {
             Some(Support::X86_64)
         } else if target.arch == "x86"
             && (target.os == "linux"
                 || target.os == "freebsd"
-                || (target.vendor == "apple" && target.os == "darwin")
+                || target.os == "android"
+                || (target.vendor == "apple" && target.os == "macos")
                 || (target.os == "windows" && target.env == "gnu")
+                || target.os == "illumos"
                 || ((target.vendor == "sun" || target.vendor == "pc") && target.os == "solaris"))
         {
             Some(Support::X86)
-        } else if target.arch == "arm" && target.os == "linux" && target.env == "gnu" {
+        } else if target.arch == "arm" && (target.os == "linux" || target.os == "android") {
             Some(Support::Arm)
         } else if target.arch == "aarch64"
-            && (target.os == "freebsd"
-                || (target.os == "linux" && target.env == "gnu")
+            && ((target.os == "linux")
+                || target.os == "freebsd"
+                || target.os == "android"
                 || (target.vendor == "apple" && target.os == "macos"))
         {
             Some(Support::Aarch64)
-        } else if target.arch == "riscv64gc" && target.os == "linux" {
+        } else if target.arch == "riscv64" && target.os == "linux" {
             Some(Support::Riscv64)
+        } else if target.arch == "s390x" && target.os == "linux" {
+            Some(Support::S390x)
+        } else if target.arch == "powerpc"
+            && target.os == "linux"
+            && rust_version
+                .as_ref()
+                .is_some_and(|r| r.major >= 1 && r.minor >= 95)
+        {
+            Some(Support::Powerpc)
+            // Note target.arch matches both little and big endian
+        } else if target.arch == "powerpc64"
+            && target.os == "linux"
+            && rust_version.is_some_and(|r| r.major >= 1 && r.minor >= 95)
+        {
+            Some(Support::Powerpc64)
         } else {
             let re = regex::Regex::new(
                 r"VR_IS_PLATFORM_SUPPORTED_BY_VALGRIND.*?=\s*(?<value>true|false)",
@@ -242,23 +291,42 @@ mod imp {
             support
         };
 
-        if let Some(support) = support {
-            print_client_requests_support(&support);
-            if support != Support::No {
+        match (strategy, support) {
+            (_, Some(Support::No)) => {
+                return Err(
+                    format!("target '{}' is unsupported by Valgrind", target.triple).into(),
+                );
+            }
+            (Strategy::Strict, Some(Support::Native)) => {
+                return Err(format!(
+                    "target '{}' doesn't have zero-indirection support and strict strategy is set",
+                    target.triple
+                )
+                .into());
+            }
+            (_, Some(support)) => {
+                print_client_requests_support(&support);
                 build_native(&target);
             }
-        } else {
-            eprintln!("{bindings}");
-            panic!("Unable to set cfg value for client_requests_support");
+            (_, None) => {
+                return Err("unable to determine client requests support".into());
+            }
         }
+
+        Ok(())
     }
 }
 
 #[cfg(not(feature = "stubs"))]
 mod imp {
-    pub fn main() {}
+    pub fn main() -> crate::BuildResult<()> {
+        Ok(())
+    }
 }
 
-fn main() {
-    imp::main();
+use std::error::Error;
+type BuildResult<T> = Result<T, Box<dyn Error>>;
+
+fn main() -> BuildResult<()> {
+    imp::main()
 }

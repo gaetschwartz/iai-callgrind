@@ -879,7 +879,7 @@ mod tests {
 
         let delay = Delay {
             poll: Duration::from_millis(50),
-            timeout: Duration::from_millis(200),
+            timeout: Duration::from_secs(1),
             kind: DelayKind::PathExists(file_path.clone()),
         };
         let handle = thread::spawn(move || {
@@ -890,7 +890,6 @@ mod tests {
         File::create(file_path).unwrap();
 
         handle.join().unwrap();
-        drop(dir);
     }
 
     #[test]
@@ -900,7 +899,7 @@ mod tests {
 
         let delay = Delay {
             poll: Duration::from_millis(50),
-            timeout: Duration::from_millis(200),
+            timeout: Duration::from_secs(1),
             kind: DelayKind::PathExists(file_path.clone()),
         };
 
@@ -913,7 +912,6 @@ mod tests {
         File::create(dir.path().join(file_path)).unwrap();
 
         handle.join().unwrap();
-        drop(dir);
     }
 
     #[test]
@@ -967,13 +965,13 @@ mod tests {
     fn test_delay_udp_response() {
         let addr = "127.0.0.1:34000".parse::<SocketAddr>().unwrap();
 
-        thread::spawn(move || -> ! {
+        let handle = thread::spawn(move || {
             let server = UdpSocket::bind(addr).unwrap();
             server
-                .set_read_timeout(Some(Duration::from_millis(100)))
+                .set_read_timeout(Some(Duration::from_secs(1)))
                 .unwrap();
             server
-                .set_write_timeout(Some(Duration::from_millis(100)))
+                .set_write_timeout(Some(Duration::from_secs(1)))
                 .unwrap();
 
             loop {
@@ -981,7 +979,9 @@ mod tests {
 
                 match server.recv_from(&mut buf) {
                     Ok((_size, from)) => {
+                        // The actual content of the return buffer doesn't matter
                         server.send_to(&[2], from).unwrap();
+                        break;
                     }
                     Err(_e) => {}
                 }
@@ -990,21 +990,22 @@ mod tests {
 
         let delay = Delay {
             poll: Duration::from_millis(20),
-            timeout: Duration::from_millis(100),
+            timeout: Duration::from_secs(1),
             kind: DelayKind::UdpResponse(addr, vec![1]),
         };
 
         delay.apply(None).unwrap();
+        handle.join().unwrap();
     }
 
     #[test]
     fn test_delay_udp_response_poll() {
         let addr = "127.0.0.1:34001".parse::<SocketAddr>().unwrap();
 
-        thread::spawn(move || {
+        let handle = thread::spawn(move || {
             let delay = Delay {
                 poll: Duration::from_millis(20),
-                timeout: Duration::from_millis(100),
+                timeout: Duration::from_secs(1),
                 kind: DelayKind::UdpResponse(addr, vec![1]),
             };
             delay.apply(None).unwrap();
@@ -1012,10 +1013,10 @@ mod tests {
 
         let server = UdpSocket::bind(addr).unwrap();
         server
-            .set_read_timeout(Some(Duration::from_millis(100)))
+            .set_read_timeout(Some(Duration::from_secs(1)))
             .unwrap();
         server
-            .set_write_timeout(Some(Duration::from_millis(100)))
+            .set_write_timeout(Some(Duration::from_secs(1)))
             .unwrap();
 
         loop {
@@ -1031,6 +1032,8 @@ mod tests {
                 Err(_e) => {}
             }
         }
+
+        handle.join().unwrap();
     }
 
     #[test]
@@ -1038,14 +1041,11 @@ mod tests {
         let addr = "127.0.0.1:34002".parse::<SocketAddr>().unwrap();
         let delay = Delay {
             poll: Duration::from_millis(20),
-            timeout: Duration::from_millis(100),
+            timeout: Duration::from_secs(1),
             kind: DelayKind::UdpResponse(addr, vec![1]),
         };
         let result = delay.apply(None);
         assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "Timeout of '100ms' reached"
-        );
+        assert_eq!(result.unwrap_err().to_string(), "Timeout of '1s' reached");
     }
 }

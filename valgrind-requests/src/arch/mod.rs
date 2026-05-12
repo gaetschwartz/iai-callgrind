@@ -36,6 +36,15 @@ cfg_if::cfg_if! {
     } else if #[cfg(client_requests_support = "riscv64")] {
         #[path = "riscv64.rs"]
         pub mod imp;
+    } else if #[cfg(client_requests_support = "s390x")] {
+        #[path = "s390x.rs"]
+        pub mod imp;
+    } else if #[cfg(client_requests_support = "powerpc")] {
+        #[path = "powerpc.rs"]
+        pub mod imp;
+    } else if #[cfg(client_requests_support = "powerpc64")] {
+        #[path = "powerpc64.rs"]
+        pub mod imp;
     } else if #[cfg(client_requests_support = "native")] {
         #[path = "native.rs"]
         pub mod imp;
