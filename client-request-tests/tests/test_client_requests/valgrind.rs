@@ -26,6 +26,10 @@ fn test_valgrind_reqs_when_running_on_valgrind() {
         Matcher::Exact(common::get_fixture_as_string(
             "valgrind-reqs-test.freebsd.stderr",
         ))
+    } else if cfg!(target_os = "illumos") {
+        Matcher::Exact(common::get_fixture_as_string(
+            "valgrind-reqs-test.illumos.stderr",
+        ))
     } else if cfg!(target_os = "macos") {
         Matcher::Contains(vec![
             (

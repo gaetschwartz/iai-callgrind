@@ -220,11 +220,15 @@ mod imp {
 
         let bindings = build_bindings(&target);
 
+        // Note this table uses Valgrind support as priority. For example some targets might not be
+        // supported by Rust like i686-unknown-illumos. They are added nonetheless to this table
+        // because Valgrind supports them and they might be added by Rust in the future.
         let support = if target.arch == "x86_64"
             && (((target.os == "linux" || target.os == "android") && target.abi != "x32")
                 || target.os == "freebsd"
                 || (target.vendor == "apple" && target.os == "macos")
                 || (target.os == "windows" && target.env == "gnu")
+                || target.os == "illumos"
                 || ((target.vendor == "sun" || target.vendor == "pc") && target.os == "solaris"))
         {
             Some(Support::X86_64)
@@ -234,6 +238,7 @@ mod imp {
                 || target.os == "android"
                 || (target.vendor == "apple" && target.os == "macos")
                 || (target.os == "windows" && target.env == "gnu")
+                || target.os == "illumos"
                 || ((target.vendor == "sun" || target.vendor == "pc") && target.os == "solaris"))
         {
             Some(Support::X86)
