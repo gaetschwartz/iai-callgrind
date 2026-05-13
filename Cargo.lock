@@ -863,6 +863,7 @@ dependencies = [
  "nix",
  "num_cpus",
  "os_str_bytes",
+ "parking_lot",
  "polonius-the-crab",
  "pretty_assertions",
  "regex",
