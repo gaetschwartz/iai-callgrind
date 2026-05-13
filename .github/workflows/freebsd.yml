@@ -1,4 +1,5 @@
 # spell-checker:ignore ghcup toolsdirectory tlsv connrefused copyback
+
 name: FreeBSD checks
 
 on:

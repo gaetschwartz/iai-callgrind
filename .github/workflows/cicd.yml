@@ -1,7 +1,4 @@
-# spell-checker:ignore taiki rustfmt binstall clippy taplo rustup nocapture
-# spell-checker:ignore nofile gnuabi armv gnueabi mipsel vmactions usesh proto
-# spell-checker:ignore tlsv connrefused copyback toolsdirectory ghcup rustdocflags
-# spell-checker:ignore androideabi binutils
+# spell-checker:ignore dorny
 
 name: Build and Check
 
@@ -24,8 +21,16 @@ jobs:
     outputs:
       cargo_term_color: ${{ steps.config.outputs.cargo_term_color }}
       rust_backtrace: ${{ steps.config.outputs.rust_backtrace }}
+      valgrind_requests_changed: ${{ steps.filter.outputs.valgrind_requests }}
       valgrind_version: ${{ steps.config.outputs.valgrind_version }}
     steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            valgrind_requests:
+              - 'valgrind-requests/**'
       - id: config
         run: |
           {
@@ -53,6 +58,7 @@ jobs:
   valgrind_requests:
     name: Valgrind requests checks
     needs: [basic, config]
+    if: github.event_name == 'schedule' || needs.config.outputs.valgrind_requests_changed == 'true'
     uses: ./.github/workflows/valgrind_requests.yml
     with:
       cargo_term_color: ${{ needs.config.outputs.cargo_term_color }}

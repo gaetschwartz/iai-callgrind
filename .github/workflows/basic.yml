@@ -1,4 +1,5 @@
 # spell-checker:ignore rustdocflags binutils androideabi
+
 name: Basic checks
 
 on:

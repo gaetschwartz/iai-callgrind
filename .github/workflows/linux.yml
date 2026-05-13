@@ -1,8 +1,3 @@
-# spell-checker:ignore taiki rustfmt binstall clippy taplo rustup nocapture
-# spell-checker:ignore nofile gnuabi armv gnueabi mipsel vmactions usesh proto
-# spell-checker:ignore tlsv connrefused copyback toolsdirectory ghcup rustdocflags
-# spell-checker:ignore androideabi binutils argjson
-
 name: Linux checks
 
 on:
