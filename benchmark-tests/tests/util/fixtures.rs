@@ -10,12 +10,14 @@ use std::time::Duration;
 
 use bon::builder;
 use gungraun::{EntryPoint, ExitWith, ValgrindTool};
+use gungraun_runner::api::{RawToolArgs, Tools};
 use gungraun_runner::runner::common::{Assistant, AssistantKind, Config, ModulePath};
+use gungraun_runner::runner::format::OutputFormat;
 use gungraun_runner::runner::meta::Metadata;
 use gungraun_runner::runner::summary::BaselineKind;
 use gungraun_runner::runner::tasks::ProcessHandler;
 use gungraun_runner::runner::tool::args::ToolArgs;
-use gungraun_runner::runner::tool::config::{ToolConfig, ToolFlamegraphConfig};
+use gungraun_runner::runner::tool::config::{ToolConfig, ToolConfigs, ToolFlamegraphConfig};
 use gungraun_runner::runner::tool::path::{ToolOutputPath, ToolOutputPathKind};
 use gungraun_runner::runner::tool::regression::ToolRegressionConfig;
 use gungraun_runner::runner::tool::run::{RunOptions, ToolCommand, ToolCommandChild};
@@ -252,6 +254,34 @@ pub fn tool_config_f(tool: Option<ValgrindTool>, is_default: Option<bool>) -> To
         is_default.unwrap_or(true),
         vec![],
     )
+}
+
+#[builder(finish_fn = "fixture")]
+pub fn tool_configs_f(
+    raw_command_line_args: Option<&[&str]>,
+    tools: Option<Tools>,
+    default_tool: Option<ValgrindTool>,
+    valgrind_args: Option<RawToolArgs>,
+    default_entry_point: Option<EntryPoint>,
+) -> ToolConfigs {
+    let meta = metadata_f()
+        .maybe_raw_command_line_args(raw_command_line_args)
+        .fixture();
+    let module_path = module_path_f().fixture();
+    let mut output_format = OutputFormat::default();
+
+    ToolConfigs::new(
+        &mut output_format,
+        tools.unwrap_or_default(),
+        &module_path,
+        None,
+        &meta,
+        default_tool.unwrap_or(DEFAULT_TOOL),
+        &default_entry_point.unwrap_or(EntryPoint::None),
+        &valgrind_args.unwrap_or_default(),
+        &HashMap::default(),
+    )
+    .expect("tool configs should be valid")
 }
 
 #[builder(finish_fn = "fixture")]
