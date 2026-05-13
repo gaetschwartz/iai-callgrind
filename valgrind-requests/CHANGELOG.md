@@ -18,6 +18,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-14
+
 ### Added
 
 - ([#613]): Zero-indirection client requests for `aarch64/macos` via
