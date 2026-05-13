@@ -6,8 +6,8 @@ ahash
 Aparicio
 ARANGE
 armv7
-aslr
 ASLR
+aslr
 Assche
 Assert
 atstart
@@ -37,9 +37,9 @@ cachemissrates
 cachesim
 cacheuse
 cachuse
-CALLGRIND
 Callgrind
 callgrind
+CALLGRIND
 CFLAGS
 cicd
 Clearify
@@ -53,6 +53,7 @@ coreutils
 cpus
 crabgrind
 cstring
+ctypes_prefix
 deallocations
 debuginfo
 DEBUGINFOD
@@ -127,8 +128,8 @@ isystem
 Itamar
 itertools
 jcnd
-jitter
 JITter
+jitter
 jsonschema
 Justfile
 kcachegrind
@@ -148,8 +149,8 @@ llhitrate
 llhits
 llimissrate
 llmissrate
-logfile
 Logfile
+logfile
 logfiles
 LouisBrunner
 malloc
@@ -191,6 +192,7 @@ NPROCESSORS_ONLN
 nsec
 Nulgrind
 ooce
+opencode
 outfile
 outfiles
 pacman
@@ -212,8 +214,8 @@ printenv
 println
 proccontrol
 profraw
-pthread
 PTHREAD
+pthread
 punct
 pushd
 quickstart
@@ -249,8 +251,8 @@ rustified
 RUSTSEC
 rustup
 rustversion
-RWLOCK
 rwlock
+RWLOCK
 rwlocks
 sandboxing
 sanitized
@@ -311,8 +313,8 @@ unsanitized
 USERREQ
 USERSO
 usize
-Valgrind
 valgrind
+Valgrind
 Valgrind's
 valgrind's
 Valgrinds

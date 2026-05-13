@@ -48,7 +48,7 @@
 //!
 //! See also [DRD Client
 //! Requests](https://valgrind.org/docs/manual/drd-manual.html#drd-manual.clientreqs)
-use std::ffi::CStr;
+use core::ffi::CStr;
 
 use super::{
     bindings, fatal_error, helgrind, valgrind_do_client_request_expr,
@@ -100,7 +100,7 @@ pub fn ignore_var<T>(var: &T) {
     do_client_request!(
         "drd::ignore_var",
         bindings::VR_DRDClientRequest::VR_DRD_START_SUPPRESSION,
-        std::ptr::from_ref::<T>(var) as usize,
+        core::ptr::from_ref::<T>(var) as usize,
         core::mem::size_of::<T>(),
         0,
         0,
@@ -115,7 +115,7 @@ pub fn stop_ignoring_var<T>(var: &T) {
     do_client_request!(
         "drd::stop_ignoring_var",
         bindings::VR_DRDClientRequest::VR_DRD_FINISH_SUPPRESSION,
-        std::ptr::from_ref::<T>(var) as usize,
+        core::ptr::from_ref::<T>(var) as usize,
         core::mem::size_of::<T>(),
         0,
         0,
@@ -134,7 +134,7 @@ pub fn trace_var<T>(var: &T) {
     do_client_request!(
         "drd::trace_var",
         bindings::VR_DRDClientRequest::VR_DRD_START_TRACE_ADDR,
-        std::ptr::from_ref::<T>(var) as usize,
+        core::ptr::from_ref::<T>(var) as usize,
         core::mem::size_of::<T>(),
         0,
         0,
@@ -148,7 +148,7 @@ pub fn stop_tracing_var<T>(var: &T) {
     do_client_request!(
         "drd::stop_tracing_var",
         bindings::VR_DRDClientRequest::VR_DRD_STOP_TRACE_ADDR,
-        std::ptr::from_ref::<T>(var) as usize,
+        core::ptr::from_ref::<T>(var) as usize,
         core::mem::size_of::<T>(),
         0,
         0,
@@ -280,7 +280,7 @@ pub fn annotate_benign_race<T>(addr: &T) {
     do_client_request!(
         "drd::annotate_benign_race",
         bindings::VR_DRDClientRequest::VR_DRD_START_SUPPRESSION,
-        std::ptr::from_ref::<T>(addr) as usize,
+        core::ptr::from_ref::<T>(addr) as usize,
         core::mem::size_of::<T>(),
         0,
         0,
@@ -296,7 +296,7 @@ pub fn annotate_benign_race_sized<T>(addr: &T, size: usize) {
     do_client_request!(
         "drd::annotate_benign_race_sized",
         bindings::VR_DRDClientRequest::VR_DRD_START_SUPPRESSION,
-        std::ptr::from_ref::<T>(addr) as usize,
+        core::ptr::from_ref::<T>(addr) as usize,
         size,
         0,
         0,

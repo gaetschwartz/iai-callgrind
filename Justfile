@@ -215,7 +215,9 @@ build-hack-runner *args:
 # A thorough build of the valgrind-requests package (Uses: 'cargo-hack')
 [group('build')]
 build-hack-valgrind-requests *args:
-    cargo hack --package valgrind-requests --feature-powerset --exclude-no-default-features build {{ args }}
+    cargo hack --package valgrind-requests --feature-powerset \
+        --exclude-no-default-features --at-least-one-of stubs,act build \
+        {{ args }}
 
 # A build of the tests in all packages with `cargo hack` and the feature powerset (Uses: 'cargo-hack')
 [group('build')]
@@ -230,7 +232,9 @@ build-tests-hack-runner *args:
 # A build of the tests in the valgrind-requests package with `cargo hack` (Uses: 'cargo-hack')
 [group('build')]
 build-tests-hack-valgrind-requests *args:
-    cargo hack --package valgrind-requests --feature-powerset --exclude-no-default-features test --no-run {{ args }}
+    cargo hack --package valgrind-requests --feature-powerset \
+        --exclude-no-default-features --at-least-one-of stubs,act test \
+        --no-run {{ args }}
 
 # Delete all gungraun benchmarks (Uses: 'coreutils')
 [group('clean')]
