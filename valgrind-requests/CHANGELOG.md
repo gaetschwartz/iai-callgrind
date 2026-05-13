@@ -20,6 +20,8 @@ and this project adheres to
 
 ### Added
 
+- ([#613]): Zero-indirection client requests for `aarch64/macos` via
+  [LouisBrunner/valgrind-macos][valgrind-macos].
 - ([#618]): Zero-indirection client requests for `s390x/linux`.
 - ([#618]): Zero-indirection client requests for `powerpc/linux`,
   `powerpc64/linux`, and `powerpc64le/linux` with Rust 1.95.0 or newer.
@@ -36,6 +38,10 @@ and this project adheres to
 
 ### Changed
 
+- ([#607]): Bumped the minimum supported Rust version to 1.85.1 and moved the
+  crate to Rust edition 2024.
+- ([#616]): Improved Valgrind header discovery for cross builds by using
+  standard `/usr/include` and `/usr/local/include` paths explicitly.
 - ([#618]): Updated platform support detection and documentation in the README
   and library docs to describe zero-indirection support, native C FFI fallback
   behavior, and compile errors for targets unsupported by Valgrind.
@@ -102,5 +108,9 @@ package. Additionally includes some fixes and missing client requests.
 
 [#603]: https://github.com/gungraun/gungraun/pull/603
 [#604]: https://github.com/gungraun/gungraun/pull/604
+[#607]: https://github.com/gungraun/gungraun/pull/607
+[#613]: https://github.com/gungraun/gungraun/pull/613
+[#616]: https://github.com/gungraun/gungraun/pull/616
 [#618]: https://github.com/gungraun/gungraun/pull/618
 [#622]: https://github.com/gungraun/gungraun/pull/622
+[valgrind-macos]: https://github.com/LouisBrunner/valgrind-macos
