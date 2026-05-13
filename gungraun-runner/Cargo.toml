@@ -42,6 +42,7 @@ runner = [
   "dep:nix",
   "dep:num_cpus",
   "dep:os_str_bytes",
+  "dep:parking_lot",
   "dep:polonius-the-crab",
   "dep:regex",
   "dep:sanitize-filename",
@@ -88,6 +89,7 @@ log = { workspace = true, optional = true }
 nix = { workspace = true, optional = true, features = ["signal"] }
 num_cpus = { workspace = true, optional = true }
 os_str_bytes = { workspace = true, optional = true }
+parking_lot = { workspace = true, optional = true }
 polonius-the-crab = { workspace = true, optional = true }
 regex = { workspace = true, optional = true }
 sanitize-filename = { workspace = true, optional = true }

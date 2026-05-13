@@ -16,6 +16,7 @@ use crossbeam::deque::{Injector, Steal, Stealer, Worker};
 use log::debug;
 use nix::sys::signal;
 use nix::unistd::Pid;
+use parking_lot::{Condvar, Mutex};
 
 use super::common::AssistantKind;
 use crate::error::Error;
@@ -104,7 +105,8 @@ struct Task {
 /// # Thread Safety
 ///
 /// The pool is `Send` and can be safely shared across threads when wrapped in `Arc<Mutex<>>`.
-/// All internal state is protected by atomic operations and message passing channels.
+/// Shared state is coordinated with atomics, message passing, and a condition variable for parking
+/// idle workers.
 ///
 /// # Examples
 ///
@@ -177,14 +179,22 @@ struct Task {
 /// [`ThreadPool::new`] returns an error if `size` is less than 1.
 pub struct ThreadPool<T: Send + 'static> {
     force_shutdown: Arc<AtomicBool>,
-    graceful_shutdown: Arc<AtomicBool>,
     job_queue: Arc<Injector<Job<T>>>,
     next: Option<JobId>,
     num_received: usize,
     result_receiver: Receiver<(JobId, T)>,
     results: HashMap<usize, T>,
+    state: Arc<(Mutex<ThreadPoolState>, Condvar)>,
     tasks: Vec<Task>,
     total_jobs: Option<usize>,
+}
+
+#[derive(Debug, Default, Clone, Copy)]
+struct ThreadPoolState {
+    /// Number of jobs that have been submitted but have not finished sending their result.
+    pending_jobs: usize,
+    /// Whether workers may exit once pending work is done.
+    shutdown: bool,
 }
 
 impl ProcessChild {
@@ -504,11 +514,11 @@ impl<T: Send + 'static> ThreadPool<T> {
         let (result_sender, result_receiver): Channel<T> = mpsc::channel();
 
         let force_shutdown = Arc::new(AtomicBool::new(false));
-        let graceful_shutdown = Arc::new(AtomicBool::new(false));
         let injector = Arc::new(Injector::<Job<T>>::new());
 
         let mut local_queues = VecDeque::<Worker<Job<T>>>::with_capacity(size);
         let mut stealers = Vec::<Stealer<Job<T>>>::with_capacity(size);
+        let state = Arc::new((Mutex::new(ThreadPoolState::default()), Condvar::new()));
 
         for _ in 0..size {
             let queue = Worker::<Job<T>>::new_fifo();
@@ -525,8 +535,8 @@ impl<T: Send + 'static> ThreadPool<T> {
             // the same amount of elements
             let local_queue = local_queues.pop_front().unwrap();
             let local_stealers = stealers.clone();
-            let graceful_shutdown = Arc::clone(&graceful_shutdown);
             let force_shutdown = Arc::clone(&force_shutdown);
+            let state = Arc::clone(&state);
 
             let thread: TaskHandle = thread::spawn(move || {
                 loop {
@@ -548,13 +558,30 @@ impl<T: Send + 'static> ThreadPool<T> {
                         let force_shutdown = Arc::clone(&force_shutdown);
 
                         let result = job(force_shutdown);
-                        result_sender
+
+                        let send_result = result_sender
                             .send((id, result))
-                            .map_err(|error| anyhow!("{error}"))?;
-                    } else if graceful_shutdown.load(atomic::Ordering::Acquire) {
-                        break;
+                            .map_err(|error| anyhow!("{error}"));
+
+                        let (lock, condvar) = &*state;
+                        let mut thread_state = lock.lock();
+
+                        debug_assert!(thread_state.pending_jobs > 0);
+
+                        // Decrement and notify before propagating a send error so shutdown can
+                        // still observe that this job finished.
+                        thread_state.pending_jobs -= 1;
+                        condvar.notify_all();
+
+                        send_result?;
                     } else {
-                        std::hint::spin_loop();
+                        let (lock, condvar) = &*state;
+                        let mut thread_state = lock.lock();
+                        if thread_state.shutdown && thread_state.pending_jobs == 0 {
+                            break;
+                        }
+
+                        condvar.wait(&mut thread_state);
                     }
                 }
 
@@ -567,13 +594,13 @@ impl<T: Send + 'static> ThreadPool<T> {
         Ok(Self {
             tasks,
             result_receiver,
-            graceful_shutdown,
             force_shutdown,
             job_queue: injector,
             results: HashMap::new(),
             next: None,
             total_jobs: None,
             num_received: 0,
+            state,
         })
     }
 
@@ -590,15 +617,36 @@ impl<T: Send + 'static> ThreadPool<T> {
     where
         F: FnOnce(Arc<AtomicBool>) -> T + Send + 'static,
     {
+        // Mark the job as pending before making it visible in the queue. Otherwise a worker could
+        // steal and finish it before the counter is incremented, leaving shutdown waiting forever.
+        let (lock, condvar) = &*self.state;
+        let mut state = lock.lock();
+        assert!(
+            !state.shutdown,
+            "cannot submit a job after thread pool shutdown has started"
+        );
+
+        state.pending_jobs += 1;
+
         let num_jobs = self.total_jobs.get_or_insert(0);
         self.job_queue.push((*num_jobs, Box::new(job)));
         *num_jobs += 1;
+
+        // Notify after pushing so a woken worker can observe the queued job.
+        condvar.notify_one();
     }
 
     /// Gracefully shuts down all worker threads and waits for them to finish.
     pub fn shutdown(&mut self) {
-        self.graceful_shutdown
-            .store(true, atomic::Ordering::Release);
+        // Drop the state lock before joining. Workers need this lock to observe shutdown,
+        // decrement pending jobs, and exit.
+        {
+            let (lock, condvar) = &*self.state;
+            let mut state = lock.lock();
+            state.shutdown = true;
+            condvar.notify_all();
+        }
+
         for task in &mut self.tasks {
             if let Some(thread) = task.thread.take() {
                 let _ = thread.join();
@@ -721,6 +769,68 @@ mod tests {
         assert!(ThreadPool::<usize>::new(0).is_err());
     }
 
+    #[rstest]
+    #[timeout(Duration::from_secs(1))]
+    fn test_thread_pool_execute_after_workers_are_idle() {
+        let mut pool = ThreadPool::<usize>::new(4).unwrap();
+
+        sleep(Duration::from_millis(50));
+
+        pool.execute(|_| 42);
+
+        assert_eq!(pool.next(), Some(42));
+    }
+
+    #[rstest]
+    #[timeout(Duration::from_secs(1))]
+    fn test_thread_pool_runs_jobs_in_parallel_after_idle_wait() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        let running = Arc::new(AtomicUsize::new(0));
+        let max_running = Arc::new(AtomicUsize::new(0));
+        let mut pool = ThreadPool::<()>::new(2).unwrap();
+
+        sleep(Duration::from_millis(50));
+
+        for _ in 0..2 {
+            let running = Arc::clone(&running);
+            let max_running = Arc::clone(&max_running);
+
+            pool.execute(move |_| {
+                let current = running.fetch_add(1, Ordering::SeqCst) + 1;
+                max_running.fetch_max(current, Ordering::SeqCst);
+                sleep(Duration::from_millis(100));
+                running.fetch_sub(1, Ordering::SeqCst);
+            });
+        }
+
+        for () in &mut pool {}
+
+        assert_eq!(max_running.load(Ordering::SeqCst), 2);
+    }
+
+    #[rstest]
+    #[timeout(Duration::from_secs(1))]
+    fn test_thread_pool_shutdown_waits_for_pending_jobs() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        let counter = Arc::new(AtomicUsize::new(0));
+        let mut pool = ThreadPool::<()>::new(4).unwrap();
+
+        for _ in 0..16 {
+            let counter = Arc::clone(&counter);
+
+            pool.execute(move |_| {
+                counter.fetch_add(1, Ordering::Relaxed);
+            });
+        }
+
+        pool.shutdown();
+
+        assert_eq!(counter.load(Ordering::Relaxed), 16);
+        assert!(pool.tasks.iter().all(|task| task.thread.is_none()));
+    }
+
     #[test]
     fn test_thread_pool_with_lib_bench() {
         let meta = Metadata::new(
@@ -771,5 +881,13 @@ mod tests {
 
         assert_eq!(counter.load(Ordering::Relaxed), 4);
         assert!(pool.tasks.iter().all(|t| t.thread.is_none()));
+    }
+
+    #[test]
+    #[should_panic(expected = "cannot submit a job after thread pool shutdown has started")]
+    fn test_thread_pool_execute_after_shutdown_panics() {
+        let mut pool = ThreadPool::<()>::new(1).unwrap();
+        pool.shutdown();
+        pool.execute(|_| {});
     }
 }
