@@ -643,16 +643,16 @@ pub const VALGRIND_VERSION: Option<(u32, u32)> = {
 fn fatal_error(func: &str) -> ! {
     if let Some((major, minor)) = VALGRIND_VERSION {
         panic!(
-            "{0}: FATAL: {0}::{func} not available! You may need to update your installed \
-             Valgrind version or don't use this client request. The Valgrind version of the \
+            "{0}: FATAL: {0}::{func} not available! To be able to use this client request, a \
+             newer Valgrind version is required. The detected Valgrind version of the \
              `valgrind.h` header file is {major}.{minor}. Aborting...",
             module_path!(),
         );
     } else {
         panic!(
-            "{0}: FATAL: {0}::{func} not available! You may need to update your installed \
-             Valgrind version or don't use this client request. The Valgrind version of the \
-             `valgrind.h` header file is <3.6. Aborting...",
+            "{0}: FATAL: {0}::{func} not available! The Valgrind headers could not be found or \
+             the Valgrind version is too old. Check your Valgrind installation or set \
+             VALGRIND_REQUESTS_VALGRIND_INCLUDE to the Valgrind include path. Aborting...",
             module_path!(),
         );
     }
