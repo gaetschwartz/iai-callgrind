@@ -1,4 +1,4 @@
-//! The module containing all elements for [`ToolArgs`]
+//! The module containing all elements for [`ValgrindArgs`]
 
 /// Module containing the Gungraun defaults for the command line arguments of all tools
 #[expect(missing_docs)]
@@ -77,9 +77,20 @@ pub enum Vgdb {
     Full,
 }
 
+/// Common parsing behavior for Valgrind tool arguments.
+pub trait ToolArgs: Sized {
+    /// Try to create new arguments from multiple [`RawToolArgs`].
+    fn try_from_raw_tool_args(tool: ValgrindTool, raw_tool_args: &[&RawToolArgs]) -> Result<Self>;
+
+    /// Try to update these arguments from the contents of an iterator.
+    fn try_update<'a, T>(&mut self, args: T) -> Result<()>
+    where
+        T: Iterator<Item = &'a String>;
+}
+
 /// The arguments to pass to the Valgrind tool
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ToolArgs {
+pub struct ValgrindArgs {
     /// The error exit code for error checking tools like `Memcheck`
     pub error_exitcode: String,
     /// The --fair-sched argument
@@ -130,13 +141,54 @@ impl FromStr for FairSched {
     }
 }
 
-impl ToolArgs {
-    /// Try to create a new `ToolArgs` from multiple `RawArgs`
-    pub fn try_from_raw_tool_args(
-        tool: ValgrindTool,
-        raw_tool_args: &[&RawToolArgs],
-    ) -> Result<Self> {
-        let mut tool_args = Self {
+impl ToolArgs for ValgrindArgs {
+    fn try_from_raw_tool_args(tool: ValgrindTool, raw_tool_args: &[&RawToolArgs]) -> Result<Self> {
+        let mut tool_args = Self::new(tool);
+
+        tool_args.try_update(raw_tool_args.iter().flat_map(|args| args.as_slice()))?;
+
+        Ok(tool_args)
+    }
+
+    fn try_update<'a, T: Iterator<Item = &'a String>>(&mut self, args: T) -> Result<()> {
+        for arg in args {
+            let arg = arg.trim();
+            match arg.split_once('=').map(|(k, v)| (k.trim(), v.trim())) {
+                Some(("--error-exitcode", value)) => {
+                    value.clone_into(&mut self.error_exitcode);
+                }
+                Some((key @ "--trace-children", value)) => {
+                    self.trace_children = yesno_to_bool(value).ok_or_else(|| {
+                        Error::InvalidBoolArgument(key.to_owned(), value.to_owned())
+                    })?;
+                }
+                Some(("--fair-sched", value)) => {
+                    self.fair_sched = FairSched::from_str(value)?;
+                }
+                Some((arg, _)) if is_ignored_outfile_argument(arg) => warn!(
+                    "Ignoring {} argument '{arg}': Output/Log files of tools are managed by \
+                     Gungraun",
+                    self.tool.id()
+                ),
+                Some((arg, _)) if is_ignored_argument(arg) => {
+                    warn!("Ignoring {} argument '{arg}'", self.tool.id());
+                }
+                None if matches!(arg, "-v" | "--verbose") => self.verbose = true,
+                None if is_ignored_argument(arg) => {
+                    warn!("Ignoring {} argument '{arg}'", self.tool.id());
+                }
+                None | Some(_) => self.other.push(arg.to_owned()),
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl ValgrindArgs {
+    /// Create a new `ValgrindArgs` with the defaults for this tool.
+    pub fn new(tool: ValgrindTool) -> Self {
+        Self {
             tool,
             output_paths: Vec::default(),
             log_path: Option::default(),
@@ -157,44 +209,10 @@ impl ToolArgs {
             trace_children: defaults::TRACE_CHILDREN,
             fair_sched: defaults::FAIR_SCHED,
             vgdb: defaults::VGDB,
-        };
-
-        for args in raw_tool_args {
-            for arg in args.as_slice() {
-                let arg = arg.trim();
-                match arg.split_once('=').map(|(k, v)| (k.trim(), v.trim())) {
-                    Some(("--error-exitcode", value)) => {
-                        value.clone_into(&mut tool_args.error_exitcode);
-                    }
-                    Some((key @ "--trace-children", value)) => {
-                        tool_args.trace_children = yesno_to_bool(value).ok_or_else(|| {
-                            Error::InvalidBoolArgument(key.to_owned(), value.to_owned())
-                        })?;
-                    }
-                    Some(("--fair-sched", value)) => {
-                        tool_args.fair_sched = FairSched::from_str(value)?;
-                    }
-                    Some((arg, _)) if is_ignored_outfile_argument(arg) => warn!(
-                        "Ignoring {} argument '{arg}': Output/Log files of tools are managed by \
-                         Gungraun",
-                        tool.id()
-                    ),
-                    Some((arg, _)) if is_ignored_argument(arg) => {
-                        warn!("Ignoring {} argument '{arg}'", tool.id());
-                    }
-                    None if matches!(arg, "-v" | "--verbose") => tool_args.verbose = true,
-                    None if is_ignored_argument(arg) => {
-                        warn!("Ignoring {} argument '{arg}'", tool.id());
-                    }
-                    None | Some(_) => tool_args.other.push(arg.to_owned()),
-                }
-            }
         }
-
-        Ok(tool_args)
     }
 
-    /// Set the output file argument depending on the tool of this `ToolArgs`
+    /// Set the output file argument depending on the tool of this `ValgrindArgs`
     pub fn set_output_arg(
         &mut self,
         output_path: &ToolOutputPath,

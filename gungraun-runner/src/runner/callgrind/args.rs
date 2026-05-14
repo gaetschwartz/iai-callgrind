@@ -1,21 +1,18 @@
 //! The module containing the command line arguments for callgrind
 use std::collections::VecDeque;
-use std::str::FromStr;
 
 use anyhow::Result;
-use log::{log_enabled, warn};
+use log::warn;
 
 use crate::api::{RawToolArgs, ValgrindTool};
 use crate::error::Error;
-use crate::runner::tool::args::{
-    FairSched, ToolArgs, Vgdb, defaults, is_ignored_argument, is_ignored_outfile_argument,
-};
+use crate::runner::tool::args::{ToolArgs, ValgrindArgs, defaults};
 use crate::util::{bool_to_yesno, yesno_to_bool};
 
 /// The command-line arguments
 #[expect(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone)]
-pub struct Args {
+pub struct CallgrindArgs {
     cache_sim: bool,
     /// --combine-dumps is currently not supported by the Callgrind parsers, so we print a warning
     combine_dumps: bool,
@@ -24,30 +21,26 @@ pub struct Args {
     d1: String,
     dump_instr: bool,
     dump_line: bool,
-    fair_sched: FairSched,
     i1: String,
     ll: String,
-    other: Vec<String>,
     separate_threads: bool,
     toggle_collect: VecDeque<String>,
-    trace_children: bool,
-    verbose: bool,
-    vgdb: Vgdb,
+    valgrind_args: ValgrindArgs,
 }
 
-impl Args {
-    /// Try to create new `Args` from multiple [`RawToolArgs`]
-    pub fn try_from_raw_tool_args(args: &[&RawToolArgs]) -> Result<Self> {
+impl ToolArgs for CallgrindArgs {
+    fn try_from_raw_tool_args(tool: ValgrindTool, raw_tool_args: &[&RawToolArgs]) -> Result<Self> {
+        debug_assert_eq!(tool, ValgrindTool::Cachegrind);
+
         let mut default = Self::default();
-        default.try_update(args.iter().flat_map(|s| s.as_slice()))?;
+        default.try_update(raw_tool_args.iter().flat_map(|s| s.as_slice()))?;
         Ok(default)
     }
 
-    /// Try to update these `Args` from the contents of an iterator
-    pub fn try_update<'a, T: Iterator<Item = &'a String>>(&mut self, args: T) -> Result<()> {
+    fn try_update<'a, T: Iterator<Item = &'a String>>(&mut self, args: T) -> Result<()> {
         for arg in args {
-            let arg = arg.trim();
-            match arg.split_once('=').map(|(k, v)| (k.trim(), v.trim())) {
+            let trimmed = arg.trim();
+            match trimmed.split_once('=').map(|(k, v)| (k.trim(), v.trim())) {
                 Some(("--I1", value)) => value.clone_into(&mut self.i1),
                 Some(("--D1", value)) => value.clone_into(&mut self.d1),
                 Some(("--LL", value)) => value.clone_into(&mut self.ll),
@@ -69,18 +62,10 @@ impl Args {
                         Error::InvalidBoolArgument(key.to_owned(), value.to_owned())
                     })?;
                 }
-                Some((key @ "--trace-children", value)) => {
-                    self.trace_children = yesno_to_bool(value).ok_or_else(|| {
-                        Error::InvalidBoolArgument(key.to_owned(), value.to_owned())
-                    })?;
-                }
                 Some((key @ "--separate-threads", value)) => {
                     self.separate_threads = yesno_to_bool(value).ok_or_else(|| {
                         Error::InvalidBoolArgument(key.to_owned(), value.to_owned())
                     })?;
-                }
-                Some(("--fair-sched", value)) => {
-                    self.fair_sched = FairSched::from_str(value)?;
                 }
                 Some((
                     key @ ("--combine-dumps" | "--compress-strings" | "--compress-pos"),
@@ -88,25 +73,14 @@ impl Args {
                 )) => {
                     warn!("Ignoring unsupported callgrind argument: '{key}={value}'");
                 }
-                Some((arg, _)) if is_ignored_outfile_argument(arg) => warn!(
-                    "Ignoring callgrind argument '{arg}': Output/Log files of tools are managed \
-                     by Gungraun",
-                ),
-                Some((arg, _)) if is_ignored_argument(arg) => {
-                    warn!("Ignoring callgrind argument '{arg}'");
-                }
-                None if matches!(arg, "-v" | "--verbose") => self.verbose = true,
-                None if is_ignored_argument(arg) => {
-                    warn!("Ignoring callgrind argument: '{arg}'");
-                }
-                None | Some(_) => self.other.push(arg.to_owned()),
+                None | Some(_) => self.valgrind_args.try_update(std::iter::once(arg))?,
             }
         }
         Ok(())
     }
 }
 
-impl Default for Args {
+impl Default for CallgrindArgs {
     fn default() -> Self {
         Self {
             // Set some reasonable cache sizes. The exact sizes matter less than having fixed sizes,
@@ -119,22 +93,19 @@ impl Default for Args {
             compress_pos: defaults::COMPRESS_POS,
             compress_strings: defaults::COMPRESS_STRINGS,
             combine_dumps: defaults::COMBINE_DUMPS,
-            verbose: log_enabled!(log::Level::Debug),
             dump_line: defaults::DUMP_LINE,
             dump_instr: defaults::DUMP_INSTR,
             toggle_collect: VecDeque::default(),
-            other: Vec::default(),
-            trace_children: defaults::TRACE_CHILDREN,
             separate_threads: defaults::SEPARATE_THREADS,
-            fair_sched: defaults::FAIR_SCHED,
-            vgdb: defaults::VGDB,
+            valgrind_args: ValgrindArgs::new(ValgrindTool::Callgrind),
         }
     }
 }
 
-impl From<Args> for ToolArgs {
-    fn from(mut value: Args) -> Self {
-        let mut other = vec![
+impl From<CallgrindArgs> for ValgrindArgs {
+    fn from(value: CallgrindArgs) -> Self {
+        let mut valgrind = value.valgrind_args;
+        let other = vec![
             format!("--I1={}", &value.i1),
             format!("--D1={}", &value.d1),
             format!("--LL={}", &value.ll),
@@ -152,27 +123,14 @@ impl From<Args> for ToolArgs {
                 bool_to_yesno(value.separate_threads)
             ),
         ];
-        other.append(
-            &mut value
+        valgrind.other.extend(other);
+        valgrind.other.extend(
+            value
                 .toggle_collect
-                .iter()
-                .map(|s| format!("--toggle-collect={s}"))
-                .collect::<Vec<String>>(),
+                .into_iter()
+                .map(|s| format!("--toggle-collect={s}")),
         );
-        other.append(&mut value.other);
 
-        Self {
-            tool: ValgrindTool::Callgrind,
-            output_paths: Vec::default(),
-            log_path: Option::default(),
-            xtree_path: Option::default(),
-            xleak_path: Option::default(),
-            error_exitcode: defaults::ERROR_EXIT_CODE_OTHER_TOOL.into(),
-            verbose: value.verbose,
-            trace_children: value.trace_children,
-            fair_sched: value.fair_sched,
-            vgdb: value.vgdb,
-            other,
-        }
+        valgrind
     }
 }
