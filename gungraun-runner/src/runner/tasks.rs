@@ -193,6 +193,8 @@ pub struct ThreadPool<T: Send + 'static> {
 struct ThreadPoolState {
     /// Number of jobs that have been submitted but have not finished sending their result.
     pending_jobs: usize,
+    /// Number of jobs submitted to the queue that workers have not started yet.
+    queued_jobs: usize,
     /// Whether workers may exit once pending work is done.
     shutdown: bool,
 }
@@ -555,8 +557,15 @@ impl<T: Send + 'static> ThreadPool<T> {
                     });
 
                     if let Some((id, job)) = job {
-                        let force_shutdown = Arc::clone(&force_shutdown);
+                        {
+                            let (lock, _) = &*state;
+                            let mut thread_state = lock.lock();
 
+                            debug_assert!(thread_state.queued_jobs > 0);
+                            thread_state.queued_jobs -= 1;
+                        }
+
+                        let force_shutdown = Arc::clone(&force_shutdown);
                         let result = job(force_shutdown);
 
                         let send_result = result_sender
@@ -567,7 +576,6 @@ impl<T: Send + 'static> ThreadPool<T> {
                         let mut thread_state = lock.lock();
 
                         debug_assert!(thread_state.pending_jobs > 0);
-
                         // Decrement and notify before propagating a send error so shutdown can
                         // still observe that this job finished.
                         thread_state.pending_jobs -= 1;
@@ -579,6 +587,9 @@ impl<T: Send + 'static> ThreadPool<T> {
                         let mut thread_state = lock.lock();
                         if thread_state.shutdown && thread_state.pending_jobs == 0 {
                             break;
+                        }
+                        if thread_state.queued_jobs > 0 {
+                            continue;
                         }
 
                         condvar.wait(&mut thread_state);
@@ -627,6 +638,7 @@ impl<T: Send + 'static> ThreadPool<T> {
         );
 
         state.pending_jobs += 1;
+        state.queued_jobs += 1;
 
         let num_jobs = self.total_jobs.get_or_insert(0);
         self.job_queue.push((*num_jobs, Box::new(job)));
@@ -729,6 +741,7 @@ mod tests {
     #[case::size_19_jobs_20(19, 20)]
     #[case::equal_twenty(20, 20)]
     #[case::size_21_jobs_20(21, 20)]
+    #[timeout(Duration::from_secs(1))]
     fn test_thread_pool_execute_and_next(#[case] size: usize, #[case] jobs: usize) {
         let mut pool = ThreadPool::new(size).unwrap();
         for i in 0..jobs {
@@ -779,6 +792,107 @@ mod tests {
         pool.execute(|_| 42);
 
         assert_eq!(pool.next(), Some(42));
+    }
+
+    #[rstest]
+    #[timeout(Duration::from_secs(5))]
+    fn test_thread_pool_when_repeatedly_submitting_after_idle_then_jobs_complete() {
+        for _ in 0..1_000 {
+            let mut pool = ThreadPool::<usize>::new(1).unwrap();
+
+            sleep(Duration::from_micros(100));
+
+            pool.execute(|_| 1);
+
+            assert_eq!(pool.next(), Some(1));
+        }
+    }
+
+    #[rstest]
+    #[timeout(Duration::from_secs(2))]
+    fn test_thread_pool_when_submitting_after_idle_rounds_then_workers_wake() {
+        let mut pool = ThreadPool::<usize>::new(2).unwrap();
+
+        for i in 0..20 {
+            sleep(Duration::from_millis(5));
+
+            pool.execute(move |_| i);
+
+            assert_eq!(pool.next(), Some(i));
+        }
+    }
+
+    #[rstest]
+    #[timeout(Duration::from_secs(5))]
+    fn test_thread_pool_when_many_jobs_after_idle_then_all_complete() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        for _ in 0..100 {
+            let counter = Arc::new(AtomicUsize::new(0));
+            let mut pool = ThreadPool::<()>::new(8).unwrap();
+
+            sleep(Duration::from_micros(100));
+
+            for _ in 0..128 {
+                let counter = Arc::clone(&counter);
+                pool.execute(move |_| {
+                    counter.fetch_add(1, Ordering::Relaxed);
+                });
+            }
+
+            for () in &mut pool {}
+
+            assert_eq!(counter.load(Ordering::Relaxed), 128);
+        }
+    }
+
+    #[rstest]
+    #[timeout(Duration::from_secs(2))]
+    fn test_thread_pool_when_job_is_running_then_idle_workers_wait() {
+        let (started_sender, started_receiver) = mpsc::channel();
+        let (finish_sender, finish_receiver) = mpsc::channel();
+        let mut pool = ThreadPool::<usize>::new(4).unwrap();
+
+        pool.execute(move |_| {
+            started_sender.send(()).unwrap();
+            finish_receiver.recv().unwrap();
+            1
+        });
+
+        started_receiver.recv().unwrap();
+        sleep(Duration::from_millis(50));
+        finish_sender.send(()).unwrap();
+
+        assert_eq!(pool.next(), Some(1));
+    }
+
+    #[rstest]
+    #[timeout(Duration::from_secs(2))]
+    fn test_thread_pool_when_shutdown_with_blocked_workers_then_queued_jobs_complete() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        let counter = Arc::new(AtomicUsize::new(0));
+        let (finish_sender, finish_receiver) = mpsc::channel();
+        let finish_receiver = Arc::new(Mutex::new(finish_receiver));
+        let mut pool = ThreadPool::<()>::new(2).unwrap();
+
+        for _ in 0..8 {
+            let counter = Arc::clone(&counter);
+            let finish_receiver = Arc::clone(&finish_receiver);
+
+            pool.execute(move |_| {
+                finish_receiver.lock().recv().unwrap();
+                counter.fetch_add(1, Ordering::Relaxed);
+            });
+        }
+
+        for _ in 0..8 {
+            finish_sender.send(()).unwrap();
+        }
+
+        pool.shutdown();
+
+        assert_eq!(counter.load(Ordering::Relaxed), 8);
     }
 
     #[rstest]

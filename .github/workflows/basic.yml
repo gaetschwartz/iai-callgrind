@@ -47,6 +47,7 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
       - uses: Swatinem/rust-cache@v2
         with:
+          cache-bin: false
           key: ${{ matrix.toolchain }}
       - uses: taiki-e/install-action@cargo-hack
       - uses: taiki-e/install-action@cargo-minimal-versions
@@ -62,6 +63,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-bin: false
       - uses: taiki-e/install-action@just
       - uses: taiki-e/install-action@taplo
       - run: just check-fmt-all
@@ -74,5 +78,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-bin: false
       - uses: taiki-e/install-action@just
       - run: just lint

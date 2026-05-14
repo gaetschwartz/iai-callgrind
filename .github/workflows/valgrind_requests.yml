@@ -35,11 +35,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
-      - uses: taiki-e/install-action@just
-      - uses: taiki-e/install-action@cargo-hack
       - uses: Swatinem/rust-cache@v2
         with:
+          cache-bin: false
           key: ${{ matrix.toolchain }}
+      - uses: taiki-e/install-action@just
+      - uses: taiki-e/install-action@cargo-hack
       - name: Install valgrind
         if: matrix.os == 'ubuntu-latest'
         run: ./scripts/install_valgrind.sh "$VALGRIND_VERSION"
@@ -63,9 +64,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-bin: false
       - uses: taiki-e/install-action@cargo-hack
       - uses: taiki-e/install-action@just
-      - uses: Swatinem/rust-cache@v2
       - name: Install valgrind
         run: ./scripts/install_valgrind.sh "$VALGRIND_VERSION"
         env:
@@ -97,11 +100,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
-      - uses: taiki-e/install-action@cross
-      - uses: taiki-e/install-action@just
       - uses: Swatinem/rust-cache@v2
         with:
+          cache-bin: false
           key: ${{ matrix.target }}
+      - uses: taiki-e/install-action@cross
+      - uses: taiki-e/install-action@just
       - name: Install valgrind
         run: ./scripts/install_valgrind.sh "$VALGRIND_VERSION"
         env:
