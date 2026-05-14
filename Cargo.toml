@@ -29,7 +29,7 @@ bincode-next = { version = "2", default-features = false, features = [
   "std",
 ] }
 bindgen = { version = ">=0.69, <0.73" }
-bon = { version = "3" }
+bon = { version = "3.9" }
 cargo_metadata = { version = "0.20" }
 cc = { version = "1.0.100" }
 cfg-if = { version = "1" }
@@ -58,7 +58,7 @@ polonius-the-crab = { version = "0.5" }
 predicates = { version = "3" }
 pretty_assertions = "1.1"
 proc-macro-error2 = "2.0.1"
-proc-macro2 = "1.0.83"
+proc-macro2 = "1.0.88"
 quote = "1.0.35"
 regex = { version = "1.12" }
 rstest = { version = ">=0.17, <0.27", default-features = false }
