@@ -432,3 +432,125 @@ pub fn is_ignored_argument(arg: &str) -> bool {
             | "--vgdb"
     )
 }
+
+#[cfg(test)]
+mod tests {
+    use std::ffi::OsString;
+
+    use bon::builder;
+    use rstest::rstest;
+
+    use super::*;
+
+    fn assert_contains_args<const N: usize>(actual: &[OsString], expected: [&str; N]) {
+        for expected in expected {
+            assert!(
+                actual.iter().any(|arg| arg.to_string_lossy() == expected),
+                "expected serialized arg {expected}"
+            );
+        }
+    }
+
+    fn strings<const N: usize>(args: [&str; N]) -> Vec<String> {
+        args.into_iter().map(str::to_owned).collect()
+    }
+
+    #[builder(finish_fn = "fixture")]
+    pub fn valgrind_args_f(
+        tool: Option<ValgrindTool>,
+        error_exitcode: Option<&str>,
+        fair_sched: Option<FairSched>,
+        other: Option<Vec<String>>,
+        trace_children: Option<bool>,
+        verbose: Option<bool>,
+    ) -> ValgrindArgs {
+        let mut args = ValgrindArgs::new(tool.unwrap_or(ValgrindTool::Memcheck));
+        if let Some(value) = error_exitcode {
+            args.error_exitcode = value.to_owned();
+        }
+        if let Some(value) = fair_sched {
+            args.fair_sched = value;
+        }
+        if let Some(value) = other {
+            args.other.extend(value);
+        }
+        if let Some(value) = trace_children {
+            args.trace_children = value;
+        }
+        if let Some(value) = verbose {
+            args.verbose = value;
+        }
+
+        args
+    }
+
+    #[rstest]
+    #[case::error_exitcode(
+        &["--error-exitcode=99"],
+        valgrind_args_f().error_exitcode("99").fixture()
+    )]
+    #[case::trace_children(
+        &["--trace-children=no"],
+        valgrind_args_f().trace_children(false).fixture()
+    )]
+    #[case::fair_sched(
+        &["--fair-sched=no"],
+        valgrind_args_f().fair_sched(FairSched::No).fixture()
+    )]
+    #[case::long_verbose(&["--verbose"], valgrind_args_f().verbose(true).fixture())]
+    #[case::short_verbose(&["-v"], valgrind_args_f().verbose(true).fixture())]
+    #[case::vgdb_is_ignored(&["--vgdb=yes"], valgrind_args_f().fixture())]
+    #[case::outfile_is_ignored(&["--log-file=some"], valgrind_args_f().fixture())]
+    #[case::other(
+        &["--some-arg=yes"],
+        valgrind_args_f()
+            .other(strings(["--some-arg=yes"]))
+            .fixture()
+    )]
+    fn test_try_from_raw_tool_args(#[case] args: &[&str], #[case] expected: ValgrindArgs) {
+        let actual = ValgrindArgs::try_from_raw_tool_args(
+            ValgrindTool::Memcheck,
+            &[&RawToolArgs::from_iter(args)],
+        )
+        .unwrap();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_to_vec_when_generic_args_then_forces_vgdb_no() {
+        let args = valgrind_args_f()
+            .error_exitcode("99")
+            .fair_sched(FairSched::No)
+            .trace_children(false)
+            .fixture();
+
+        let actual = args.to_vec();
+
+        assert_contains_args(
+            &actual,
+            [
+                "--tool=memcheck",
+                "--error-exitcode=99",
+                "--trace-children=no",
+                "--fair-sched=no",
+                "--vgdb=no",
+            ],
+        );
+    }
+
+    #[test]
+    fn test_to_vec_when_verbose_and_other_args() {
+        let args = valgrind_args_f()
+            .verbose(true)
+            .other(strings(["--some-arg=yes", "--another-some-arg"]))
+            .fixture();
+
+        let actual = args.to_vec();
+
+        assert_contains_args(
+            &actual,
+            ["--verbose", "--some-arg=yes", "--another-some-arg"],
+        );
+    }
+}
