@@ -199,6 +199,10 @@ impl ToolConfigBuilder {
     }
 
     fn meta_args(&mut self, meta: &Metadata) {
+        if let Some(args) = &meta.args.valgrind_args {
+            self.raw_tool_args.update(args);
+        }
+
         let raw_tool_args = match self.kind {
             ValgrindTool::Callgrind => &meta.args.callgrind_args,
             ValgrindTool::Cachegrind => &meta.args.cachegrind_args,
