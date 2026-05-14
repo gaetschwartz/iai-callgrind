@@ -193,6 +193,8 @@ pub struct ThreadPool<T: Send + 'static> {
 struct ThreadPoolState {
     /// Number of jobs that have been submitted but have not finished sending their result.
     pending_jobs: usize,
+    /// Number of jobs submitted to the queue that workers have not started yet.
+    queued_jobs: usize,
     /// Whether workers may exit once pending work is done.
     shutdown: bool,
 }
@@ -555,8 +557,15 @@ impl<T: Send + 'static> ThreadPool<T> {
                     });
 
                     if let Some((id, job)) = job {
-                        let force_shutdown = Arc::clone(&force_shutdown);
+                        {
+                            let (lock, _) = &*state;
+                            let mut thread_state = lock.lock();
 
+                            debug_assert!(thread_state.queued_jobs > 0);
+                            thread_state.queued_jobs -= 1;
+                        }
+
+                        let force_shutdown = Arc::clone(&force_shutdown);
                         let result = job(force_shutdown);
 
                         let send_result = result_sender
@@ -567,7 +576,6 @@ impl<T: Send + 'static> ThreadPool<T> {
                         let mut thread_state = lock.lock();
 
                         debug_assert!(thread_state.pending_jobs > 0);
-
                         // Decrement and notify before propagating a send error so shutdown can
                         // still observe that this job finished.
                         thread_state.pending_jobs -= 1;
@@ -579,6 +587,9 @@ impl<T: Send + 'static> ThreadPool<T> {
                         let mut thread_state = lock.lock();
                         if thread_state.shutdown && thread_state.pending_jobs == 0 {
                             break;
+                        }
+                        if thread_state.queued_jobs > 0 {
+                            continue;
                         }
 
                         condvar.wait(&mut thread_state);
@@ -627,6 +638,7 @@ impl<T: Send + 'static> ThreadPool<T> {
         );
 
         state.pending_jobs += 1;
+        state.queued_jobs += 1;
 
         let num_jobs = self.total_jobs.get_or_insert(0);
         self.job_queue.push((*num_jobs, Box::new(job)));
