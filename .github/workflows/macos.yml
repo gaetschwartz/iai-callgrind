@@ -17,9 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-bin: false
       - uses: taiki-e/install-action@just
       - uses: taiki-e/install-action@cargo-hack
-      - uses: Swatinem/rust-cache@v2
       - name: Build and install valgrind
         run: |
           brew tap LouisBrunner/valgrind
@@ -38,9 +40,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: "Prepare: Run cargo update"
         run: cargo update
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-bin: false
       - uses: taiki-e/install-action@cargo-hack
       - uses: taiki-e/install-action@just
-      - uses: Swatinem/rust-cache@v2
       - name: Build and install valgrind
         run: |
           brew tap LouisBrunner/valgrind

@@ -11,6 +11,5 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
       - name: Publish gungraun-macros
         run: cargo publish -p gungraun-macros --token ${{ secrets.CRATES_GITHUB_TOKEN }}

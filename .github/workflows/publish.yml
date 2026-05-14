@@ -11,7 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
       - name: Publish gungraun-runner
         run: cargo publish -p gungraun-runner --token ${{ secrets.CRATES_GITHUB_TOKEN }}
       - name: Publish gungraun
