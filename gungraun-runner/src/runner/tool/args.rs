@@ -1,9 +1,9 @@
-//! The module containing all elements for [`ToolArgs`]
+//! The module containing all elements for [`ValgrindArgs`]
 
 /// Module containing the Gungraun defaults for the command line arguments of all tools
 #[expect(missing_docs)]
 pub mod defaults {
-    use super::FairSched;
+    use super::{FairSched, Vgdb};
 
     ////////////////////////////////////////////////////
     // Shared defaults between cachegrind and callgrind
@@ -37,6 +37,7 @@ pub mod defaults {
     pub const TRACE_CHILDREN: bool = true;
     pub const FAIR_SCHED: FairSched = FairSched::Try;
     pub const VERBOSE: bool = false;
+    pub const VGDB: Vgdb = Vgdb::No;
     ////////////////////////////////////////////////////
 }
 
@@ -65,9 +66,31 @@ pub enum FairSched {
     Try,
 }
 
+/// The possible values for --vgdb
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Vgdb {
+    /// Corresponds to `yes`
+    Yes,
+    /// Corresponds to `no`
+    No,
+    /// Corresponds to `full`
+    Full,
+}
+
+/// Common parsing behavior for Valgrind tool arguments.
+pub trait ToolArgs: Sized {
+    /// Try to create new arguments from multiple [`RawToolArgs`].
+    fn try_from_raw_tool_args(tool: ValgrindTool, raw_tool_args: &[&RawToolArgs]) -> Result<Self>;
+
+    /// Try to update these arguments from the contents of an iterator.
+    fn try_update<'a, T>(&mut self, args: T) -> Result<()>
+    where
+        T: Iterator<Item = &'a String>;
+}
+
 /// The arguments to pass to the Valgrind tool
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ToolArgs {
+pub struct ValgrindArgs {
     /// The error exit code for error checking tools like `Memcheck`
     pub error_exitcode: String,
     /// The --fair-sched argument
@@ -84,6 +107,8 @@ pub struct ToolArgs {
     pub trace_children: bool,
     /// If --verbose is set to true of false
     pub verbose: bool,
+    /// The --vgdb argument
+    pub vgdb: Vgdb,
     /// The xtree paths argument --xtree-leak-file
     pub xleak_path: Option<OsString>,
     /// The xtree paths argument --xtree-memory-file
@@ -116,13 +141,54 @@ impl FromStr for FairSched {
     }
 }
 
-impl ToolArgs {
-    /// Try to create a new `ToolArgs` from multiple `RawArgs`
-    pub fn try_from_raw_tool_args(
-        tool: ValgrindTool,
-        raw_tool_args: &[&RawToolArgs],
-    ) -> Result<Self> {
-        let mut tool_args = Self {
+impl ToolArgs for ValgrindArgs {
+    fn try_from_raw_tool_args(tool: ValgrindTool, raw_tool_args: &[&RawToolArgs]) -> Result<Self> {
+        let mut tool_args = Self::new(tool);
+
+        tool_args.try_update(raw_tool_args.iter().flat_map(|args| args.as_slice()))?;
+
+        Ok(tool_args)
+    }
+
+    fn try_update<'a, T: Iterator<Item = &'a String>>(&mut self, args: T) -> Result<()> {
+        for arg in args {
+            let arg = arg.trim();
+            match arg.split_once('=').map(|(k, v)| (k.trim(), v.trim())) {
+                Some(("--error-exitcode", value)) => {
+                    value.clone_into(&mut self.error_exitcode);
+                }
+                Some((key @ "--trace-children", value)) => {
+                    self.trace_children = yesno_to_bool(value).ok_or_else(|| {
+                        Error::InvalidBoolArgument(key.to_owned(), value.to_owned())
+                    })?;
+                }
+                Some(("--fair-sched", value)) => {
+                    self.fair_sched = FairSched::from_str(value)?;
+                }
+                Some((arg, _)) if is_ignored_outfile_argument(arg) => warn!(
+                    "Ignoring {} argument '{arg}': Output/Log files of tools are managed by \
+                     Gungraun",
+                    self.tool.id()
+                ),
+                Some((arg, _)) if is_ignored_argument(arg) => {
+                    warn!("Ignoring {} argument '{arg}'", self.tool.id());
+                }
+                None if matches!(arg, "-v" | "--verbose") => self.verbose = true,
+                None if is_ignored_argument(arg) => {
+                    warn!("Ignoring {} argument '{arg}'", self.tool.id());
+                }
+                None | Some(_) => self.other.push(arg.to_owned()),
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl ValgrindArgs {
+    /// Create a new `ValgrindArgs` with the defaults for this tool.
+    pub fn new(tool: ValgrindTool) -> Self {
+        Self {
             tool,
             output_paths: Vec::default(),
             log_path: Option::default(),
@@ -142,41 +208,11 @@ impl ToolArgs {
             other: Vec::default(),
             trace_children: defaults::TRACE_CHILDREN,
             fair_sched: defaults::FAIR_SCHED,
-        };
-
-        for args in raw_tool_args {
-            for arg in args.as_slice() {
-                let arg = arg.trim();
-                match arg.split_once('=').map(|(k, v)| (k.trim(), v.trim())) {
-                    Some(("--error-exitcode", value)) => {
-                        value.clone_into(&mut tool_args.error_exitcode);
-                    }
-                    Some((key @ "--trace-children", value)) => {
-                        tool_args.trace_children = yesno_to_bool(value).ok_or_else(|| {
-                            Error::InvalidBoolArgument(key.to_owned(), value.to_owned())
-                        })?;
-                    }
-                    Some(("--fair-sched", value)) => {
-                        tool_args.fair_sched = FairSched::from_str(value)?;
-                    }
-                    Some((arg, _)) if is_ignored_outfile_argument(arg) => warn!(
-                        "Ignoring {} argument '{arg}': Output/Log files of tools are managed by \
-                         Gungraun",
-                        tool.id()
-                    ),
-                    None if matches!(arg, "-v" | "--verbose") => tool_args.verbose = true,
-                    None if is_ignored_argument(arg) => {
-                        warn!("Ignoring {} argument '{arg}'", tool.id());
-                    }
-                    None | Some(_) => tool_args.other.push(arg.to_owned()),
-                }
-            }
+            vgdb: defaults::VGDB,
         }
-
-        Ok(tool_args)
     }
 
-    /// Set the output file argument depending on the tool of this `ToolArgs`
+    /// Set the output file argument depending on the tool of this `ValgrindArgs`
     pub fn set_output_arg(
         &mut self,
         output_path: &ToolOutputPath,
@@ -302,6 +338,7 @@ impl ToolArgs {
         vec.push(format!("--error-exitcode={}", &self.error_exitcode).into());
         vec.push(format!("--trace-children={}", &bool_to_yesno(self.trace_children)).into());
         vec.push(format!("--fair-sched={}", self.fair_sched).into());
+        vec.push(format!("--vgdb={}", self.vgdb).into());
         if self.verbose {
             vec.push("--verbose".into());
         }
@@ -347,6 +384,17 @@ impl ToolArgs {
     }
 }
 
+impl Display for Vgdb {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let string = match self {
+            Self::Yes => "yes",
+            Self::No => "no",
+            Self::Full => "full",
+        };
+        write!(f, "{string}")
+    }
+}
+
 /// Returns `true` if this is an ignored argument related to output or logfiles.
 pub fn is_ignored_outfile_argument(arg: &str) -> bool {
     matches!(
@@ -381,5 +429,128 @@ pub fn is_ignored_argument(arg: &str) -> bool {
             | "-q"
             | "--quiet"
             | "--tool"
+            | "--vgdb"
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use std::ffi::OsString;
+
+    use bon::builder;
+    use rstest::rstest;
+
+    use super::*;
+
+    fn assert_contains_args<const N: usize>(actual: &[OsString], expected: [&str; N]) {
+        for expected in expected {
+            assert!(
+                actual.iter().any(|arg| arg.to_string_lossy() == expected),
+                "expected serialized arg {expected}"
+            );
+        }
+    }
+
+    fn strings<const N: usize>(args: [&str; N]) -> Vec<String> {
+        args.into_iter().map(str::to_owned).collect()
+    }
+
+    #[builder(finish_fn = "fixture")]
+    pub fn valgrind_args_f(
+        tool: Option<ValgrindTool>,
+        error_exitcode: Option<&str>,
+        fair_sched: Option<FairSched>,
+        other: Option<Vec<String>>,
+        trace_children: Option<bool>,
+        verbose: Option<bool>,
+    ) -> ValgrindArgs {
+        let mut args = ValgrindArgs::new(tool.unwrap_or(ValgrindTool::Memcheck));
+        if let Some(value) = error_exitcode {
+            args.error_exitcode = value.to_owned();
+        }
+        if let Some(value) = fair_sched {
+            args.fair_sched = value;
+        }
+        if let Some(value) = other {
+            args.other.extend(value);
+        }
+        if let Some(value) = trace_children {
+            args.trace_children = value;
+        }
+        if let Some(value) = verbose {
+            args.verbose = value;
+        }
+
+        args
+    }
+
+    #[rstest]
+    #[case::error_exitcode(
+        &["--error-exitcode=99"],
+        valgrind_args_f().error_exitcode("99").fixture()
+    )]
+    #[case::trace_children(
+        &["--trace-children=no"],
+        valgrind_args_f().trace_children(false).fixture()
+    )]
+    #[case::fair_sched(
+        &["--fair-sched=no"],
+        valgrind_args_f().fair_sched(FairSched::No).fixture()
+    )]
+    #[case::long_verbose(&["--verbose"], valgrind_args_f().verbose(true).fixture())]
+    #[case::short_verbose(&["-v"], valgrind_args_f().verbose(true).fixture())]
+    #[case::vgdb_is_ignored(&["--vgdb=yes"], valgrind_args_f().fixture())]
+    #[case::outfile_is_ignored(&["--log-file=some"], valgrind_args_f().fixture())]
+    #[case::other(
+        &["--some-arg=yes"],
+        valgrind_args_f()
+            .other(strings(["--some-arg=yes"]))
+            .fixture()
+    )]
+    fn test_try_from_raw_tool_args(#[case] args: &[&str], #[case] expected: ValgrindArgs) {
+        let actual = ValgrindArgs::try_from_raw_tool_args(
+            ValgrindTool::Memcheck,
+            &[&RawToolArgs::from_iter(args)],
+        )
+        .unwrap();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_to_vec_when_generic_args_then_forces_vgdb_no() {
+        let args = valgrind_args_f()
+            .error_exitcode("99")
+            .fair_sched(FairSched::No)
+            .trace_children(false)
+            .fixture();
+
+        let actual = args.to_vec();
+
+        assert_contains_args(
+            &actual,
+            [
+                "--tool=memcheck",
+                "--error-exitcode=99",
+                "--trace-children=no",
+                "--fair-sched=no",
+                "--vgdb=no",
+            ],
+        );
+    }
+
+    #[test]
+    fn test_to_vec_when_verbose_and_other_args() {
+        let args = valgrind_args_f()
+            .verbose(true)
+            .other(strings(["--some-arg=yes", "--another-some-arg"]))
+            .fixture();
+
+        let actual = args.to_vec();
+
+        assert_contains_args(
+            &actual,
+            ["--verbose", "--some-arg=yes", "--another-some-arg"],
+        );
+    }
 }

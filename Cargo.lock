@@ -848,6 +848,7 @@ version = "0.18.2"
 dependencies = [
  "anyhow",
  "bincode-next",
+ "bon",
  "cargo_metadata",
  "clap",
  "colored",

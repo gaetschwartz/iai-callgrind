@@ -1,21 +1,18 @@
 //! The module containing the command line arguments for callgrind
 use std::collections::VecDeque;
-use std::str::FromStr;
 
 use anyhow::Result;
-use log::{log_enabled, warn};
+use log::warn;
 
 use crate::api::{RawToolArgs, ValgrindTool};
 use crate::error::Error;
-use crate::runner::tool::args::{
-    FairSched, ToolArgs, defaults, is_ignored_argument, is_ignored_outfile_argument,
-};
+use crate::runner::tool::args::{ToolArgs, ValgrindArgs, defaults};
 use crate::util::{bool_to_yesno, yesno_to_bool};
 
 /// The command-line arguments
 #[expect(clippy::struct_excessive_bools)]
-#[derive(Debug, Clone)]
-pub struct Args {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CallgrindArgs {
     cache_sim: bool,
     /// --combine-dumps is currently not supported by the Callgrind parsers, so we print a warning
     combine_dumps: bool,
@@ -24,29 +21,26 @@ pub struct Args {
     d1: String,
     dump_instr: bool,
     dump_line: bool,
-    fair_sched: FairSched,
     i1: String,
     ll: String,
-    other: Vec<String>,
     separate_threads: bool,
     toggle_collect: VecDeque<String>,
-    trace_children: bool,
-    verbose: bool,
+    valgrind_args: ValgrindArgs,
 }
 
-impl Args {
-    /// Try to create new `Args` from multiple [`RawToolArgs`]
-    pub fn try_from_raw_tool_args(args: &[&RawToolArgs]) -> Result<Self> {
+impl ToolArgs for CallgrindArgs {
+    fn try_from_raw_tool_args(tool: ValgrindTool, raw_tool_args: &[&RawToolArgs]) -> Result<Self> {
+        debug_assert_eq!(tool, ValgrindTool::Callgrind);
+
         let mut default = Self::default();
-        default.try_update(args.iter().flat_map(|s| s.as_slice()))?;
+        default.try_update(raw_tool_args.iter().flat_map(|s| s.as_slice()))?;
         Ok(default)
     }
 
-    /// Try to update these `Args` from the contents of an iterator
-    pub fn try_update<'a, T: Iterator<Item = &'a String>>(&mut self, args: T) -> Result<()> {
+    fn try_update<'a, T: Iterator<Item = &'a String>>(&mut self, args: T) -> Result<()> {
         for arg in args {
-            let arg = arg.trim();
-            match arg.split_once('=').map(|(k, v)| (k.trim(), v.trim())) {
+            let trimmed = arg.trim();
+            match trimmed.split_once('=').map(|(k, v)| (k.trim(), v.trim())) {
                 Some(("--I1", value)) => value.clone_into(&mut self.i1),
                 Some(("--D1", value)) => value.clone_into(&mut self.d1),
                 Some(("--LL", value)) => value.clone_into(&mut self.ll),
@@ -68,18 +62,10 @@ impl Args {
                         Error::InvalidBoolArgument(key.to_owned(), value.to_owned())
                     })?;
                 }
-                Some((key @ "--trace-children", value)) => {
-                    self.trace_children = yesno_to_bool(value).ok_or_else(|| {
-                        Error::InvalidBoolArgument(key.to_owned(), value.to_owned())
-                    })?;
-                }
                 Some((key @ "--separate-threads", value)) => {
                     self.separate_threads = yesno_to_bool(value).ok_or_else(|| {
                         Error::InvalidBoolArgument(key.to_owned(), value.to_owned())
                     })?;
-                }
-                Some(("--fair-sched", value)) => {
-                    self.fair_sched = FairSched::from_str(value)?;
                 }
                 Some((
                     key @ ("--combine-dumps" | "--compress-strings" | "--compress-pos"),
@@ -87,22 +73,14 @@ impl Args {
                 )) => {
                     warn!("Ignoring unsupported callgrind argument: '{key}={value}'");
                 }
-                Some((arg, _)) if is_ignored_outfile_argument(arg) => warn!(
-                    "Ignoring callgrind argument '{arg}': Output/Log files of tools are managed \
-                     by Gungraun",
-                ),
-                None if matches!(arg, "-v" | "--verbose") => self.verbose = true,
-                None if is_ignored_argument(arg) => {
-                    warn!("Ignoring callgrind argument: '{arg}'");
-                }
-                None | Some(_) => self.other.push(arg.to_owned()),
+                None | Some(_) => self.valgrind_args.try_update(std::iter::once(arg))?,
             }
         }
         Ok(())
     }
 }
 
-impl Default for Args {
+impl Default for CallgrindArgs {
     fn default() -> Self {
         Self {
             // Set some reasonable cache sizes. The exact sizes matter less than having fixed sizes,
@@ -115,21 +93,19 @@ impl Default for Args {
             compress_pos: defaults::COMPRESS_POS,
             compress_strings: defaults::COMPRESS_STRINGS,
             combine_dumps: defaults::COMBINE_DUMPS,
-            verbose: log_enabled!(log::Level::Debug),
             dump_line: defaults::DUMP_LINE,
             dump_instr: defaults::DUMP_INSTR,
             toggle_collect: VecDeque::default(),
-            other: Vec::default(),
-            trace_children: defaults::TRACE_CHILDREN,
             separate_threads: defaults::SEPARATE_THREADS,
-            fair_sched: defaults::FAIR_SCHED,
+            valgrind_args: ValgrindArgs::new(ValgrindTool::Callgrind),
         }
     }
 }
 
-impl From<Args> for ToolArgs {
-    fn from(mut value: Args) -> Self {
-        let mut other = vec![
+impl From<CallgrindArgs> for ValgrindArgs {
+    fn from(value: CallgrindArgs) -> Self {
+        let mut valgrind = value.valgrind_args;
+        let other = vec![
             format!("--I1={}", &value.i1),
             format!("--D1={}", &value.d1),
             format!("--LL={}", &value.ll),
@@ -147,26 +123,245 @@ impl From<Args> for ToolArgs {
                 bool_to_yesno(value.separate_threads)
             ),
         ];
-        other.append(
-            &mut value
+        valgrind.other.extend(other);
+        valgrind.other.extend(
+            value
                 .toggle_collect
-                .iter()
-                .map(|s| format!("--toggle-collect={s}"))
-                .collect::<Vec<String>>(),
+                .into_iter()
+                .map(|s| format!("--toggle-collect={s}")),
         );
-        other.append(&mut value.other);
 
-        Self {
-            tool: ValgrindTool::Callgrind,
-            output_paths: Vec::default(),
-            log_path: Option::default(),
-            xtree_path: Option::default(),
-            xleak_path: Option::default(),
-            error_exitcode: defaults::ERROR_EXIT_CODE_OTHER_TOOL.into(),
-            verbose: value.verbose,
-            trace_children: value.trace_children,
-            fair_sched: value.fair_sched,
-            other,
+        valgrind
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::VecDeque;
+
+    use bon::builder;
+    use rstest::rstest;
+
+    use super::*;
+    use crate::runner::tool::args::FairSched;
+
+    fn default_callgrind_other_args() -> Vec<String> {
+        strings([
+            "--I1=32768,8,64",
+            "--D1=32768,8,64",
+            "--LL=8388608,16,64",
+            "--cache-sim=yes",
+            "--compress-strings=no",
+            "--compress-pos=no",
+            "--dump-line=yes",
+            "--dump-instr=no",
+            "--combine-dumps=no",
+            "--separate-threads=yes",
+        ])
+    }
+
+    fn strings<const N: usize>(args: [&str; N]) -> Vec<String> {
+        args.into_iter().map(str::to_owned).collect()
+    }
+
+    #[builder(finish_fn = "fixture")]
+    pub fn valgrind_args_f(
+        i1: Option<&str>,
+        fair_sched: Option<FairSched>,
+        other: Option<Vec<String>>,
+    ) -> ValgrindArgs {
+        let mut args = ValgrindArgs::new(ValgrindTool::Callgrind);
+        if let Some(value) = i1 {
+            args.other.push(format!("--I1={value}"));
         }
+        if let Some(value) = fair_sched {
+            args.fair_sched = value;
+        }
+        if let Some(value) = other {
+            args.other.extend(value);
+        }
+
+        args
+    }
+
+    #[builder(finish_fn = "fixture")]
+    pub fn callgrind_args_f(
+        i1: Option<&str>,
+        d1: Option<&str>,
+        ll: Option<&str>,
+        cache_sim: Option<bool>,
+        toggle_collect: Option<VecDeque<String>>,
+        dump_instr: Option<bool>,
+        dump_line: Option<bool>,
+        separate_threads: Option<bool>,
+        valgrind_args: Option<ValgrindArgs>,
+    ) -> CallgrindArgs {
+        let mut args = CallgrindArgs::default();
+        if let Some(value) = i1 {
+            args.i1 = value.to_owned();
+        }
+        if let Some(value) = d1 {
+            args.d1 = value.to_owned();
+        }
+        if let Some(value) = ll {
+            args.ll = value.to_owned();
+        }
+        if let Some(value) = cache_sim {
+            args.cache_sim = value;
+        }
+        if let Some(value) = toggle_collect {
+            args.toggle_collect = value;
+        }
+        if let Some(value) = dump_instr {
+            args.dump_instr = value;
+        }
+        if let Some(value) = dump_line {
+            args.dump_line = value;
+        }
+        if let Some(value) = separate_threads {
+            args.separate_threads = value;
+        }
+        if let Some(value) = valgrind_args {
+            args.valgrind_args = value;
+        }
+
+        args
+    }
+
+    #[rstest]
+    #[case::i1(&["--I1=some"], callgrind_args_f().i1("some").fixture())]
+    #[case::d1(&["--D1=some"], callgrind_args_f().d1("some").fixture())]
+    #[case::ll(&["--LL=some"], callgrind_args_f().ll("some").fixture())]
+    #[case::cache_sim(&["--cache-sim=no"], callgrind_args_f().cache_sim(false).fixture())]
+    #[case::toggle_collect(
+        &["--toggle-collect=main"],
+        callgrind_args_f()
+            .toggle_collect(VecDeque::from(["main".to_owned()]))
+            .fixture()
+    )]
+    #[case::dump_instr(&["--dump-instr=yes"], callgrind_args_f().dump_instr(true).fixture())]
+    #[case::dump_line(&["--dump-line=no"], callgrind_args_f().dump_line(false).fixture())]
+    #[case::separate_threads(
+        &["--separate-threads=no"],
+        callgrind_args_f().separate_threads(false).fixture()
+    )]
+    #[case::combine_dumps_is_ignored(&["--combine-dumps=yes"], callgrind_args_f().fixture())]
+    #[case::compress_strings_is_ignored(
+        &["--compress-strings=yes"],
+        callgrind_args_f().fixture()
+    )]
+    #[case::compress_pos_is_ignored(&["--compress-pos=yes"], callgrind_args_f().fixture())]
+    #[case::valgrind_special(
+        &["--fair-sched=no"],
+        callgrind_args_f()
+            .valgrind_args(valgrind_args_f().fair_sched(FairSched::No).fixture())
+            .fixture()
+    )]
+    #[case::valgrind_other(
+        &["--some-arg=yes"],
+        callgrind_args_f()
+            .valgrind_args(valgrind_args_f().other(vec!["--some-arg=yes".to_owned()]).fixture())
+            .fixture()
+    )]
+    fn test_try_from_raw_tool_args(#[case] args: &[&str], #[case] expected: CallgrindArgs) {
+        let actual = CallgrindArgs::try_from_raw_tool_args(
+            ValgrindTool::Callgrind,
+            &[&RawToolArgs::from_iter(args)],
+        )
+        .unwrap();
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_from_callgrind_args_when_defaults() {
+        let expected = valgrind_args_f()
+            .other(default_callgrind_other_args())
+            .fixture();
+
+        let actual = ValgrindArgs::from(callgrind_args_f().fixture());
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_from_callgrind_args_when_tool_specific_values() {
+        let args = callgrind_args_f()
+            .i1("i1")
+            .d1("d1")
+            .ll("ll")
+            .cache_sim(false)
+            .dump_line(false)
+            .dump_instr(true)
+            .separate_threads(false)
+            .fixture();
+        let expected = valgrind_args_f()
+            .other(strings([
+                "--I1=i1",
+                "--D1=d1",
+                "--LL=ll",
+                "--cache-sim=no",
+                "--compress-strings=no",
+                "--compress-pos=no",
+                "--dump-line=no",
+                "--dump-instr=yes",
+                "--combine-dumps=no",
+                "--separate-threads=no",
+            ]))
+            .fixture();
+
+        let actual = ValgrindArgs::from(args);
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_from_callgrind_args_when_toggle_collect() {
+        let args = callgrind_args_f()
+            .toggle_collect(VecDeque::from(["main".to_owned(), "helper".to_owned()]))
+            .fixture();
+        let mut other = default_callgrind_other_args();
+        other.extend(strings([
+            "--toggle-collect=main",
+            "--toggle-collect=helper",
+        ]));
+        let expected = valgrind_args_f().other(other).fixture();
+
+        let actual = ValgrindArgs::from(args);
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_from_callgrind_args_when_valgrind_args_then_appends_tool_specific_last() {
+        let args = callgrind_args_f()
+            .i1("tool")
+            .valgrind_args(
+                valgrind_args_f()
+                    .fair_sched(FairSched::No)
+                    .other(strings(["--unknown=yes", "--I1=generic"]))
+                    .fixture(),
+            )
+            .fixture();
+        let expected = valgrind_args_f()
+            .fair_sched(FairSched::No)
+            .other(strings([
+                "--unknown=yes",
+                "--I1=generic",
+                "--I1=tool",
+                "--D1=32768,8,64",
+                "--LL=8388608,16,64",
+                "--cache-sim=yes",
+                "--compress-strings=no",
+                "--compress-pos=no",
+                "--dump-line=yes",
+                "--dump-instr=no",
+                "--combine-dumps=no",
+                "--separate-threads=yes",
+            ]))
+            .fixture();
+
+        let actual = ValgrindArgs::from(args);
+
+        assert_eq!(actual, expected);
     }
 }

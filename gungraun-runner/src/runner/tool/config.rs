@@ -10,7 +10,7 @@ use std::time::Duration;
 use anyhow::{Result, anyhow};
 
 use super::super::common::Assistant;
-use super::args::ToolArgs;
+use super::args::{ToolArgs, ValgrindArgs};
 use super::parser::parser_factory;
 use super::path::ToolOutputPath;
 use super::regression::ToolRegressionConfig;
@@ -37,7 +37,7 @@ pub enum ToolFlamegraphConfig {
 #[derive(Debug, Clone)]
 pub struct ToolConfig {
     /// The arguments to pass to the Valgrind executable
-    pub args: ToolArgs,
+    pub args: ValgrindArgs,
     /// The [`EntryPoint`] of this tool
     pub entry_point: EntryPoint,
     /// The tool specific flamegraph configuration
@@ -76,7 +76,7 @@ impl ToolConfig {
     pub fn new(
         tool: ValgrindTool,
         is_enabled: bool,
-        args: ToolArgs,
+        args: ValgrindArgs,
         regression_config: ToolRegressionConfig,
         flamegraph_config: ToolFlamegraphConfig,
         entry_point: EntryPoint,
@@ -99,13 +99,17 @@ impl ToolConfig {
 impl ToolConfigBuilder {
     fn build(self) -> Result<ToolConfig> {
         let args = match self.kind {
-            ValgrindTool::Callgrind => {
-                callgrind::args::Args::try_from_raw_tool_args(&[&self.raw_tool_args])?.into()
-            }
-            ValgrindTool::Cachegrind => {
-                cachegrind::args::Args::try_from_raw_tool_args(&[&self.raw_tool_args])?.into()
-            }
-            _ => ToolArgs::try_from_raw_tool_args(self.kind, &[&self.raw_tool_args])?,
+            ValgrindTool::Callgrind => callgrind::args::CallgrindArgs::try_from_raw_tool_args(
+                self.kind,
+                &[&self.raw_tool_args],
+            )?
+            .into(),
+            ValgrindTool::Cachegrind => cachegrind::args::CachegrindArgs::try_from_raw_tool_args(
+                self.kind,
+                &[&self.raw_tool_args],
+            )?
+            .into(),
+            _ => ValgrindArgs::try_from_raw_tool_args(self.kind, &[&self.raw_tool_args])?,
         };
 
         Ok(ToolConfig::new(
@@ -324,8 +328,8 @@ impl ToolConfigs {
     ///
     /// `default_args` should only contain command-line arguments which are different for library
     /// and binary benchmarks on a per tool basis. Usually, default arguments are part of the tool
-    /// specific `Args` struct for example for callgrind [`callgrind::args::Args`] or cachegrind
-    /// [`cachegrind::args::Args`].
+    /// specific arguments struct for example for callgrind
+    /// [`callgrind::args::CallgrindArgs`] or cachegrind [`cachegrind::args::CachegrindArgs`].
     ///
     /// `valgrind_args` are from the in-benchmark configuration: `LibraryBenchmarkConfig` or
     /// `BinaryBenchmarkConfig`

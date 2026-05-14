@@ -104,6 +104,7 @@ version-compare = { workspace = true, optional = true }
 which = { workspace = true, optional = true }
 
 [dev-dependencies]
+bon = { workspace = true }
 pretty_assertions = { workspace = true }
 rstest = { workspace = true }
 serde_test = { workspace = true }

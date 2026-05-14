@@ -1,43 +1,35 @@
 //! The module containing the command line arguments for Cachegrind
 
-use std::str::FromStr;
-
 use anyhow::Result;
-use log::{log_enabled, warn};
 
 use crate::api::{RawToolArgs, ValgrindTool};
 use crate::error::Error;
-use crate::runner::tool::args::{
-    FairSched, ToolArgs, defaults, is_ignored_argument, is_ignored_outfile_argument,
-};
+use crate::runner::tool::args::{ToolArgs, ValgrindArgs, defaults};
 use crate::util::{bool_to_yesno, yesno_to_bool};
 
 /// The command-line arguments
-#[derive(Debug, Clone)]
-pub struct Args {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CachegrindArgs {
     cache_sim: bool,
     d1: String,
-    fair_sched: FairSched,
     i1: String,
     ll: String,
-    other: Vec<String>,
-    trace_children: bool,
-    verbose: bool,
+    valgrind: ValgrindArgs,
 }
 
-impl Args {
-    /// Try to create new `Args` from multiple [`RawToolArgs`]
-    pub fn try_from_raw_tool_args(args: &[&RawToolArgs]) -> Result<Self> {
+impl ToolArgs for CachegrindArgs {
+    fn try_from_raw_tool_args(tool: ValgrindTool, raw_tool_args: &[&RawToolArgs]) -> Result<Self> {
+        debug_assert_eq!(tool, ValgrindTool::Cachegrind);
+
         let mut default = Self::default();
-        default.try_update(args.iter().flat_map(|s| s.as_slice()))?;
+        default.try_update(raw_tool_args.iter().flat_map(|s| s.as_slice()))?;
         Ok(default)
     }
 
-    /// Try to update these `Args` from the contents of an iterator
-    pub fn try_update<'a, T: Iterator<Item = &'a String>>(&mut self, args: T) -> Result<()> {
+    fn try_update<'a, T: Iterator<Item = &'a String>>(&mut self, args: T) -> Result<()> {
         for arg in args {
-            let arg = arg.trim();
-            match arg.split_once('=').map(|(k, v)| (k.trim(), v.trim())) {
+            let trimmed = arg.trim();
+            match trimmed.split_once('=').map(|(k, v)| (k.trim(), v.trim())) {
                 Some(("--I1", value)) => value.clone_into(&mut self.i1),
                 Some(("--D1", value)) => value.clone_into(&mut self.d1),
                 Some(("--LL", value)) => value.clone_into(&mut self.ll),
@@ -46,65 +38,188 @@ impl Args {
                         Error::InvalidBoolArgument(key.to_owned(), value.to_owned())
                     })?;
                 }
-                Some((key @ "--trace-children", value)) => {
-                    self.trace_children = yesno_to_bool(value).ok_or_else(|| {
-                        Error::InvalidBoolArgument(key.to_owned(), value.to_owned())
-                    })?;
-                }
-                Some(("--fair-sched", value)) => {
-                    self.fair_sched = FairSched::from_str(value)?;
-                }
-                Some((arg, _)) if is_ignored_outfile_argument(arg) => warn!(
-                    "Ignoring Cachegrind argument '{arg}': Output/Log files of tools are managed \
-                     by Gungraun",
-                ),
-                None if matches!(arg, "-v" | "--verbose") => self.verbose = true,
-                None if is_ignored_argument(arg) => {
-                    warn!("Ignoring Cachegrind argument: '{arg}'");
-                }
-                None | Some(_) => self.other.push(arg.to_owned()),
+                None | Some(_) => self.valgrind.try_update(std::iter::once(arg))?,
             }
         }
         Ok(())
     }
 }
 
-impl Default for Args {
+impl Default for CachegrindArgs {
     fn default() -> Self {
         Self {
             i1: defaults::I1.into(),
             d1: defaults::D1.into(),
             ll: defaults::LL.into(),
             cache_sim: defaults::CACHE_SIM,
-            verbose: log_enabled!(log::Level::Debug),
-            other: Vec::default(),
-            trace_children: defaults::TRACE_CHILDREN,
-            fair_sched: defaults::FAIR_SCHED,
+            valgrind: ValgrindArgs::new(ValgrindTool::Cachegrind),
         }
     }
 }
 
-impl From<Args> for ToolArgs {
-    fn from(mut value: Args) -> Self {
-        let mut other = vec![
+impl From<CachegrindArgs> for ValgrindArgs {
+    fn from(value: CachegrindArgs) -> Self {
+        let mut valgrind = value.valgrind;
+        let other = vec![
             format!("--I1={}", &value.i1),
             format!("--D1={}", &value.d1),
             format!("--LL={}", &value.ll),
             format!("--cache-sim={}", bool_to_yesno(value.cache_sim)),
         ];
-        other.append(&mut value.other);
+        valgrind.other.extend(other);
 
-        Self {
-            tool: ValgrindTool::Cachegrind,
-            output_paths: Vec::default(),
-            log_path: Option::default(),
-            xtree_path: Option::default(),
-            xleak_path: Option::default(),
-            error_exitcode: defaults::ERROR_EXIT_CODE_OTHER_TOOL.into(),
-            verbose: value.verbose,
-            trace_children: value.trace_children,
-            fair_sched: value.fair_sched,
-            other,
+        valgrind
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bon::builder;
+    use rstest::rstest;
+
+    use super::*;
+    use crate::runner::tool::args::FairSched;
+
+    fn default_cachegrind_other_args() -> Vec<String> {
+        strings([
+            "--I1=32768,8,64",
+            "--D1=32768,8,64",
+            "--LL=8388608,16,64",
+            "--cache-sim=yes",
+        ])
+    }
+
+    fn strings<const N: usize>(args: [&str; N]) -> Vec<String> {
+        args.into_iter().map(str::to_owned).collect()
+    }
+
+    #[builder(finish_fn = "fixture")]
+    pub fn valgrind_args_f(
+        i1: Option<&str>,
+        fair_sched: Option<FairSched>,
+        other: Option<Vec<String>>,
+    ) -> ValgrindArgs {
+        let mut args = ValgrindArgs::new(ValgrindTool::Cachegrind);
+        if let Some(value) = i1 {
+            args.other.push(format!("--I1={value}"));
         }
+        if let Some(value) = fair_sched {
+            args.fair_sched = value;
+        }
+        if let Some(value) = other {
+            args.other.extend(value);
+        }
+
+        args
+    }
+
+    #[builder(finish_fn = "fixture")]
+    pub fn cachegrind_args_f(
+        i1: Option<&str>,
+        d1: Option<&str>,
+        ll: Option<&str>,
+        cache_sim: Option<bool>,
+        valgrind: Option<ValgrindArgs>,
+    ) -> CachegrindArgs {
+        let mut args = CachegrindArgs::default();
+        if let Some(value) = i1 {
+            args.i1 = value.to_owned();
+        }
+        if let Some(value) = d1 {
+            args.d1 = value.to_owned();
+        }
+        if let Some(value) = ll {
+            args.ll = value.to_owned();
+        }
+        if let Some(value) = cache_sim {
+            args.cache_sim = value;
+        }
+        if let Some(value) = valgrind {
+            args.valgrind = value;
+        }
+
+        args
+    }
+
+    #[rstest]
+    #[case::i1(&["--I1=some"], cachegrind_args_f().i1("some").fixture())]
+    #[case::d1(&["--D1=some"], cachegrind_args_f().d1("some").fixture())]
+    #[case::ll(&["--LL=some"], cachegrind_args_f().ll("some").fixture())]
+    #[case::cache_sim(&["--cache-sim=no"], cachegrind_args_f().cache_sim(false).fixture())]
+    #[case::valgrind_special(
+        &["--fair-sched=no"],
+        cachegrind_args_f()
+            .valgrind(valgrind_args_f().fair_sched(FairSched::No).fixture())
+            .fixture()
+    )]
+    #[case::valgrind_other(
+        &["--some-arg=yes"],
+        cachegrind_args_f()
+            .valgrind(valgrind_args_f().other(vec!["--some-arg=yes".to_owned()]).fixture())
+            .fixture()
+    )]
+    fn test_try_from_raw_tool_args(#[case] args: &[&str], #[case] expected: CachegrindArgs) {
+        let actual = CachegrindArgs::try_from_raw_tool_args(
+            ValgrindTool::Cachegrind,
+            &[&RawToolArgs::from_iter(args)],
+        )
+        .unwrap();
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_from_cachegrind_args_defaults() {
+        let expected = valgrind_args_f()
+            .other(default_cachegrind_other_args())
+            .fixture();
+
+        let actual = ValgrindArgs::from(cachegrind_args_f().fixture());
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_from_cachegrind_args_when_tool_specific_values() {
+        let args = cachegrind_args_f()
+            .i1("i1")
+            .d1("d1")
+            .ll("ll")
+            .cache_sim(false)
+            .fixture();
+        let expected = valgrind_args_f()
+            .other(strings(["--I1=i1", "--D1=d1", "--LL=ll", "--cache-sim=no"]))
+            .fixture();
+
+        let actual = ValgrindArgs::from(args);
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_from_cachegrind_args_when_valgrind_args_then_appends_tool_specific_last() {
+        let args = cachegrind_args_f()
+            .i1("tool")
+            .valgrind(
+                valgrind_args_f()
+                    .fair_sched(FairSched::No)
+                    .other(strings(["--unknown=yes", "--I1=generic"]))
+                    .fixture(),
+            )
+            .fixture();
+        let expected = valgrind_args_f()
+            .fair_sched(FairSched::No)
+            .other(strings([
+                "--unknown=yes",
+                "--I1=generic",
+                "--I1=tool",
+                "--D1=32768,8,64",
+                "--LL=8388608,16,64",
+                "--cache-sim=yes",
+            ]))
+            .fixture();
+
+        let actual = ValgrindArgs::from(args);
+
+        assert_eq!(actual, expected);
     }
 }

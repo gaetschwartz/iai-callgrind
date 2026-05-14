@@ -83,6 +83,8 @@ Gungraun uses `just` as a task runner. Always prefer `just` commands over direct
 
 - **Unit Tests:** Co-located in the same file or `mod tests` within the file.
 - **Integration Tests:** Located in `tests/` directory of the package.
+- **gungraun-runner Integration Tests:** Integration-style tests for
+  gungraun-runner live in `benchmark-tests/tests/`.
 - **Benchmarks:** defined using `#[library_benchmark]` and `#[binary_benchmark]`
   attributes.
 
