@@ -8,7 +8,7 @@ use log::{log_enabled, warn};
 use crate::api::{RawToolArgs, ValgrindTool};
 use crate::error::Error;
 use crate::runner::tool::args::{
-    FairSched, ToolArgs, defaults, is_ignored_argument, is_ignored_outfile_argument,
+    FairSched, ToolArgs, Vgdb, defaults, is_ignored_argument, is_ignored_outfile_argument,
 };
 use crate::util::{bool_to_yesno, yesno_to_bool};
 
@@ -32,6 +32,7 @@ pub struct Args {
     toggle_collect: VecDeque<String>,
     trace_children: bool,
     verbose: bool,
+    vgdb: Vgdb,
 }
 
 impl Args {
@@ -91,6 +92,9 @@ impl Args {
                     "Ignoring callgrind argument '{arg}': Output/Log files of tools are managed \
                      by Gungraun",
                 ),
+                Some((arg, _)) if is_ignored_argument(arg) => {
+                    warn!("Ignoring callgrind argument '{arg}'");
+                }
                 None if matches!(arg, "-v" | "--verbose") => self.verbose = true,
                 None if is_ignored_argument(arg) => {
                     warn!("Ignoring callgrind argument: '{arg}'");
@@ -123,6 +127,7 @@ impl Default for Args {
             trace_children: defaults::TRACE_CHILDREN,
             separate_threads: defaults::SEPARATE_THREADS,
             fair_sched: defaults::FAIR_SCHED,
+            vgdb: defaults::VGDB,
         }
     }
 }
@@ -166,6 +171,7 @@ impl From<Args> for ToolArgs {
             verbose: value.verbose,
             trace_children: value.trace_children,
             fair_sched: value.fair_sched,
+            vgdb: value.vgdb,
             other,
         }
     }

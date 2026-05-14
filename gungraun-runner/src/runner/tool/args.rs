@@ -3,7 +3,7 @@
 /// Module containing the Gungraun defaults for the command line arguments of all tools
 #[expect(missing_docs)]
 pub mod defaults {
-    use super::FairSched;
+    use super::{FairSched, Vgdb};
 
     ////////////////////////////////////////////////////
     // Shared defaults between cachegrind and callgrind
@@ -37,6 +37,7 @@ pub mod defaults {
     pub const TRACE_CHILDREN: bool = true;
     pub const FAIR_SCHED: FairSched = FairSched::Try;
     pub const VERBOSE: bool = false;
+    pub const VGDB: Vgdb = Vgdb::No;
     ////////////////////////////////////////////////////
 }
 
@@ -65,6 +66,17 @@ pub enum FairSched {
     Try,
 }
 
+/// The possible values for --vgdb
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Vgdb {
+    /// Corresponds to `yes`
+    Yes,
+    /// Corresponds to `no`
+    No,
+    /// Corresponds to `full`
+    Full,
+}
+
 /// The arguments to pass to the Valgrind tool
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ToolArgs {
@@ -84,6 +96,8 @@ pub struct ToolArgs {
     pub trace_children: bool,
     /// If --verbose is set to true of false
     pub verbose: bool,
+    /// The --vgdb argument
+    pub vgdb: Vgdb,
     /// The xtree paths argument --xtree-leak-file
     pub xleak_path: Option<OsString>,
     /// The xtree paths argument --xtree-memory-file
@@ -142,6 +156,7 @@ impl ToolArgs {
             other: Vec::default(),
             trace_children: defaults::TRACE_CHILDREN,
             fair_sched: defaults::FAIR_SCHED,
+            vgdb: defaults::VGDB,
         };
 
         for args in raw_tool_args {
@@ -164,6 +179,9 @@ impl ToolArgs {
                          Gungraun",
                         tool.id()
                     ),
+                    Some((arg, _)) if is_ignored_argument(arg) => {
+                        warn!("Ignoring {} argument '{arg}'", tool.id());
+                    }
                     None if matches!(arg, "-v" | "--verbose") => tool_args.verbose = true,
                     None if is_ignored_argument(arg) => {
                         warn!("Ignoring {} argument '{arg}'", tool.id());
@@ -302,6 +320,7 @@ impl ToolArgs {
         vec.push(format!("--error-exitcode={}", &self.error_exitcode).into());
         vec.push(format!("--trace-children={}", &bool_to_yesno(self.trace_children)).into());
         vec.push(format!("--fair-sched={}", self.fair_sched).into());
+        vec.push(format!("--vgdb={}", self.vgdb).into());
         if self.verbose {
             vec.push("--verbose".into());
         }
@@ -347,6 +366,17 @@ impl ToolArgs {
     }
 }
 
+impl Display for Vgdb {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let string = match self {
+            Self::Yes => "yes",
+            Self::No => "no",
+            Self::Full => "full",
+        };
+        write!(f, "{string}")
+    }
+}
+
 /// Returns `true` if this is an ignored argument related to output or logfiles.
 pub fn is_ignored_outfile_argument(arg: &str) -> bool {
     matches!(
@@ -381,5 +411,6 @@ pub fn is_ignored_argument(arg: &str) -> bool {
             | "-q"
             | "--quiet"
             | "--tool"
+            | "--vgdb"
     )
 }
