@@ -42,9 +42,8 @@ and this project adheres to
   internal benchmark configuration encoding from `bincode` to `bincode-next`.
 - ([#609], [#628]): Replaced the thread-pool busy loop with a condition-variable
   based wakeup mechanism to avoid CPU usage while worker threads are idle.
-- ([#627]): Set Valgrind `--vgdb=no` by default and ignore user-provided
-  `--vgdb` values because vgdb is not currently used by Gungraun and can cause
-  problems in qemu-based runs.
+- ([#627]): Set Valgrind `--vgdb=no` by default because it can cause problems in
+  qemu-based runs.
 - Bumped `gungraun-macros` from `0.8.0` to `0.9.0`.
 
 ### Fixed

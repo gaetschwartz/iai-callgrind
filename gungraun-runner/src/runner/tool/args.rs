@@ -165,6 +165,9 @@ impl ToolArgs for ValgrindArgs {
                 Some(("--fair-sched", value)) => {
                     self.fair_sched = FairSched::from_str(value)?;
                 }
+                Some(("--vgdb", value)) => {
+                    self.vgdb = Vgdb::from_str(value)?;
+                }
                 Some((arg, _)) if is_ignored_outfile_argument(arg) => warn!(
                     "Ignoring {} argument '{arg}': Output/Log files of tools are managed by \
                      Gungraun",
@@ -395,6 +398,21 @@ impl Display for Vgdb {
     }
 }
 
+impl FromStr for Vgdb {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match s {
+            "no" => Ok(Self::No),
+            "yes" => Ok(Self::Yes),
+            "full" => Ok(Self::Full),
+            _ => Err(anyhow!(
+                "Invalid argument for --vgdb. Valid arguments are: 'yes', 'no', 'full'"
+            )),
+        }
+    }
+}
+
 /// Returns `true` if this is an ignored argument related to output or logfiles.
 pub fn is_ignored_outfile_argument(arg: &str) -> bool {
     matches!(
@@ -429,7 +447,6 @@ pub fn is_ignored_argument(arg: &str) -> bool {
             | "-q"
             | "--quiet"
             | "--tool"
-            | "--vgdb"
     )
 }
 
@@ -463,6 +480,7 @@ mod tests {
         other: Option<Vec<String>>,
         trace_children: Option<bool>,
         verbose: Option<bool>,
+        vgdb: Option<Vgdb>,
     ) -> ValgrindArgs {
         let mut args = ValgrindArgs::new(tool.unwrap_or(ValgrindTool::Memcheck));
         if let Some(value) = error_exitcode {
@@ -479,6 +497,9 @@ mod tests {
         }
         if let Some(value) = verbose {
             args.verbose = value;
+        }
+        if let Some(value) = vgdb {
+            args.vgdb = value;
         }
 
         args
@@ -499,7 +520,9 @@ mod tests {
     )]
     #[case::long_verbose(&["--verbose"], valgrind_args_f().verbose(true).fixture())]
     #[case::short_verbose(&["-v"], valgrind_args_f().verbose(true).fixture())]
-    #[case::vgdb_is_ignored(&["--vgdb=yes"], valgrind_args_f().fixture())]
+    #[case::vgdb(&["--vgdb=yes"], valgrind_args_f().vgdb(Vgdb::Yes).fixture())]
+    #[case::vgdb(&["--vgdb=no"], valgrind_args_f().vgdb(Vgdb::No).fixture())]
+    #[case::vgdb(&["--vgdb=full"], valgrind_args_f().vgdb(Vgdb::Full).fixture())]
     #[case::outfile_is_ignored(&["--log-file=some"], valgrind_args_f().fixture())]
     #[case::other(
         &["--some-arg=yes"],
@@ -517,8 +540,20 @@ mod tests {
         assert_eq!(actual, expected);
     }
 
+    #[rstest]
+    #[case::trace_children(&["--trace-children=something"])]
+    #[case::fair_sched(&["--fair-sched=something"])]
+    #[case::vgdb(&["--vgdb=something"])]
+    fn test_try_from_raw_tool_args_when_invalid_then_error(#[case] input: &[&str]) {
+        ValgrindArgs::try_from_raw_tool_args(
+            ValgrindTool::Memcheck,
+            &[&RawToolArgs::from_iter(input)],
+        )
+        .unwrap_err();
+    }
+
     #[test]
-    fn test_to_vec_when_generic_args_then_forces_vgdb_no() {
+    fn test_to_vec() {
         let args = valgrind_args_f()
             .error_exitcode("99")
             .fair_sched(FairSched::No)
