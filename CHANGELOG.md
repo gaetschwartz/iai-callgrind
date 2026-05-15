@@ -36,36 +36,37 @@ and this project adheres to
 
 ### Changed
 
-- ([#607](https://github.com/gungraun/gungraun/pull/607),
-  [#610](https://github.com/gungraun/gungraun/pull/610)): Bumped the MSRV from
-  Rust `1.74.1` to `1.85.1`. Bumped the workspace edition from Rust 2021 to
-  Rust 2024.
-- ([#607](https://github.com/gungraun/gungraun/pull/607),
-  [#608](https://github.com/gungraun/gungraun/pull/608), and others): Updated
-  dependencies, including migrating internal benchmark configuration encoding
-  from `bincode` to `bincode-next`.
-- ([#609](https://github.com/gungraun/gungraun/pull/609),
-  [#628](https://github.com/gungraun/gungraun/pull/628)): Replaced the
-  thread-pool busy loop with a condition-variable based wakeup mechanism to
-  avoid CPU usage while worker threads are idle.
-- ([#627](https://github.com/gungraun/gungraun/pull/627)): Set Valgrind
-  `--vgdb=no` by default and ignore user-provided `--vgdb` values because vgdb
-  is not currently used by Gungraun and can cause problems in qemu-based runs.
+- ([#607], [#610]): Bumped the MSRV from Rust `1.74.1` to `1.85.1`. Bumped the
+  workspace edition from Rust 2021 to Rust 2024.
+- ([#607], [#608], and others): Updated dependencies, including migrating
+  internal benchmark configuration encoding from `bincode` to `bincode-next`.
+- ([#609], [#628]): Replaced the thread-pool busy loop with a condition-variable
+  based wakeup mechanism to avoid CPU usage while worker threads are idle.
+- ([#627]): Set Valgrind `--vgdb=no` by default and ignore user-provided
+  `--vgdb` values because vgdb is not currently used by Gungraun and can cause
+  problems in qemu-based runs.
 - Bumped `gungraun-macros` from `0.8.0` to `0.9.0`.
 
 ### Fixed
 
-- ([#625](https://github.com/gungraun/gungraun/pull/625)): Fixed
-  `--valgrind-args` from the CLI or env `GUNGRAUN_VALGRIND_ARGS` not being added
-  to the final Valgrind argument list.
+- ([#625]): Fixed `--valgrind-args` from the CLI or env `GUNGRAUN_VALGRIND_ARGS`
+  not being added to the final Valgrind argument list.
+
+[#607]: https://github.com/gungraun/gungraun/pull/607
+[#608]: https://github.com/gungraun/gungraun/pull/608
+[#609]: https://github.com/gungraun/gungraun/pull/609
+[#610]: https://github.com/gungraun/gungraun/pull/610
+[#625]: https://github.com/gungraun/gungraun/pull/625
+[#627]: https://github.com/gungraun/gungraun/pull/627
+[#628]: https://github.com/gungraun/gungraun/pull/628
 
 ## [0.18.2] - 2026-04-30
 
 ### Changed
 
-- ([#604](https://github.com/gungraun/gungraun/pull/604)): Extraction of the
-  `valgrind-requests` package from the `gungraun` package. For the `gungraun`
-  package this is purely cosmetic and doesn't introduce api changes.
+- ([#604]): Extraction of the `valgrind-requests` package from the `gungraun`
+  package. For the `gungraun` package this is purely cosmetic and doesn't
+  introduce api changes.
 - Update dependencies
 
 ### Fixed
@@ -73,27 +74,28 @@ and this project adheres to
 - Small documentation fixes in the libraries and guide across multiple prs:
   Typos, capitalization, wrong indentation in code blocks, ...
 
+[#604]: https://github.com/gungraun/gungraun/pull/604
+
 ## [0.18.1] - 2026-04-10
 
 ### Fixed
 
-- ([#588](https://github.com/gungraun/gungraun/issues/588)): Fix thread pool
-  causing excessive CPU usage and slowdown when using multiple benchmark groups.
-  Thread pools were not being properly shut down leaving worker threads stuck in
-  hot loops.
+- ([#588]): Fix thread pool causing excessive CPU usage and slowdown when using
+  multiple benchmark groups. Thread pools were not being properly shut down
+  leaving worker threads stuck in hot loops.
+
+[#588]: https://github.com/gungraun/gungraun/issues/588
 
 ## [0.18.0] - 2026-04-09
 
 ### Added
 
-- ([#565](https://github.com/gungraun/gungraun/pull/565)): `--parallel` CLI
-  option and environment variable `GUNGRAUN_PARALLEL` to run benchmarks in
-  parallel. `max_parallel` parameter in `library_benchmark_group!` and
-  `binary_benchmark_group!` to be able to limit parallelism by benchmark group.
-- ([#575](https://github.com/gungraun/gungraun/pull/575)): Support `const`
-  generic parameters in benchmark functions
-- ([#583](https://github.com/gungraun/gungraun/pull/583)): Support a custom
-  valgrind runner with command-line arguments:
+- ([#565]): `--parallel` CLI option and environment variable `GUNGRAUN_PARALLEL`
+  to run benchmarks in parallel. `max_parallel` parameter in
+  `library_benchmark_group!` and `binary_benchmark_group!` to be able to limit
+  parallelism by benchmark group.
+- ([#575]): Support `const` generic parameters in benchmark functions
+- ([#583]): Support a custom valgrind runner with command-line arguments:
     - `--valgrind-runner` (env: `GUNGRAUN_VALGRIND_RUNNER`) option to run
       Valgrind through a container or alternative execution environment.
     - `--valgrind-runner-args` (env: `GUNGRAUN_VALGRIND_RUNNER_ARGS`) to pass
@@ -108,39 +110,37 @@ and this project adheres to
     - Expose environment variables `GUNGRAUN_VR_DEST_DIR`, `GUNGRAUN_VR_HOME`,
       `GUNGRAUN_VR_WORKSPACE_ROOT`, `GUNGRAUN_ALLOW_ASLR` for custom valgrind
       runners.
-- ([#583](https://github.com/gungraun/gungraun/pull/583)): Customize environment
-  variables on the command-line with:
+- ([#583]): Customize environment variables on the command-line with:
     - `--env-clear` (env: `GUNGRAUN_ENV_CLEAR`) CLI argument to control
       environment variable clearing behavior for benchmarks.
     - `--envs` CLI argument to pass environment variables to benchmarks from the
       command line (supports both passthrough `--envs=VAR` and explicit
       `--envs=VAR=value`).
-- ([#585](https://github.com/gungraun/gungraun/pull/585)): `gungraun::prelude`
-  module for convenient importing of commonly used items: `library_benchmark`,
-  `library_benchmark_group`, `binary_benchmark`, `binary_benchmark_group`,
-  `main!`, `LibraryBenchmarkConfig`, `BinaryBenchmarkConfig`, and `Command`.
+- ([#585]): `gungraun::prelude` module for convenient importing of commonly used
+  items: `library_benchmark`, `library_benchmark_group`, `binary_benchmark`,
+  `binary_benchmark_group`, `main!`, `LibraryBenchmarkConfig`,
+  `BinaryBenchmarkConfig`, and `Command`.
 
 ### Changed
 
-- ([#565](https://github.com/gungraun/gungraun/pull/565)): Improved performance
-  of serial benchmark execution:
+- ([#565]): Improved performance of serial benchmark execution:
     - Execute the benchmark and then process and print the data while already
       executing the next benchmark.
     - By using a temporary directory for the new Valgrind data which most likely
       is an in-memory file system like tmpfs
-- ([#565](https://github.com/gungraun/gungraun/pull/565)): Output format
-  changes: Consts arguments are shown in the DESCRIPTION of the the benchmark
-  output `module::path id:DESCRIPTION` in brackets in addition to the normal
-  benchmark function arguments (`file::group::func id:<A, B>(arg1, arg2)`). To
-  keep the output format consistent, the description now shows arguments always
-  in parentheses even when no consts were given (`a::b::c id:(arg1, arg2)`).
-  Additionally, binary benchmarks without an id now separate the DESCRIPTION
-  from the module path with a `:` as in `a::b::c :DESCRIPTION`.
-- ([#583](https://github.com/gungraun/gungraun/pull/583)): `--bbv-args`,
-  `--cachegrind-args`, `--callgrind-args`, `--dhat-args`, `--drd-args`,
-  `--helgrind-args`, `--massif-args`, `--memcheck-args`, `--valgrind-args` now
-  support specifying Valgrind arguments without the `--` flag for convenience.
-  For example: `--callgrind-args='toggle-collect=some::*'` instead of
+- ([#565]): Output format changes: Consts arguments are shown in the DESCRIPTION
+  of the the benchmark output `module::path id:DESCRIPTION` in brackets in
+  addition to the normal benchmark function arguments
+  (`file::group::func id:<A, B>(arg1, arg2)`). To keep the output format
+  consistent, the description now shows arguments always in parentheses even
+  when no consts were given (`a::b::c id:(arg1, arg2)`). Additionally, binary
+  benchmarks without an id now separate the DESCRIPTION from the module path
+  with a `:` as in `a::b::c :DESCRIPTION`.
+- ([#583]): `--bbv-args`, `--cachegrind-args`, `--callgrind-args`,
+  `--dhat-args`, `--drd-args`, `--helgrind-args`, `--massif-args`,
+  `--memcheck-args`, `--valgrind-args` now support specifying Valgrind arguments
+  without the `--` flag for convenience. For example:
+  `--callgrind-args='toggle-collect=some::*'` instead of
   `--callgrind-args='--toggle-collect=some::*'`
 - Update, fix and improve the guide and other documentation in various PRs:
   Added missing documentation, fixed typos, ...
@@ -148,66 +148,71 @@ and this project adheres to
 
 ### Removed
 
-- ([#565](https://github.com/gungraun/gungraun/pull/565)): Discarded printing of
-  log file content with log level: info.
+- ([#565]): Discarded printing of log file content with log level: info.
 
 ### Fixed
 
-- ([#583](https://github.com/gungraun/gungraun/pull/583)): `--bbv-args`,
-  `--cachegrind-args`, `--callgrind-args`, `--dhat-args`, `--drd-args`,
-  `--helgrind-args`, `--massif-args`, `--memcheck-args`, `--valgrind-args` are
-  now parsing multiple space separated argument lists correctly and split them
-  according to POSIX shell arguments.
-- ([#584](https://github.com/gungraun/gungraun/pull/584)): Various small fixes
-  and improvements to the `--help` output. Changed the ordering of some --flags
-  to group them according to similar functionality. Especially, the short help
-  `-h` is now fixed and shows a quick summary of the long `--help` output
-  instead of the long help itself.
-- ([#584](https://github.com/gungraun/gungraun/pull/584)): Added `--no-capture`
-  and `--no-summary` as aliases for `--nocapture` and `--nosummary`. Ignore
-  `--fail-fast` of the original rust test harness.
+- ([#583]): `--bbv-args`, `--cachegrind-args`, `--callgrind-args`,
+  `--dhat-args`, `--drd-args`, `--helgrind-args`, `--massif-args`,
+  `--memcheck-args`, `--valgrind-args` are now parsing multiple space separated
+  argument lists correctly and split them according to POSIX shell arguments.
+- ([#584]): Various small fixes and improvements to the `--help` output. Changed
+  the ordering of some --flags to group them according to similar functionality.
+  Especially, the short help `-h` is now fixed and shows a quick summary of the
+  long `--help` output instead of the long help itself.
+- ([#584]): Added `--no-capture` and `--no-summary` as aliases for `--nocapture`
+  and `--nosummary`. Ignore `--fail-fast` of the original rust test harness.
+
+[#565]: https://github.com/gungraun/gungraun/pull/565
+[#575]: https://github.com/gungraun/gungraun/pull/575
+[#583]: https://github.com/gungraun/gungraun/pull/583
+[#584]: https://github.com/gungraun/gungraun/pull/584
+[#585]: https://github.com/gungraun/gungraun/pull/585
 
 ## [0.17.2] - 2026-02-10
 
 ### Fixed
 
-- ([#532](https://github.com/gungraun/gungraun/pull/532)): Build on docs.rs
-  fails because docs_auto_cfg was removed and merged into docs_cfg in version
-  1.92.0
+- ([#532]): Build on docs.rs fails because docs_auto_cfg was removed and merged
+  into docs_cfg in version 1.92.0
+
+[#532]: https://github.com/gungraun/gungraun/pull/532
 
 ## [0.17.1] - 2026-02-10
 
 ### Added
 
-- ([#489](https://github.com/gungraun/gungraun/pull/489)): Support calling
-  `gungraun-runner` with arguments `--help`, `-h` and `--version`, `-V`.
+- ([#489]): Support calling `gungraun-runner` with arguments `--help`, `-h` and
+  `--version`, `-V`.
 
 ### Changed
 
-- ([#521](https://github.com/gungraun/gungraun/pull/521)): Added a rustfmt-able
-  syntax for the `library_benchmark_group!`, `binary_benchmark_group!` and
-  `main!` macros. Instead of `;` using `,` and an array with bracket notation
-  for the list of benchmarks and groups is a syntax that rustfmt recognizes and
-  can therefore format properly. The old `;` syntax is still valid but was
-  replaced with the new one in all docs and examples.
+- ([#521]): Added a rustfmt-able syntax for the `library_benchmark_group!`,
+  `binary_benchmark_group!` and `main!` macros. Instead of `;` using `,` and an
+  array with bracket notation for the list of benchmarks and groups is a syntax
+  that rustfmt recognizes and can therefore format properly. The old `;` syntax
+  is still valid but was replaced with the new one in all docs and examples.
 - Update dependencies
 
 ### Fixed
 
-- ([#515](https://github.com/gungraun/gungraun/pull/515)): Fix usages of
-  `--collect-at-start` to `--collect-atstart` in the guide.
-- ([#525](https://github.com/gungraun/gungraun/pull/525)): Nested benchmark file
-  structures were restricted by the internal usages of `#[export_name]`. These
-  usages were removed and replaced by an improved internal structure of the
-  benchmark module.
-- ([#525](https://github.com/gungraun/gungraun/pull/525)): Fixed possible
-  ambiguous matches of DHAT frames and functions when the default entry point
-  was used.
-- ([#525](https://github.com/gungraun/gungraun/pull/525)): Fixed custom DHAT
-  frames were only matched when the default entry point was used.
-- ([#530](https://github.com/gungraun/gungraun/pull/530)): Fixed rare cases of
-  Callgrind stats depending on the function name.
+- ([#515]): Fix usages of `--collect-at-start` to `--collect-atstart` in the
+  guide.
+- ([#525]): Nested benchmark file structures were restricted by the internal
+  usages of `#[export_name]`. These usages were removed and replaced by an
+  improved internal structure of the benchmark module.
+- ([#525]): Fixed possible ambiguous matches of DHAT frames and functions when
+  the default entry point was used.
+- ([#525]): Fixed custom DHAT frames were only matched when the default entry
+  point was used.
+- ([#530]): Fixed rare cases of Callgrind stats depending on the function name.
 - Fixed dead links in the guide.
+
+[#489]: https://github.com/gungraun/gungraun/pull/489
+[#515]: https://github.com/gungraun/gungraun/pull/515
+[#521]: https://github.com/gungraun/gungraun/pull/521
+[#525]: https://github.com/gungraun/gungraun/pull/525
+[#530]: https://github.com/gungraun/gungraun/pull/530
 
 ## [0.17.0] - 2025-09-21
 
@@ -251,37 +256,33 @@ iterators.
 
 ### Added
 
-- ([#427](https://github.com/gungraun/gungraun/pull/427)): Support assembly
-  optimized valgrind client requests for the `riscv64gc-unknown-linux-gnu`
-  target
-- ([#429](https://github.com/gungraun/gungraun/pull/429)): Add new `iter` syntax
-  for the `benches` macro which takes an iterator as argument and creates a
-  benchmark for each iterator element. For example
-  `#[benches::some_id(iter = [1, 2, 3])]` creates a benchmark for the inputs
-  `1`, `2` and `3`.
-- ([#434](https://github.com/gungraun/gungraun/pull/434)): Add the command-line
-  arguments `--show-intermediate`, `--truncate-description` and `--show-grid`
-  and respective environment variables which work exactly like the already
-  existing options for the `OutputFormat`.
-- ([#436](https://github.com/gungraun/gungraun/pull/436)): Add command-line
-  argument `--show-only-comparison` and the respective environment variable to
-  show only the comparison by id with other benchmarks excluding the
-  self-comparison.
+- ([#427]): Support assembly optimized valgrind client requests for the
+  `riscv64gc-unknown-linux-gnu` target
+- ([#429]): Add new `iter` syntax for the `benches` macro which takes an
+  iterator as argument and creates a benchmark for each iterator element. For
+  example `#[benches::some_id(iter = [1, 2, 3])]` creates a benchmark for the
+  inputs `1`, `2` and `3`.
+- ([#434]): Add the command-line arguments `--show-intermediate`,
+  `--truncate-description` and `--show-grid` and respective environment
+  variables which work exactly like the already existing options for the
+  `OutputFormat`.
+- ([#436]): Add command-line argument `--show-only-comparison` and the
+  respective environment variable to show only the comparison by id with other
+  benchmarks excluding the self-comparison.
 
 ### Changed
 
-- ([#429](https://github.com/gungraun/gungraun/pull/429)): Dhat metrics now
-  exclude setup costs exactly like callgrind and cachegrind metrics.
-- ([#475](https://github.com/gungraun/gungraun/pull/475)): The package names
-  have been changed from
+- ([#429]): Dhat metrics now exclude setup costs exactly like callgrind and
+  cachegrind metrics.
+- ([#475]): The package names have been changed from
     - `iai-callgrind` -> `gungraun`
     - `iai-callgrind-runner` -> `gungraun-runner`
     - `iai-callgrind-macros` -> `gungraun-macros` The name of the
       `iai-callgrind-runner` binary has changed with the package name to
       `gungraun-runner`.
-- ([#475](https://github.com/gungraun/gungraun/pull/475)): All environment
-  variables have changed their prefix from `IAI_CALLGRIND` to `GUNGRAUN` without
-  any exceptions. Here's an incomplete list:
+- ([#475]): All environment variables have changed their prefix from
+  `IAI_CALLGRIND` to `GUNGRAUN` without any exceptions. Here's an incomplete
+  list:
     - `IAI_CALLGRIND_ALLOW_ASLR` -> `GUNGRAUN_ALLOW_ASLR`
     - `IAI_CALLGRIND_BASELINE` -> `GUNGRAUN_BASELINE`
     - `IAI_CALLGRIND_BBV_ARGS` -> `GUNGRAUN_BBV_ARGS`
@@ -322,39 +323,40 @@ iterators.
     - `IAI_CALLGRIND_TOOLS` -> `GUNGRAUN_TOOLS`
     - `IAI_CALLGRIND_TRUNCATE_DESCRIPTION` -> `GUNGRAUN_TRUNCATE_DESCRIPTION`
     - `IAI_CALLGRIND_VALGRIND_ARGS` -> `GUNGRAUN_VALGRIND_ARGS`
-- ([#475](https://github.com/gungraun/gungraun/pull/475)): The default output
-  directory for the benchmark files has been moved from `target/iai` to
-  `target/gungraun`.
-- ([#475](https://github.com/gungraun/gungraun/pull/475)): The summary line now
-  concludes with `Gungraun result: Ok, ...` instead of
-  `Iai-Callgrind result: Ok, ...`.
-- ([#477](https://github.com/gungraun/gungraun/pull/477)): The positional
-  command-line argument `FILTER` now matches the full module path with wildcard
-  patterns to filter and run only the selected benchmarks. The summary line in
-  the benchmark output now shows an additional field with the amount of filtered
-  benchmarks. For example:
+- ([#475]): The default output directory for the benchmark files has been moved
+  from `target/iai` to `target/gungraun`.
+- ([#475]): The summary line now concludes with `Gungraun result: Ok, ...`
+  instead of `Iai-Callgrind result: Ok, ...`.
+- ([#477]): The positional command-line argument `FILTER` now matches the full
+  module path with wildcard patterns to filter and run only the selected
+  benchmarks. The summary line in the benchmark output now shows an additional
+  field with the amount of filtered benchmarks. For example:
   `Gungraun result: Ok. ...; 1 filtered; 2 benchmarks ...`
 - Update direct dependencies: `cc`, `serde`, `serde_json`, `clap`, `slab`,
   `syn`, `proc-macro2`, `regex`, `indexmap`, `cfg-if`, `log`
 
 ### Fixed
 
-- ([#455](https://github.com/gungraun/gungraun/pull/455)): The `old` details of
-  a `ProfilePart` were stored on the wrong side `left` (`new`) instead of
-  `right` (`old`).
+- ([#455]): The `old` details of a `ProfilePart` were stored on the wrong side
+  `left` (`new`) instead of `right` (`old`).
+
+[#427]: https://github.com/gungraun/gungraun/pull/427
+[#429]: https://github.com/gungraun/gungraun/pull/429
+[#434]: https://github.com/gungraun/gungraun/pull/434
+[#436]: https://github.com/gungraun/gungraun/pull/436
+[#455]: https://github.com/gungraun/gungraun/pull/455
+[#475]: https://github.com/gungraun/gungraun/pull/475
+[#477]: https://github.com/gungraun/gungraun/pull/477
 
 ## [0.16.1] - 2025-07-30
 
 ### Added
 
-- ([#411](https://github.com/iai-callgrind/iai-callgrind/pull/411)): Add ability
-  to set report tolerance. Thanks to @nihohit
-- ([#419](https://github.com/iai-callgrind/iai-callgrind/pull/419)): Add support
-  for the Valgrind command-line arguments `--xtree-memory` and memcheck's
-  `--xtree-leak`. The output files extension is `.xtree` for `--xtree-memory`
-  and `.xleak` for `--xtree-leak`.
-- ([#420](https://github.com/iai-callgrind/iai-callgrind/pull/420)): Add
-  command-line arguments `--callgrind-metrics` (env:
+- ([#411]): Add ability to set report tolerance. Thanks to @nihohit
+- ([#419]): Add support for the Valgrind command-line arguments `--xtree-memory`
+  and memcheck's `--xtree-leak`. The output files extension is `.xtree` for
+  `--xtree-memory` and `.xleak` for `--xtree-leak`.
+- ([#420]): Add command-line arguments `--callgrind-metrics` (env:
   `IAI_CALLGRIND_CALLGRIND_METRICS`), `--cachegrind-metrics` (env:
   `IAI_CALLGRIND_CACHEGRIND_METRICS`), `--dhat-metrics` (env:
   `IAI_CALLGRIND_DHAT_METRICS`), `--drd-metrics` (env:
@@ -362,9 +364,8 @@ iterators.
   `IAI_CALLGRIND_MEMCHECK_METRICS`), `--helgrind-metrics` (env:
   `IAI_CALLGRIND_HELGRIND_METRICS`) to be able to adjust the shown metrics and
   their order in the terminal output of the respective tool. and to be able to
-- ([#421](https://github.com/iai-callgrind/iai-callgrind/pull/421)): Add
-  `--tolerance` (env: `IAI_CALLGRIND_TOLERANCE`) to be able to adjust the
-  tolerance level on the command-line (in addition to #411).
+- ([#421]): Add `--tolerance` (env: `IAI_CALLGRIND_TOLERANCE`) to be able to
+  adjust the tolerance level on the command-line (in addition to #411).
 - (c9cbcf61): Build artifacts of the `iai-callgrind-runner` for the `riscv64`
   target. The artifacts were added retroactively for all releases `>=v0.12.0`.
 - (52d71ad0): Add mapping of iai-callgrind-runner version to json schema version
@@ -372,26 +373,29 @@ iterators.
 
 ### Changed
 
-- ([#417](https://github.com/iai-callgrind/iai-callgrind/pull/417)):
-  backwards-compatible change of `summary.v6.schema.json`. The order and
-  documentation of items changes.
-- ([#422](https://github.com/iai-callgrind/iai-callgrind/pull/422)): Resort and
-  group the options in the `--help` output for Iai-Callgrind command-line
-  arguments.
+- ([#417]): backwards-compatible change of `summary.v6.schema.json`. The order
+  and documentation of items changes.
+- ([#422]): Resort and group the options in the `--help` output for
+  Iai-Callgrind command-line arguments.
 - Update direct dependencies: `strum`
 
 ### Removed
 
-- ([#417](https://github.com/iai-callgrind/iai-callgrind/pull/417)): Unused
-  dependencies: `serde_regex`, `tokio`
+- ([#417]): Unused dependencies: `serde_regex`, `tokio`
 
 ### Fixed
 
 - (52d71ad0): Removed the wrong link to schema version v2 in the
   `machine-readable output` section of guide.
-- ([#417](https://github.com/iai-callgrind/iai-callgrind/pull/417)): `-v` in
-  arguments for tools other than cachegrind and callgrind was not parsed the
-  same way as `--verbose`
+- ([#417]): `-v` in arguments for tools other than cachegrind and callgrind was
+  not parsed the same way as `--verbose`
+
+[#411]: https://github.com/iai-callgrind/iai-callgrind/pull/411
+[#417]: https://github.com/iai-callgrind/iai-callgrind/pull/417
+[#419]: https://github.com/iai-callgrind/iai-callgrind/pull/419
+[#420]: https://github.com/iai-callgrind/iai-callgrind/pull/420
+[#421]: https://github.com/iai-callgrind/iai-callgrind/pull/421
+[#422]: https://github.com/iai-callgrind/iai-callgrind/pull/422
 
 ## [0.16.0] - 2025-07-20
 
@@ -446,97 +450,94 @@ Also new: It's possible to specify soft or hard limits for whole groups like
 
 ### Added
 
-- ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406)): Added the
-  method `Dhat::entry_point` to be able to change the default entry point
-  similar to `Callgrind::entry_point` and `Dhat::frames` to be able to specify
-  additional functions in a similar way to `--toggle-collect` of Callgrind.
-- ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406)): Possibility
-  to specify DHAT regression limits with the `Dhat` struct and with the
-  command-line argument `--dhat-limits` or environment variable
+- ([#406]): Added the method `Dhat::entry_point` to be able to change the
+  default entry point similar to `Callgrind::entry_point` and `Dhat::frames` to
+  be able to specify additional functions in a similar way to `--toggle-collect`
+  of Callgrind.
+- ([#406]): Possibility to specify DHAT regression limits with the `Dhat` struct
+  and with the command-line argument `--dhat-limits` or environment variable
   `IAI_CALLGRIND_DHAT_LIMITS`.
-- ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406)): New DHAT
-  metrics `DhatMetric::TotalUnits` and `DhatMetric::TotalEvents` for DHAT
-  `ad-hoc` mode. They are part of the default output format of dhat.
-- ([#407](https://github.com/iai-callgrind/iai-callgrind/pull/407))!: Add
-  possibility to specify hard limits in addition to soft limits. This breaks the
-  parsing of the `--callgrind-limits`, ... arguments. To disambiguate between
-  hard and soft limits the soft limits have to be suffixed with a `%`. New
-  methods `Callgrind::soft_limits`, `Callgrind::hard_limits`,
+- ([#406]): New DHAT metrics `DhatMetric::TotalUnits` and
+  `DhatMetric::TotalEvents` for DHAT `ad-hoc` mode. They are part of the default
+  output format of dhat.
+- ([#407])!: Add possibility to specify hard limits in addition to soft limits.
+  This breaks the parsing of the `--callgrind-limits`, ... arguments. To
+  disambiguate between hard and soft limits the soft limits have to be suffixed
+  with a `%`. New methods `Callgrind::soft_limits`, `Callgrind::hard_limits`,
   `Cachegrind::soft_limits`, `Cachegrind::hard_limits`, `Dhat::soft_limits`,
   `Dhat::hard_limits`.
-- ([#407](https://github.com/iai-callgrind/iai-callgrind/pull/407)): Add soft or
-  hard limits for whole groups like in `--callgrind-limits='@all=5%'`. The
-  `--help` message for `--callgrind-limits`, ... shows all possible groups.
+- ([#407]): Add soft or hard limits for whole groups like in
+  `--callgrind-limits='@all=5%'`. The `--help` message for `--callgrind-limits`,
+  ... shows all possible groups.
 
 ### Changed
 
-- ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406))!: In library
-  benchmarks, the default entry point for DHAT is now the benchmark function
-  `EntryPoint::Default`. As opposed to callgrind benchmarks, this includes the
-  (de-)allocations/metrics of a `setup` and/or `teardown` function. For binary
-  benchmarks nothing has changed and the default entry point is set to none with
-  `EntryPoint::None`.
-- ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406)): Improved
-  error message: Changed `Invalid format of key/value pair: '{split}'` to
+- ([#406])!: In library benchmarks, the default entry point for DHAT is now the
+  benchmark function `EntryPoint::Default`. As opposed to callgrind benchmarks,
+  this includes the (de-)allocations/metrics of a `setup` and/or `teardown`
+  function. For binary benchmarks nothing has changed and the default entry
+  point is set to none with `EntryPoint::None`.
+- ([#406]): Improved error message: Changed
+  `Invalid format of key/value pair: '{split}'` to
   `Invalid format of key=value pair: '{split}'`.
-- ([#407](https://github.com/iai-callgrind/iai-callgrind/pull/407)): Make the
-  expanded benchmark function module public with `pub mod` instead of just
-  `mod`. This allows putting benchmark functions into modules and adding them
-  into groups outside of this module.
-- ([#407](https://github.com/iai-callgrind/iai-callgrind/pull/407)): Bump
-  summary.v5.schema.json -> summary.v6.schema.json
-- ([#410](https://github.com/iai-callgrind/iai-callgrind/pull/410)): Allow
-  specifying `CallgrindMetrics` groups for `Callgrind::soft_limits`,
-  `Callgrind::hard_limits`. Same for `Cachegrind` with `CachegrindMetrics` and
-  for `Dhat` with `DhatMetrics`.
-- ([#410](https://github.com/iai-callgrind/iai-callgrind/pull/410)): Improve
-  error message in the runner in case of misconfigurations in the ui. The error
-  message now also shows the exact benchmark case where the error happens.
+- ([#407]): Make the expanded benchmark function module public with `pub mod`
+  instead of just `mod`. This allows putting benchmark functions into modules
+  and adding them into groups outside of this module.
+- ([#407]): Bump summary.v5.schema.json -> summary.v6.schema.json
+- ([#410]): Allow specifying `CallgrindMetrics` groups for
+  `Callgrind::soft_limits`, `Callgrind::hard_limits`. Same for `Cachegrind` with
+  `CachegrindMetrics` and for `Dhat` with `DhatMetrics`.
+- ([#410]): Improve error message in the runner in case of misconfigurations in
+  the ui. The error message now also shows the exact benchmark case where the
+  error happens.
 - Update direct dependencies: `inferno`, `cc`, `clap`, `serde_json`
 
 ### Deprecated
 
-- ([#407](https://github.com/iai-callgrind/iai-callgrind/pull/407)): The methods
-  `Callgrind::limits` and `Cachegrind::limits` to specify soft limits are now
-  deprecated. Use `Callgrind::soft_limits`, `Cachegrind::soft_limits` instead
-  for soft limits or `Callgrind::hard_limits`, `Cachegrind::hard_limits` for
-  hard limits.
+- ([#407]): The methods `Callgrind::limits` and `Cachegrind::limits` to specify
+  soft limits are now deprecated. Use `Callgrind::soft_limits`,
+  `Cachegrind::soft_limits` instead for soft limits or `Callgrind::hard_limits`,
+  `Cachegrind::hard_limits` for hard limits.
 
 ### Fixed
 
-- ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406)): Running
-  DHAT in `ad-hoc` mode exited with error due to a failed assertion. Parsing the
-  log file in ad-hoc mode now succeeds.
-- ([#406](https://github.com/iai-callgrind/iai-callgrind/pull/406)): Wrong error
-  message `Failed to split callgrind args` when parsing of `--cachegrind-args`,
-  `--dhat-args`, ... It's changed to `Failed to split args`.
+- ([#406]): Running DHAT in `ad-hoc` mode exited with error due to a failed
+  assertion. Parsing the log file in ad-hoc mode now succeeds.
+- ([#406]): Wrong error message `Failed to split callgrind args` when parsing of
+  `--cachegrind-args`, `--dhat-args`, ... It's changed to
+  `Failed to split args`.
+
+[#406]: https://github.com/iai-callgrind/iai-callgrind/pull/406
+[#407]: https://github.com/iai-callgrind/iai-callgrind/pull/407
+[#410]: https://github.com/iai-callgrind/iai-callgrind/pull/410
 
 ## [0.15.2] - 2025-07-03
 
 ### Added
 
-- ([#387](https://github.com/iai-callgrind/iai-callgrind/pull/387)): Calculate
-  the cache miss rates (`I1 Miss Rate`, `LLi Miss Rate`, `D1 Miss Rate`,
-  `LLd Miss Rate`, `LL Miss Rate`) and hit rates (`L1 Hit Rate`, `LL Hit Rate`,
-  `RAM Hit Rate`). These new metrics are not part of the default output. Show
-  them on demand when configured in `Callgrind::format` and/or
+- ([#387]): Calculate the cache miss rates (`I1 Miss Rate`, `LLi Miss Rate`,
+  `D1 Miss Rate`, `LLd Miss Rate`, `LL Miss Rate`) and hit rates (`L1 Hit Rate`,
+  `LL Hit Rate`, `RAM Hit Rate`). These new metrics are not part of the default
+  output. Show them on demand when configured in `Callgrind::format` and/or
   `Cachegrind::format`.
 
 ### Changed
 
 - Bump summary.v4.schema.json -> summary.v5.schema.json
 - Update direct dependencies: `schemars`, `indexmap` and transitive dependencies
-- ([#395](https://github.com/iai-callgrind/iai-callgrind/pull/395)): Rename
-  `L2 Hits` to `LL Hits` to be closer to the original naming scheme in the
-  callgrind documentation. This also eliminates differences to the naming of
-  other metrics like `LLi Miss Rate`, ...
-- ([#396](https://github.com/iai-callgrind/iai-callgrind/pull/396)): Append
-  `(old)` in the terminal output of baselines with the same name to clarify
-  which is the new and the old run.
+- ([#395]): Rename `L2 Hits` to `LL Hits` to be closer to the original naming
+  scheme in the callgrind documentation. This also eliminates differences to the
+  naming of other metrics like `LLi Miss Rate`, ...
+- ([#396]): Append `(old)` in the terminal output of baselines with the same
+  name to clarify which is the new and the old run.
 
 ### Fixed
 
 - Fix broken links in the documentation/guide
+
+[#387]: https://github.com/iai-callgrind/iai-callgrind/pull/387
+[#395]: https://github.com/iai-callgrind/iai-callgrind/pull/395
+[#396]: https://github.com/iai-callgrind/iai-callgrind/pull/396
 
 ## [0.15.1] - 2025-06-23
 
@@ -547,14 +548,15 @@ Also new: It's possible to specify soft or hard limits for whole groups like
 
 ### Fixed
 
-- ([#382](https://github.com/iai-callgrind/iai-callgrind/pull/382)): The version
-  for the summary json schema submitted in the `summary.json` and in json output
-  was the old `3` instead of `4`.
-- ([#383](https://github.com/iai-callgrind/iai-callgrind/issues/383)): The
-  cachegrind feature check for library benchmarks happened at compile time of
-  the user instead of iai-callgrind's. The `cachegrind` feature did not work
-  (for library benchmarks) and rust versions above `1.80` produce a compilation
-  warning due to `unexpected-cfgs`.
+- ([#382]): The version for the summary json schema submitted in the
+  `summary.json` and in json output was the old `3` instead of `4`.
+- ([#383]): The cachegrind feature check for library benchmarks happened at
+  compile time of the user instead of iai-callgrind's. The `cachegrind` feature
+  did not work (for library benchmarks) and rust versions above `1.80` produce a
+  compilation warning due to `unexpected-cfgs`.
+
+[#382]: https://github.com/iai-callgrind/iai-callgrind/pull/382
+[#383]: https://github.com/iai-callgrind/iai-callgrind/issues/383
 
 ## [0.15.0] - 2025-06-22
 
@@ -564,60 +566,50 @@ Valgrind tool as default tool if wished so.
 
 ### Added
 
-- ([#365](https://github.com/iai-callgrind/iai-callgrind/pull/365)): Adjustable
-  metrics in the terminal output of Callgrind
-- ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): Support to
-  run Cachegrind instead of Callgrind or in addition to Callgrind. The
-  `cachegrind` feature of iai-callgrind allows to switch between both tools in
-  the `Cargo.toml` in a more permanent way. But, it is also possible to change
-  the default tool to Cachegrind (or any other Valgrind tool) on the
-  command-line with `--default-tool` option. The
+- ([#365]): Adjustable metrics in the terminal output of Callgrind
+- ([#372]): Support to run Cachegrind instead of Callgrind or in addition to
+  Callgrind. The `cachegrind` feature of iai-callgrind allows to switch between
+  both tools in the `Cargo.toml` in a more permanent way. But, it is also
+  possible to change the default tool to Cachegrind (or any other Valgrind tool)
+  on the command-line with `--default-tool` option. The
   `LibraryBenchmarkConfig::default_tool` (`BinaryBenchmarkConfig::default_tool`)
   can be used in the benchmarks to selectively change the default tool. To be
   able to define Cachegrind limits in the same way as `--callgrind-limits` to
   detect regressions, the `--cachegrind-limits` options was added.
-- ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): In the same
-  way as `--callgrind-args` can be used on the command-line the following
-  options were added to pass arguments to any Valgrind tool: `--valgrind-args`,
-  `--cachegrind-args`, `--dhat-args`, `--memcheck-args`, `--helgrind-args`,
-  `--drd-args`, `--massif-args`, `--bbv-args`
-- ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): Added the
-  command-line arguments `--tools` to run additional tools
-- ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): The new
-  structs `Callgrind`, `Cachegrind`, `DHAT`, `Memcheck`, `Helgrind`, `DRD`,
-  `Massif`, `BBV` replace the old more generic `Tool` to be able to specify tool
-  specific options. These structs can be passed to
+- ([#372]): In the same way as `--callgrind-args` can be used on the
+  command-line the following options were added to pass arguments to any
+  Valgrind tool: `--valgrind-args`, `--cachegrind-args`, `--dhat-args`,
+  `--memcheck-args`, `--helgrind-args`, `--drd-args`, `--massif-args`,
+  `--bbv-args`
+- ([#372]): Added the command-line arguments `--tools` to run additional tools
+- ([#372]): The new structs `Callgrind`, `Cachegrind`, `DHAT`, `Memcheck`,
+  `Helgrind`, `DRD`, `Massif`, `BBV` replace the old more generic `Tool` to be
+  able to specify tool specific options. These structs can be passed to
   `LibraryBenchmarkConfig::tool` and `BinaryBenchmarkConfig::tool`.
-- ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): Adjustable
-  metrics in the terminal output for all tools.
+- ([#372]): Adjustable metrics in the terminal output for all tools.
 
 ### Changed
 
-- ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): The
-  command-line argument name `--regressions` changed to `--callgrind-limits`.
-  The `IAI_CALLGRIND_REGRESSIONS` environment variable changed to
-  `IAI_CALLGRIND_CALLGRIND_LIMITS`.
-- ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): Bump
-  summary.v3.schema.json -> summary.v4.schema.json
-- ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): Ignore with
-  a warning the arguments `--xtree-memory`, `--xtree-memory-file`,
-  `--xtree-leak`, `--xtree-leak-file`
-- ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): A small
-  change in the regression summary at the end of the benchmark run: The tool is
-  now printed along with the detected regression:
+- ([#372]): The command-line argument name `--regressions` changed to
+  `--callgrind-limits`. The `IAI_CALLGRIND_REGRESSIONS` environment variable
+  changed to `IAI_CALLGRIND_CALLGRIND_LIMITS`.
+- ([#372]): Bump summary.v3.schema.json -> summary.v4.schema.json
+- ([#372]): Ignore with a warning the arguments `--xtree-memory`,
+  `--xtree-memory-file`, `--xtree-leak`, `--xtree-leak-file`
+- ([#372]): A small change in the regression summary at the end of the benchmark
+  run: The tool is now printed along with the detected regression:
   `Callgrind: Instructions (132 -> 195): +47.7273% exceeds limit of +0.00000%`
   instead of just
   `Instructions (132 -> 195): +47.7273% exceeds limit of +0.00000%`
-- ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): The
-  comparison by id between benchmark functions now compares the metrics of all
-  tools and not just callgrind.
+- ([#372]): The comparison by id between benchmark functions now compares the
+  metrics of all tools and not just callgrind.
 - Update direct dependencies: `cc`, `syn`, `clap`, `cfg-if`, `bindgen`, `which`
   and all transitive dependencies to their latest possible versions.
 
 ### Removed
 
-- ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): The
-  following functions were removed `BinaryBenchmarkConfig::with_callgrind_args`,
+- ([#372]): The following functions were removed
+  `BinaryBenchmarkConfig::with_callgrind_args`,
   `BinaryBenchmarkConfig::raw_callgrind_args`,
   `BinaryBenchmarkConfig::callgrind_args` (now in `Callgrind::args`),
   `BinaryBenchmarkConfig::flamegraph` (now in `Callgrind::flamegraph`),
@@ -631,68 +623,74 @@ Valgrind tool as default tool if wished so.
   `LibraryBenchmarkConfig::flamegraph`, `LibraryBenchmarkConfig::regression`,
   `LibraryBenchmarkConfig::entry_point`, `LibraryBenchmarkConfig::tools`,
   `LibraryBenchmarkConfig::tools_override`,
-- ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): The `Tool`
-  struct was removed and replaced by the more specific `Callgrind`,
-  `Cachegrind`, ... structs
-- ([#372](https://github.com/iai-callgrind/iai-callgrind/pull/372)): The
-  deprecated `black_box` function was removed. Use `std::hint::black_box`
-  instead.
+- ([#372]): The `Tool` struct was removed and replaced by the more specific
+  `Callgrind`, `Cachegrind`, ... structs
+- ([#372]): The deprecated `black_box` function was removed. Use
+  `std::hint::black_box` instead.
+
+[#365]: https://github.com/iai-callgrind/iai-callgrind/pull/365
+[#372]: https://github.com/iai-callgrind/iai-callgrind/pull/372
 
 ## [0.14.2] - 2025-06-04
 
 ### Added
 
-- ([#356](https://github.com/iai-callgrind/iai-callgrind/issues/356)): Print a
-  summary after a benchmark run with total/regressed benchmarks and total
-  execution time. Thanks to @tgross35 for the feedback and format suggestion.
+- ([#356]): Print a summary after a benchmark run with total/regressed
+  benchmarks and total execution time. Thanks to @tgross35 for the feedback and
+  format suggestion.
 
 ### Changed
 
-- ([#361](https://github.com/iai-callgrind/iai-callgrind/pull/361)): Wrap long
-  lines of `--help` output to 100 max bytes for better readability.
-- ([#362](https://github.com/iai-callgrind/iai-callgrind/pull/362)): Return with
-  exit code `3` on regression errors and `2` on command-line argument parsing
-  errors.
+- ([#361]): Wrap long lines of `--help` output to 100 max bytes for better
+  readability.
+- ([#362]): Return with exit code `3` on regression errors and `2` on
+  command-line argument parsing errors.
 - Update dependencies to latest possible versions
 
 ### Fixed
 
-- ([#360](https://github.com/iai-callgrind/iai-callgrind/pull/360)): Stay closer
-  to the rust format of `--list` and use `: benchmark` suffix instead of
-  `: bench` when using `--list` to print a list of all benchmarks. Thanks to
-  @gaetschwartz
+- ([#360]): Stay closer to the rust format of `--list` and use `: benchmark`
+  suffix instead of `: bench` when using `--list` to print a list of all
+  benchmarks. Thanks to @gaetschwartz
+
+[#356]: https://github.com/iai-callgrind/iai-callgrind/issues/356
+[#360]: https://github.com/iai-callgrind/iai-callgrind/pull/360
+[#361]: https://github.com/iai-callgrind/iai-callgrind/pull/361
+[#362]: https://github.com/iai-callgrind/iai-callgrind/pull/362
 
 ## [0.14.1] - 2025-05-31
 
 ### Added
 
-- ([#339](https://github.com/iai-callgrind/iai-callgrind/pull/339)): Implement
-  the --list argument of the libtest harness to list all benchmarks instead of
-  running any benchmarks.
+- ([#339]): Implement the --list argument of the libtest harness to list all
+  benchmarks instead of running any benchmarks.
 
 ### Changed
 
-- ([#347](https://github.com/iai-callgrind/iai-callgrind/pull/347)): Update MSRV
-  from `1.67.1` -> `1.74.1` and update (most) direct and indirect dependencies
-  to their latest versions.
+- ([#347]): Update MSRV from `1.67.1` -> `1.74.1` and update (most) direct and
+  indirect dependencies to their latest versions.
 
 ### Fixed
 
-- ([#337](https://github.com/iai-callgrind/iai-callgrind/issues/337)): Fix
-  `--regression` does not exit with error status when there are regressions.
-  Also, `--regression-fail-fast` did not exit the benchmarks early on first
-  encountered regression.
-- ([#339](https://github.com/iai-callgrind/iai-callgrind/issues/339)): Fix tests
-  fail when invoked with extra cargo (libtest harness) arguments like --list or
-  --format, ...
-- ([#341](https://github.com/iai-callgrind/iai-callgrind/issues/339)): Remove
-  Quickstart from README and link instead to the quickstart in the guide.
-- ([#347](https://github.com/iai-callgrind/iai-callgrind/pull/347)): deny:
-  RUSTSEC-2025-0024: error[vulnerability]: crossbeam-channel: double free on
-  Drop: Fixed by updating transient dependency `crossbeam-channel` to 0.5.15
-- ([#347](https://github.com/iai-callgrind/iai-callgrind/pull/347)):
-  RUSTSEC-2025-0024: deny: error[vulnerability]: Borsh serialization of HashMap
-  is non-canonical: Fixed by updating transient `hashbrown` dependency to 0.15.3
+- ([#337]): Fix `--regression` does not exit with error status when there are
+  regressions. Also, `--regression-fail-fast` did not exit the benchmarks early
+  on first encountered regression.
+- ([#339][#339-issue]): Fix tests fail when invoked with extra cargo (libtest
+  harness) arguments like --list or --format, ...
+- ([#341]): Remove Quickstart from README and link instead to the quickstart in
+  the guide.
+- ([#347]): deny: RUSTSEC-2025-0024: error[vulnerability]: crossbeam-channel:
+  double free on Drop: Fixed by updating transient dependency
+  `crossbeam-channel` to 0.5.15
+- ([#347]): RUSTSEC-2025-0024: deny: error[vulnerability]: Borsh serialization
+  of HashMap is non-canonical: Fixed by updating transient `hashbrown`
+  dependency to 0.15.3
+
+[#337]: https://github.com/iai-callgrind/iai-callgrind/issues/337
+[#339-issue]: https://github.com/iai-callgrind/iai-callgrind/issues/339
+[#339]: https://github.com/iai-callgrind/iai-callgrind/pull/339
+[#341]: https://github.com/iai-callgrind/iai-callgrind/issues/339
+[#347]: https://github.com/iai-callgrind/iai-callgrind/pull/347
 
 ## [0.14.0] - 2024-10-04
 
@@ -718,8 +716,7 @@ for flexible benchmarking of client/server architectures.
 
 The MSRV has changed from `1.66.0` -> `1.67.1`.
 
-If not stated otherwise the changes below were introduced in
-[#263](https://github.com/iai-callgrind/iai-callgrind/pull/263).
+If not stated otherwise the changes below were introduced in [#263].
 
 ### Added
 
@@ -739,13 +736,10 @@ If not stated otherwise the changes below were introduced in
   default terminal output (but not json output)
 - Sometimes callgrind creates empty files, so we're cleaning them up now after
   each benchmark run.
-- ([#256](https://github.com/iai-callgrind/iai-callgrind/pull/256)) and
-  ([#279](https://github.com/iai-callgrind/iai-callgrind/pull/279)): Support
-  running setup in parallel and add possibility to delay the `Command`. Thanks
-  to @hargut for #256
-- ([#288](https://github.com/iai-callgrind/iai-callgrind/pull/288)): Added an
-  option `OutputFormat::show_grid` to show grid/guiding lines which can help
-  reading the terminal output if running benchmarks with multiple
+- ([#256]) and ([#279]): Support running setup in parallel and add possibility
+  to delay the `Command`. Thanks to @hargut for #256
+- ([#288]): Added an option `OutputFormat::show_grid` to show grid/guiding lines
+  which can help reading the terminal output if running benchmarks with multiple
   threads/subprocesses/tools.
 - The method `BinaryBenchmarkConfig::with_callgrind_args` was added to match the
   constructors of the `LibraryBenchmarkConfig`.
@@ -776,11 +770,9 @@ If not stated otherwise the changes below were introduced in
     Suppressed Contexts:              0|0               (No change)
     ```
 
-- ([#263](https://github.com/iai-callgrind/iai-callgrind/pull/263)) and
-  ([#288](https://github.com/iai-callgrind/iai-callgrind/pull/288)): Increase
-  the field width by 3 bytes and the space for metrics by 5 on each side of the
-  comparison so that the value of `u64::MAX` fits into the terminal output
-  without messing up the side-by-side layout.
+- ([#263]) and ([#288]): Increase the field width by 3 bytes and the space for
+  metrics by 5 on each side of the comparison so that the value of `u64::MAX`
+  fits into the terminal output without messing up the side-by-side layout.
 - The `LibraryBenchmarkConfig::truncate_description`,
   `BinaryBenchmarkConfig::truncate_description` methods have been moved to
   `OutputFormat::truncate_description`
@@ -799,15 +791,11 @@ If not stated otherwise the changes below were introduced in
     - `serde` -> 1.0.210
     - `syn` -> 2.0.79
     - `tempfile` -> 3.13.0
-- ([#288](https://github.com/iai-callgrind/iai-callgrind/pull/288)): The default
-  include path for the Valgrind headers has changed to `/usr/local/include` on
-  freebsd instead of `/usr/local`.
-- ([#289](https://github.com/iai-callgrind/iai-callgrind/pull/289)): Update
-  `derive_more` -> `1.0` in `Cargo.toml` but not in lock file.
-- ([#293](https://github.com/iai-callgrind/iai-callgrind/pull/293)): Update MSRV
-  from `1.66.0` -> `1.67.1`
-- ([#296](https://github.com/iai-callgrind/iai-callgrind/pull/296)): Update
-  locked transitive dependencies.
+- ([#288]): The default include path for the Valgrind headers has changed to
+  `/usr/local/include` on freebsd instead of `/usr/local`.
+- ([#289]): Update `derive_more` -> `1.0` in `Cargo.toml` but not in lock file.
+- ([#293]): Update MSRV from `1.66.0` -> `1.67.1`
+- ([#296]): Update locked transitive dependencies.
 
 ### Deprecated
 
@@ -839,29 +827,36 @@ If not stated otherwise the changes below were introduced in
   Iai-Callgrind.
 - The error metrics of DRD, Helgrind and Memcheck were only shown correctly if
   they consisted of a single digit.
-- ([#297](https://github.com/iai-callgrind/iai-callgrind/pull/297)): Added the
-  derive `Clone` impl for `gungraun::LibraryBenchmarkConfig`
-- ([#300](https://github.com/iai-callgrind/iai-callgrind/pull/300)):
-  `library_benchmark_group!` was private but the expanded mod should be public
-  Thanks to @ryanpeach
+- ([#297]): Added the derive `Clone` impl for `gungraun::LibraryBenchmarkConfig`
+- ([#300]): `library_benchmark_group!` was private but the expanded mod should
+  be public Thanks to @ryanpeach
+
+[#256]: https://github.com/iai-callgrind/iai-callgrind/pull/256
+[#263]: https://github.com/iai-callgrind/iai-callgrind/pull/263
+[#279]: https://github.com/iai-callgrind/iai-callgrind/pull/279
+[#288]: https://github.com/iai-callgrind/iai-callgrind/pull/288
+[#289]: https://github.com/iai-callgrind/iai-callgrind/pull/289
+[#293]: https://github.com/iai-callgrind/iai-callgrind/pull/293
+[#296]: https://github.com/iai-callgrind/iai-callgrind/pull/296
+[#297]: https://github.com/iai-callgrind/iai-callgrind/pull/297
+[#300]: https://github.com/iai-callgrind/iai-callgrind/pull/300
 
 ## [0.13.4] - 2024-09-12
 
 ### Changed
 
-- ([#264](https://github.com/iai-callgrind/iai-callgrind/pull/264)): Migrate
-  from unmaintained proc-macro-error to proc-macro-error2 due to
-  <https://rustsec.org/advisories/RUSTSEC-2024-0370>. This also removes the
+- ([#264]): Migrate from unmaintained proc-macro-error to proc-macro-error2 due
+  to <https://rustsec.org/advisories/RUSTSEC-2024-0370>. This also removes the
   duplicate dependency on `syn v2` and `syn v1`.
+
+[#264]: https://github.com/iai-callgrind/iai-callgrind/pull/264
 
 ## [0.13.3] - 2024-09-05
 
 The installation of `iai-callgrind-runner` with `cargo install` did not use the
 cache when trying to install the same version again and acted as if
 `cargo install --force` was given which leads to longer installation times in
-case the binary was already installed. See this
-[issue](https://github.com/iai-callgrind/iai-callgrind/issues/260) for more
-details.
+case the binary was already installed. See this [issue][#260] for more details.
 
 This problem is fixed in this and the following releases, but not in older
 versions of `iai-callgrind-runner`. Please use
@@ -872,40 +867,42 @@ seems to correctly recognize the same installation and does not install
 
 ### Added
 
-- ([#254](https://github.com/iai-callgrind/iai-callgrind/pull/254)): Added the
-  option to switch off the entry point `EntryPoint::None` or use a custom entry
-  point (`EntryPoint::Custom`). The default entry point stays the same and is
-  the toggle Iai-Callgrind sets with `--toggle-collect` to the benchmark
-  function.
+- ([#254]): Added the option to switch off the entry point `EntryPoint::None` or
+  use a custom entry point (`EntryPoint::Custom`). The default entry point stays
+  the same and is the toggle Iai-Callgrind sets with `--toggle-collect` to the
+  benchmark function.
 
 ### Changed
 
-- ([#254](https://github.com/iai-callgrind/iai-callgrind/pull/254)): Due to the
-  changes required to handle the different entry points options, the flamegraphs
-  created in binary benchmarks and flamegraphs from library benchmarks with
-  `EntryPoint::None` include all events, not only the events from `main`
-  downwards.
+- ([#254]): Due to the changes required to handle the different entry points
+  options, the flamegraphs created in binary benchmarks and flamegraphs from
+  library benchmarks with `EntryPoint::None` include all events, not only the
+  events from `main` downwards.
 
 ### Fixed
 
-- ([#261](https://github.com/iai-callgrind/iai-callgrind/pull/261)):
-  Reinstalling iai-callgrind-runner with `cargo install` when it was already
-  installed acted as if `cargo install --force` was given.
+- ([#261]): Reinstalling iai-callgrind-runner with `cargo install` when it was
+  already installed acted as if `cargo install --force` was given.
+
+[#254]: https://github.com/iai-callgrind/iai-callgrind/pull/254
+[#260]: https://github.com/iai-callgrind/iai-callgrind/issues/260
+[#261]: https://github.com/iai-callgrind/iai-callgrind/pull/261
 
 ## [0.13.2] - 2024-09-03
 
 ### Fixed
 
-- ([#252](https://github.com/iai-callgrind/iai-callgrind/pull/252)): When using
-  callgrind client requests like `start_instrumentation`, `stop_instrumentation`
-  together with `--collect-at-start=no` then all metrics were zero. Thanks to
-  @hargut
-- ([#257](https://github.com/iai-callgrind/iai-callgrind/pull/257)): A small
-  cosmetic fix for the factor in the benchmark output if it was negative
-  infinite. `[++-inf+++]` was changed to `[---inf---]`.
-- ([#258](https://github.com/iai-callgrind/iai-callgrind/pull/258)): The
-  `teardown` function of a `library_benchmark_group!` was only executed if a
-  `setup` function was present, too.
+- ([#252]): When using callgrind client requests like `start_instrumentation`,
+  `stop_instrumentation` together with `--collect-at-start=no` then all metrics
+  were zero. Thanks to @hargut
+- ([#257]): A small cosmetic fix for the factor in the benchmark output if it
+  was negative infinite. `[++-inf+++]` was changed to `[---inf---]`.
+- ([#258]): The `teardown` function of a `library_benchmark_group!` was only
+  executed if a `setup` function was present, too.
+
+[#252]: https://github.com/iai-callgrind/iai-callgrind/pull/252
+[#257]: https://github.com/iai-callgrind/iai-callgrind/pull/257
+[#258]: https://github.com/iai-callgrind/iai-callgrind/pull/258
 
 ## [0.13.1] - 2024-08-28
 
@@ -920,12 +917,13 @@ seems to correctly recognize the same installation and does not install
 
 ### Fixed
 
-- ([#248](https://github.com/iai-callgrind/iai-callgrind/pull/248)): If the
-  Command's path was a simple command name like `echo`, `cat`, the path was
-  interpreted as relative path instead of searched in the `$PATH`. Relative
-  paths like `./echo` are now interpreted as relative to the current directory.
-  If running the Command in a Sandbox, this is the root directory of the
-  Sandbox. Otherwise, it is the directory which is set by cargo bench.
+- ([#248]): If the Command's path was a simple command name like `echo`, `cat`,
+  the path was interpreted as relative path instead of searched in the `$PATH`.
+  Relative paths like `./echo` are now interpreted as relative to the current
+  directory. If running the Command in a Sandbox, this is the root directory of
+  the Sandbox. Otherwise, it is the directory which is set by cargo bench.
+
+[#248]: https://github.com/iai-callgrind/iai-callgrind/pull/248
 
 ## [0.13.0] - 2024-08-19
 
@@ -1046,7 +1044,7 @@ binary_benchmark_group!(
 In contrast to binary benchmarks, not much has changed for library benchmarks.
 If you're just looking for the changes in library benchmarks, the changes for
 library benchmarks have been marked specifically. The changes below were
-introduced in ([#229](https://github.com/iai-callgrind/iai-callgrind/pull/229)).
+introduced in ([#229]).
 
 ### Added
 
@@ -1102,12 +1100,13 @@ introduced in ([#229](https://github.com/iai-callgrind/iai-callgrind/pull/229)).
   `BinaryBenchmarkConfig::raw_callgrind_args(["toggle-collect=ENTRY_POINT"])` is
   the more idiomatic and less confusing way to achieve the same.
 
+[#229]: https://github.com/iai-callgrind/iai-callgrind/pull/229
+
 ## [0.12.3] - 2024-08-09
 
 ### Added
 
-- ([#221](https://github.com/iai-callgrind/iai-callgrind/pull/221)): Add the
-  `LibraryBenchmarkConfig::truncate_description` and
+- ([#221]): Add the `LibraryBenchmarkConfig::truncate_description` and
   `BinaryBenchmarkConfig::truncate_description` method to be able to adjust the
   truncation behaviour of the `DESCRIPTION` (as in
   `benchmark_file::group::function_name id:DESCRIPTION`) in the benchmark
@@ -1115,28 +1114,28 @@ introduced in ([#229](https://github.com/iai-callgrind/iai-callgrind/pull/229)).
 
 ### Changed
 
-- ([#221](https://github.com/iai-callgrind/iai-callgrind/pull/221)): Slightly
-  increase the default truncation length of the description in the benchmark
-  output to 50 ascii characters.
+- ([#221]): Slightly increase the default truncation length of the description
+  in the benchmark output to 50 ascii characters.
 - Update locked non-development dependencies:
     - `tempfile`: 3.11.0 -> 3.12.0
     - `serde`: 1.0.204 -> 1.0.205
+
+[#221]: https://github.com/iai-callgrind/iai-callgrind/pull/221
 
 ## [0.12.2] - 2024-08-06
 
 ### Added
 
-- ([#210](https://github.com/iai-callgrind/iai-callgrind/pull/210)): Add the
-  `file` parameter to the `#[benches]` attribute to support creation of
-  benchmarks from the specified file. Each line of this file represents a new
-  benchmark and the read line is passed to the benchmark function or if the
-  `setup` parameter is also present to the `setup` function.
-- ([#211](https://github.com/iai-callgrind/iai-callgrind/pull/211)): Add support
-  for a `setup` and `teardown` function in the `library_benchmark_group` and
-  `main` macro. The group `setup` function is run before any benchmark of this
-  group and the `teardown` function after all benchmarks of the same group.
-  Similarly, the `setup` function of the `main` macro is run before any
-  benchmark group and the `teardown` function after all benchmarks.
+- ([#210]): Add the `file` parameter to the `#[benches]` attribute to support
+  creation of benchmarks from the specified file. Each line of this file
+  represents a new benchmark and the read line is passed to the benchmark
+  function or if the `setup` parameter is also present to the `setup` function.
+- ([#211]): Add support for a `setup` and `teardown` function in the
+  `library_benchmark_group` and `main` macro. The group `setup` function is run
+  before any benchmark of this group and the `teardown` function after all
+  benchmarks of the same group. Similarly, the `setup` function of the `main`
+  macro is run before any benchmark group and the `teardown` function after all
+  benchmarks.
 
 ### Changed
 
@@ -1152,87 +1151,91 @@ introduced in ([#229](https://github.com/iai-callgrind/iai-callgrind/pull/229)).
   `EventKind::EstimatedCycles` as default regression kind instead of
   `EventKind::Ir`. This default has changed in `v0.11.0`.
 
+[#210]: https://github.com/iai-callgrind/iai-callgrind/pull/210
+[#211]: https://github.com/iai-callgrind/iai-callgrind/pull/211
+
 ## [0.12.1] - 2024-07-31
 
 ### Changed
 
-- ([#212](https://github.com/iai-callgrind/iai-callgrind/pull/212)): Update
-  transitive dependency `bytemuck` 1.15.0 (yanked) -> 1.16.3
+- ([#212]): Update transitive dependency `bytemuck` 1.15.0 (yanked) -> 1.16.3
 - Update other locked non-development dependencies:
     - `cc`: 1.1.5 -> 1.1.7,
     - `serde_json`: 1.0.120 -> 1.0.121
+
+[#212]: https://github.com/iai-callgrind/iai-callgrind/pull/212
 
 ## [0.12.0] - 2024-07-24
 
 ### Added
 
-- ([#160](https://github.com/iai-callgrind/iai-callgrind/pull/160)): Add
-  `--separate-targets` (env: `IAI_CALLGRIND_SEPARATE_TARGETS`). Using this
-  option causes the compilation target to be included in the iai-callgrind
-  output directory tree to mitigate issues when running benchmarks on multiple
-  targets. For example, instead of having all output files under `target/iai`,
-  using this option puts all files under the directory
+- ([#160]): Add `--separate-targets` (env: `IAI_CALLGRIND_SEPARATE_TARGETS`).
+  Using this option causes the compilation target to be included in the
+  iai-callgrind output directory tree to mitigate issues when running benchmarks
+  on multiple targets. For example, instead of having all output files under
+  `target/iai`, using this option puts all files under the directory
   `target/iai/x86_64-unknown-linux-gnu` if running the benchmarks on the
   `x86_64-unknown-linux-gnu` target.
-- ([#188](https://github.com/iai-callgrind/iai-callgrind/pull/188)): Add the
-  option `--home` (env: `IAI_CALLGRIND_HOME`) to be able to change the default
-  home directory `target/iai`.
-- ([#192](https://github.com/iai-callgrind/iai-callgrind/pull/192)): The
-  `#[bench]` attribute now accepts a `setup` parameter similarly to the
-  `#[benches]` attribute. The `#[bench]` and `#[benches]` attribute accept a new
-  `teardown` parameter. The `teardown` function is called with the return value
-  of the benchmark function. The `#[library_benchmark]` attribute now accepts a
-  global `setup` and `teardown` parameter which are applied to all following
-  `#[bench]` and `#[benches]` attributes if they don't specify one of these
-  parameters themselves.
-- ([#194](https://github.com/iai-callgrind/iai-callgrind/pull/194)): Add
-  `--nocapture` (env: `IAI_CALLGRIND_NOCAPTURE`) option to tell iai-callgrind to
-  not capture `callgrind` terminal output of benchmark functions. For all
-  possible values see the `README`.
-- ([#201](https://github.com/iai-callgrind/iai-callgrind/pull/201)): Add support
-  for generic benchmark functions fixing #198 (Generic bench arguments cause
-  compilation failure).
+- ([#188]): Add the option `--home` (env: `IAI_CALLGRIND_HOME`) to be able to
+  change the default home directory `target/iai`.
+- ([#192]): The `#[bench]` attribute now accepts a `setup` parameter similarly
+  to the `#[benches]` attribute. The `#[bench]` and `#[benches]` attribute
+  accept a new `teardown` parameter. The `teardown` function is called with the
+  return value of the benchmark function. The `#[library_benchmark]` attribute
+  now accepts a global `setup` and `teardown` parameter which are applied to all
+  following `#[bench]` and `#[benches]` attributes if they don't specify one of
+  these parameters themselves.
+- ([#194]): Add `--nocapture` (env: `IAI_CALLGRIND_NOCAPTURE`) option to tell
+  iai-callgrind to not capture `callgrind` terminal output of benchmark
+  functions. For all possible values see the `README`.
+- ([#201]): Add support for generic benchmark functions fixing #198 (Generic
+  bench arguments cause compilation failure).
 
 ### Changed
 
 - Update non-development locked dependencies: `syn` -> 2.0.72, `cc` -> 1.1.5,
   `serde` -> 1.0.204
 - Update minimal version of `syn` -> 2.0.32
-- ([#201](https://github.com/iai-callgrind/iai-callgrind/pull/201)): The
-  `BinaryBenchmarkConfig::entry_point` and `Run::entry_point` functions now use
-  glob patterns as argument with `*` as placeholder for any amount of
-  characters.
-- ([#203](https://github.com/iai-callgrind/iai-callgrind/pull/203)): Improve
-  error messages during the initialization phase of the `iai-callgrind-runner`,
-  get rid of a lot of unwraps and include a solution hint. These errors mainly
-  happen if the `iai-callgrind` library has a different version than the
-  `iai-callgrind-runner` binary.
+- ([#201]): The `BinaryBenchmarkConfig::entry_point` and `Run::entry_point`
+  functions now use glob patterns as argument with `*` as placeholder for any
+  amount of characters.
+- ([#203]): Improve error messages during the initialization phase of the
+  `iai-callgrind-runner`, get rid of a lot of unwraps and include a solution
+  hint. These errors mainly happen if the `iai-callgrind` library has a
+  different version than the `iai-callgrind-runner` binary.
 
 ### Fixed
 
-- ([#192](https://github.com/iai-callgrind/iai-callgrind/pull/192)): Fix a
-  wrongly issued compiler error when the setup parameter was specified before
-  the args parameter and the number of elements of the args parameter did not
-  match the number of arguments of the benchmark function.
-- ([#192](https://github.com/iai-callgrind/iai-callgrind/pull/192)): Fix the
-  error span of wrong user supplied argument types or wrong number of arguments.
-  The compiler errors now point to the exact location of any wrong arguments
-  instead of the generic call-site of the `#[library_benchmark]` attribute. If
-  there is a setup function involved, we leave it to the rust compiler to point
-  to the location of the setup function and the wrong arguments.
+- ([#192]): Fix a wrongly issued compiler error when the setup parameter was
+  specified before the args parameter and the number of elements of the args
+  parameter did not match the number of arguments of the benchmark function.
+- ([#192]): Fix the error span of wrong user supplied argument types or wrong
+  number of arguments. The compiler errors now point to the exact location of
+  any wrong arguments instead of the generic call-site of the
+  `#[library_benchmark]` attribute. If there is a setup function involved, we
+  leave it to the rust compiler to point to the location of the setup function
+  and the wrong arguments.
+
+[#160]: https://github.com/iai-callgrind/iai-callgrind/pull/160
+[#188]: https://github.com/iai-callgrind/iai-callgrind/pull/188
+[#192]: https://github.com/iai-callgrind/iai-callgrind/pull/192
+[#194]: https://github.com/iai-callgrind/iai-callgrind/pull/194
+[#201]: https://github.com/iai-callgrind/iai-callgrind/pull/201
+[#203]: https://github.com/iai-callgrind/iai-callgrind/pull/203
 
 ## [0.11.1] - 2024-07-05
 
 ### Changed
 
-- ([#169](https://github.com/iai-callgrind/iai-callgrind/pull/169)): Clearify
-  documentation about the scope of uniqueness of benchmark ids. Thanks to
-  @peter-kehl
-- ([#175](https://github.com/iai-callgrind/iai-callgrind/pull/175)): Mark
-  iai-callgrind build dependencies required only by the `client_request_defs`
-  feature as optional. Solve cargo's `--check-cfg` warnings if currently active
-  rust version is `>= 1.80.0`. Thanks to @DaniPopes
+- ([#169]): Clearify documentation about the scope of uniqueness of benchmark
+  ids. Thanks to @peter-kehl
+- ([#175]): Mark iai-callgrind build dependencies required only by the
+  `client_request_defs` feature as optional. Solve cargo's `--check-cfg`
+  warnings if currently active rust version is `>= 1.80.0`. Thanks to @DaniPopes
 - Update some locked dependencies
+
+[#169]: https://github.com/iai-callgrind/iai-callgrind/pull/169
+[#175]: https://github.com/iai-callgrind/iai-callgrind/pull/175
 
 ## [0.11.0] - 2024-05-09
 
@@ -1242,51 +1245,55 @@ to `EventKind::Ir` so, if you're updating from a previous version of
 
 ### Added
 
-- ([#71](https://github.com/iai-callgrind/iai-callgrind/issues/71)): Add a DHAT
-  cost summary similar to the summary of callgrind events in the benchmark run
-  output. Thanks to @dewert99.
-- ([#80](https://github.com/iai-callgrind/iai-callgrind/issues/80)): Add
-  pre-built `iai-callgrind-runner` binaries for most Valgrind-supported targets
-  to the github release pages. `iai-callgrind-runner` can now also be installed
-  with `cargo binstall`.
-- ([#88](https://github.com/iai-callgrind/iai-callgrind/issues/88)): Support
-  filtering benchmarks by name. This is a command-line option only and the
-  filter can be given as positional argument in `cargo bench -- FILTER`.
-  Specifying command-line arguments in addition to the `FILTER` still works.
-- ([#144](https://github.com/iai-callgrind/iai-callgrind/pull/144)): Verify
-  compatibility with latest Valgrind release 3.23.0 and update client requests
-  to newly supported target arm64/freebsd.
-- ([#152](https://github.com/iai-callgrind/iai-callgrind/pull/152)): Support
-  comparison of benches in library benchmark functions by id.
-- ([#158](https://github.com/iai-callgrind/iai-callgrind/pull/152)): Support
-  environment variable `IAI_CALLGRIND_<TRIPLE>_VALGRIND_INCLUDE` with `<TRIPLE>`
-  being the hosts target triple. This variable takes precedence over the more
-  generic `IAI_CALLGRIND_VALGRIND_INCLUDE` environment variable. Thanks to @qRoC
+- ([#71]): Add a DHAT cost summary similar to the summary of callgrind events in
+  the benchmark run output. Thanks to @dewert99.
+- ([#80]): Add pre-built `iai-callgrind-runner` binaries for most
+  Valgrind-supported targets to the github release pages. `iai-callgrind-runner`
+  can now also be installed with `cargo binstall`.
+- ([#88]): Support filtering benchmarks by name. This is a command-line option
+  only and the filter can be given as positional argument in
+  `cargo bench -- FILTER`. Specifying command-line arguments in addition to the
+  `FILTER` still works.
+- ([#144]): Verify compatibility with latest Valgrind release 3.23.0 and update
+  client requests to newly supported target arm64/freebsd.
+- ([#152]): Support comparison of benches in library benchmark functions by id.
+- ([#158]): Support environment variable
+  `IAI_CALLGRIND_<TRIPLE>_VALGRIND_INCLUDE` with `<TRIPLE>` being the hosts
+  target triple. This variable takes precedence over the more generic
+  `IAI_CALLGRIND_VALGRIND_INCLUDE` environment variable. Thanks to @qRoC
 
 ### Changed
 
-- ([#94](https://github.com/iai-callgrind/iai-callgrind/issues/94)): Support
-  running `iai-callgrind` benchmarks without cache simulation
+- ([#94]): Support running `iai-callgrind` benchmarks without cache simulation
   (`--cache-sim=no`). Previously, specifying this option emitted a warning. Note
   that running the benchmarks with `--cache-sim=no` implies that there is also
   no estimated cycles calculation.
-- ([#106](https://github.com/iai-callgrind/iai-callgrind/pull/106)): Due to
-  [#94](https://github.com/iai-callgrind/iai-callgrind/issues/94), the default
-  `EventKind` for `RegressionConfig` and `FlamegraphConfig` changed from
-  `EventKind::EstimatedCycles` to `EventKind::Ir`.
+- ([#106]): Due to [#94], the default `EventKind` for `RegressionConfig` and
+  `FlamegraphConfig` changed from `EventKind::EstimatedCycles` to
+  `EventKind::Ir`.
 - Updated locked dependencies to their most recent version
 - Bump summary.v1.schema.json -> summary.v2.schema.json: The current schema file
   is stored in `iai-callgrind-runner/schemas/summary.v2.schema.json`
 
 ### Fixed
 
-- ([#86](https://github.com/iai-callgrind/iai-callgrind/pull/86)): Fix
-  positional arguments meant as filter as in `cargo bench -- FILTER` cause
-  `iai-callgrind` to crash.
-- ([#110](https://github.com/iai-callgrind/iai-callgrind/pull/110)): Fix example
-  in README. Thanks to @jembishop
-- ([#145](https://github.com/iai-callgrind/iai-callgrind/pull/145)): Fixed an
-  error on freebsd when copying fixtures in binary benchmarks.
+- ([#86]): Fix positional arguments meant as filter as in
+  `cargo bench -- FILTER` cause `iai-callgrind` to crash.
+- ([#110]): Fix example in README. Thanks to @jembishop
+- ([#145]): Fixed an error on freebsd when copying fixtures in binary
+  benchmarks.
+
+[#71]: https://github.com/iai-callgrind/iai-callgrind/issues/71
+[#80]: https://github.com/iai-callgrind/iai-callgrind/issues/80
+[#86]: https://github.com/iai-callgrind/iai-callgrind/pull/86
+[#88]: https://github.com/iai-callgrind/iai-callgrind/issues/88
+[#94]: https://github.com/iai-callgrind/iai-callgrind/issues/94
+[#106]: https://github.com/iai-callgrind/iai-callgrind/pull/106
+[#110]: https://github.com/iai-callgrind/iai-callgrind/pull/110
+[#144]: https://github.com/iai-callgrind/iai-callgrind/pull/144
+[#145]: https://github.com/iai-callgrind/iai-callgrind/pull/145
+[#152]: https://github.com/iai-callgrind/iai-callgrind/pull/152
+[#158]: https://github.com/iai-callgrind/iai-callgrind/pull/152
 
 ## [0.10.2] - 2024-01-25
 
@@ -1296,9 +1303,11 @@ to `EventKind::Ir` so, if you're updating from a previous version of
 
 ### Fixed
 
-- ([#84](https://github.com/iai-callgrind/iai-callgrind/pull/84)): Fix an error
-  when `--load-baseline` loads the dataset from the `--baseline` argument. This
-  error led to a comparison of the `--baseline` dataset with itself.
+- ([#84]): Fix an error when `--load-baseline` loads the dataset from the
+  `--baseline` argument. This error led to a comparison of the `--baseline`
+  dataset with itself.
+
+[#84]: https://github.com/iai-callgrind/iai-callgrind/pull/84
 
 ## [0.10.1] - 2024-01-22
 
@@ -1309,51 +1318,52 @@ to `EventKind::Ir` so, if you're updating from a previous version of
 
 ### Fixed
 
-- ([#81](https://github.com/iai-callgrind/iai-callgrind/pull/81)): Fix security
-  advisory RUSTSEC-2024-0006 of shlex dependency and update shlex to 1.3.0. Use
-  `shlex::try_join` instead of deprecated `shlex::join`.
+- ([#81]): Fix security advisory RUSTSEC-2024-0006 of shlex dependency and
+  update shlex to 1.3.0. Use `shlex::try_join` instead of deprecated
+  `shlex::join`.
+
+[#81]: https://github.com/iai-callgrind/iai-callgrind/pull/81
 
 ## [0.10.0] - 2024-01-09
 
 ### Added
 
-- ([#42](https://github.com/iai-callgrind/iai-callgrind/issues/42)): Support
-  Valgrind client requests. The client requests are available in the
-  `iai-callgrind` package and can be activated via feature flags
+- ([#42]): Support Valgrind client requests. The client requests are available
+  in the `iai-callgrind` package and can be activated via feature flags
   (`client_requests` and `client_requests_defs`).
-- ([#38](https://github.com/iai-callgrind/iai-callgrind/issues/38)): Add support
-  for specifying multiple library benchmarks in one go with the `#[benches]`
-  attribute. This attribute also accepts a `setup` argument which takes a path
-  to a function, so the `args` are passed as parameter to the `setup` function
-  instead of the benchmarking function.
+- ([#38]): Add support for specifying multiple library benchmarks in one go with
+  the `#[benches]` attribute. This attribute also accepts a `setup` argument
+  which takes a path to a function, so the `args` are passed as parameter to the
+  `setup` function instead of the benchmarking function.
 
 ### Changed
 
-- ([#48](https://github.com/iai-callgrind/iai-callgrind/pull/48)): Update MSRV
-  from `1.60.0` to `1.66.0`. Make use of new language features.
-- ([#48](https://github.com/iai-callgrind/iai-callgrind/pull/48)): Update
-  dependencies. Use latest possible versions (with our MSRV) of `which`,
-  `cargo_metadata`, `indexmap`, `clap` and others.
+- ([#48]): Update MSRV from `1.60.0` to `1.66.0`. Make use of new language
+  features.
+- ([#48]): Update dependencies. Use latest possible versions (with our MSRV) of
+  `which`, `cargo_metadata`, `indexmap`, `clap` and others.
 
 ### Deprecated
 
-- ([#48](https://github.com/iai-callgrind/iai-callgrind/pull/48)): Change our
-  implementation of `black_box` to wrap `std::hint::black_box` which is stable
-  since `1.66.0`. The usage of `iai_callgrind::black_box` is deprecated and
-  `std::hint::black_box` should be used directly.
+- ([#48]): Change our implementation of `black_box` to wrap
+  `std::hint::black_box` which is stable since `1.66.0`. The usage of
+  `iai_callgrind::black_box` is deprecated and `std::hint::black_box` should be
+  used directly.
 
 ### Fixed
 
-- ([#48](https://github.com/iai-callgrind/iai-callgrind/pull/48)): The
-  `lazy_static` dependency of `iai-callgrind-runner` is now optional and not
-  unnecessarily installed with the `iai-callgrind` package.
+- ([#48]): The `lazy_static` dependency of `iai-callgrind-runner` is now
+  optional and not unnecessarily installed with the `iai-callgrind` package.
+
+[#38]: https://github.com/iai-callgrind/iai-callgrind/issues/38
+[#42]: https://github.com/iai-callgrind/iai-callgrind/issues/42
+[#48]: https://github.com/iai-callgrind/iai-callgrind/pull/48
 
 ## [0.9.0] - 2023-12-09
 
 ### Added
 
-- ([#31](https://github.com/iai-callgrind/iai-callgrind/issues/31)): Machine
-  readable output. This feature adds an environment variable
+- ([#31]): Machine readable output. This feature adds an environment variable
   `IAI_CALLGRIND_SAVE_SUMMARY` and command line argument `--save-summary` to
   create a `summary.json` next to the usual output files of a benchmark which
   contains all the terminal output data and more in a machine-readable output
@@ -1366,15 +1376,13 @@ to `EventKind::Ir` so, if you're updating from a previous version of
   `--regression-fail-fast` which have higher precedence than their environment
   variable counterparts `IAI_CALLGRIND_ALLOW_ASLR`, `IAI_CALLGRIND_REGRESSION`
   and `IAI_CALLGRIND_REGRESSION_FAIL_FAST`
-- ([#29](https://github.com/iai-callgrind/iai-callgrind/issues/29)): Add support
-  to compare against baselines instead of the usual `*.old` output files. This
-  adds command-line arguments `--save-baseline=BASELINE`,
+- ([#29]): Add support to compare against baselines instead of the usual `*.old`
+  output files. This adds command-line arguments `--save-baseline=BASELINE`,
   `--load-baseline=BASELINE` and `--baseline=BASELINE` and their environment
   variable counterparts `IAI_CALLGRIND_SAVE_BASELINE`,
   `IAI_CALLGRIND_LOAD_BASELINE` and `IAI_CALLGRIND_BASELINE`.
-- ([#30](https://github.com/iai-callgrind/iai-callgrind/issues/30)): Add
-  environment variable `IAI_CALLGRIND_CALLGRIND_ARGS` as complement to
-  `--callgrind-args`
+- ([#30]): Add environment variable `IAI_CALLGRIND_CALLGRIND_ARGS` as complement
+  to `--callgrind-args`
 
 ### Changed
 
@@ -1387,10 +1395,9 @@ to `EventKind::Ir` so, if you're updating from a previous version of
 - The names of output files and directories of binary benchmarks changed the
   order from `ID.BINARY` to `BINARY.ID` to match the file naming scheme
   `FUNCTION.ID` of library benchmarks.
-- ([#35](https://github.com/iai-callgrind/iai-callgrind/issues/35)): The
-  terminal output of other Valgrind tool runs (like Memcheck, DRD, ...) is now
-  more informative and also shows the content of the log file, if any. If not
-  specified otherwise, Memcheck, DRD and Helgrind now run with
+- ([#35]): The terminal output of other Valgrind tool runs (like Memcheck, DRD,
+  ...) is now more informative and also shows the content of the log file, if
+  any. If not specified otherwise, Memcheck, DRD and Helgrind now run with
   `--error-exitcode=201`. If any errors are detected by these tools, setting
   this option to an exit code different from `0` causes the benchmark run to
   fail immediately and show the whole logging output.
@@ -1410,23 +1417,26 @@ to `EventKind::Ir` so, if you're updating from a previous version of
   output after the log file content to see all error output of Valgrind.
 - Update the yanked wasm-bindgen `0.2.88` to `0.2.89`
 
+[#29]: https://github.com/iai-callgrind/iai-callgrind/issues/29
+[#30]: https://github.com/iai-callgrind/iai-callgrind/issues/30
+[#31]: https://github.com/iai-callgrind/iai-callgrind/issues/31
+[#35]: https://github.com/iai-callgrind/iai-callgrind/issues/35
+
 ## [0.8.0] - 2023-11-10
 
 ### Added
 
-- ([#6](https://github.com/iai-callgrind/iai-callgrind/issues/6)): Show and fail
-  benchmarks on performance regressions. Configuration of regression checks can
-  be done with `RegressionConfig` or with the new environment variables
-  `IAI_CALLGRIND_REGRESSION` and `IAI_CALLGRIND_REGRESSION_FAIL_FAST`
-- ([#26](https://github.com/iai-callgrind/iai-callgrind/issues/26)): Show event
-  kinds which are not associated with callgrind's cache simulation if available.
-  For example, running callgrind with flags like `--collect-systime`
-  (`SysCount`, `SysTime`, `SysCpuTime`), ...
-- ([#18](https://github.com/iai-callgrind/iai-callgrind/issues/18)): Add support
-  for DHAT, Massif, BBV, Memcheck, Helgrind, DRD. It's now possible to run each
-  of these tools for each benchmark (in addition to callgrind). The output files
-  of the profiling tools DHAT, Massif and BBV can be found next to the usual
-  callgrind output files.
+- ([#6]): Show and fail benchmarks on performance regressions. Configuration of
+  regression checks can be done with `RegressionConfig` or with the new
+  environment variables `IAI_CALLGRIND_REGRESSION` and
+  `IAI_CALLGRIND_REGRESSION_FAIL_FAST`
+- ([#26]): Show event kinds which are not associated with callgrind's cache
+  simulation if available. For example, running callgrind with flags like
+  `--collect-systime` (`SysCount`, `SysTime`, `SysCpuTime`), ...
+- ([#18]): Add support for DHAT, Massif, BBV, Memcheck, Helgrind, DRD. It's now
+  possible to run each of these tools for each benchmark (in addition to
+  callgrind). The output files of the profiling tools DHAT, Massif and BBV can
+  be found next to the usual callgrind output files.
 
 ### Changed
 
@@ -1468,6 +1478,10 @@ to `EventKind::Ir` so, if you're updating from a previous version of
   `--help-dyn-options`, `--version` may cause problems and these arguments are
   now ignored.
 
+[#6]: https://github.com/iai-callgrind/iai-callgrind/issues/6
+[#18]: https://github.com/iai-callgrind/iai-callgrind/issues/18
+[#26]: https://github.com/iai-callgrind/iai-callgrind/issues/26
+
 ## [0.7.3] - 2023-10-24
 
 ### Changed
@@ -1480,22 +1494,25 @@ to `EventKind::Ir` so, if you're updating from a previous version of
 
 ### Added
 
-- ([#23](https://github.com/iai-callgrind/iai-callgrind/issues/23)): Create
-  regular and differential flamegraphs from callgrind output.
+- ([#23]): Create regular and differential flamegraphs from callgrind output.
 
 ### Fixed
 
-- ([#22](https://github.com/iai-callgrind/iai-callgrind/pull/22)): Clearify how
-  to update iai-callgrind-runner
+- ([#22]): Clearify how to update iai-callgrind-runner
 - Some small fixes of parsing callgrind output files in the event that no
   records are present.
+
+[#22]: https://github.com/iai-callgrind/iai-callgrind/pull/22
+[#23]: https://github.com/iai-callgrind/iai-callgrind/issues/23
 
 ## [0.7.1] - 2023-09-27
 
 ### Fixed
 
-- ([#20](https://github.com/iai-callgrind/iai-callgrind/issues/20)): Clearing
-  the environment variables with `env_clear` may break finding Valgrind.
+- ([#20]): Clearing the environment variables with `env_clear` may break finding
+  Valgrind.
+
+[#20]: https://github.com/iai-callgrind/iai-callgrind/issues/20
 
 ## [0.7.0] - 2023-09-21
 
@@ -1528,9 +1545,8 @@ binary benchmark run at all levels from top-level `main!` via
 
 ### Added
 
-- ([#5](https://github.com/iai-callgrind/iai-callgrind/issues/5)): Use a new
-  attribute macro (`#[library_benchmark]`) based api to set up library
-  benchmarks. Also, bring the library benchmark api closer to the binary
+- ([#5]): Use a new attribute macro (`#[library_benchmark]`) based api to set up
+  library benchmarks. Also, bring the library benchmark api closer to the binary
   benchmark api and use a `library_benchmark_group!` macro together with
   `main!(library_benchmark_groups = ...)`
 - `BinaryBenchmarkConfig` has new methods: `sandbox`, `fixtures`, `env`, `envs`,
@@ -1548,13 +1564,11 @@ binary benchmark run at all levels from top-level `main!` via
 
 - The output line `L1 Data Hits` changed to `L1 Hits` and in consequence now
   shows the event count for instruction and data hits
-- ([#7](https://github.com/iai-callgrind/iai-callgrind/issues/7)): Clear
-  environment variables before running library benchmarks. With that change
-  comes the possibility to influence that behavior with the
+- ([#7]): Clear environment variables before running library benchmarks. With
+  that change comes the possibility to influence that behavior with the
   `LibraryBenchmarkConfig::env_clear` method and set custom environment
   variables with `LibraryBenchmarkConfig::envs`.
-- ([#15](https://github.com/iai-callgrind/iai-callgrind/issues/15)): Use
-  `IAI_CALLGRIND` prefix for iai-callgrind environment variables.
+- ([#15]): Use `IAI_CALLGRIND` prefix for iai-callgrind environment variables.
   `IAI_ALLOW_ASLR` -> `IAI_CALLGRIND_ALLOW_ASLR`, `RUST_LOG` ->
   `IAI_CALLGRIND_LOG`.
 - Callgrind invocations, if `IAI_CALLGRIND_LOG` level is `DEBUG` now runs
@@ -1582,8 +1596,8 @@ binary benchmark run at all levels from top-level `main!` via
 
 ### Fixed
 
-- ([#19](https://github.com/iai-callgrind/iai-callgrind/issues/19)): Library
-  benchmark functions with equal bodies produce event counts of zero.
+- ([#19]): Library benchmark functions with equal bodies produce event counts of
+  zero.
 - If the Callgrind arguments `--dump-instr=yes` and `dump-line=yes` were used
   together, the event counters were summed up incorrectly.
 - The Callgrind argument `--dump-every-bb` and similar arguments causing
@@ -1596,6 +1610,11 @@ binary benchmark run at all levels from top-level `main!` via
   `BinaryBenchmarkConfig` raw callgrind arguments to callgrind's parsing of
   command-line arguments. Now, only exact matches of `yes` and `no` are
   considered to be valid command-line arguments.
+
+[#5]: https://github.com/iai-callgrind/iai-callgrind/issues/5
+[#7]: https://github.com/iai-callgrind/iai-callgrind/issues/7
+[#15]: https://github.com/iai-callgrind/iai-callgrind/issues/15
+[#19]: https://github.com/iai-callgrind/iai-callgrind/issues/19
 
 ## [0.6.2] - 2023-09-01
 
@@ -1619,18 +1638,18 @@ binary benchmark run at all levels from top-level `main!` via
 
 ### Fixed
 
-- ([#4](https://github.com/iai-callgrind/iai-callgrind/issues/4)): The
-  destination directory of iai callgrind output files changes from
+- ([#4]): The destination directory of iai callgrind output files changes from
   `/workspace/$CARGO_PKG_NAME/target/iai` to
   `/workspace/target/iai/$CARGO_PKG_NAME` and respects the `CARGO_TARGET_DIR`
   environment variable
+
+[#4]: https://github.com/iai-callgrind/iai-callgrind/issues/4
 
 ## [0.6.0] - 2023-08-20
 
 ### Added
 
-- ([#3](https://github.com/iai-callgrind/iai-callgrind/issues/3)): builder api
-  for binary benchmarks
+- ([#3]): builder api for binary benchmarks
 
 ### Changed
 
@@ -1647,13 +1666,14 @@ binary benchmark run at all levels from top-level `main!` via
   bytes
 - library benchmarks: Fix event counting to include costs of inlined functions
 
+[#3]: https://github.com/iai-callgrind/iai-callgrind/issues/3
+
 ## [0.5.0] - 2023-08-07
 
 ### Added
 
-- ([#2](https://github.com/iai-callgrind/iai-callgrind/issues/2)): Benchmarking
-  binaries of a crate. Added a full description of this benchmarking scheme in
-  the README
+- ([#2]): Benchmarking binaries of a crate. Added a full description of this
+  benchmarking scheme in the README
 - IAI_CALLGRIND_RUNNER environment variable which may specify the path to the
   iai-callgrind-runner binary
 
@@ -1672,6 +1692,8 @@ binary benchmark run at all levels from top-level `main!` via
 
 - If running with ASLR disabled, proccontrol on freebsd was missing to run the
   Valgrind binary
+
+[#2]: https://github.com/iai-callgrind/iai-callgrind/issues/2
 
 ## [0.4.0] - 2023-07-19
 
