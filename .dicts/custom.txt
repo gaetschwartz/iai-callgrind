@@ -6,8 +6,8 @@ ahash
 Aparicio
 ARANGE
 armv7
-ASLR
 aslr
+ASLR
 Assche
 Assert
 atstart
@@ -37,9 +37,9 @@ cachemissrates
 cachesim
 cacheuse
 cachuse
-Callgrind
-callgrind
 CALLGRIND
+callgrind
+Callgrind
 CFLAGS
 cicd
 Clearify
@@ -119,8 +119,8 @@ ilmr
 ilog
 iname
 indexmap
-IndexSet
 indexset
+IndexSet
 inlines
 instrs
 iquote
@@ -149,8 +149,8 @@ llhitrate
 llhits
 llimissrate
 llmissrate
-Logfile
 logfile
+Logfile
 logfiles
 LouisBrunner
 malloc
@@ -251,8 +251,8 @@ rustified
 RUSTSEC
 rustup
 rustversion
-rwlock
 RWLOCK
+rwlock
 rwlocks
 sandboxing
 sanitized
@@ -327,6 +327,8 @@ visualizable
 vprefix
 vtable
 vulnaribility
+wakeup
+wakeups
 walkdir
 Weidendorfer
 worktree

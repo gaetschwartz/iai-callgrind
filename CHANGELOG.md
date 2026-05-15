@@ -32,6 +32,33 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-05-15
+
+### Changed
+
+- ([#607](https://github.com/gungraun/gungraun/pull/607),
+  [#610](https://github.com/gungraun/gungraun/pull/610)): Bumped the MSRV from
+  Rust `1.74.1` to `1.85.1`. Bumped the workspace edition from Rust 2021 to
+  Rust 2024.
+- ([#607](https://github.com/gungraun/gungraun/pull/607),
+  [#608](https://github.com/gungraun/gungraun/pull/608), and others): Updated
+  dependencies, including migrating internal benchmark configuration encoding
+  from `bincode` to `bincode-next`.
+- ([#609](https://github.com/gungraun/gungraun/pull/609),
+  [#628](https://github.com/gungraun/gungraun/pull/628)): Replaced the
+  thread-pool busy loop with a condition-variable based wakeup mechanism to
+  avoid CPU usage while worker threads are idle.
+- ([#627](https://github.com/gungraun/gungraun/pull/627)): Set Valgrind
+  `--vgdb=no` by default and ignore user-provided `--vgdb` values because vgdb
+  is not currently used by Gungraun and can cause problems in qemu-based runs.
+- Bumped `gungraun-macros` from `0.8.0` to `0.9.0`.
+
+### Fixed
+
+- ([#625](https://github.com/gungraun/gungraun/pull/625)): Fixed
+  `--valgrind-args` from the CLI or env `GUNGRAUN_VALGRIND_ARGS` not being added
+  to the final Valgrind argument list.
+
 ## [0.18.2] - 2026-04-30
 
 ### Changed
