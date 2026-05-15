@@ -37,8 +37,8 @@ adjust clippy execution to `cargo +stable clippy` and rustfmt execution to
 `cargo +nightly rustfmt`. If possible, it is recommended to run the respective
 `just` rules to run these tools with the set of options as they are used in the
 CI (which might change in the future, so you stay updated).'
-client_request_recommends := 'If you want to start working on the client requests interface you need the
-following tools installed:
+client_request_recommends := 'If you want to start working on the client requests interface you need
+the following tools installed:
 
 * cross
 * docker
@@ -53,8 +53,8 @@ On debian based linuxes you need to install the following packages:
 
 Please consult the requirements of the `bindgen` and `cc` crates for more
 details.'
-schema_gen_recommends := 'If you make changes to structs which derive `JsonSchema` you most likely need to
-run `just schema-gen`. You need
+schema_gen_recommends := 'If you make changes to structs which derive `JsonSchema` you most likely
+need to run `just schema-gen`. You need
 
 * prettier
 
@@ -205,12 +205,14 @@ build-docs:
 # A thorough build of all packages with `cargo hack` and the feature powerset (Uses: 'cargo-hack')
 [group('build')]
 build-hack *args: (build-hack-runner args) (build-hack-valgrind-requests args)
-    cargo hack --workspace --feature-powerset --exclude gungraun-runner --exclude valgrind-requests build {{ args }}
+    cargo hack --workspace --feature-powerset --exclude gungraun-runner \
+        --exclude valgrind-requests build {{ args }}
 
 # A thorough build of the gungraun-runner package (Uses: 'cargo-hack')
 [group('build')]
 build-hack-runner *args:
-    cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features --exclude-features api build {{ args }}
+    cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features \
+        --exclude-features api build {{ args }}
 
 # A thorough build of the valgrind-requests package (Uses: 'cargo-hack')
 [group('build')]
@@ -222,12 +224,14 @@ build-hack-valgrind-requests *args:
 # A build of the tests in all packages with `cargo hack` and the feature powerset (Uses: 'cargo-hack')
 [group('build')]
 build-tests-hack *args: (build-tests-hack-runner args) (build-tests-hack-valgrind-requests args)
-    cargo hack --workspace --feature-powerset --exclude gungraun-runner --exclude valgrind-requests test --no-run {{ args}}
+    cargo hack --workspace --feature-powerset --exclude gungraun-runner \
+        --exclude valgrind-requests test --no-run {{ args}}
 
 # A build of the tests in the gungraun-runner package with `cargo hack` (Uses: 'cargo-hack')
 [group('build')]
 build-tests-hack-runner *args:
-    cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features --exclude-features api test --no-run {{ args }}
+    cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features \
+        --exclude-features api test --no-run {{ args }}
 
 # A build of the tests in the valgrind-requests package with `cargo hack` (Uses: 'cargo-hack')
 [group('build')]
@@ -250,7 +254,8 @@ schema-gen:
 # Run the json summary schema generator and diff the generated file with the latest schema file (Uses: 'diff', 'find', 'coreutils')
 [group('summary schema')]
 schema-gen-diff: schema-gen
-    diff {{ schema_path }} `find gungraun-runner/schemas -iname 'summary.*.schema.json' | sort -n | tail -n 1` && rm {{ schema_path }}
+    diff {{ schema_path }} `find gungraun-runner/schemas -iname 'summary.*.schema.json' | sort -n \
+        | tail -n 1` && rm {{ schema_path }}
 
 # Run the json summary schema generator and replace the old schema file (Uses: 'coreutils')
 [group('summary schema')]
@@ -271,13 +276,16 @@ test-doc:
 [group('test')]
 test-ui:
     @echo "Ensure rust-src is installed for the rust toolchain ${RUSTUP_TOOLCHAIN:-{{ msrv }}}"
-    rustup component list --toolchain "${RUSTUP_TOOLCHAIN:-{{ msrv }}}" | grep -q '^\s*rust-src\s*.*installed'
-    RUSTUP_TOOLCHAIN="${RUSTUP_TOOLCHAIN:-{{ msrv }}}" cargo test --package gungraun --test ui_tests --features ui_tests
+    rustup component list --toolchain "${RUSTUP_TOOLCHAIN:-{{ msrv }}}" \
+        | grep -q '^\s*rust-src\s*.*installed'
+    RUSTUP_TOOLCHAIN="${RUSTUP_TOOLCHAIN:-{{ msrv }}}" cargo test --package gungraun \
+        --test ui_tests --features ui_tests
 
 # Run the UI tests with the MSRV if RUSTUP_TOOLCHAIN is unset and overwrite the error message fixtures (Uses: 'cargo')
 [group('test')]
 test-ui-overwrite:
-    RUSTUP_TOOLCHAIN="${RUSTUP_TOOLCHAIN:-{{ msrv }}}" TRYBUILD=overwrite cargo test --package gungraun --test ui_tests --features ui_tests
+    RUSTUP_TOOLCHAIN="${RUSTUP_TOOLCHAIN:-{{ msrv }}}" TRYBUILD=overwrite cargo test \
+        --package gungraun --test ui_tests --features ui_tests
 
 # Test all packages. This excludes client request and benchmark tests which need to be run separately (Uses: 'cargo')
 [group('test')]
@@ -293,18 +301,23 @@ reqs-test-targets:
 [group('test')]
 reqs-test target *args:
     @just reqs-test-targets | grep -q '{{ target }}' \
-        || { echo "Unsupported target: '{{ target }}'. Run 'just reqs-test-targets' to get a list of supported targets"; exit 1; }
-    CROSS_CONTAINER_OPTS='--ulimit nofile=1024:4096' cross test -p client-request-tests --test tests --target {{ target }} --release {{ args }} -- --nocapture
+        || { echo "Unsupported target: '{{ target }}'. \
+            Run 'just reqs-test-targets' to get a list of supported targets"; \
+            exit 1; }
+    CROSS_CONTAINER_OPTS='--ulimit nofile=1024:4096' cross test -p client-request-tests \
+        --test tests --target {{ target }} --release {{ args }} -- --nocapture
 
 # Run a single benchmark test (Uses: 'coreutils', 'cargo')
 [group('test')]
 bench-test bench *args: build-runner
-    GUNGRAUN_RUNNER=$(realpath target/release/gungraun-runner) cargo bench -p benchmark-tests --bench {{ bench }} {{ args }}
+    GUNGRAUN_RUNNER=$(realpath target/release/gungraun-runner) cargo bench -p benchmark-tests \
+        --bench {{ bench }} {{ args }}
 
 # Run all benchmark tests (Uses: 'coreutils', 'cargo')
 [group('test')]
 bench-test-all *args: build-runner
-    GUNGRAUN_RUNNER=$(realpath target/release/gungraun-runner) cargo bench -p benchmark-tests {{ args }}
+    GUNGRAUN_RUNNER=$(realpath target/release/gungraun-runner) cargo bench \
+        -p benchmark-tests {{ args }}
 
 # Note: A single benchmark may run multiple times depending on the test
 #       configuration. See the `benchmark-tests/benches` folder.
@@ -317,7 +330,8 @@ full-bench-test bench *args:
 # Run a single benchmark test with the `cargo bench` wrapper overwriting the output (Uses: 'cargo')
 [group('test')]
 full-bench-test-overwrite bench *args:
-    BENCH_OVERWRITE=yes cargo run --package benchmark-tests --profile=bench --bin bench -- {{ args }} {{ bench }}
+    BENCH_OVERWRITE=yes cargo run --package benchmark-tests --profile=bench --bin bench \
+        -- {{ args }} {{ bench }}
 
 # Run all benchmark tests with the `cargo bench` wrapper verifying the output (Uses: 'cargo')
 [group('test')]
@@ -327,7 +341,8 @@ full-bench-test-all *args:
 # Run all benchmark tests with the `cargo bench` wrapper overwriting the output (Uses: 'cargo')
 [group('test')]
 full-bench-test-all-overwrite *args:
-    BENCH_OVERWRITE=yes cargo run --package benchmark-tests --profile=bench --bin bench -- {{ args }}
+    BENCH_OVERWRITE=yes cargo run --package benchmark-tests --profile=bench --bin bench \
+        -- {{ args }}
 
 # Check minimal version requirements of dependencies. (Uses: 'cargo-minimal-versions')
 [group('dependencies')]
@@ -337,11 +352,18 @@ minimal-versions:
 # Install 'mdbook' and 'mdbook-linkcheck' (Uses: 'cargo install' or 'cargo-binstall')
 [group('guide')]
 book-install *args:
-    if command -V cargo-binstall; then cargo binstall {{ args }} mdbook@{{ mdbook_version }} mdbook-linkcheck2; else cargo install {{ args }} mdbook@{{ mdbook_version }} mdbook-linkcheck; fi
+    if command -V cargo-binstall; then \
+        cargo binstall {{ args }} mdbook@{{ mdbook_version }} mdbook-linkcheck2; \
+    else cargo install {{ args }} mdbook@{{ mdbook_version }} mdbook-linkcheck; \
+    fi
 
 [group('guide')]
 book-check-version:
-    @if ! mdbook --version | grep v{{ mdbook_version }}; then echo "mdbook version v{{ mdbook_version }} is required. Install for example with \`just book-install\`"; exit 1; fi
+    @if ! mdbook --version | grep v{{ mdbook_version }}; then \
+        echo "mdbook version v{{ mdbook_version }} is required. Install for example \
+              with \`just book-install\`"; \
+        exit 1; \
+    fi
 
 # Run tests for the book. (Uses: 'cargo +stable', 'mdbook')
 [group('guide')]
@@ -353,7 +375,8 @@ book-tests: book-check-version
     RUSTUP_TOOLCHAIN=stable just build gungraun --all-features --lib --profile=mdbook
     # The exact values for the environment variables don't matter, we just need
     # them to be present.
-    CARGO_MANIFEST_DIR=$(realpath .) CARGO_PKG_NAME="mdbook-tests" mdbook test -L target/mdbook/deps docs/
+    CARGO_MANIFEST_DIR=$(realpath .) CARGO_PKG_NAME="mdbook-tests" mdbook test -L \
+        target/mdbook/deps docs/
 
 # Build the book. (Uses: 'mdbook')
 [group('guide')]
@@ -379,7 +402,9 @@ book-serve-github: book-check-version
     mkdir "$serve_dir"
     cd "$serve_dir"
     ln -s "{{ book_build_dir }}" gungraun
-    npx nodemon --delay 2.0 --ext 'js,html,css,png,svg,ttf,eot,woff,woff2,txt' --watch "{{ book_build_dir }}" --signal SIGINT --exec 'npx http-server -d false -c-1 -a localhost -p 4000'
+    npx nodemon --delay 2.0 --ext 'js,html,css,png,svg,ttf,eot,woff,woff2,txt' \
+        --watch "{{ book_build_dir }}" --signal SIGINT --exec \
+        'npx http-server -d false -c-1 -a localhost -p 4000'
 
 # Takes a path to the file with colored output of gungraun and prints the resulting (colored) html for the book to `stdout`. (Uses: 'npx ansi-to-html', 'coreutils', 'sed')
 [group('guide')]
@@ -419,9 +444,11 @@ book-bump old_version new_version:
     #!/usr/bin/env -S sh -e
     old_version_escaped=$(echo {{ old_version }} | sed -E 's/[.]/\\./g')
     # Add new version to versions.js
-    sed -Ei 's:(.*<!-- Insert new version here -->.*):\1\n<a href="/gungraun/{{ new_version }}/html/index.html">{{ new_version }}</a>\\:' docs/book/versions.js
+    sed -Ei 's:(.*<!-- Insert new version here -->.*):\1\n<a href="/gungraun/{{ new_version }}/html/index.html">{{ new_version }}</a>\\:' \
+            docs/book/versions.js
     # Set the build directory to new version
-    sed -Ei 's:(build-dir\s*=\s*"book)(/'"${old_version_escaped}"')(".*):\1/{{ new_version }}\3:' docs/book.toml
+    sed -Ei 's:(build-dir\s*=\s*"book)(/'"${old_version_escaped}"')(".*):\1/{{ new_version }}\3:' \
+            docs/book.toml
 
     # Replace occurrences of old version in the guide source files
     links="s:/${old_version_escaped}/:/{{ new_version }}/:g"
@@ -429,14 +456,17 @@ book-bump old_version new_version:
     at="s:@${old_version_escaped}:@{{ new_version }}:g"
     flag="s:--version ${old_version_escaped}:--version {{ new_version }}:g"
     vprefix="s:v${old_version_escaped}:v{{ new_version }}:g"
-    find docs/src/ -type f -iname '*.md' -exec sed -Ei -e "$links" -e "$strings" -e "$at" -e "$flag" -e "$vprefix" '{}' \;
+    find docs/src/ -type f -iname '*.md' -exec sed -Ei -e "$links" -e "$strings" -e "$at" \
+        -e "$flag" -e "$vprefix" '{}' \;
 
 # Bump the version of gungraun (and gungraun-runner, and the guide), gungraun-macros or the MSRV (Uses: 'cargo', 'grep'; Depends on: book-bump)
 [group('chore')]
 bump config part:
     #!/usr/bin/env -S sh -e
-    current_version=$(bump-my-version show-bump --config-file ".bumpversion/{{ config }}.toml" --ascii | grep -Eo '^[0-9]+(\.[0-9]+\.[0-9]+)?')
-    new_version=$(bump-my-version show-bump --config-file ".bumpversion/{{ config }}.toml" --ascii | grep -Po '(?<={{ part }} - )[0-9]+(\.[0-9]+\.[0-9]+)?')
+    current_version=$(bump-my-version show-bump --config-file ".bumpversion/{{ config }}.toml" \
+        --ascii | grep -Eo '^[0-9]+(\.[0-9]+\.[0-9]+)?')
+    new_version=$(bump-my-version show-bump --config-file ".bumpversion/{{ config }}.toml" \
+        --ascii | grep -Po '(?<={{ part }} - )[0-9]+(\.[0-9]+\.[0-9]+)?')
 
     bump-my-version bump --no-commit --config-file ".bumpversion/{{ config }}.toml" {{ part }}
     if [[ "{{config}}" = "version" ]]; then
