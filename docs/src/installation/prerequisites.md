@@ -107,6 +107,6 @@ For detailed instructions and more examples, see
 [Valgrind]: https://www.valgrind.org
 [valgrind-client-req]:
     https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
-[valgrind-requests]: https://docs.rs/valgrind-requests/latest/valgrind-requests
+[valgrind-requests]: https://docs.rs/valgrind-requests/latest/valgrind_requests/
 [valgrind-source]:
     https://sourceware.org/git/?p=valgrind.git;a=blob;f=README;h=eabcc6ad88c8cab6dfe73cfaaaf5543023c2e941;hb=HEAD

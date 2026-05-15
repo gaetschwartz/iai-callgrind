@@ -20,7 +20,7 @@ schema_path := 'summary.schema.json'
 this_dir := `realpath .`
 book_build_dir := this_dir + "/docs/book"
 msrv := '1.85.1'
-mdbook_version := '0.4.40'
+mdbook_version := '0.5.2'
 required_tools := 'valgrind|the essential tool
 clang|to be able to build Gungraun with the client-requests feature'
 cargo_tools := 'cargo-hack
@@ -337,7 +337,7 @@ minimal-versions:
 # Install 'mdbook' and 'mdbook-linkcheck' (Uses: 'cargo install' or 'cargo-binstall')
 [group('guide')]
 book-install *args:
-    if command -V cargo-binstall; then cargo binstall {{ args }} mdbook@{{ mdbook_version }} mdbook-linkcheck; else cargo install {{ args }} mdbook@0.4.40 mdbook-linkcheck; fi
+    if command -V cargo-binstall; then cargo binstall {{ args }} mdbook@{{ mdbook_version }} mdbook-linkcheck2; else cargo install {{ args }} mdbook@{{ mdbook_version }} mdbook-linkcheck; fi
 
 [group('guide')]
 book-check-version:

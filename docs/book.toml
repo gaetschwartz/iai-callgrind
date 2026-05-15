@@ -1,7 +1,6 @@
 [book]
 authors = ["gamma0987"]
 language = "en"
-multilingual = false
 src = "src"
 title = "Gungraun Guide"
 description = "Gungraun, a high-precision and consistent one-shot benchmarking framework/harness for Rust"
@@ -19,8 +18,9 @@ additional-css = ["css/my.css", "css/dropdown.css"]
 additional-js = ["js/dropdown.js"]
 site-url = "/gungraun/"
 
-# https://github.com/Michael-F-Bryan/mdbook-linkcheck
-[output.linkcheck]
+# https://github.com/marxin/mdbook-linkcheck2
+# fork of https://github.com/Michael-F-Bryan/mdbook-linkcheck
+[output.linkcheck2]
 follow-web-links = true
 traverse-parent-directories = true
 warning-policy = "error"

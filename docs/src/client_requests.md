@@ -171,10 +171,10 @@ When the standard toggle is switched off with `EntryPoint::None`, make sure
 
 Please see the [`docs`][api-docs] for more details!
 
-[api-docs]: https://docs.rs/gungraun/0.19.0/gungraun/client_requests
+[api-docs]: https://docs.rs/valgrind-requests/latest/valgrind_requests/
 [callgrind-arguments]:
     https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options
 [EntryPoint]: https://docs.rs/gungraun/0.19.0/gungraun/enum.EntryPoint.html
 [valgrind-client-req]:
     https://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.clientreq
-[valgrind-requests]: https://docs.rs/valgrind-requests/latest/valgrind-requests
+[valgrind-requests]: https://docs.rs/valgrind-requests/latest/valgrind_requests/
