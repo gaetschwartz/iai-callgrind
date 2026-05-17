@@ -16,7 +16,7 @@ fn test_client_request_print_macros_when_running_on_valgrind() {
     cmd.args([
         "1",
         "--tool=callgrind",
-        "--valgrind-args=--verbose",
+        "--valgrind-args=--verbose --vgdb=no",
         &format!(
             "--bin={}",
             common::get_test_bin_path("print-macros-test").display()

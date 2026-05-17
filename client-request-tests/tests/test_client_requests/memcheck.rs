@@ -77,7 +77,7 @@ total heap usage: <__FILTER__>"
     cmd.args([
         "1",
         "--tool=memcheck",
-        "--valgrind-args=--verbose",
+        "--valgrind-args=--verbose --vgdb=no",
         &format!(
             "--bin={}",
             common::get_test_bin_path("memcheck-reqs-test").display()
