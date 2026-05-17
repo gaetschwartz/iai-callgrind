@@ -4,11 +4,10 @@
 
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 
-use anyhow::{Result, anyhow};
-use cargo_metadata::TargetKind;
+use anyhow::{Context, Result, anyhow};
 use clap::Parser;
 use log::debug;
 
@@ -74,8 +73,6 @@ pub struct Metadata {
     pub arch: String,
     /// The command-line arguments parsed from the arguments to `cargo bench -- ARGS` as ARGS
     pub args: CommandLineArgs,
-    /// The name of the benchmark to run (might be different to the name of the file)
-    pub bench_name: String,
     /// The path to the project top-level directory
     pub project_root: PathBuf,
     /// The absolute path of the `HOME` (per default `$WORKSPACE_ROOT/target/gungraun`). Plus, if
@@ -94,49 +91,45 @@ pub struct Metadata {
 
 impl Metadata {
     /// Create a `new` Metadata
-    pub fn new(
-        raw_command_line_args: &[String],
-        package_name: &str,
-        bench_file: &Path,
-    ) -> Result<Self> {
+    pub fn new(raw_command_line_args: &[String]) -> Result<Self> {
         let args = CommandLineArgs::parse_from(raw_command_line_args);
 
         let arch = std::env::consts::ARCH.to_owned();
         debug!("Detected architecture: {arch}");
 
-        let meta = cargo_metadata::MetadataCommand::new()
-            .no_deps()
-            .exec()
-            .expect("Querying metadata of cargo workspace succeeds");
+        // Execute `cargo` only if we really need to
+        let (project_root, mut home) = match (
+            args.workspace_root.as_ref(),
+            args.home.clone().or_else(|| {
+                std::env::var_os(envs::CARGO_TARGET_DIR).map(|p| PathBuf::from(p).join("gungraun"))
+            }),
+        ) {
+            (None, None) => {
+                let meta = cargo_metadata()?;
+                (
+                    meta.workspace_root.into_std_path_buf(),
+                    meta.target_directory.into_std_path_buf().join("gungraun"),
+                )
+            }
+            (None, Some(home)) => {
+                let meta = cargo_metadata()?;
+                (meta.workspace_root.into_std_path_buf(), home)
+            }
+            (Some(workspace_root), None) => {
+                let meta = cargo_metadata()?;
+                (
+                    workspace_root.clone(),
+                    meta.target_directory.into_std_path_buf().join("gungraun"),
+                )
+            }
+            (Some(workspace_root), Some(home)) => (workspace_root.clone(), home),
+        };
 
-        let package = meta
-            .packages
-            .iter()
-            .find(|p| p.name.as_str() == package_name)
-            .expect("The package name should exist");
-        let bench_name = package
-            .targets
-            .iter()
-            .find_map(|t| {
-                (t.kind.contains(&TargetKind::Bench) && t.src_path.ends_with(bench_file))
-                    .then_some(t.name.clone())
-            })
-            .expect("The benchmark name should exist");
-
-        let project_root = meta.workspace_root.into_std_path_buf();
         debug!("Detected workspace root: '{}'", project_root.display());
 
         let target_dir = {
-            let mut home = args.home.as_ref().map_or_else(
-                || {
-                    std::env::var_os(envs::CARGO_TARGET_DIR)
-                        .map_or_else(|| meta.target_directory.into_std_path_buf(), PathBuf::from)
-                        .join("gungraun")
-                },
-                Clone::clone,
-            );
-
             if args.separate_targets {
+                // FIX: This is not the correct target triple
                 home = home.join(env!("GR_BUILD_TRIPLE").to_ascii_lowercase());
             }
             home.join(
@@ -199,7 +192,7 @@ impl Metadata {
                     })
                 } else {
                     debug!(
-                        " Failed to switch ASLR off: 'proccontrol' not found. Running with ASLR \
+                        "Failed to switch ASLR off: 'proccontrol' not found. Running with ASLR \
                          enabled"
                     );
                     None
@@ -225,7 +218,6 @@ impl Metadata {
         Ok(Self {
             arch,
             args,
-            bench_name,
             project_root,
             target_dir,
             valgrind_run_mode,
@@ -314,6 +306,17 @@ impl Metadata {
             }
         }
     }
+}
+
+fn cargo_metadata() -> Result<cargo_metadata::Metadata> {
+    cargo_metadata::MetadataCommand::new()
+        .no_deps()
+        .exec()
+        .context(
+            "failed to query Cargo metadata; either provide `cargo` or set \
+             GUNGRAUN_WORKSPACE_ROOT and GUNGRAUN_HOME (or alternatively CARGO_TARGET_DIR) \
+             manually to run without `cargo`",
+        )
 }
 
 fn interpolate_arguments(

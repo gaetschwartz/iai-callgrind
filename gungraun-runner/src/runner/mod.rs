@@ -74,13 +74,13 @@ struct PostRun {
 /// These are not the user arguments of the `cargo bench ... -- ARGS` command.
 #[derive(Debug)]
 struct RunnerArgs {
+    _package_name: String,
     bench_bin: PathBuf,
     bench_file: PathBuf,
     bench_kind: BenchmarkKind,
     module: String,
     num_bytes: usize,
     package_dir: PathBuf,
-    package_name: String,
 }
 
 #[derive(Debug)]
@@ -168,7 +168,7 @@ impl RunnerArgs {
             module,
             num_bytes,
             package_dir,
-            package_name,
+            _package_name: package_name,
         })
     }
 }
@@ -267,21 +267,17 @@ pub fn run() -> Result<()> {
     let RunnerArgs {
         bench_kind,
         package_dir,
-        package_name,
         bench_file,
         module,
         bench_bin,
         num_bytes,
+        ..
     } = runner_args;
 
     let post_run = match bench_kind {
         BenchmarkKind::LibraryBenchmark => {
             let benchmark_groups: LibraryBenchmarkGroups = receive_benchmark(num_bytes)?;
-            let meta = Metadata::new(
-                &benchmark_groups.command_line_args,
-                &package_name,
-                &bench_file,
-            )?;
+            let meta = Metadata::new(&benchmark_groups.command_line_args)?;
 
             let config = Config {
                 package_dir,
@@ -307,11 +303,7 @@ pub fn run() -> Result<()> {
         }
         BenchmarkKind::BinaryBenchmark => {
             let benchmark_groups: BinaryBenchmarkGroups = receive_benchmark(num_bytes)?;
-            let meta = Metadata::new(
-                &benchmark_groups.command_line_args,
-                &package_name,
-                &bench_file,
-            )?;
+            let meta = Metadata::new(&benchmark_groups.command_line_args)?;
 
             let config = Config {
                 package_dir,

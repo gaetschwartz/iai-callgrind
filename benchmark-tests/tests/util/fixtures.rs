@@ -88,12 +88,7 @@ pub fn metadata_f(raw_command_line_args: Option<&[&str]>) -> Metadata {
         .map(|s| String::from(*s))
         .collect::<Vec<String>>();
 
-    Metadata::new(
-        &args,
-        "benchmark-tests",
-        &PathBuf::from("test_bench_template.rs"),
-    )
-    .expect("metadata should be valid")
+    Metadata::new(&args).expect("metadata should be valid")
 }
 
 #[builder(finish_fn = "fixture")]

@@ -717,8 +717,6 @@ impl<T: Send + 'static> Iterator for ThreadPool<T> {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
-
     use rstest::rstest;
 
     use super::*;
@@ -947,12 +945,7 @@ mod tests {
 
     #[test]
     fn test_thread_pool_with_lib_bench() {
-        let meta = Metadata::new(
-            &[],
-            "benchmark-tests",
-            &PathBuf::from("test_lib_bench_intro.rs"),
-        )
-        .unwrap();
+        let meta = Metadata::new(&[]).unwrap();
         let bench = lib_bench::LibBench::new(
             None,
             None,
