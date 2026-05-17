@@ -5,6 +5,10 @@ lcov.info
 *.scip
 .opencode-tasks/
 .opencode
+callgrind.out*
+callgrind.log*
+cachegrind.out*
+cachegrind.log*
 
 # Swap
 [._]*.s[a-v][a-z]

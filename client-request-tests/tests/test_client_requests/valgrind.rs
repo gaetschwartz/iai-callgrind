@@ -14,7 +14,7 @@ fn test_valgrind_reqs_when_running_on_valgrind() {
     cmd.args([
         "1",
         "--tool=memcheck",
-        "--valgrind-args=--verbose",
+        "--valgrind-args=--verbose --vgdb=no",
         &format!(
             "--bin={}",
             common::get_test_bin_path("valgrind-reqs-test").display()

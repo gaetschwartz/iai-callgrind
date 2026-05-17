@@ -16,7 +16,7 @@ fn test_cachegrind_reqs_when_running_on_valgrind() {
     cmd.args([
         "1",
         "--tool=cachegrind",
-        "--valgrind-args=--verbose --instr-at-start=no",
+        "--valgrind-args=--verbose --instr-at-start=no --vgdb=no",
         &format!(
             "--bin={}",
             common::get_test_bin_path("cachegrind-reqs-test").display()

@@ -12,7 +12,7 @@ fn test_callgrind_reqs_when_running_on_valgrind() {
     cmd.args([
         "1",
         "--tool=callgrind",
-        "--valgrind-args=--verbose",
+        "--valgrind-args=--verbose --vgdb=no",
         &format!(
             "--bin={}",
             get_test_bin_path("callgrind-reqs-test").display()
