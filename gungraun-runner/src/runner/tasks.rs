@@ -724,6 +724,7 @@ mod tests {
     use crate::runner::common::ModulePath;
     use crate::runner::lib_bench::{self, LibBench};
     use crate::runner::meta::Metadata;
+    const DEFAULT_TARGET: &str = "x86_64-unknown-linux-gnu";
 
     #[rstest]
     #[case::size_one_jobs_zero(1, 0)]
@@ -945,7 +946,7 @@ mod tests {
 
     #[test]
     fn test_thread_pool_with_lib_bench() {
-        let meta = Metadata::new(&[]).unwrap();
+        let meta = Metadata::new(&[], DEFAULT_TARGET).unwrap();
         let bench = lib_bench::LibBench::new(
             None,
             None,

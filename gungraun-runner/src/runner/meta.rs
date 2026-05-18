@@ -91,7 +91,7 @@ pub struct Metadata {
 
 impl Metadata {
     /// Create a `new` Metadata
-    pub fn new(raw_command_line_args: &[String]) -> Result<Self> {
+    pub fn new(raw_command_line_args: &[String], target: &str) -> Result<Self> {
         let args = CommandLineArgs::parse_from(raw_command_line_args);
 
         let arch = std::env::consts::ARCH.to_owned();
@@ -129,8 +129,7 @@ impl Metadata {
 
         let target_dir = {
             if args.separate_targets {
-                // FIX: This is not the correct target triple
-                home = home.join(env!("GR_BUILD_TRIPLE").to_ascii_lowercase());
+                home = home.join(target);
             }
             home.join(
                 std::env::var_os(envs::CARGO_PKG_NAME).map_or_else(PathBuf::new, PathBuf::from),

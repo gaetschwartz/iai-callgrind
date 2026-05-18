@@ -81,14 +81,15 @@ pub fn force_shutdown_f(yes: Option<bool>) -> Arc<AtomicBool> {
 }
 
 #[builder(finish_fn = "fixture")]
-pub fn metadata_f(raw_command_line_args: Option<&[&str]>) -> Metadata {
+pub fn metadata_f(raw_command_line_args: Option<&[&str]>, target: Option<&str>) -> Metadata {
     let args = raw_command_line_args
         .into_iter()
         .flatten()
         .map(|s| String::from(*s))
         .collect::<Vec<String>>();
+    let target = target.unwrap_or("x86_64-unknown-linux-gnu");
 
-    Metadata::new(&args).expect("metadata should be valid")
+    Metadata::new(&args, target).expect("metadata should be valid")
 }
 
 #[builder(finish_fn = "fixture")]

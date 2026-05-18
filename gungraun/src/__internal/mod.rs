@@ -171,6 +171,7 @@ impl Runner {
         cmd.arg(package_name);
         cmd.arg(file);
         cmd.arg(module_path);
+        cmd.arg(env!("__GUNGRAUN_BUILD_TARGET"));
         cmd.arg(bench_bin); // The executable benchmark binary
 
         Self {

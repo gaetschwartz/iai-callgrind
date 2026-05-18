@@ -81,6 +81,7 @@ struct RunnerArgs {
     module: String,
     num_bytes: usize,
     package_dir: PathBuf,
+    target: String,
 }
 
 #[derive(Debug)]
@@ -155,6 +156,7 @@ impl RunnerArgs {
         let package_name = args_iter.next_string()?;
         let bench_file = args_iter.next_path()?;
         let module = args_iter.next_string()?;
+        let target = args_iter.next_string()?;
         let bench_bin = args_iter.next_path()?;
         let num_bytes = args_iter
             .next_string()?
@@ -169,6 +171,7 @@ impl RunnerArgs {
             num_bytes,
             package_dir,
             _package_name: package_name,
+            target,
         })
     }
 }
@@ -271,13 +274,14 @@ pub fn run() -> Result<()> {
         module,
         bench_bin,
         num_bytes,
+        target,
         ..
     } = runner_args;
 
     let post_run = match bench_kind {
         BenchmarkKind::LibraryBenchmark => {
             let benchmark_groups: LibraryBenchmarkGroups = receive_benchmark(num_bytes)?;
-            let meta = Metadata::new(&benchmark_groups.command_line_args)?;
+            let meta = Metadata::new(&benchmark_groups.command_line_args, &target)?;
 
             let config = Config {
                 package_dir,
@@ -303,7 +307,7 @@ pub fn run() -> Result<()> {
         }
         BenchmarkKind::BinaryBenchmark => {
             let benchmark_groups: BinaryBenchmarkGroups = receive_benchmark(num_bytes)?;
-            let meta = Metadata::new(&benchmark_groups.command_line_args)?;
+            let meta = Metadata::new(&benchmark_groups.command_line_args, &target)?;
 
             let config = Config {
                 package_dir,
