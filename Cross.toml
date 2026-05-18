@@ -1,0 +1,22 @@
+[target.s390x-unknown-linux-gnu]
+runner = "qemu-user"
+image = "ghcr.io/gungraun/s390x-unknown-linux-gnu:3.27.0-alpha.2"
+pre-build = ["""curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
+  sh -s -- --profile minimal -y
+  """, '''
+  cd /project &&
+  CARGO_TARGET_DIR=/target
+  CARGO_TERM_COLOR=always
+  CARGO_HOME="${HOME}/.cargo"
+  PATH="${HOME}/.cargo/bin:$PATH"
+  cargo install --path ./gungraun-runner --root /tmp
+  ''', "rm -rf ~/.cargo"]
+
+[target.s390x-unknown-linux-gnu.env]
+passthrough = [
+  "GUNGRAUN_LOG",
+  "GUNGRAUN_RUNNER=/tmp/bin/gungraun-runner",
+  "GUNGRAUN_VALGRIND_RUNNER=/linux-runner",
+  "GUNGRAUN_VALGRIND_RUNNER_ARGS=s390x",
+  "GUNGRAUN_ENVS=CROSS_RUNNER=qemu-system TMPDIR GUNGRAUN_LOG",
+]

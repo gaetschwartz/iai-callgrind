@@ -7,7 +7,6 @@ prettier_bin := ```
         echo -n prettier
     fi
     ```
-
 cspell_bin := ```
     if command -V cspell 2>&1 | grep -q 'not found'; then
         echo -n npx cspell
@@ -15,7 +14,6 @@ cspell_bin := ```
         echo -n cspell
     fi
     ```
-
 schema_path := 'summary.schema.json'
 this_dir := `realpath .`
 book_build_dir := this_dir + "/docs/book"
@@ -76,7 +74,7 @@ fmt-toml:
 # Check and fix format of json and yaml files (Uses: 'prettier' or 'npx prettier')
 [group('formatting')]
 fmt-prettier:
-   {{ prettier_bin }} --write .
+    {{ prettier_bin }} --write .
 
 # Run all fmt rules (Depends on: fmt, fmt-toml, fmt-prettier)
 [group('formatting')]
@@ -225,7 +223,7 @@ build-hack-valgrind-requests *args:
 [group('build')]
 build-tests-hack *args: (build-tests-hack-runner args) (build-tests-hack-valgrind-requests args)
     cargo hack --workspace --feature-powerset --exclude gungraun-runner \
-        --exclude valgrind-requests test --no-run {{ args}}
+        --exclude valgrind-requests test --no-run {{ args }}
 
 # A build of the tests in the gungraun-runner package with `cargo hack` (Uses: 'cargo-hack')
 [group('build')]
@@ -294,13 +292,13 @@ test-all: test-ui
 
 # List supported targets of client request tests (Uses: 'sed')
 [group('test')]
-[working-directory: 'client-request-tests']
+[working-directory('client-request-tests')]
 reqs-test-targets:
     @sed -En 's/\[target\.([^.]+)\]/\1/p' Cross.toml
 
 # Run the client request tests for a specific target on the stable toolchain. (Uses: 'cross', 'docker', 'grep')
 [group('test')]
-[working-directory: 'client-request-tests']
+[working-directory('client-request-tests')]
 reqs-test target *args:
     @just reqs-test-targets | grep -q '{{ target }}' \
         || { echo "Unsupported target: '{{ target }}'. \
@@ -314,6 +312,12 @@ reqs-test target *args:
 bench-test bench *args: build-runner
     GUNGRAUN_RUNNER=$(realpath target/release/gungraun-runner) cargo bench -p benchmark-tests \
         --bench {{ bench }} {{ args }}
+
+# Run a single cross benchmark test (Uses: 'coreutils', 'cargo')
+[group('test')]
+cross-bench-test bench target *args:
+    CROSS_BUILD_OPTS='-v {{ justfile_dir() }}:/project:z -v {{ justfile_dir() }}/target:/target:z' \
+        cross bench -p benchmark-tests --target {{ target }} --bench {{ bench }} {{ args }}
 
 # Run all benchmark tests (Uses: 'coreutils', 'cargo')
 [group('test')]
@@ -471,7 +475,7 @@ bump config part:
         --ascii | grep -Po '(?<={{ part }} - )[0-9]+(\.[0-9]+\.[0-9]+)?')
 
     bump-my-version bump --no-commit --config-file ".bumpversion/{{ config }}.toml" {{ part }}
-    if [[ "{{config}}" = "version" ]]; then
+    if [[ "{{ config }}" = "version" ]]; then
         echo "Bump book from '${current_version}' to '${new_version}'"
         just book-bump "$current_version" "$new_version"
     fi
