@@ -294,17 +294,19 @@ test-all: test-ui
 
 # List supported targets of client request tests (Uses: 'sed')
 [group('test')]
+[working-directory: 'client-request-tests']
 reqs-test-targets:
     @sed -En 's/\[target\.([^.]+)\]/\1/p' Cross.toml
 
 # Run the client request tests for a specific target on the stable toolchain. (Uses: 'cross', 'docker', 'grep')
 [group('test')]
+[working-directory: 'client-request-tests']
 reqs-test target *args:
     @just reqs-test-targets | grep -q '{{ target }}' \
         || { echo "Unsupported target: '{{ target }}'. \
             Run 'just reqs-test-targets' to get a list of supported targets"; \
             exit 1; }
-    CROSS_CONTAINER_OPTS='--ulimit nofile=1024:4096' cross test -p client-request-tests \
+    CROSS_CONTAINER_OPTS='--ulimit nofile=1024:4096' CROSS_CONFIG=Cross.toml cross test \
         --test tests --target {{ target }} --release {{ args }} -- --nocapture
 
 # Run a single benchmark test (Uses: 'coreutils', 'cargo')
