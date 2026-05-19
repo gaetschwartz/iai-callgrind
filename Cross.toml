@@ -1,111 +1,22 @@
-################
-# X86_64
-################
-[target.x86_64-unknown-linux-gnu]
-runner = "qemu-system"
-image = "ghcr.io/gungraun/x86_64-unknown-linux-gnu:latest"
-
-[target.x86_64-unknown-linux-gnu.env]
-passthrough = ["VALGRIND_REQUESTS_STRATEGY", "CROSS_VALGRIND"]
-
-################
-# i686
-################
-[target.i686-unknown-linux-gnu]
-runner = "qemu-system"
-image = "ghcr.io/gungraun/i686-unknown-linux-gnu:latest"
-
-[target.i686-unknown-linux-gnu.env]
-passthrough = ["VALGRIND_REQUESTS_STRATEGY", "CROSS_VALGRIND"]
-
-################
-# s390x
-################
 [target.s390x-unknown-linux-gnu]
-runner = "qemu-system"
-image = "ghcr.io/gungraun/s390x-unknown-linux-gnu:latest"
+runner = "qemu-user"
+image = "ghcr.io/gungraun/s390x-unknown-linux-gnu:3.27.0-alpha.2"
+pre-build = ["""curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
+  sh -s -- --profile minimal -y
+  """, '''
+  cd /project &&
+  CARGO_TARGET_DIR=/target
+  CARGO_TERM_COLOR=always
+  CARGO_HOME="${HOME}/.cargo"
+  PATH="${HOME}/.cargo/bin:$PATH"
+  cargo install --path ./gungraun-runner --root /tmp
+  ''', "rm -rf ~/.cargo"]
 
 [target.s390x-unknown-linux-gnu.env]
-passthrough = ["VALGRIND_REQUESTS_STRATEGY", "CROSS_VALGRIND"]
-
-################
-# aarch64
-################
-[target.aarch64-unknown-linux-gnu]
-runner = "qemu-system"
-image = "ghcr.io/gungraun/aarch64-unknown-linux-gnu:latest"
-
-[target.aarch64-unknown-linux-gnu.env]
-passthrough = ["VALGRIND_REQUESTS_STRATEGY", "CROSS_VALGRIND"]
-
-################
-# armv7
-################
-[target.armv7-unknown-linux-gnueabihf]
-runner = "qemu-system"
-image = "ghcr.io/gungraun/armv7-unknown-linux-gnueabihf:latest"
-
-[target.armv7-unknown-linux-gnueabihf.env]
-passthrough = ["VALGRIND_REQUESTS_STRATEGY", "CROSS_VALGRIND"]
-
-################
-# powerpc
-################
-[target.powerpc-unknown-linux-gnu]
-runner = "qemu-system"
-image = "ghcr.io/gungraun/powerpc-unknown-linux-gnu:latest"
-
-[target.powerpc-unknown-linux-gnu.env]
-passthrough = ["VALGRIND_REQUESTS_STRATEGY", "CROSS_VALGRIND"]
-
-################
-# powerpc64
-################
-[target.powerpc64-unknown-linux-gnu]
-runner = "qemu-system"
-image = "ghcr.io/gungraun/powerpc64-unknown-linux-gnu:latest"
-
-[target.powerpc64-unknown-linux-gnu.env]
-passthrough = ["VALGRIND_REQUESTS_STRATEGY", "CROSS_VALGRIND"]
-
-################
-# powerpc64le
-################
-[target.powerpc64le-unknown-linux-gnu]
-runner = "qemu-system"
-image = "ghcr.io/gungraun/powerpc64le-unknown-linux-gnu:latest"
-
-[target.powerpc64le-unknown-linux-gnu.env]
-passthrough = ["VALGRIND_REQUESTS_STRATEGY", "CROSS_VALGRIND"]
-
-################
-# riscv64gc
-################
-[target.riscv64gc-unknown-linux-gnu]
-runner = "qemu-system"
-image = "ghcr.io/gungraun/riscv64gc-unknown-linux-gnu:latest"
-
-[target.riscv64gc-unknown-linux-gnu.env]
-passthrough = ["VALGRIND_REQUESTS_STRATEGY", "CROSS_VALGRIND"]
-
-################
-# mips64el-unknown-linux-gnuabi64
-################
-[target.mips64el-unknown-linux-gnuabi64]
-build-std = true
-runner = "qemu-system"
-image = "ghcr.io/gungraun/mips64el-unknown-linux-gnuabi64:latest"
-
-[target.mips64el-unknown-linux-gnuabi64.env]
-passthrough = ["VALGRIND_REQUESTS_STRATEGY", "CROSS_VALGRIND"]
-
-################
-# mipsel-unknown-linux-gnu
-################
-[target.mipsel-unknown-linux-gnu]
-build-std = true
-runner = "qemu-system"
-image = "ghcr.io/gungraun/mipsel-unknown-linux-gnu:latest"
-
-[target.mipsel-unknown-linux-gnu.env]
-passthrough = ["VALGRIND_REQUESTS_STRATEGY", "CROSS_VALGRIND"]
+passthrough = [
+  "GUNGRAUN_LOG",
+  "GUNGRAUN_RUNNER=/tmp/bin/gungraun-runner",
+  "GUNGRAUN_VALGRIND_RUNNER=/linux-runner",
+  "GUNGRAUN_VALGRIND_RUNNER_ARGS=s390x",
+  "GUNGRAUN_ENVS=CROSS_RUNNER=qemu-system TMPDIR GUNGRAUN_LOG",
+]

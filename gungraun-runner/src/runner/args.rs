@@ -1426,6 +1426,31 @@ pub struct CommandLineArgs {
         verbatim_doc_comment,
     )]
     pub valgrind_runner_root: Option<PathBuf>,
+
+    /// Override the Cargo workspace root
+    ///
+    /// By default, Gungraun queries `cargo metadata` to detect the workspace root. This is usually
+    /// correct, but this option provides the workspace root explicitly and avoids that part of the
+    /// Cargo metadata query.
+    ///
+    /// To run without invoking `cargo` at all, also provide an explicit output location with
+    /// `--home`/`GUNGRAUN_HOME` or set `CARGO_TARGET_DIR`. If neither is provided, Gungraun still
+    /// queries `cargo metadata` to detect Cargo's effective target directory.
+    ///
+    /// This can be useful when `gungraun-runner` executes in an environment where `cargo` is not
+    /// available, such as a container, VM, or emulator image.
+    ///
+    /// Examples:
+    ///   * `--workspace-root=/project`
+    ///   * `GUNGRAUN_WORKSPACE_ROOT=/project GUNGRAUN_HOME=/tmp/gungraun cargo bench`
+    #[arg(
+        display_order = 100,
+        env = "GUNGRAUN_WORKSPACE_ROOT",
+        long = "workspace-root",
+        num_args = 1,
+        verbatim_doc_comment
+    )]
+    pub workspace_root: Option<PathBuf>,
 }
 
 /// A wrapper type for raw command-line arguments
