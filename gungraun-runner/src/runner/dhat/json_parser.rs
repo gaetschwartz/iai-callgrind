@@ -18,15 +18,22 @@ use crate::runner::tool::path::ToolOutputPath;
 pub struct JsonParser {
     entry_point: EntryPoint,
     frames: Vec<String>,
+    optimize: bool,
     output_path: ToolOutputPath,
 }
 
 impl JsonParser {
     /// Creates a new `JsonParser`.
-    pub fn new(output_path: ToolOutputPath, entry_point: EntryPoint, frames: Vec<String>) -> Self {
+    pub fn new(
+        output_path: ToolOutputPath,
+        entry_point: EntryPoint,
+        frames: Vec<String>,
+        optimize: bool,
+    ) -> Self {
         Self {
             entry_point,
             frames,
+            optimize,
             output_path,
         }
     }
@@ -34,7 +41,7 @@ impl JsonParser {
 
 impl Parser for JsonParser {
     fn parse_single(&self, path: PathBuf) -> Result<ParserOutput> {
-        let dhat_data = parse(&path)
+        let mut dhat_data = parse(&path)
             .with_context(|| format!("Error opening dhat output file '{}'", path.display()))?;
 
         let parent_pid = if let Some(logfile) = self.output_path.log_path_of(&path) {
@@ -47,7 +54,7 @@ impl Parser for JsonParser {
             let header = logfile_parser::parse_header(&logfile, iter)?;
 
             assert_eq!(
-                header.pid, dhat_data.pid,
+                header.pid, dhat_data.metadata.pid,
                 "The pid of the json and log file should be equal"
             );
 
@@ -57,21 +64,64 @@ impl Parser for JsonParser {
         };
 
         let header = Header {
-            command: dhat_data.command.clone(),
-            pid: dhat_data.pid,
+            command: dhat_data.metadata.command.clone(),
+            pid: dhat_data.metadata.pid,
             parent_pid,
             thread: None,
             part: None,
             desc: vec![],
         };
 
-        let tree = RootTree::from_json(dhat_data, &self.entry_point, &self.frames);
+        dhat_data.filter_program_points(&self.entry_point, &self.frames);
+
+        let metrics = if self.optimize {
+            let program_points = dhat_data.program_points.clone();
+            let tree = RootTree::from_json(dhat_data);
+            let metrics = tree.metrics();
+
+            // TODO: like with_added_extension use the original and append .orig
+            let orig = path.with_extension("out.orig");
+            std::fs::copy(&path, orig).with_context(|| {
+                format!(
+                    "Backing up original dhat data '{}' should succeed",
+                    path.display()
+                )
+            })?;
+
+            let tree_table = tree.frame_table();
+            let (max, _) = tree_table
+                .last_key_value()
+                .expect("The tree frame table should a least contain the root frame");
+
+            let mapping_table = tree_table.iter().enumerate().fold(
+                vec![0; max + 1],
+                |mut mapping_table, (index, (p, _))| {
+                    mapping_table[*p] = index;
+                    mapping_table
+                },
+            );
+
+            let mut new_data: DhatData = tree.into();
+            new_data.program_points = program_points;
+            new_data.sanitize(&mapping_table);
+
+            serde_json::to_writer(File::create(&path)?, &new_data).with_context(|| {
+                format!(
+                    "Failed serializing optimized dhat output to '{}'",
+                    path.display()
+                )
+            })?;
+
+            metrics
+        } else {
+            RootTree::from_json(dhat_data).metrics()
+        };
 
         Ok(ParserOutput {
             path,
             header,
             details: vec![],
-            metrics: tree.metrics(),
+            metrics,
         })
     }
 

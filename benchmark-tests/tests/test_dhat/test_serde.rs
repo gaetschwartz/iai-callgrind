@@ -1,28 +1,30 @@
 use gungraun_runner::runner::dhat::json_parser::parse;
-use gungraun_runner::runner::dhat::model::{DhatData, Frame, Mode, ProgramPoint};
+use gungraun_runner::runner::dhat::model::{DhatData, DhatMetadata, Frame, Mode, ProgramPoint};
 use pretty_assertions::assert_eq;
 
 use crate::util::common::Fixtures;
 
 fn dhat_data_fixture() -> DhatData {
     DhatData {
-        dhat_file_version: 2,
-        mode: Mode::Heap,
-        verb: "Allocated".to_owned(),
-        has_block_lifetimes: true,
-        has_block_accesses: true,
-        byte_unit: None,
-        bytes_unit: None,
-        block_unit: None,
-        time_unit: "instrs".to_owned(),
-        time_unit_m: "Minstr".to_owned(),
-        time_threshold: Some(500),
-        command: "/some/path/bench-bb025b17fd65eb7d --gungraun-run my_group 0 2 \
-                  file::group::function"
-            .to_owned(),
-        pid: 2,
-        time_end: 500_000,
-        time_global_max: Some(160_000),
+        metadata: DhatMetadata {
+            dhat_file_version: 2,
+            mode: Mode::Heap,
+            verb: "Allocated".to_owned(),
+            has_block_lifetimes: true,
+            has_block_accesses: true,
+            byte_unit: None,
+            bytes_unit: None,
+            block_unit: None,
+            time_unit: "instrs".to_owned(),
+            time_unit_m: "Minstr".to_owned(),
+            time_threshold: Some(500),
+            command: "/some/path/bench-bb025b17fd65eb7d --gungraun-run my_group 0 2 \
+                      file::group::function"
+                .to_owned(),
+            pid: 2,
+            time_end: 500_000,
+            time_global_max: Some(160_000),
+        },
         program_points: vec![],
         frame_table: vec![Frame::Root],
     }
@@ -61,4 +63,21 @@ fn test_serde() {
     let actual: DhatData = parse(&path).unwrap();
 
     assert_eq!(actual, expected);
+}
+
+#[test]
+fn test_serde_when_metadata_is_flattened() {
+    let fixture = dhat_data_fixture();
+    let actual = serde_json::to_value(&fixture).unwrap();
+
+    assert!(actual.get("metadata").is_none());
+    assert_eq!(actual["dhatFileVersion"], 2);
+    assert_eq!(actual["mode"], "heap");
+    assert_eq!(
+        actual["cmd"].as_str(),
+        Some(fixture.metadata.command.as_str())
+    );
+    assert!(actual.get("bu").is_none());
+    assert!(actual.get("bsu").is_none());
+    assert!(actual.get("bksu").is_none());
 }

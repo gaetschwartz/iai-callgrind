@@ -1,5 +1,6 @@
 //! This module contains the structs to model the dhat output file content
 
+use std::ops::Sub;
 // spell-checker: ignore bklt bkacc bksu tuth ftbl tgmax
 use std::str::FromStr;
 use std::sync::LazyLock;
@@ -7,6 +8,11 @@ use std::sync::LazyLock;
 use regex::Regex;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use simplematch::DoWild;
+
+use crate::api::EntryPoint;
+use crate::runner::DEFAULT_TOGGLE;
+use crate::runner::dhat::tree::Data;
 
 static FRAME_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^(?<root>\[root\])|(?<addr>0x[0-9a-fA-F]+):\s*(?<func>.*)\s\((?<in>.*)\)$")
@@ -38,6 +44,23 @@ pub enum Mode {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[expect(clippy::arbitrary_source_item_ordering)]
 pub struct DhatData {
+    /// Top-level metadata
+    #[serde(flatten)]
+    pub metadata: DhatMetadata,
+
+    /// The [`ProgramPoint`]s
+    #[serde(rename = "pps")]
+    pub program_points: Vec<ProgramPoint>,
+
+    /// [`Frame`] table
+    #[serde(rename = "ftbl")]
+    pub frame_table: Vec<Frame>,
+}
+
+/// Top-level metadata extracted from dhat json output.
+#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[expect(clippy::arbitrary_source_item_ordering)]
+pub struct DhatMetadata {
     /// Version number of the format
     #[serde(rename = "dhatFileVersion")]
     pub dhat_file_version: usize,
@@ -58,14 +81,17 @@ pub struct DhatData {
 
     /// Byte units. "byte" is the values used if these fields are omitted.
     #[serde(rename = "bu")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub byte_unit: Option<String>,
 
     /// Bytes units. "bytes" is the values used if these fields are omitted.
     #[serde(rename = "bsu")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub bytes_unit: Option<String>,
 
     /// Blocks units. "blocks" is the values used if these fields are omitted.
     #[serde(rename = "bksu")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub block_unit: Option<String>,
 
     /// Time units (individual)
@@ -80,6 +106,7 @@ pub struct DhatData {
     /// - bklt=true: a mandatory integer.
     /// - bklt=false: omitted.
     #[serde(rename = "tuth")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub time_threshold: Option<usize>,
 
     /// The executed command
@@ -91,21 +118,14 @@ pub struct DhatData {
 
     /// The time at the end of execution (t-end)
     #[serde(rename = "te")]
-    pub time_end: u128,
+    pub time_end: u64,
 
     /// The time of the global max (t-gmax)
     /// - bklt=true: a mandatory integer.
     /// - bklt=false: omitted.
     #[serde(rename = "tg")]
-    pub time_global_max: Option<u128>,
-
-    /// The [`ProgramPoint`]s
-    #[serde(rename = "pps")]
-    pub program_points: Vec<ProgramPoint>,
-
-    /// [`Frame`] table
-    #[serde(rename = "ftbl")]
-    pub frame_table: Vec<Frame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time_global_max: Option<u64>,
 }
 
 /// A `ProgramPoint`
@@ -124,54 +144,63 @@ pub struct ProgramPoint {
     /// - bklt=true: a mandatory integer.
     /// - bklt=false: omitted.
     #[serde(rename = "tl")]
-    pub total_lifetimes: Option<u128>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub total_lifetimes: Option<u64>,
 
     /// The maximum bytes for this `ProgramPoint`
     /// - bklt=true: mandatory integers.
     /// - bklt=false: omitted.
     #[serde(rename = "mb")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub maximum_bytes: Option<u64>,
 
     /// The maximum blocks for this `ProgramPoint`
     /// - bklt=true: mandatory integers.
     /// - bklt=false: omitted.
     #[serde(rename = "mbk")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub maximum_blocks: Option<u64>,
 
     /// The bytes at t-gmax for this `ProgramPoint`
     /// - bklt=true: mandatory integers.
     /// - bklt=false: omitted.
     #[serde(rename = "gb")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub bytes_at_max: Option<u64>,
 
     /// The blocks at t-gmax for this `ProgramPoint`
     /// - bklt=true: mandatory integers.
     /// - bklt=false: omitted.
     #[serde(rename = "gbk")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub blocks_at_max: Option<u64>,
 
     /// The bytes at t-end for this `ProgramPoint`
     /// - bklt=true: mandatory integers.
     /// - bklt=false: omitted.
     #[serde(rename = "eb")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub bytes_at_end: Option<u64>,
 
     /// The blocks at t-end for this `ProgramPoint`
     /// - bklt=true: mandatory integers.
     /// - bklt=false: omitted.
     #[serde(rename = "ebk")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub blocks_at_end: Option<u64>,
 
     /// The reads of blocks for this `ProgramPoint`
     /// - bkacc=true: mandatory integers.
     /// - bkacc=false: omitted.
     #[serde(rename = "rb")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub blocks_read: Option<u64>,
 
     /// The writes of blocks for this `ProgramPoint`
     /// - bkacc=true: mandatory integers.
     /// - bkacc=false: omitted.
     #[serde(rename = "wb")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub blocks_write: Option<u64>,
 
     /// The exact accesses of blocks for this `ProgramPoint`. Only used when all allocations are
@@ -180,11 +209,77 @@ pub struct ProgramPoint {
     /// - bkacc=true: an optional array of integers.
     /// - bkacc=false: omitted.
     #[serde(rename = "acc")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub accesses: Option<Vec<i64>>,
 
     /// Frames. Each element is an index into the [`DhatData::frame_table`]
     #[serde(rename = "fs")]
     pub frames: Vec<usize>,
+}
+
+impl DhatData {
+    /// TODO: DOCS
+    pub fn with_metadata(metadata: DhatMetadata) -> Self {
+        Self {
+            metadata,
+            program_points: Vec::default(),
+            frame_table: Vec::default(),
+        }
+    }
+
+    /// TODO: DOCS
+    pub fn filter_program_points(&mut self, entry_point: &EntryPoint, frames: &[String]) {
+        let mut globs = frames.iter().collect::<Vec<_>>();
+
+        let glob = match entry_point {
+            EntryPoint::None => None,
+            EntryPoint::Default => Some(DEFAULT_TOGGLE.into()),
+            EntryPoint::Custom(custom) => Some(custom.into()),
+        };
+
+        if let Some(glob) = &glob {
+            globs.push(glob);
+        }
+
+        let mut indices = vec![];
+        if !globs.is_empty() {
+            for (index, frame) in self.frame_table.iter().enumerate() {
+                if let Frame::Leaf(_, func_name, _) = frame {
+                    for glob in &globs {
+                        if glob.as_str().dowild(func_name) {
+                            indices.push(index);
+                        }
+                    }
+                }
+            }
+        }
+
+        if *entry_point == EntryPoint::None && frames.is_empty() {
+            // do nothing
+        } else if !indices.is_empty() {
+            self.program_points = self
+                .program_points
+                .iter()
+                .filter(|p| p.frames.iter().any(|f| indices.contains(f)))
+                .cloned()
+                .collect();
+        } else {
+            self.program_points = Vec::default();
+        }
+    }
+
+    /// TODO: DOCS
+    pub fn sanitize(&mut self, mapping_table: &[usize]) {
+        if self.frame_table.is_empty() {
+            self.frame_table.insert(0, Frame::Root);
+        } else {
+            for program_point in &mut self.program_points {
+                for frame in &mut program_point.frames {
+                    *frame = mapping_table[*frame];
+                }
+            }
+        }
+    }
 }
 
 impl<'de> Deserialize<'de> for Frame {
@@ -232,6 +327,37 @@ impl FromStr for Frame {
     }
 }
 
+impl ProgramPoint {
+    /// TODO: DOCS
+    pub fn is_zero(&self) -> bool {
+        self.total_bytes == 0
+            && self.total_blocks == 0
+            && self.total_lifetimes.is_none_or(|value| value == 0)
+            && self.maximum_bytes.is_none_or(|value| value == 0)
+            && self.maximum_blocks.is_none_or(|value| value == 0)
+            && self.bytes_at_max.is_none_or(|value| value == 0)
+            && self.blocks_at_max.is_none_or(|value| value == 0)
+            && self.bytes_at_end.is_none_or(|value| value == 0)
+            && self.blocks_at_end.is_none_or(|value| value == 0)
+            && self.blocks_read.is_none_or(|value| value == 0)
+            && self.blocks_write.is_none_or(|value| value == 0)
+    }
+
+    /// TODO: DOCS
+    pub fn sub(&mut self, data: &Data) {
+        self.total_bytes -= data.total_bytes;
+        self.total_blocks -= data.total_blocks;
+        self.total_lifetimes = sub_options(self.total_lifetimes, data.total_lifetimes);
+        self.maximum_bytes = sub_options(self.maximum_bytes, data.maximum_bytes);
+        self.maximum_blocks = sub_options(self.maximum_blocks, data.maximum_blocks);
+        self.bytes_at_max = sub_options(self.bytes_at_max, data.bytes_at_max);
+        self.blocks_at_max = sub_options(self.blocks_at_max, data.blocks_at_max);
+        self.bytes_at_end = sub_options(self.bytes_at_end, data.bytes_at_end);
+        self.blocks_at_end = sub_options(self.blocks_at_end, data.blocks_at_end);
+        self.blocks_read = sub_options(self.blocks_read, data.blocks_read);
+        self.blocks_write = sub_options(self.blocks_write, data.blocks_write);
+    }
+}
 impl Serialize for Frame {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -275,6 +401,17 @@ impl Serialize for Mode {
         };
 
         serializer.serialize_str(string)
+    }
+}
+
+fn sub_options<T: Sub<Output = T>>(lhs: Option<T>, rhs: Option<T>) -> Option<T> {
+    match (lhs, rhs) {
+        (Some(a), None) => Some(a),
+        (Some(a), Some(b)) => Some(a - b),
+        // For our representation, The case None - Some(x) is safer to be handled as None. Usually,
+        // we don't hit this case because either both options are Some or None when extracted from
+        // the original dhat data.
+        (None, _) => None,
     }
 }
 
