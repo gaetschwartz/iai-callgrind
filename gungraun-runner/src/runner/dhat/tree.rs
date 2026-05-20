@@ -114,6 +114,21 @@ pub trait Tree: Into<DhatData> {
         }
     }
 
+    /// TODO: DOCS
+    fn mapping_table(&self) -> Vec<usize> {
+        self.frame_table()
+            .last_key_value()
+            .map_or_else(Vec::new, |(max, _)| {
+                self.frame_table().iter().enumerate().fold(
+                    vec![0; max + 1],
+                    |mut mapping_table, (index, (p, _))| {
+                        mapping_table[*p] = index;
+                        mapping_table
+                    },
+                )
+            })
+    }
+
     /// Returns the dhat metadata.
     fn metadata(&self) -> &DhatMetadata;
 
@@ -344,18 +359,7 @@ impl Tree for DhatTree {
 
 impl From<DhatTree> for DhatData {
     fn from(tree: DhatTree) -> Self {
-        let (max, _) = tree
-            .table
-            .last_key_value()
-            .expect("A least the root frame should be present");
-        let mapping_table = tree.table.iter().enumerate().fold(
-            vec![0; max + 1],
-            |mut mapping_table, (index, (p, _))| {
-                mapping_table[*p] = index;
-                mapping_table
-            },
-        );
-
+        let mapping_table = tree.mapping_table();
         let mut program_points = Vec::default();
         tree.root
             .collect_program_points(Vec::default(), &mut program_points, &mapping_table);
@@ -510,6 +514,7 @@ fn sum_options<T: Add<Output = T>>(lhs: Option<T>, rhs: Option<T>) -> Option<T> 
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
+    use rstest::rstest;
 
     use super::*;
 
@@ -529,6 +534,24 @@ mod tests {
 
     fn frame_table_fixture() -> Vec<Frame> {
         vec![Frame::Root; 7]
+    }
+
+    fn program_point_fixture(frames: Vec<usize>, total_bytes: u64) -> ProgramPoint {
+        ProgramPoint {
+            total_bytes,
+            frames,
+            ..Data::default().to_program_point(Vec::default())
+        }
+    }
+
+    fn program_point_summary(data: &DhatData) -> Vec<(Vec<usize>, u64)> {
+        let mut summary = data
+            .program_points
+            .iter()
+            .map(|program_point| (program_point.frames.clone(), program_point.total_bytes))
+            .collect::<Vec<_>>();
+        summary.sort();
+        summary
     }
 
     fn table_fixture(indices: &[usize]) -> BTreeMap<usize, Frame> {
@@ -703,6 +726,57 @@ mod tests {
         assert_eq!(tree, expected);
     }
 
+    #[rstest]
+    #[case::root_skipped(
+        Node::new(vec![], vec![], data_fixture(3)),
+        vec![0],
+        vec![],
+    )]
+    #[case::leaf_emitted(
+        Node::new(vec![1, 2], vec![], data_fixture(3)),
+        vec![0, 1, 2],
+        vec![(vec![1, 2], 3)],
+    )]
+    #[case::parent_residual_emitted_after_child(
+        Node::new(
+            vec![1],
+            vec![Node::new(vec![2], vec![], data_fixture(2))],
+            data_fixture(5),
+        ),
+        vec![0, 1, 2],
+        vec![(vec![1, 2], 2), (vec![1], 3)],
+    )]
+    #[case::synthetic_zero_parent_skipped(
+        Node::new(
+            vec![1],
+            vec![Node::new(vec![2], vec![], data_fixture(5))],
+            data_fixture(5),
+        ),
+        vec![0, 1, 2],
+        vec![(vec![1, 2], 5)],
+    )]
+    #[case::sparse_frames_rebased(
+        Node::new(vec![5], vec![], data_fixture(1)),
+        vec![0, 0, 0, 0, 0, 1],
+        vec![(vec![1], 1)],
+    )]
+    fn test_node_collect_program_points(
+        #[case] node: Node,
+        #[case] mapping_table: Vec<usize>,
+        #[case] expected: Vec<(Vec<usize>, u64)>,
+    ) {
+        let mut program_points = Vec::default();
+
+        node.collect_program_points(Vec::default(), &mut program_points, &mapping_table);
+
+        let actual = program_points
+            .into_iter()
+            .map(|program_point| (program_point.frames, program_point.total_bytes))
+            .collect::<Vec<_>>();
+
+        assert_eq!(actual, expected);
+    }
+
     #[test]
     fn test_root_tree_insert_two() {
         let expected = RootTree {
@@ -780,5 +854,45 @@ mod tests {
         assert_eq!(data.program_points.len(), 1);
         assert_eq!(data.program_points[0].frames, [1]);
         assert_eq!(data.program_points[0].total_bytes, 1);
+    }
+
+    #[test]
+    fn test_dhat_data_dhat_tree_round_trip_reconstructs_program_points() {
+        let input = DhatData {
+            metadata: metadata_fixture(),
+            program_points: vec![
+                program_point_fixture(vec![1], 1),
+                program_point_fixture(vec![1, 2, 3], 2),
+            ],
+            frame_table: vec![Frame::Root; 4],
+        };
+
+        let tree = DhatTree::from_json(input.clone());
+        let actual = DhatData::from(tree);
+
+        assert_eq!(actual.metadata, input.metadata);
+        assert_eq!(actual.frame_table, input.frame_table);
+        assert_eq!(
+            program_point_summary(&actual),
+            vec![(vec![1], 1), (vec![1, 2, 3], 2)]
+        );
+    }
+
+    #[test]
+    fn test_dhat_data_dhat_tree_round_trip_rebases_sparse_frame_ids() {
+        let frame = Frame::from(("0x5", "sparse", "lib.rs:5"));
+        let mut frame_table = vec![Frame::Root; 6];
+        frame_table[5] = frame.clone();
+        let input = DhatData {
+            metadata: metadata_fixture(),
+            program_points: vec![program_point_fixture(vec![5], 1)],
+            frame_table,
+        };
+
+        let tree = DhatTree::from_json(input);
+        let actual = DhatData::from(tree);
+
+        assert_eq!(actual.frame_table, vec![Frame::Root, frame]);
+        assert_eq!(program_point_summary(&actual), vec![(vec![1], 1)]);
     }
 }

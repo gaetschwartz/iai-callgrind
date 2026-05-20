@@ -75,6 +75,10 @@ impl Parser for JsonParser {
         dhat_data.filter_program_points(&self.entry_point, &self.frames);
 
         let metrics = if self.optimize {
+            // Instead of using a DhatTree, construction and then deconstruction a whole tree, it is
+            // more efficient to use the RootTree with the filtered original program points
+            // directly. However, the dhat data reconstructed from the root tree needs to be
+            // sanitized because the frame table might have changed.
             let program_points = dhat_data.program_points.clone();
             let tree = RootTree::from_json(dhat_data);
             let metrics = tree.metrics();
@@ -88,21 +92,12 @@ impl Parser for JsonParser {
                 )
             })?;
 
-            let tree_table = tree.frame_table();
-            let (max, _) = tree_table
-                .last_key_value()
-                .expect("The tree frame table should a least contain the root frame");
+            let mapping_table = tree.mapping_table();
+            let mut new_data = DhatData {
+                program_points,
+                ..tree.into()
+            };
 
-            let mapping_table = tree_table.iter().enumerate().fold(
-                vec![0; max + 1],
-                |mut mapping_table, (index, (p, _))| {
-                    mapping_table[*p] = index;
-                    mapping_table
-                },
-            );
-
-            let mut new_data: DhatData = tree.into();
-            new_data.program_points = program_points;
             new_data.sanitize(&mapping_table);
 
             serde_json::to_writer(File::create(&path)?, &new_data).with_context(|| {

@@ -219,16 +219,7 @@ pub struct ProgramPoint {
 
 impl DhatData {
     /// TODO: DOCS
-    pub fn with_metadata(metadata: DhatMetadata) -> Self {
-        Self {
-            metadata,
-            program_points: Vec::default(),
-            frame_table: Vec::default(),
-        }
-    }
-
-    /// TODO: DOCS
-    pub fn filter_program_points(&mut self, entry_point: &EntryPoint, frames: &[String]) {
+    pub fn filter_program_points(&mut self, entry_point: &EntryPoint, frames: &[String]) -> bool {
         let mut globs = frames.iter().collect::<Vec<_>>();
 
         let glob = match entry_point {
@@ -255,16 +246,18 @@ impl DhatData {
         }
 
         if *entry_point == EntryPoint::None && frames.is_empty() {
-            // do nothing
+            false
         } else if !indices.is_empty() {
-            self.program_points = self
-                .program_points
-                .iter()
-                .filter(|p| p.frames.iter().any(|f| indices.contains(f)))
-                .cloned()
-                .collect();
+            let old_len = self.program_points.len();
+            self.program_points
+                .retain(|p| p.frames.iter().any(|f| indices.contains(f)));
+
+            old_len != self.program_points.len()
         } else {
+            let old_len = self.program_points.len();
             self.program_points = Vec::default();
+
+            old_len != self.program_points.len()
         }
     }
 
@@ -404,6 +397,11 @@ impl Serialize for Mode {
     }
 }
 
+/// Returns the result of the subtraction of two [`Option`]s
+///
+/// # Panics
+///
+/// If the Some value in the rhs option is larger than the Some value in the lhs option
 fn sub_options<T: Sub<Output = T>>(lhs: Option<T>, rhs: Option<T>) -> Option<T> {
     match (lhs, rhs) {
         (Some(a), None) => Some(a),
@@ -421,6 +419,77 @@ mod tests {
     use serde_test::{Token, assert_tokens};
 
     use super::*;
+
+    fn program_point_fixture(frames: Vec<usize>) -> ProgramPoint {
+        ProgramPoint {
+            total_bytes: 1,
+            total_blocks: 1,
+            total_lifetimes: Some(1),
+            maximum_bytes: Some(1),
+            maximum_blocks: Some(1),
+            bytes_at_max: Some(1),
+            blocks_at_max: Some(1),
+            bytes_at_end: Some(0),
+            blocks_at_end: Some(0),
+            blocks_read: Some(0),
+            blocks_write: Some(0),
+            accesses: None,
+            frames,
+        }
+    }
+
+    fn program_point_with_options(value: Option<u64>) -> ProgramPoint {
+        ProgramPoint {
+            total_bytes: value.unwrap_or(0),
+            total_blocks: value.unwrap_or(0),
+            total_lifetimes: value,
+            maximum_bytes: value,
+            maximum_blocks: value,
+            bytes_at_max: value,
+            blocks_at_max: value,
+            bytes_at_end: value,
+            blocks_at_end: value,
+            blocks_read: value,
+            blocks_write: value,
+            accesses: None,
+            frames: vec![1],
+        }
+    }
+
+    fn data_with_options(value: Option<u64>) -> Data {
+        Data {
+            total_bytes: value.unwrap_or(0),
+            total_blocks: value.unwrap_or(0),
+            total_lifetimes: value,
+            maximum_bytes: value,
+            maximum_blocks: value,
+            bytes_at_max: value,
+            blocks_at_max: value,
+            bytes_at_end: value,
+            blocks_at_end: value,
+            blocks_read: value,
+            blocks_write: value,
+            accesses: None,
+        }
+    }
+
+    fn dhat_data_filter_fixture() -> DhatData {
+        DhatData {
+            metadata: DhatMetadata::default(),
+            program_points: vec![
+                program_point_fixture(vec![1, 2]),
+                program_point_fixture(vec![3]),
+                program_point_fixture(vec![4]),
+            ],
+            frame_table: vec![
+                Frame::Root,
+                Frame::from(("0x1", DEFAULT_TOGGLE, "bench.rs:1")),
+                Frame::from(("0x2", "malloc", "alloc.c:1")),
+                Frame::from(("0x3", "custom_entry", "lib.rs:1")),
+                Frame::from(("0x4", "other", "lib.rs:2")),
+            ],
+        }
+    }
 
     #[rstest]
     #[case::short_addr(
@@ -446,6 +515,134 @@ mod tests {
         let expected = Frame::from(frame);
         let actual = haystack.parse::<Frame>().unwrap();
         assert_eq!(actual, expected);
+    }
+
+    #[rstest]
+    #[case::no_filter(
+        EntryPoint::None,
+        vec![],
+        false,
+        vec![vec![1, 2], vec![3], vec![4]],
+    )]
+    #[case::default_entry_point(EntryPoint::Default, vec![], true, vec![vec![1, 2]])]
+    #[case::frames_only(
+        EntryPoint::None,
+        vec!["malloc".to_owned()],
+        true,
+        vec![vec![1, 2]],
+    )]
+    #[case::custom_entry_and_frames(
+        EntryPoint::Custom("custom_*".to_owned()),
+        vec!["malloc".to_owned()],
+        true,
+        vec![vec![1, 2], vec![3]],
+    )]
+    #[case::no_match(EntryPoint::None, vec!["missing".to_owned()], true, vec![])]
+    #[case::all_match(
+        EntryPoint::None,
+        vec!["*".to_owned()],
+        false,
+        vec![vec![1, 2], vec![3], vec![4]],
+    )]
+    fn test_dhat_data_filter_program_points(
+        #[case] entry_point: EntryPoint,
+        #[case] frames: Vec<String>,
+        #[case] expected_is_filtered: bool,
+        #[case] expected_frames: Vec<Vec<usize>>,
+    ) {
+        let mut data = dhat_data_filter_fixture();
+
+        let is_filtered = data.filter_program_points(&entry_point, &frames);
+
+        assert_eq!(is_filtered, expected_is_filtered);
+        assert_eq!(
+            data.program_points
+                .iter()
+                .map(|program_point| program_point.frames.clone())
+                .collect::<Vec<_>>(),
+            expected_frames
+        );
+    }
+
+    #[test]
+    fn test_dhat_data_sanitize_when_frame_table_empty_then_creates_root_frame() {
+        let mut data = DhatData {
+            metadata: DhatMetadata::default(),
+            program_points: Vec::default(),
+            frame_table: Vec::default(),
+        };
+
+        data.sanitize(&[]);
+
+        assert_eq!(data.frame_table, vec![Frame::Root]);
+    }
+
+    #[rstest]
+    #[case::identity(
+        vec![program_point_fixture(vec![1, 2]), program_point_fixture(vec![3])],
+        vec![0, 1, 2, 3],
+        vec![vec![1, 2], vec![3]],
+    )]
+    #[case::sparse(
+        vec![program_point_fixture(vec![2, 4]), program_point_fixture(vec![4])],
+        vec![0, 0, 1, 0, 2],
+        vec![vec![1, 2], vec![2]],
+    )]
+    fn test_dhat_data_sanitize(
+        #[case] program_points: Vec<ProgramPoint>,
+        #[case] mapping_table: Vec<usize>,
+        #[case] expected_frames: Vec<Vec<usize>>,
+    ) {
+        let mut data = DhatData {
+            metadata: DhatMetadata::default(),
+            program_points,
+            frame_table: vec![Frame::Root],
+        };
+
+        data.sanitize(&mapping_table);
+
+        assert_eq!(
+            data.program_points
+                .iter()
+                .map(|program_point| program_point.frames.clone())
+                .collect::<Vec<_>>(),
+            expected_frames
+        );
+    }
+
+    #[rstest]
+    #[case::all_options_none(None, true)]
+    #[case::all_options_some_zero(Some(0), true)]
+    #[case::all_options_some_one(Some(1), false)]
+    fn test_program_point_is_zero(#[case] value: Option<u64>, #[case] expected: bool) {
+        let program_point = program_point_with_options(value);
+
+        assert_eq!(program_point.is_zero(), expected);
+    }
+
+    #[rstest]
+    #[case::all_options_none(None, None)]
+    #[case::all_options_some(Some(3), Some(2))]
+    fn test_program_point_sub(#[case] start: Option<u64>, #[case] expected: Option<u64>) {
+        let mut program_point = program_point_with_options(start);
+        let data = data_with_options(start.map(|_| 1));
+
+        program_point.sub(&data);
+
+        assert_eq!(program_point, program_point_with_options(expected));
+    }
+
+    #[rstest]
+    #[case::none_none(None, None, None)]
+    #[case::none_some(None, Some(1), None)]
+    #[case::some_none(Some(3), None, Some(3))]
+    #[case::some_some(Some(3), Some(1), Some(2))]
+    fn test_sub_options(
+        #[case] lhs: Option<u64>,
+        #[case] rhs: Option<u64>,
+        #[case] expected: Option<u64>,
+    ) {
+        assert_eq!(sub_options(lhs, rhs), expected);
     }
 
     #[test]

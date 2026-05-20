@@ -1,12 +1,39 @@
 use gungraun_runner::api::{DhatMetric, EntryPoint};
 use gungraun_runner::runner::dhat::json_parser::parse;
-use gungraun_runner::runner::dhat::model::DhatData;
+use gungraun_runner::runner::dhat::model::{DhatData, ProgramPoint};
 use gungraun_runner::runner::dhat::tree::{Data, DhatTree, Tree};
 use gungraun_runner::runner::metrics::Metrics;
 use gungraun_runner::runner::summary::ToolMetrics;
 use pretty_assertions::assert_eq;
+use rstest::rstest;
 
 use crate::util::common::Fixtures;
+
+fn sorted_program_points(data: &DhatData) -> Vec<ProgramPoint> {
+    let mut program_points = data.program_points.clone();
+    // FIX: Remove as soon as accesses are properly implemented
+    for program_point in &mut program_points {
+        program_point.accesses = None;
+    }
+    program_points.sort_by(|a, b| a.frames.cmp(&b.frames));
+    program_points
+}
+
+#[rstest]
+#[case::heap("dhat/dhat.with_entry_point.out")]
+#[case::ad_hoc("dhat/dhat.ad_hoc_mode.out")]
+#[case::copy("dhat/dhat.copy_mode.out")]
+fn test_dhat_data_dhat_tree_round_trip_for_mode(#[case] fixture: &str) {
+    let path = Fixtures::get_path_of(fixture);
+    let data: DhatData = parse(&path).unwrap();
+
+    let tree = DhatTree::from_json(data.clone());
+    let actual = DhatData::from(tree);
+
+    assert_eq!(actual.metadata, data.metadata);
+    assert_eq!(actual.frame_table, data.frame_table);
+    assert_eq!(sorted_program_points(&actual), sorted_program_points(&data));
+}
 
 #[test]
 fn test_dhat_tree_when_ad_hoc_mode() {

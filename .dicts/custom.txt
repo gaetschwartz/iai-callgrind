@@ -6,8 +6,8 @@ ahash
 Aparicio
 ARANGE
 armv7
-aslr
 ASLR
+aslr
 Assche
 Assert
 atstart
@@ -24,6 +24,7 @@ bimap
 bincode
 bindgen
 binstall
+bksu
 blockstart
 Boolish
 bools
@@ -151,8 +152,8 @@ llhitrate
 llhits
 llimissrate
 llmissrate
-logfile
 Logfile
+logfile
 logfiles
 LouisBrunner
 malloc
@@ -220,8 +221,8 @@ PTHREAD
 pthread
 punct
 pushd
-quickstart
 Quickstart
+quickstart
 ramhitrate
 ramhits
 raun
