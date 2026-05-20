@@ -11,10 +11,6 @@ use crate::util::common::Fixtures;
 
 fn sorted_program_points(data: &DhatData) -> Vec<ProgramPoint> {
     let mut program_points = data.program_points.clone();
-    // FIX: Remove as soon as accesses are properly implemented
-    for program_point in &mut program_points {
-        program_point.accesses = None;
-    }
     program_points.sort_by(|a, b| a.frames.cmp(&b.frames));
     program_points
 }

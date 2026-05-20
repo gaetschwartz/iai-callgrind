@@ -1,6 +1,5 @@
 //! This module contains the structs to model the dhat output file content
 
-use std::ops::Sub;
 // spell-checker: ignore bklt bkacc bksu tuth ftbl tgmax
 use std::str::FromStr;
 use std::sync::LazyLock;
@@ -12,7 +11,6 @@ use simplematch::DoWild;
 
 use crate::api::EntryPoint;
 use crate::runner::DEFAULT_TOGGLE;
-use crate::runner::dhat::tree::Data;
 
 static FRAME_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^(?<root>\[root\])|(?<addr>0x[0-9a-fA-F]+):\s*(?<func>.*)\s\((?<in>.*)\)$")
@@ -39,6 +37,14 @@ pub enum Mode {
     /// --mode=copy
     Copy,
 }
+
+/// Exact per-block access counts for a [`ProgramPoint`].
+///
+/// DHAT stores this as an optional array of signed integers. Non-negative values are access
+/// counts. Negative values are run-length encoding markers for the following non-negative value;
+/// for example, `[-3, 4]` expands to `[4, 4, 4]`.
+#[derive(Debug, Default, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub struct Accesses(pub Vec<i64>);
 
 /// The top-level data extracted from dhat json output
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -210,11 +216,98 @@ pub struct ProgramPoint {
     /// - bkacc=false: omitted.
     #[serde(rename = "acc")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub accesses: Option<Vec<i64>>,
+    pub accesses: Option<Accesses>,
 
     /// Frames. Each element is an index into the [`DhatData::frame_table`]
     #[serde(rename = "fs")]
     pub frames: Vec<usize>,
+}
+
+impl Accesses {
+    /// Aggregates access counts using the same semantics as DHAT's `dh_view.js`
+    ///
+    /// This method expects `Accesses` data expanded with [`Accesses::expand`].
+    pub fn add(&mut self, other: Option<&Self>) {
+        match other {
+            Some(rhs) if self.0.len() == rhs.0.len() => {
+                for (lhs, rhs) in self.0.iter_mut().zip(&rhs.0) {
+                    *lhs += rhs;
+                }
+            }
+            _ => self.0 = Vec::default(),
+        }
+    }
+
+    /// Compacts expanded access counts into DHAT's run-length encoding.
+    ///
+    /// # Panics
+    ///
+    /// Panics if an access count is negative. Negative values are reserved for run-length encoding
+    /// markers and must not appear in expanded access data.
+    pub fn compact(&self) -> Self {
+        fn push_access(compacted: &mut Vec<i64>, value: i64, len: usize) {
+            let len = i64::try_from(len).expect("access run length should fit into i64");
+            if len != 1 {
+                compacted.push(-len);
+            }
+            compacted.push(value);
+        }
+
+        let mut compacted = Vec::new();
+        let Some(mut run_value) = self.0.first().copied() else {
+            return Self(compacted);
+        };
+        let mut run_len = 0_usize;
+
+        for access in &self.0 {
+            assert!(*access >= 0, "access count should be >= 0");
+            if *access == run_value {
+                run_len += 1;
+            } else {
+                push_access(&mut compacted, run_value, run_len);
+                run_value = *access;
+                run_len = 1;
+            }
+        }
+
+        push_access(&mut compacted, run_value, run_len);
+        Self(compacted)
+    }
+
+    /// Expands DHAT's run-length encoded access counts.
+    ///
+    /// # Panics
+    ///
+    /// Panics if a run-length encoding marker is missing its value, if the repeated value is
+    /// negative, or if the repeat count cannot fit into [`usize`].
+    pub fn expand(&self) -> Self {
+        let mut expanded = Vec::new();
+        let mut iter = self.0.iter();
+
+        while let Some(access) = iter.next() {
+            if *access < 0 {
+                let value = iter
+                    .next()
+                    .expect("run-length encoded accesses should have a value");
+                assert!(*value >= 0, "run-length encoded values should be >= 0");
+
+                let reps = access
+                    .checked_neg()
+                    .and_then(|value| usize::try_from(value).ok())
+                    .expect("run-length encoded access repeat count should fit into usize");
+                expanded.extend(std::iter::repeat_n(*value, reps));
+            } else {
+                expanded.push(*access);
+            }
+        }
+
+        Self(expanded)
+    }
+
+    /// Returns `true` if there are no accesses
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
 }
 
 impl DhatData {
@@ -335,22 +428,8 @@ impl ProgramPoint {
             && self.blocks_read.is_none_or(|value| value == 0)
             && self.blocks_write.is_none_or(|value| value == 0)
     }
-
-    /// TODO: DOCS
-    pub fn sub(&mut self, data: &Data) {
-        self.total_bytes -= data.total_bytes;
-        self.total_blocks -= data.total_blocks;
-        self.total_lifetimes = sub_options(self.total_lifetimes, data.total_lifetimes);
-        self.maximum_bytes = sub_options(self.maximum_bytes, data.maximum_bytes);
-        self.maximum_blocks = sub_options(self.maximum_blocks, data.maximum_blocks);
-        self.bytes_at_max = sub_options(self.bytes_at_max, data.bytes_at_max);
-        self.blocks_at_max = sub_options(self.blocks_at_max, data.blocks_at_max);
-        self.bytes_at_end = sub_options(self.bytes_at_end, data.bytes_at_end);
-        self.blocks_at_end = sub_options(self.blocks_at_end, data.blocks_at_end);
-        self.blocks_read = sub_options(self.blocks_read, data.blocks_read);
-        self.blocks_write = sub_options(self.blocks_write, data.blocks_write);
-    }
 }
+
 impl Serialize for Frame {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -397,22 +476,6 @@ impl Serialize for Mode {
     }
 }
 
-/// Returns the result of the subtraction of two [`Option`]s
-///
-/// # Panics
-///
-/// If the Some value in the rhs option is larger than the Some value in the lhs option
-fn sub_options<T: Sub<Output = T>>(lhs: Option<T>, rhs: Option<T>) -> Option<T> {
-    match (lhs, rhs) {
-        (Some(a), None) => Some(a),
-        (Some(a), Some(b)) => Some(a - b),
-        // For our representation, The case None - Some(x) is safer to be handled as None. Usually,
-        // we don't hit this case because either both options are Some or None when extracted from
-        // the original dhat data.
-        (None, _) => None,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use rstest::rstest;
@@ -453,23 +516,6 @@ mod tests {
             blocks_write: value,
             accesses: None,
             frames: vec![1],
-        }
-    }
-
-    fn data_with_options(value: Option<u64>) -> Data {
-        Data {
-            total_bytes: value.unwrap_or(0),
-            total_blocks: value.unwrap_or(0),
-            total_lifetimes: value,
-            maximum_bytes: value,
-            maximum_blocks: value,
-            bytes_at_max: value,
-            blocks_at_max: value,
-            bytes_at_end: value,
-            blocks_at_end: value,
-            blocks_read: value,
-            blocks_write: value,
-            accesses: None,
         }
     }
 
@@ -620,31 +666,6 @@ mod tests {
         assert_eq!(program_point.is_zero(), expected);
     }
 
-    #[rstest]
-    #[case::all_options_none(None, None)]
-    #[case::all_options_some(Some(3), Some(2))]
-    fn test_program_point_sub(#[case] start: Option<u64>, #[case] expected: Option<u64>) {
-        let mut program_point = program_point_with_options(start);
-        let data = data_with_options(start.map(|_| 1));
-
-        program_point.sub(&data);
-
-        assert_eq!(program_point, program_point_with_options(expected));
-    }
-
-    #[rstest]
-    #[case::none_none(None, None, None)]
-    #[case::none_some(None, Some(1), None)]
-    #[case::some_none(Some(3), None, Some(3))]
-    #[case::some_some(Some(3), Some(1), Some(2))]
-    fn test_sub_options(
-        #[case] lhs: Option<u64>,
-        #[case] rhs: Option<u64>,
-        #[case] expected: Option<u64>,
-    ) {
-        assert_eq!(sub_options(lhs, rhs), expected);
-    }
-
     #[test]
     fn test_frame_de_and_serialize_frame() {
         let frame = Frame::from(("0x1234", "malloc", "in /usr/lib/some.so"));
@@ -665,5 +686,40 @@ mod tests {
         let expected = Frame::Root;
         let actual = "[root]".parse::<Frame>().unwrap();
         assert_eq!(actual, expected);
+    }
+
+    #[rstest]
+    #[case::plain(vec![1, 2], vec![1, 2])]
+    #[case::run_length_encoded(vec![-3, 4], vec![4, 4, 4])]
+    #[case::mixed(vec![1, -2, 3, 4], vec![1, 3, 3, 4])]
+    fn test_accesses_expand(#[case] accesses: Vec<i64>, #[case] expected: Vec<i64>) {
+        assert_eq!(Accesses(accesses).expand(), Accesses(expected));
+    }
+
+    #[test]
+    #[should_panic(expected = "run-length encoded accesses should have a value")]
+    fn test_accesses_expand_when_missing_repeated_value_then_panics() {
+        Accesses(vec![-3]).expand();
+    }
+
+    #[test]
+    #[should_panic(expected = "run-length encoded values should be >= 0")]
+    fn test_accesses_expand_when_repeated_value_is_negative_then_panics() {
+        Accesses(vec![-3, -4]).expand();
+    }
+
+    #[rstest]
+    #[case::empty(vec![], vec![])]
+    #[case::plain(vec![1, 2], vec![1, 2])]
+    #[case::repeated(vec![4, 4, 4], vec![-3, 4])]
+    #[case::mixed(vec![1, 3, 3, 4], vec![1, -2, 3, 4])]
+    fn test_accesses_compact(#[case] accesses: Vec<i64>, #[case] expected: Vec<i64>) {
+        assert_eq!(Accesses(accesses).compact(), Accesses(expected));
+    }
+
+    #[test]
+    #[should_panic(expected = "access count should be >= 0")]
+    fn test_accesses_compact_when_access_count_is_negative_then_panics() {
+        Accesses(vec![-4]).compact();
     }
 }

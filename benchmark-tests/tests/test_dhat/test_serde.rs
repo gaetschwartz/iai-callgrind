@@ -1,5 +1,7 @@
 use gungraun_runner::runner::dhat::json_parser::parse;
-use gungraun_runner::runner::dhat::model::{DhatData, DhatMetadata, Frame, Mode, ProgramPoint};
+use gungraun_runner::runner::dhat::model::{
+    Accesses, DhatData, DhatMetadata, Frame, Mode, ProgramPoint,
+};
 use pretty_assertions::assert_eq;
 
 use crate::util::common::Fixtures;
@@ -43,7 +45,7 @@ fn program_point_fixture() -> ProgramPoint {
         blocks_at_end: Some(0),
         blocks_read: Some(9456),
         blocks_write: Some(5093),
-        accesses: Some(vec![20, -751, 15, -245, 12, -27, 12]),
+        accesses: Some(Accesses(vec![20, -751, 15, -245, 12, -27, 12])),
         frames: vec![1, 2],
     }
 }

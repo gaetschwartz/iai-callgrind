@@ -6,7 +6,7 @@ use std::ops::Add;
 
 use polonius_the_crab::{ForLt, PoloniusResult, polonius};
 
-use super::model::{DhatData, DhatMetadata, Frame, Mode, ProgramPoint};
+use super::model::{Accesses, DhatData, DhatMetadata, Frame, Mode, ProgramPoint};
 use crate::api::DhatMetric;
 use crate::runner::metrics::Metrics;
 use crate::runner::summary::ToolMetrics;
@@ -15,7 +15,7 @@ use crate::runner::summary::ToolMetrics;
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Data {
     /// TODO: DOCS
-    pub accesses: Option<Vec<i64>>,
+    pub accesses: Option<Accesses>,
     /// The blocks at t-end
     pub blocks_at_end: Option<u64>,
     /// The blocks at t-gmax
@@ -61,6 +61,7 @@ pub struct DhatTree {
 pub struct Node {
     children: Vec<Self>,
     data: Data,
+    orig_data: Option<Data>,
     prefix: Vec<usize>,
 }
 
@@ -166,7 +167,10 @@ impl Data {
             blocks_at_end: self.blocks_at_end,
             blocks_read: self.blocks_read,
             blocks_write: self.blocks_write,
-            accesses: self.accesses.clone(),
+            accesses: self
+                .accesses
+                .as_ref()
+                .and_then(|accesses| (!accesses.is_empty()).then(|| accesses.compact())),
             frames,
         }
     }
@@ -200,6 +204,11 @@ impl Data {
         self.blocks_at_end = sum_options(self.blocks_at_end, other.blocks_at_end);
         self.blocks_read = sum_options(self.blocks_read, other.blocks_read);
         self.blocks_write = sum_options(self.blocks_write, other.blocks_write);
+        match (&mut self.accesses, other.accesses.as_ref()) {
+            (Some(lhs), rhs) => lhs.add(rhs),
+            (None, Some(rhs)) => self.accesses = Some(rhs.clone()),
+            (None, None) => self.accesses = Some(Accesses::default()),
+        }
     }
 
     fn metrics(&self, mode: Mode) -> ToolMetrics {
@@ -260,7 +269,12 @@ impl From<&ProgramPoint> for Data {
             blocks_at_end: value.blocks_at_end,
             blocks_read: value.blocks_read,
             blocks_write: value.blocks_write,
-            accesses: value.accesses.clone(),
+            accesses: Some(
+                value
+                    .accesses
+                    .as_ref()
+                    .map_or_else(Accesses::default, Accesses::expand),
+            ),
         }
     }
 }
@@ -293,12 +307,12 @@ impl Tree for DhatTree {
             }) {
                 PoloniusResult::Borrowing(child) => {
                     if let Some(split_index) = child.split_index(current_prefix) {
-                        child.split(split_index, data);
+                        child.split(split_index, data, None);
                         index += split_index;
                     } else {
                         match current_prefix.len().cmp(&child.prefix.len()) {
                             Ordering::Less => {
-                                child.split(current_prefix.len(), data);
+                                child.split(current_prefix.len(), data, Some(data.clone()));
                                 return;
                             }
                             Ordering::Greater => {
@@ -307,6 +321,7 @@ impl Tree for DhatTree {
                             }
                             Ordering::Equal => {
                                 child.add_data(data);
+                                child.add_orig_data(data);
                                 return;
                             }
                         }
@@ -381,47 +396,58 @@ impl Node {
     ) {
         frames.extend(self.prefix.iter());
 
-        let rebased_frames = frames.iter().map(|frame| mapping_table[*frame]).collect();
-
-        // The root node doesn't have a prefix
-        let mut pp = (!frames.is_empty()).then(|| self.data.to_program_point(rebased_frames));
-
         for child in &self.children {
-            if let Some(pp) = pp.as_mut() {
-                pp.sub(&child.data);
-            }
             child.collect_program_points(frames.clone(), program_points, mapping_table);
         }
 
-        if let Some(pp) = pp {
-            // Filter out synthetic program points and reconstruct the original program points
-            if !pp.is_zero() {
-                program_points.push(pp);
-            }
+        if let Some(data) = &self.orig_data {
+            program_points.push(
+                data.to_program_point(frames.iter().map(|frame| mapping_table[*frame]).collect()),
+            );
         }
     }
 
     /// Creates a new `Node`.
-    pub fn new(prefix: Vec<usize>, children: Vec<Self>, data: Data) -> Self {
+    pub fn new(
+        prefix: Vec<usize>,
+        children: Vec<Self>,
+        data: Data,
+        orig_data: Option<Data>,
+    ) -> Self {
         Self {
             children,
+            data,
+            orig_data,
+            prefix,
+        }
+    }
+
+    /// Creates a new `Node` without `orig_data` (test helper)
+    #[cfg(test)]
+    fn without_orig(prefix: Vec<usize>, children: Vec<Self>, data: Data) -> Self {
+        Self {
+            children,
+            data,
+            orig_data: None,
+            prefix,
+        }
+    }
+
+    fn with_cloned_orig(prefix: Vec<usize>, children: Vec<Self>, data: Data) -> Self {
+        Self {
+            children,
+            orig_data: Some(data.clone()),
             data,
             prefix,
         }
     }
 
-    /// Creates a new default `Node` with the given prefix.
-    pub fn with_prefix(prefix: Vec<usize>) -> Self {
-        Self {
-            prefix,
-            children: Vec::default(),
-            data: Data::default(),
-        }
-    }
-
     fn add_child(&mut self, prefix: &[usize], data: &Data) {
-        self.children
-            .push(Self::new(prefix.to_vec(), vec![], data.clone()));
+        self.children.push(Self::with_cloned_orig(
+            prefix.to_vec(),
+            vec![],
+            data.clone(),
+        ));
     }
 
     fn find_child(&mut self, num: usize) -> Option<&mut Self> {
@@ -430,13 +456,16 @@ impl Node {
             .find(|node| node.prefix.first().is_some_and(|a| *a == num))
     }
 
-    fn split(&mut self, index: usize, data: &Data) {
+    fn split(&mut self, index: usize, data: &Data, orig_data: Option<Data>) {
         let node = Self::new(
             self.prefix.split_off(index),
             std::mem::take(&mut self.children),
             self.data.clone(),
+            self.orig_data.take(),
         );
+
         self.add_data(data);
+        self.orig_data = orig_data;
 
         self.children.push(node);
     }
@@ -448,6 +477,14 @@ impl Node {
 
     fn add_data(&mut self, data: &Data) {
         self.data.add(data);
+    }
+
+    fn add_orig_data(&mut self, data: &Data) {
+        if let Some(orig_data) = &mut self.orig_data {
+            orig_data.add(data);
+        } else {
+            self.orig_data = Some(data.clone());
+        }
     }
 }
 
@@ -521,6 +558,14 @@ mod tests {
     fn data_fixture(num: u64) -> Data {
         Data {
             total_bytes: num,
+            accesses: Some(Accesses::default()),
+            ..Default::default()
+        }
+    }
+
+    fn data_with_accesses(accesses: Option<Vec<i64>>) -> Data {
+        Data {
+            accesses: accesses.map(Accesses),
             ..Default::default()
         }
     }
@@ -562,16 +607,58 @@ mod tests {
         DhatTree {
             metadata: metadata_fixture(),
             table: BTreeMap::default(),
-            root: Box::new(Node::new(
+            root: Box::new(Node::without_orig(
                 vec![],
-                vec![Node::new(
+                vec![Node::without_orig(
                     vec![1, 2, 3],
-                    vec![Node::new(vec![4, 5], vec![], data_fixture(1))],
+                    vec![Node::with_cloned_orig(vec![4, 5], vec![], data_fixture(1))],
                     data_fixture(2),
                 )],
                 data_fixture(2),
             )),
         }
+    }
+
+    #[test]
+    fn test_data_from_program_point_expands_accesses() {
+        let program_point = ProgramPoint {
+            accesses: Some(Accesses(vec![1, -2, 3])),
+            ..program_point_fixture(vec![1], 1)
+        };
+
+        let data = Data::from(&program_point);
+
+        assert_eq!(data.accesses, Some(Accesses(vec![1, 3, 3])));
+    }
+
+    #[test]
+    fn test_data_to_program_point_compacts_accesses() {
+        let program_point = Data {
+            accesses: Some(Accesses(vec![1, 3, 3])),
+            ..Default::default()
+        }
+        .to_program_point(vec![1]);
+
+        assert_eq!(program_point.accesses, Some(Accesses(vec![1, -2, 3])));
+    }
+
+    #[rstest]
+    #[case::unset_accesses_plus_accesses(None, Some(vec![1, 2]), Some(vec![1, 2]))]
+    #[case::same_length_accesses(Some(vec![1, 2]), Some(vec![3, 4]), Some(vec![4, 6]))]
+    #[case::different_length_accesses(Some(vec![1]), Some(vec![2, 3]), Some(vec![]))]
+    #[case::accesses_plus_no_accesses(Some(vec![1]), Some(vec![]), Some(vec![]))]
+    #[case::no_accesses_plus_accesses(Some(vec![]), Some(vec![1]), Some(vec![]))]
+    fn test_data_add_accesses(
+        #[case] lhs: Option<Vec<i64>>,
+        #[case] rhs: Option<Vec<i64>>,
+        #[case] expected: Option<Vec<i64>>,
+    ) {
+        let mut lhs = data_with_accesses(lhs);
+        let rhs = data_with_accesses(rhs);
+
+        lhs.add(&rhs);
+
+        assert_eq!(lhs.accesses, expected.map(Accesses));
     }
 
     #[test]
@@ -590,12 +677,13 @@ mod tests {
         let expected = DhatTree {
             metadata: metadata_fixture(),
             table: table_fixture(&[1, 2, 3]),
-            root: Box::new(Node::new(
+            root: Box::new(Node::without_orig(
                 vec![],
                 vec![Node::new(
                     vec![1, 2, 3],
-                    vec![Node::new(vec![4, 5], vec![], data_fixture(1))],
+                    vec![Node::with_cloned_orig(vec![4, 5], vec![], data_fixture(1))],
                     data_fixture(3),
+                    Some(data_fixture(1)),
                 )],
                 data_fixture(3),
             )),
@@ -612,13 +700,13 @@ mod tests {
         let expected = DhatTree {
             metadata: metadata_fixture(),
             table: table_fixture(&[1, 2, 3, 6]),
-            root: Box::new(Node::new(
+            root: Box::new(Node::without_orig(
                 vec![],
-                vec![Node::new(
+                vec![Node::without_orig(
                     vec![1, 2, 3],
                     vec![
-                        Node::new(vec![4, 5], vec![], data_fixture(1)),
-                        Node::new(vec![6], vec![], data_fixture(1)),
+                        Node::with_cloned_orig(vec![4, 5], vec![], data_fixture(1)),
+                        Node::with_cloned_orig(vec![6], vec![], data_fixture(1)),
                     ],
                     data_fixture(3),
                 )],
@@ -637,16 +725,17 @@ mod tests {
         let expected = DhatTree {
             metadata: metadata_fixture(),
             table: table_fixture(&[1]),
-            root: Box::new(Node::new(
+            root: Box::new(Node::without_orig(
                 vec![],
                 vec![Node::new(
                     vec![1],
-                    vec![Node::new(
+                    vec![Node::without_orig(
                         vec![2, 3],
-                        vec![Node::new(vec![4, 5], vec![], data_fixture(1))],
+                        vec![Node::with_cloned_orig(vec![4, 5], vec![], data_fixture(1))],
                         data_fixture(2),
                     )],
                     data_fixture(3),
+                    Some(data_fixture(1)),
                 )],
                 data_fixture(3),
             )),
@@ -663,17 +752,17 @@ mod tests {
         let expected = DhatTree {
             metadata: metadata_fixture(),
             table: table_fixture(&[1, 6]),
-            root: Box::new(Node::new(
+            root: Box::new(Node::without_orig(
                 vec![],
-                vec![Node::new(
+                vec![Node::without_orig(
                     vec![1],
                     vec![
-                        Node::new(
+                        Node::without_orig(
                             vec![2, 3],
-                            vec![Node::new(vec![4, 5], vec![], data_fixture(1))],
+                            vec![Node::with_cloned_orig(vec![4, 5], vec![], data_fixture(1))],
                             data_fixture(2),
                         ),
-                        Node::new(vec![6], vec![], data_fixture(1)),
+                        Node::with_cloned_orig(vec![6], vec![], data_fixture(1)),
                     ],
                     data_fixture(3),
                 )],
@@ -692,15 +781,15 @@ mod tests {
         let expected = DhatTree {
             metadata: metadata_fixture(),
             table: table_fixture(&[6]),
-            root: Box::new(Node::new(
+            root: Box::new(Node::without_orig(
                 vec![],
                 vec![
-                    Node::new(
+                    Node::without_orig(
                         vec![1, 2, 3],
-                        vec![Node::new(vec![4, 5], vec![], data_fixture(1))],
+                        vec![Node::with_cloned_orig(vec![4, 5], vec![], data_fixture(1))],
                         data_fixture(2),
                     ),
-                    Node::new(vec![6], vec![], data_fixture(1)),
+                    Node::with_cloned_orig(vec![6], vec![], data_fixture(1)),
                 ],
                 data_fixture(3),
             )),
@@ -716,7 +805,7 @@ mod tests {
     fn test_root_tree_insert() {
         let expected = RootTree {
             metadata: metadata_fixture(),
-            root: Box::new(Node::new(vec![], vec![], data_fixture(1))),
+            root: Box::new(Node::without_orig(vec![], vec![], data_fixture(1))),
             table: table_fixture(&[1, 2, 3]),
         };
 
@@ -728,35 +817,36 @@ mod tests {
 
     #[rstest]
     #[case::root_skipped(
-        Node::new(vec![], vec![], data_fixture(3)),
+        Node::without_orig(vec![], vec![], data_fixture(3)),
         vec![0],
         vec![],
     )]
     #[case::leaf_emitted(
-        Node::new(vec![1, 2], vec![], data_fixture(3)),
+        Node::with_cloned_orig(vec![1, 2], vec![], data_fixture(3)),
         vec![0, 1, 2],
         vec![(vec![1, 2], 3)],
     )]
-    #[case::parent_residual_emitted_after_child(
+    #[case::parent_orig_data_emitted_after_child(
         Node::new(
             vec![1],
-            vec![Node::new(vec![2], vec![], data_fixture(2))],
+            vec![Node::with_cloned_orig(vec![2], vec![], data_fixture(2))],
             data_fixture(5),
+            Some(data_fixture(3)),
         ),
         vec![0, 1, 2],
         vec![(vec![1, 2], 2), (vec![1], 3)],
     )]
     #[case::synthetic_zero_parent_skipped(
-        Node::new(
+        Node::without_orig(
             vec![1],
-            vec![Node::new(vec![2], vec![], data_fixture(5))],
+            vec![Node::with_cloned_orig(vec![2], vec![], data_fixture(5))],
             data_fixture(5),
         ),
         vec![0, 1, 2],
         vec![(vec![1, 2], 5)],
     )]
     #[case::sparse_frames_rebased(
-        Node::new(vec![5], vec![], data_fixture(1)),
+        Node::with_cloned_orig(vec![5], vec![], data_fixture(1)),
         vec![0, 0, 0, 0, 0, 1],
         vec![(vec![1], 1)],
     )]
@@ -781,7 +871,7 @@ mod tests {
     fn test_root_tree_insert_two() {
         let expected = RootTree {
             metadata: metadata_fixture(),
-            root: Box::new(Node::new(vec![], vec![], data_fixture(3))),
+            root: Box::new(Node::without_orig(vec![], vec![], data_fixture(3))),
             table: table_fixture(&[1, 2, 3]),
         };
 
