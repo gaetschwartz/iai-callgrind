@@ -32,6 +32,7 @@ const TEMPLATE_CONTENT: &str = r#"fn main() {
 "#;
 const SCHEMA_PATH: &str = "gungraun-runner/schemas";
 const SCHEMA_VERSION: &str = "6";
+const CONTINUE_FILE_NAME: &str = "benchmark-tests.continue";
 
 static TEMPLATE_DATA: OnceCell<HashMap<String, minijinja::Value>> = OnceCell::new();
 
@@ -126,8 +127,15 @@ static ABSOLUTE_PATH_APOSTROPHE_RE: LazyLock<Regex> =
 
 #[derive(Debug, Clone)]
 struct Benchmark {
-    name: String,
+    /// Original `.conf.yml` file stem.
+    ///
+    /// This identifies the benchmark configuration and is unique for templated benchmarks too.
+    config_name: String,
     dir: PathBuf,
+    /// Cargo bench target name.
+    ///
+    /// This is usually the same as `config_name`, but templated benchmarks all use
+    /// `test_bench_template`.
     bench_name: String,
     config: Config,
     dest_dir: PathBuf,
@@ -258,19 +266,19 @@ impl Benchmark {
             .map_err(|error| format!("Failed to deserialize '{}': {error}", path.display()))
             .expect("File should be deserializable");
 
-        let name = path.file_name().unwrap().to_string_lossy();
-        let name = name.strip_suffix(".conf.yml").unwrap().to_owned();
-        let (bench_name, name) = if config.template.is_some() {
-            (String::from(TEMPLATE_BENCH_NAME), name)
+        let config_name = path.file_name().unwrap().to_string_lossy();
+        let config_name = config_name.strip_suffix(".conf.yml").unwrap().to_owned();
+        let bench_name = if config.template.is_some() {
+            String::from(TEMPLATE_BENCH_NAME)
         } else {
-            (name.clone(), name.clone())
+            config_name.clone()
         };
 
         Benchmark {
             home_dir: target_dir.join("gungraun"),
             dest_dir: target_dir.join("gungraun").join(PACKAGE).join(&bench_name),
             bench_name,
-            name,
+            config_name,
             config,
             dir: path.parent().unwrap().to_path_buf(),
         }
@@ -360,6 +368,11 @@ impl Benchmark {
                 panic!("Running setup failed with {status:?}");
             }
         }
+
+        std::fs::create_dir_all(&self.home_dir)
+            .expect("Creating the gungraun home directory should succeed");
+        std::fs::write(self.home_dir.join(CONTINUE_FILE_NAME), &self.config_name)
+            .expect("Writing to the continue file should succeed");
 
         let mut command = std::process::Command::new(env!("CARGO"));
         command.args(["bench", "--package", PACKAGE, "--bench", &self.bench_name]);
@@ -504,7 +517,7 @@ impl Benchmark {
             for tries in 0..=max_tries {
                 print_info(format!(
                     "Running {}: Group: ({}/{num_groups}), Run: ({}/{})",
-                    &self.name,
+                    &self.config_name,
                     group_index + 1,
                     index + 1,
                     num_runs
@@ -572,7 +585,7 @@ impl Benchmark {
                     } else {
                         print_info(format!(
                             "Flaky test: Re-running {}: ({}/{max_tries})",
-                            &self.name,
+                            &self.config_name,
                             tries + 1,
                         ));
                         self.restore(backup_dir.as_ref());
@@ -985,9 +998,14 @@ impl BenchmarkOutput {
 }
 
 impl BenchmarkRunner {
-    pub fn new(benches: &[String], filter: Option<String>, partition: Option<Partition>) -> Self {
+    pub fn new(
+        benches: &[String],
+        filter: Option<String>,
+        partition: Option<Partition>,
+        resume: bool,
+    ) -> Self {
         Self {
-            metadata: Metadata::new(benches, filter, partition),
+            metadata: Metadata::new(benches, filter, partition, resume),
         }
     }
 
@@ -1027,6 +1045,13 @@ impl BenchmarkRunner {
                 bench.run(num_groups, index, group, &self.metadata, &compiled);
             }
         }
+
+        let _ = std::fs::remove_file(
+            self.metadata
+                .target_directory
+                .join("gungraun")
+                .join(CONTINUE_FILE_NAME),
+        );
 
         Ok(())
     }
@@ -1137,7 +1162,12 @@ impl ExpectedRun {
 }
 
 impl Metadata {
-    pub fn new(benches: &[String], filter: Option<String>, partition: Option<Partition>) -> Self {
+    pub fn new(
+        benches: &[String],
+        filter: Option<String>,
+        partition: Option<Partition>,
+        resume: bool,
+    ) -> Self {
         let meta = cargo_metadata::MetadataCommand::new()
             .no_deps()
             .exec()
@@ -1165,7 +1195,7 @@ impl Metadata {
             .map(|path| Benchmark::new(&path, &package_dir, &target_directory))
             .collect::<Vec<Benchmark>>();
 
-        benchmarks.sort_by_key(|b| b.name.clone());
+        benchmarks.sort_by_key(|b| b.config_name.clone());
         if let Some(partition) = partition {
             let chunk_size = benchmarks.len().div_ceil(partition.total);
             let chunk = benchmarks
@@ -1175,8 +1205,29 @@ impl Metadata {
             benchmarks = chunk.expect("The partition should map to a chunk of all benchmarks");
         }
 
+        // We do not check the exact command, so it is possible to resume at any point. The only
+        // condition is that the benchmark name must be part of the new command.
+        if resume {
+            let benchmark =
+                std::fs::read_to_string(target_directory.join("gungraun").join(CONTINUE_FILE_NAME))
+                    .expect("The continue file should exist");
+            let benchmark = benchmark.trim();
+            print_info(format!("Continue with {benchmark}"));
+
+            let index = benchmarks
+                .iter()
+                .position(|b| b.config_name == benchmark)
+                .unwrap_or_else(|| {
+                    panic!("Benchmark '{benchmark}' from continue file was not found")
+                });
+
+            benchmarks.drain(..index);
+        }
+
         print_info("Benchmarks to run:");
-        benchmarks.iter().for_each(|b| println!("  {}", b.name));
+        benchmarks
+            .iter()
+            .for_each(|b| println!("  {}", b.config_name));
 
         let rust_version = get_rust_version().expect("Rust version should be present");
 
@@ -1286,7 +1337,7 @@ impl RunConfig {
         {
             let base_dir = home_dir.join(PACKAGE).join(bench_name);
             // These checks heavily depends on the creation of the `summary.json` files, but we
-            // create them per default.
+            // create them by default.
             for path in glob(&format!("{}/**/summary.json", base_dir.display()))
                 .unwrap()
                 .map(Result::unwrap)
@@ -1335,6 +1386,7 @@ fn main() {
     let mut benches = Vec::default();
     let mut filter = Option::default();
     let mut partition = Option::default();
+    let mut resume = false;
     for arg in std::env::args().skip(1) {
         match arg.split_once("=") {
             Some(("--filter", value)) => filter = Some(value.to_owned()),
@@ -1360,11 +1412,12 @@ fn main() {
                 }
             }
             Some(_) => panic!("Invalid argument: {arg}"),
+            None if arg == "continue" => resume = true,
             None => benches.push(arg),
         }
     }
 
-    let runner = BenchmarkRunner::new(&benches, filter, partition);
+    let runner = BenchmarkRunner::new(&benches, filter, partition, resume);
 
     let mut map = HashMap::new();
     map.insert(

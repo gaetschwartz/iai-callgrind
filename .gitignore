@@ -1,7 +1,7 @@
 flamegraph.svg
 perf.data
 *.profraw
-lcov.info
+lcov*.info
 *.scip
 .opencode-tasks/
 .opencode
