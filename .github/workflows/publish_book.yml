@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       docs: ${{ steps.filter.outputs.docs }}
-      is_tag: ${{ steps.tag-check.outputs.is_tag }}
+      force: ${{ steps.tag-check.outputs.force }}
     steps:
       - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v4
@@ -26,13 +26,14 @@ jobs:
       - id: tag-check
         run: |
           case "${{ github.ref }}" in
-            refs/tags/*) echo "is_tag=true" >> "$GITHUB_OUTPUT" ;;
-            *)            echo "is_tag=false" >> "$GITHUB_OUTPUT" ;;
+            refs/tags/*) echo "force=true" >> "$GITHUB_OUTPUT" ;;
+            refs/heads/mdbook) echo "force=true" >> "$GITHUB_OUTPUT" ;;
+            *)            echo "force=false" >> "$GITHUB_OUTPUT" ;;
           esac
 
   deploy:
     needs: changes
-    if: ${{ needs.changes.outputs.is_tag == 'true' || needs.changes.outputs.docs == 'true' }}
+    if: ${{ needs.changes.outputs.force == 'true' || needs.changes.outputs.docs == 'true' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: write
