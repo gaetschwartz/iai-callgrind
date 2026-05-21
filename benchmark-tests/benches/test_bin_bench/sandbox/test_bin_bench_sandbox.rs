@@ -1,3 +1,4 @@
+use std::ffi::OsStr;
 use std::path::PathBuf;
 
 use gungraun::prelude::*;
@@ -61,6 +62,15 @@ fn setup_directory_and_file() {
 
 fn teardown_directory_and_file() {
     std::fs::remove_file("foo/bar.txt").unwrap();
+    // profraw files can appear during benchmark coverage runs
+    for entry in std::fs::read_dir("foo").unwrap().filter(|e| {
+        e.as_ref().map_or(true, |e| {
+            let path = e.path();
+            path.is_file() && path.extension().is_none_or(|p| p == OsStr::new("profraw"))
+        })
+    }) {
+        std::fs::remove_file(entry.unwrap().path()).unwrap();
+    }
     std::fs::remove_dir("foo").unwrap();
     println!("Deleted directory 'foo' with file 'bar.txt'");
 }

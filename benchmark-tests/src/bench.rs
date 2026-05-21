@@ -125,137 +125,325 @@ static THREAD_PANICKED: LazyLock<Regex> = LazyLock::new(|| {
 static ABSOLUTE_PATH_APOSTROPHE_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"[']([/][^/']+)+[']").expect("Regex should compile"));
 
+/// Benchmark test case derived from a `.conf.yml` file.
+///
+/// Example: `test_lib_bench_tools.conf.yml` becomes one `Benchmark` value.
 #[derive(Debug, Clone)]
 struct Benchmark {
     /// Original `.conf.yml` file stem.
     ///
     /// This identifies the benchmark configuration and is unique for templated benchmarks too.
     config_name: String,
+    /// Directory containing the benchmark configuration file and expected fixtures.
+    ///
+    /// Example: `benchmark-tests/benches/test_lib_bench/tools`.
     dir: PathBuf,
     /// Cargo bench target name.
     ///
     /// This is usually the same as `config_name`, but templated benchmarks all use
     /// `test_bench_template`.
     bench_name: String,
+    /// Parsed YAML configuration for this benchmark.
+    ///
+    /// Contains all groups and runs from `test_lib_bench_tools.conf.yml`.
     config: Config,
+    /// Directory where this benchmark writes regular output files.
+    ///
+    /// Example: `target/gungraun/benchmark-tests/test_lib_bench_tools`.
     dest_dir: PathBuf,
+    /// Root directory for benchmark test output below cargo's target directory.
+    ///
+    /// Example: `target/gungraun`.
     home_dir: PathBuf,
 }
 
+/// Captured result of one cargo bench invocation.
+///
+/// Example:
+/// * stdout/stderr from `cargo bench --package benchmark-tests --bench test_lib_bench_tools`.
 #[derive(Debug)]
 struct BenchmarkOutput {
+    /// Process output returned by `std::process::Command::output`.
+    ///
+    /// Example: includes the benchmark process exit status and captured stderr.
     output: Output,
+    /// Whether the run used an explicit tolerance argument.
+    ///
+    /// Example: `true` when `--tolerance=0.01` was forwarded to the benchmark.
     is_tolerance: bool,
 }
 
+/// Top-level benchmark test runner.
+///
+/// Owns the metadata used by `bench --filter='test_lib_*'`.
 #[derive(Debug)]
 pub struct BenchmarkRunner {
+    /// Resolved workspace, target directory, compiler, and selected benchmark list.
+    ///
+    /// Contains only the selected benchmarks when `--partition`, `--filter` or `--continue` is
+    /// used.
     metadata: Metadata,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+/// YAML group containing multiple benchmark runs under shared conditions.
+///
+/// A group can gate all runs to Linux only.
 pub struct GroupConfig {
+    /// Optional target triple include or exclude condition for the whole group.
+    ///
+    /// Example: `x86_64-unknown-linux-gnu`.
     #[serde(default, with = "benchmark_tests::serde::runs_on")]
     runs_on: Option<RunsOn>,
+    /// Optional Rust compiler version or channel condition for the whole group.
+    ///
+    /// Example: `>=1.86.0` or `=nightly`.
     #[serde(default, with = "benchmark_tests::serde::rust_version")]
     rust_version: Option<benchmark_tests::serde::rust_version::VersionComparator>,
+    /// Runs executed for this group after group-level filters match.
+    ///
+    /// Example: two runs comparing default output and `--show-grid=true` output.
     runs: Vec<RunConfig>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+/// YAML configuration loaded from one benchmark `.conf.yml` file.
+///
+/// Example: `test_lib_bench_tools.conf.yml` with an optional template and groups.
 struct Config {
+    /// Optional Rust source template rendered before a run.
+    ///
+    /// Example: `templates/tool_bench.rs.j2`.
     template: Option<PathBuf>,
+    /// Grouped runs defined by this benchmark configuration.
+    ///
+    /// Example: groups for default and filtered benchmark invocations.
     groups: Vec<GroupConfig>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+/// Expected files for one benchmark output directory.
+///
+/// Example: requires `summary.json` and one `callgrind.out.*` glob match.
 struct Expected {
+    /// Exact files expected to exist and be non-empty.
+    ///
+    /// Example: `["summary.json"]`.
     #[serde(default)]
     files: Vec<PathBuf>,
+    /// Glob patterns with required match counts.
+    ///
+    /// Example: `callgrind.out.*` with `count = 1`.
     #[serde(default)]
     globs: Vec<ExpectedGlob>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+/// Expected side effects and process result for a run.
+///
+/// Example: compare stdout against `expected.stdout` and require exit code `0`.
 struct ExpectedConfig {
+    /// Path to an expected files manifest relative to the benchmark config directory.
+    ///
+    /// Example: `expected/files.yml`.
     #[serde(default)]
     files: Option<PathBuf>,
+    /// Path to expected stdout relative to the benchmark config directory.
+    ///
+    /// Example: `expected.stdout`.
     #[serde(default)]
     stdout: Option<PathBuf>,
+    /// Path to expected stderr relative to the benchmark config directory.
+    ///
+    /// Example: `expected.stderr`.
     #[serde(default)]
     stderr: Option<PathBuf>,
+    /// Expected process exit code.
+    ///
+    /// Example: `101` for a benchmark expected to panic.
     #[serde(default)]
     exit_code: Option<i32>,
+    /// Whether all-zero metrics are allowed in generated summaries.
+    ///
+    /// Example: `true` for a run that intentionally does not collect costs.
     #[serde(default)]
     zero_metrics: bool,
+    /// Whether no benchmark output directory is expected.
+    ///
+    /// Example: `true` for an early argument validation failure.
     #[serde(default)]
     no_files: bool,
+    /// Whether filtered stdout must be empty.
+    ///
+    /// Example: `true` for a quiet successful run.
     #[serde(default)]
     no_stdout: bool,
+    /// Whether filtered stderr must be empty.
+    ///
+    /// Example: `true` when cargo should not emit benchmark diagnostics.
     #[serde(default)]
     no_stderr: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+/// Expected glob assertion for benchmark output files.
+///
+/// Example: require exactly one `callgrind.out.*` file.
 struct ExpectedGlob {
+    /// Glob pattern relative to an expected run directory.
+    ///
+    /// Example: `callgrind.out.*`.
     pattern: String,
+    /// Required number of files matching `pattern`.
+    ///
+    /// Example: `1`.
     count: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+/// Expected files for one benchmark function output directory.
+///
+/// Example: group `library_benchmark`, function `bench_sort`, id `small`.
 struct ExpectedRun {
+    /// Benchmark group directory below the benchmark output root.
+    ///
+    /// Example: `library_benchmark`.
     group: String,
+    /// Benchmark function name or template string used to locate the output directory.
+    ///
+    /// Example: `bench_sort`.
     function: String,
+    /// Optional benchmark id appended to the function directory name.
+    ///
+    /// Example: `small` for `bench_sort.small`.
     id: Option<String>,
+    /// Expected files and glob counts for the resolved function directory.
+    ///
+    /// Example: require `summary.json` and one callgrind output file.
     expected: Expected,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+/// Expected files manifest referenced by an `ExpectedConfig`.
+///
+/// Example: a YAML file listing all expected benchmark function output directories.
 struct ExpectedRuns {
+    /// Optional alternate home directory for expected output lookup.
+    ///
+    /// Example: a target-triple-specific output root.
     #[serde(default)]
     home_dir: Option<PathBuf>,
+    /// Expected output directories and files to assert.
+    ///
+    /// Example: entries for all functions generated by a templated benchmark.
     data: Vec<ExpectedRun>,
 }
 
 #[derive(Debug, Clone)]
+/// Workspace and benchmark selection metadata.
+///
+/// Example: produced once from cargo metadata before running benchmark tests.
 struct Metadata {
+    /// Cargo workspace root.
+    ///
+    /// Example: repository root containing `Cargo.toml`.
     workspace_root: PathBuf,
+    /// Cargo target directory from cargo metadata.
+    ///
+    /// Example: `target` or a custom `CARGO_TARGET_DIR`.
     target_directory: PathBuf,
+    /// Benchmarks selected by CLI arguments, filters, partitioning, and resume state.
+    ///
+    /// Example: only benchmarks matching `--filter='test_lib_*'`.
     benchmarks: Vec<Benchmark>,
+    /// Path to the `benchmark-tests/benches` directory.
+    ///
+    /// Example: used to write `test_bench_template.rs`.
     benches_dir: PathBuf,
+    /// Rust compiler version metadata used for version-gated runs.
+    ///
+    /// Example: channel `nightly` or semver `1.86.0`.
     rust_version: VersionMeta,
 }
 
 #[derive(Debug, Clone, Copy)]
+/// Selected partition of the benchmark list.
+///
+/// Example: `part = 2`, `total = 4` runs the second quarter of benchmarks.
 pub struct Partition {
+    /// One-based partition number to run.
+    ///
+    /// Example: `2` in `--partition=2/4`.
     part: usize,
+    /// Total number of partitions.
+    ///
+    /// Example: `4` in `--partition=2/4`.
     total: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+/// YAML configuration for one benchmark invocation.
+///
+/// Example: one run can pass extra cargo args, benchmark args, envs, and expectations.
 struct RunConfig {
+    /// Extra cargo arguments passed before `--`.
+    ///
+    /// Example: `["--features", "client-requests"]`.
     #[serde(default)]
     cargo_args: Vec<String>,
+    /// Benchmark binary arguments passed after `--`.
+    ///
+    /// Example: `["--show-grid=true"]`.
     #[serde(default)]
     args: Vec<String>,
+    /// Data passed to the benchmark source template renderer.
+    ///
+    /// Example: `{ "tool": "callgrind" }`.
     #[serde(default)]
     template_data: HashMap<String, minijinja::Value>,
+    /// Expected process output, exit status, and generated files.
+    ///
+    /// Example: compare stdout with `expected.stdout` and validate `summary.json`.
     #[serde(default)]
     expected: Option<ExpectedConfig>,
+    /// Optional target triple include or exclude condition for this run.
+    ///
+    /// Example: skip a run on `aarch64-apple-darwin`.
     #[serde(default, with = "benchmark_tests::serde::runs_on")]
     runs_on: Option<RunsOn>,
+    /// Directories removed before this run starts.
+    ///
+    /// Example: `target/gungraun/benchmark-tests/test_lib_bench_tools`.
     #[serde(default)]
     rmdirs: Vec<PathBuf>,
+    /// Optional Rust compiler version or channel condition for this run.
+    ///
+    /// Example: `>=1.86.0` or `!=nightly`.
     #[serde(default, with = "benchmark_tests::serde::rust_version")]
     rust_version: Option<benchmark_tests::serde::rust_version::VersionComparator>,
+    /// Number of retries allowed for flaky assertion failures.
+    ///
+    /// Example: `2` allows up to two retries after the first failed attempt.
     #[serde(default)]
     flaky: Option<usize>,
+    /// Environment variables set for the cargo bench command.
+    ///
+    /// Example: `{ "RUSTFLAGS": "-C target-feature=-avx2" }`.
     #[serde(default)]
     envs: HashMap<String, String>,
+    /// Optional benchmark tolerance forwarded as `--tolerance=<value>`.
+    ///
+    /// Example: `0.01`.
     #[serde(default)]
     tolerance: Option<f64>,
+    /// Shell snippet executed before the benchmark command.
+    ///
+    /// Example: `mkdir -p /tmp/gungraun-fixture`.
     #[serde(default)]
     setup: Option<String>,
+    /// Shell snippet executed after the benchmark command.
+    ///
+    /// Example: `rm -rf /tmp/gungraun-fixture`.
     #[serde(default)]
     teardown: Option<String>,
 }
@@ -1412,7 +1600,7 @@ fn main() {
                 }
             }
             Some(_) => panic!("Invalid argument: {arg}"),
-            None if arg == "continue" => resume = true,
+            None if arg == "--continue" => resume = true,
             None => benches.push(arg),
         }
     }

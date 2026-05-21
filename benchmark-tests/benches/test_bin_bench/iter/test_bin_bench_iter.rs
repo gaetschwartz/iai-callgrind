@@ -1,3 +1,5 @@
+use std::ffi::OsStr;
+
 use gungraun::prelude::*;
 use gungraun::{Bench, BinaryBenchmark, OutputFormat, Sandbox, binary_benchmark_attribute};
 
@@ -24,6 +26,14 @@ fn remove_file(path: &str) {
 fn print_files() {
     for entry in std::fs::read_dir(".")
         .unwrap()
+        // Filter profraw files which might be created during benchmark coverage runs
+        .filter(|p| {
+            p.as_ref().map_or(true, |e| {
+                e.path()
+                    .extension()
+                    .is_none_or(|e| e != OsStr::new("profraw"))
+            })
+        })
         .collect::<Result<Vec<_>, std::io::Error>>()
         .unwrap()
     {
