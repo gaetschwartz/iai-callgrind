@@ -55,9 +55,6 @@ jobs:
             tr -d '"'
           )
 
-          # Give docs.rs some reasonable head start
-          sleep 300
-
           counter=0
           max=1800
           echo "Waiting for docs.rs to build docs for gungraun v${version}"
@@ -70,9 +67,15 @@ jobs:
               echo "Timeout reached. Aborting..."
               exit 1
             else
+              if ((counter == 0)); then
+                # Give docs.rs some reasonable head start
+                sleep 300
+              else
+                sleep 1
+              fi
+
               counter=$((counter + 1))
-              printf '.'
-              sleep 1
+              echo '.'
             fi
           done
       - name: Install mdbook
