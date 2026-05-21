@@ -37,9 +37,9 @@ cachemissrates
 cachesim
 cacheuse
 cachuse
+Callgrind
 CALLGRIND
 callgrind
-Callgrind
 CFLAGS
 cicd
 Clearify
@@ -70,6 +70,7 @@ dlmw
 docsrs
 doctest
 doesnotexist
+dorny
 dotgraphs
 dowild
 dpkg
@@ -80,6 +81,7 @@ elif
 endswith
 eprintln
 errormgr
+esac
 estimatedcycles
 euxo
 EventKind
@@ -87,8 +89,8 @@ exidx
 exitcode
 Flamegraph
 flamegraph
-flamegraphs
 Flamegraphs
+flamegraphs
 fldcw
 formattable
 freelike
@@ -128,8 +130,8 @@ isystem
 Itamar
 itertools
 jcnd
-JITter
 jitter
+JITter
 jsonschema
 Justfile
 kcachegrind
@@ -251,8 +253,8 @@ rustified
 RUSTSEC
 rustup
 rustversion
-RWLOCK
 rwlock
+RWLOCK
 rwlocks
 sandboxing
 sanitized
@@ -313,10 +315,10 @@ unsanitized
 USERREQ
 USERSO
 usize
-valgrind
 Valgrind
-Valgrind's
+valgrind
 valgrind's
+Valgrind's
 Valgrinds
 valico
 valist
