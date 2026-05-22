@@ -17,16 +17,33 @@ fn teardown(mut data: Vec<i32>) {
     drop(other);
 }
 
+fn is_coverage_run() -> bool {
+    std::env::var("CARGO_LLVM_COV").is_ok_and(|e| e == "1")
+}
+
+fn hard_limits(tb: u64, tbk: u64, rb: u64, wb: u64) -> Vec<(DhatMetric, u64)> {
+    if is_coverage_run() {
+        vec![
+            (DhatMetric::TotalBytes, tb),
+            (DhatMetric::TotalBlocks, tbk),
+            (DhatMetric::ReadsBytes, rb * 2),
+            (DhatMetric::WritesBytes, wb * 2),
+        ]
+    } else {
+        vec![
+            (DhatMetric::TotalBytes, tb),
+            (DhatMetric::TotalBlocks, tbk),
+            (DhatMetric::ReadsBytes, rb),
+            (DhatMetric::WritesBytes, wb),
+        ]
+    }
+}
+
 #[library_benchmark(
     config = LibraryBenchmarkConfig::default()
         .tool(Dhat::default()
             .frames(["*::custom_setup"])
-            .hard_limits([
-                (DhatMetric::TotalBytes, 40),
-                (DhatMetric::TotalBlocks, 2),
-                (DhatMetric::ReadsBytes, 80),
-                (DhatMetric::WritesBytes, 120)
-            ])
+            .hard_limits(hard_limits(40, 2, 80, 120))
         )
 )]
 #[bench::with_entry_point(args = (5), setup = custom_setup, teardown = teardown)]
@@ -108,12 +125,7 @@ fn ad_hoc(data: Vec<i32>) -> Vec<i32> {
 #[library_benchmark(
     config = LibraryBenchmarkConfig::default()
         .tool(Dhat::default()
-            .hard_limits([
-                (DhatMetric::TotalBytes, 20),
-                (DhatMetric::TotalBlocks, 1),
-                (DhatMetric::ReadsBytes, 0),
-                (DhatMetric::WritesBytes, 20)
-            ])
+            .hard_limits(hard_limits(20, 1, 0, 20))
         )
 )]
 #[bench::five(5)]
@@ -126,6 +138,8 @@ library_benchmark_group!(
     benchmarks = [heap, copy, ad_hoc, alloc_in_func]
 );
 main!(
-    config = LibraryBenchmarkConfig::default().default_tool(ValgrindTool::DHAT),
+    config = LibraryBenchmarkConfig::default()
+        .default_tool(ValgrindTool::DHAT)
+        .pass_through_env("CARGO_LLVM_COV"),
     library_benchmark_groups = my_group
 );

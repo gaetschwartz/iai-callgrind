@@ -1,4 +1,6 @@
-// spell-checker:ignore rmdirs sysdeps multiarch memchr
+//! spell-checker:ignore rmdirs sysdeps multiarch memchr
+
+use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 use std::fs::File;
@@ -33,6 +35,7 @@ const TEMPLATE_CONTENT: &str = r#"fn main() {
 const SCHEMA_PATH: &str = "gungraun-runner/schemas";
 const SCHEMA_VERSION: &str = "6";
 const CONTINUE_FILE_NAME: &str = "benchmark-tests.continue";
+const CARGO_LLVM_COV: &str = "CARGO_LLVM_COV";
 
 static TEMPLATE_DATA: OnceCell<HashMap<String, minijinja::Value>> = OnceCell::new();
 
@@ -50,6 +53,9 @@ static NUMBERS_RE: LazyLock<Regex> = LazyLock::new(|| {
     )
     .expect("Regex should compile")
 });
+// Do not match (*********); those placeholder lines should stay unchanged.
+static NUMBERS_DIFF_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\([^)*]*\)(?:\s+\[[^\]]+\])?$").expect("Regex should compile"));
 static RUNNING_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^[ ]+Running .*$").expect("Regex should compile"));
 static PROCESS_DID_NOT_EXIT_SUCCESSFULLY_RE: LazyLock<Regex> = LazyLock::new(|| {
@@ -364,6 +370,12 @@ struct Metadata {
     ///
     /// Example: channel `nightly` or semver `1.86.0`.
     rust_version: VersionMeta,
+    /// Whether the run is a llvm coverage run
+    ///
+    /// This is usually true when CARGO_LLVM_COV=1 is set. Coverage instrumentation changes the
+    /// benchmarked machine code, so DHAT read/write metrics can differ from normal benchmark
+    /// fixtures.
+    is_coverage_run: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -801,7 +813,7 @@ impl Benchmark {
 }
 
 impl BenchmarkOutput {
-    fn assert(&self, bench_dir: &Path, _meta: &Metadata, expected: &ExpectedConfig) {
+    fn assert(&self, bench_dir: &Path, meta: &Metadata, expected: &ExpectedConfig) {
         let output = &self.output;
 
         print_info("STDERR:");
@@ -824,7 +836,7 @@ impl BenchmarkOutput {
                 .expect("Reading file should succeed");
 
             let filtered = self.filter_stderr(&output.stderr);
-            let expected_string = String::from_utf8_lossy(&expected_stderr);
+            let expected_string: String = String::from_utf8_lossy(&expected_stderr).into();
 
             if option_env!("BENCH_OVERWRITE").map_or(false, |s| s.eq_ignore_ascii_case("yes")) {
                 if filtered != expected_string {
@@ -868,8 +880,8 @@ impl BenchmarkOutput {
                 .read_to_end(&mut expected_stdout)
                 .expect("Reading file should succeed");
 
-            let filtered = self.filter_stdout(&output.stdout);
-            let expected_string = String::from_utf8_lossy(&expected_stdout);
+            let mut filtered = self.filter_stdout(&output.stdout);
+            let mut expected_string = String::from_utf8_lossy(&expected_stdout).into();
 
             if option_env!("BENCH_OVERWRITE").map_or(false, |s| s.eq_ignore_ascii_case("yes")) {
                 if filtered != expected_string {
@@ -888,6 +900,11 @@ impl BenchmarkOutput {
                     print_info("Skip overwrite since verifying stdout was successful");
                 }
             } else {
+                if meta.is_coverage_run {
+                    filtered = Self::normalize_coverage_stdout(filtered);
+                    expected_string = Self::normalize_coverage_stdout(expected_string);
+                }
+
                 if filtered != expected_string {
                     panic!(
                         "Assertion of stdout failed: {}",
@@ -897,6 +914,26 @@ impl BenchmarkOutput {
                 print_info("Verifying stdout successful");
             }
         }
+    }
+
+    fn normalize_coverage_stdout(stdout: String) -> String {
+        let mut result = String::new();
+        for line in stdout.lines() {
+            let (indent, line) = if line.starts_with("  ") || line.starts_with("|") {
+                (&line[0..2], &line[2..])
+            } else {
+                (&line[0..0], line)
+            };
+
+            let line = if line.starts_with("Reads bytes") || line.starts_with("Writes bytes") {
+                NUMBERS_DIFF_RE.replace(line, "(         )")
+            } else {
+                Cow::Borrowed(line)
+            };
+
+            writeln!(result, "{indent}{line}").unwrap();
+        }
+        result
     }
 
     fn filter_stderr(&self, stderr: &[u8]) -> String {
@@ -1048,14 +1085,18 @@ impl BenchmarkOutput {
                 // to
                 //
                 //   RAM Hits:                |N/A             (*********)
+
+                // Callgrind/Cachegrind
                 if desc.starts_with("RAM Hits")
                     || desc.starts_with("Estimated Cycles")
                     || desc.starts_with("LL Hits")
                     || desc.starts_with("L1 Hits")
                     || desc.starts_with("SysTime")
                     || desc.starts_with("SysCpuTime")
+                    // Error tools like Memcheck
                     || desc.starts_with("Suppressed Errors")
                     || desc.starts_with("Suppressed Contexts")
+                    // DHAT
                     || desc.starts_with("At t-gmax bytes")
                     || desc.starts_with("At t-gmax blocks")
                 {
@@ -1425,6 +1466,7 @@ impl Metadata {
             benchmarks,
             benches_dir,
             rust_version,
+            is_coverage_run: std::env::var(CARGO_LLVM_COV).is_ok_and(|v| v == "1"),
         }
     }
 
