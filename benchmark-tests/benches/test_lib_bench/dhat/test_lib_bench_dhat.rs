@@ -2,7 +2,7 @@ use std::hint::black_box;
 
 use benchmark_tests::{bubble_sort, setup_best_case_array, setup_worst_case_array};
 use gungraun::prelude::*;
-use gungraun::{Dhat, DhatMetric, EntryPoint, ValgrindTool};
+use gungraun::{Dhat, DhatMetric, EntryPoint, SanitizeOutput, ValgrindTool};
 
 #[inline(never)]
 fn custom_setup(start: i32) -> Vec<i32> {
@@ -17,16 +17,33 @@ fn teardown(mut data: Vec<i32>) {
     drop(other);
 }
 
+fn is_coverage_run() -> bool {
+    std::env::var("CARGO_LLVM_COV").is_ok_and(|e| e == "1")
+}
+
+fn hard_limits(tb: u64, tbk: u64, rb: u64, wb: u64) -> Vec<(DhatMetric, u64)> {
+    if is_coverage_run() {
+        vec![
+            (DhatMetric::TotalBytes, tb),
+            (DhatMetric::TotalBlocks, tbk),
+            (DhatMetric::ReadsBytes, rb * 2),
+            (DhatMetric::WritesBytes, wb * 2),
+        ]
+    } else {
+        vec![
+            (DhatMetric::TotalBytes, tb),
+            (DhatMetric::TotalBlocks, tbk),
+            (DhatMetric::ReadsBytes, rb),
+            (DhatMetric::WritesBytes, wb),
+        ]
+    }
+}
+
 #[library_benchmark(
     config = LibraryBenchmarkConfig::default()
         .tool(Dhat::default()
             .frames(["*::custom_setup"])
-            .hard_limits([
-                (DhatMetric::TotalBytes, 40),
-                (DhatMetric::TotalBlocks, 2),
-                (DhatMetric::ReadsBytes, 80),
-                (DhatMetric::WritesBytes, 120)
-            ])
+            .hard_limits(hard_limits(40, 2, 80, 120))
         )
 )]
 #[bench::with_entry_point(args = (5), setup = custom_setup, teardown = teardown)]
@@ -108,12 +125,7 @@ fn ad_hoc(data: Vec<i32>) -> Vec<i32> {
 #[library_benchmark(
     config = LibraryBenchmarkConfig::default()
         .tool(Dhat::default()
-            .hard_limits([
-                (DhatMetric::TotalBytes, 20),
-                (DhatMetric::TotalBlocks, 1),
-                (DhatMetric::ReadsBytes, 0),
-                (DhatMetric::WritesBytes, 20)
-            ])
+            .hard_limits(hard_limits(20, 1, 0, 20))
         )
 )]
 #[bench::five(5)]
@@ -121,11 +133,37 @@ fn alloc_in_func(start: i32) -> Vec<i32> {
     setup_worst_case_array(start)
 }
 
+#[library_benchmark]
+#[bench::default()]
+#[bench::yes(
+    config = LibraryBenchmarkConfig::default()
+        .tool(Dhat::default()
+            .sanitize_output(SanitizeOutput::Yes)
+        ),
+)]
+#[bench::no(
+    config = LibraryBenchmarkConfig::default()
+        .tool(Dhat::default()
+            .sanitize_output(SanitizeOutput::No)
+        ),
+)]
+#[bench::keep_orig(
+    config = LibraryBenchmarkConfig::default()
+        .tool(Dhat::default()
+            .sanitize_output(SanitizeOutput::KeepOrig)
+        ),
+)]
+fn sanitize() -> Vec<i32> {
+    black_box(bubble_sort(black_box(setup_worst_case_array(5))))
+}
+
 library_benchmark_group!(
     name = my_group,
-    benchmarks = [heap, copy, ad_hoc, alloc_in_func]
+    benchmarks = [heap, copy, ad_hoc, alloc_in_func, sanitize]
 );
 main!(
-    config = LibraryBenchmarkConfig::default().default_tool(ValgrindTool::DHAT),
+    config = LibraryBenchmarkConfig::default()
+        .default_tool(ValgrindTool::DHAT)
+        .pass_through_env("CARGO_LLVM_COV"),
     library_benchmark_groups = my_group
 );

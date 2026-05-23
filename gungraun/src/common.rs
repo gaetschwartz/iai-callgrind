@@ -7,7 +7,7 @@ use gungraun_macros::IntoInner;
 
 use super::{
     __internal, CachegrindMetric, CachegrindMetrics, CallgrindMetrics, DhatMetric, DhatMetrics,
-    Direction, ErrorMetric, EventKind, FlamegraphKind, Limit, ValgrindTool,
+    Direction, ErrorMetric, EventKind, FlamegraphKind, Limit, SanitizeOutput, ValgrindTool,
 };
 use crate::EntryPoint;
 
@@ -1286,6 +1286,30 @@ impl Dhat {
         let this = self.0.frames.get_or_insert_with(Vec::new);
         this.extend(frames.into_iter().map(Into::into));
 
+        self
+    }
+
+    /// Configures whether DHAT JSON output is sanitized after entry point and frame filtering.
+    ///
+    /// The metrics in Gungraun's DHAT output are tailored to the [`EntryPoint`] and additional
+    /// [frame filtering][`Dhat::frames`]. By default, this tailoring is also applied to the DHAT
+    /// output files on which the metrics are based. [`sanitize_output`][Dhat::sanitize_output]
+    /// allows disabling sanitization with [`SanitizeOutput::No`], or keeping a backup of the
+    /// original files with [`SanitizeOutput::KeepOrig`] while still applying sanitization to the
+    /// DHAT output files.
+    ///
+    /// Sanitization is useful when inspecting the output with DHAT's `dh_view.html` data
+    /// visualizer.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use gungraun::{Dhat, SanitizeOutput};
+    ///
+    /// let config = Dhat::default().sanitize_output(SanitizeOutput::KeepOrig);
+    /// ```
+    pub fn sanitize_output(&mut self, sanitize_output: SanitizeOutput) -> &mut Self {
+        self.0.sanitize_output = Some(sanitize_output);
         self
     }
 

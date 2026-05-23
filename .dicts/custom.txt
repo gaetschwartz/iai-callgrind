@@ -1,3 +1,4 @@
+--add-tracefile
 aarch
 abits
 ackermann
@@ -24,6 +25,7 @@ bimap
 bincode
 bindgen
 binstall
+bksu
 blockstart
 Boolish
 bools
@@ -40,6 +42,7 @@ cachuse
 Callgrind
 CALLGRIND
 callgrind
+CALLGRIND
 CFLAGS
 cicd
 Clearify
@@ -105,8 +108,8 @@ gungnir
 gungraun
 hard_limit
 Hasher
-heapblock
 HEAPBLOCK
+heapblock
 Heisler
 Helgrind
 hitrate
@@ -121,8 +124,8 @@ ilmr
 ilog
 iname
 indexmap
-indexset
 IndexSet
+indexset
 inlines
 instrs
 iquote
@@ -151,8 +154,8 @@ llhitrate
 llhits
 llimissrate
 llmissrate
-logfile
 Logfile
+logfile
 logfiles
 LouisBrunner
 malloc
@@ -184,6 +187,7 @@ multibyte
 nanomips
 neovim
 Nethercote
+nextest
 noaccess
 nocapture
 nodemon
@@ -216,8 +220,8 @@ printenv
 println
 proccontrol
 profraw
-PTHREAD
 pthread
+PTHREAD
 punct
 pushd
 quickstart
@@ -315,7 +319,6 @@ unsanitized
 USERREQ
 USERSO
 usize
-Valgrind
 valgrind
 valgrind's
 Valgrind's
@@ -342,3 +345,4 @@ xchgq
 xleak
 xtleak
 xtree
+bksu

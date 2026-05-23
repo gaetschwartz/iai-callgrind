@@ -1,0 +1,90 @@
+data:
+  - group: my_group
+    function: copy
+    id: without_entry_point
+    expected:
+      files:
+        - dhat.copy.without_entry_point.log
+        - dhat.copy.without_entry_point.out
+        - summary.json
+  - group: my_group
+    function: heap
+    id: with_entry_point
+    expected:
+      files:
+        - dhat.heap.with_entry_point.log
+        - dhat.heap.with_entry_point.out
+        - summary.json
+  - group: my_group
+    function: alloc_in_func
+    id: five
+    expected:
+      files:
+        - dhat.alloc_in_func.five.log
+        - dhat.alloc_in_func.five.out
+        - summary.json
+  - group: my_group
+    function: copy
+    id: with_entry_point
+    expected:
+      files:
+        - dhat.copy.with_entry_point.log
+        - dhat.copy.with_entry_point.out
+        - summary.json
+  - group: my_group
+    function: sanitize
+    id: default
+    expected:
+      files:
+        - dhat.sanitize.default.log
+        - dhat.sanitize.default.out
+        - summary.json
+  - group: my_group
+    function: heap
+    id: without_entry_point
+    expected:
+      files:
+        - dhat.heap.without_entry_point.log
+        - dhat.heap.without_entry_point.out
+        - summary.json
+  - group: my_group
+    function: sanitize
+    id: keep_orig
+    expected:
+      files:
+        - dhat.sanitize.keep_orig.log
+        - dhat.sanitize.keep_orig.out
+        - dhat.sanitize.keep_orig.out.orig
+        - summary.json
+  - group: my_group
+    function: ad_hoc
+    id: with_entry_point
+    expected:
+      files:
+        - dhat.ad_hoc.with_entry_point.log
+        - dhat.ad_hoc.with_entry_point.out
+        - summary.json
+  - group: my_group
+    function: ad_hoc
+    id: without_entry_point
+    expected:
+      files:
+        - dhat.ad_hoc.without_entry_point.log
+        - dhat.ad_hoc.without_entry_point.out
+        - summary.json
+  - group: my_group
+    function: sanitize
+    id: yes
+    expected:
+      files:
+        - dhat.sanitize.yes.log
+        - dhat.sanitize.yes.out
+        - summary.json
+  - group: my_group
+    function: sanitize
+    id: no
+    expected:
+      files:
+        - dhat.sanitize.no.log
+        - dhat.sanitize.no.out
+        - summary.json

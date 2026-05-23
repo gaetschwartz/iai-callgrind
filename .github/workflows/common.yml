@@ -108,8 +108,6 @@ jobs:
       - uses: taiki-e/install-action@cargo-hack
       - name: Install valgrind
         run: ./scripts/install_valgrind.sh "$VALGRIND_VERSION"
-        env:
-          GH_TOKEN: ${{ github.token }}
       - name: Cleanup Cross.toml
         run: |
           [[ -e Cross.toml ]] && mv Cross.toml Cross.toml.old || true

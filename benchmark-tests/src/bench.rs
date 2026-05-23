@@ -1,4 +1,6 @@
-// spell-checker:ignore rmdirs sysdeps multiarch memchr
+//! spell-checker:ignore rmdirs sysdeps multiarch memchr
+
+use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 use std::fs::File;
@@ -32,6 +34,8 @@ const TEMPLATE_CONTENT: &str = r#"fn main() {
 "#;
 const SCHEMA_PATH: &str = "gungraun-runner/schemas";
 const SCHEMA_VERSION: &str = "6";
+const CONTINUE_FILE_NAME: &str = "benchmark-tests.continue";
+const CARGO_LLVM_COV: &str = "CARGO_LLVM_COV";
 
 static TEMPLATE_DATA: OnceCell<HashMap<String, minijinja::Value>> = OnceCell::new();
 
@@ -49,6 +53,9 @@ static NUMBERS_RE: LazyLock<Regex> = LazyLock::new(|| {
     )
     .expect("Regex should compile")
 });
+// Do not match (*********); those placeholder lines should stay unchanged.
+static NUMBERS_DIFF_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\([^)*]*\)(?:\s+\[[^\]]+\])?$").expect("Regex should compile"));
 static RUNNING_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^[ ]+Running .*$").expect("Regex should compile"));
 static PROCESS_DID_NOT_EXIT_SUCCESSFULLY_RE: LazyLock<Regex> = LazyLock::new(|| {
@@ -124,130 +131,331 @@ static THREAD_PANICKED: LazyLock<Regex> = LazyLock::new(|| {
 static ABSOLUTE_PATH_APOSTROPHE_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"[']([/][^/']+)+[']").expect("Regex should compile"));
 
+/// Benchmark test case derived from a `.conf.yml` file.
+///
+/// Example: `test_lib_bench_tools.conf.yml` becomes one `Benchmark` value.
 #[derive(Debug, Clone)]
 struct Benchmark {
-    name: String,
+    /// Original `.conf.yml` file stem.
+    ///
+    /// This identifies the benchmark configuration and is unique for templated benchmarks too.
+    config_name: String,
+    /// Directory containing the benchmark configuration file and expected fixtures.
+    ///
+    /// Example: `benchmark-tests/benches/test_lib_bench/tools`.
     dir: PathBuf,
+    /// Cargo bench target name.
+    ///
+    /// This is usually the same as `config_name`, but templated benchmarks all use
+    /// `test_bench_template`.
     bench_name: String,
+    /// Parsed YAML configuration for this benchmark.
+    ///
+    /// Contains all groups and runs from `test_lib_bench_tools.conf.yml`.
     config: Config,
+    /// Directory where this benchmark writes regular output files.
+    ///
+    /// Example: `target/gungraun/benchmark-tests/test_lib_bench_tools`.
     dest_dir: PathBuf,
+    /// Root directory for benchmark test output below cargo's target directory.
+    ///
+    /// Example: `target/gungraun`.
     home_dir: PathBuf,
 }
 
+/// Captured result of one cargo bench invocation.
+///
+/// Example:
+/// * stdout/stderr from `cargo bench --package benchmark-tests --bench test_lib_bench_tools`.
 #[derive(Debug)]
 struct BenchmarkOutput {
+    /// Process output returned by `std::process::Command::output`.
+    ///
+    /// Example: includes the benchmark process exit status and captured stderr.
     output: Output,
+    /// Whether the run used an explicit tolerance argument.
+    ///
+    /// Example: `true` when `--tolerance=0.01` was forwarded to the benchmark.
     is_tolerance: bool,
 }
 
+/// Top-level benchmark test runner.
+///
+/// Owns the metadata used by `bench --filter='test_lib_*'`.
 #[derive(Debug)]
 pub struct BenchmarkRunner {
+    /// Resolved workspace, target directory, compiler, and selected benchmark list.
+    ///
+    /// Contains only the selected benchmarks when `--partition`, `--filter` or `--continue` is
+    /// used.
     metadata: Metadata,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+/// YAML group containing multiple benchmark runs under shared conditions.
+///
+/// A group can gate all runs to Linux only.
 pub struct GroupConfig {
+    /// Optional target triple include or exclude condition for the whole group.
+    ///
+    /// Example: `x86_64-unknown-linux-gnu`.
     #[serde(default, with = "benchmark_tests::serde::runs_on")]
     runs_on: Option<RunsOn>,
+    /// Optional Rust compiler version or channel condition for the whole group.
+    ///
+    /// Example: `>=1.86.0` or `=nightly`.
     #[serde(default, with = "benchmark_tests::serde::rust_version")]
     rust_version: Option<benchmark_tests::serde::rust_version::VersionComparator>,
+    /// Runs executed for this group after group-level filters match.
+    ///
+    /// Example: two runs comparing default output and `--show-grid=true` output.
     runs: Vec<RunConfig>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+/// YAML configuration loaded from one benchmark `.conf.yml` file.
+///
+/// Example: `test_lib_bench_tools.conf.yml` with an optional template and groups.
 struct Config {
+    /// Optional Rust source template rendered before a run.
+    ///
+    /// Example: `templates/tool_bench.rs.j2`.
     template: Option<PathBuf>,
+    /// Grouped runs defined by this benchmark configuration.
+    ///
+    /// Example: groups for default and filtered benchmark invocations.
     groups: Vec<GroupConfig>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+/// Expected files for one benchmark output directory.
+///
+/// Example: requires `summary.json` and one `callgrind.out.*` glob match.
 struct Expected {
+    /// Exact files expected to exist and be non-empty.
+    ///
+    /// Example: `["summary.json"]`.
     #[serde(default)]
     files: Vec<PathBuf>,
+    /// Glob patterns with required match counts.
+    ///
+    /// Example: `callgrind.out.*` with `count = 1`.
     #[serde(default)]
     globs: Vec<ExpectedGlob>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+/// Expected side effects and process result for a run.
+///
+/// Example: compare stdout against `expected.stdout` and require exit code `0`.
 struct ExpectedConfig {
+    /// Path to an expected files manifest relative to the benchmark config directory.
+    ///
+    /// Example: `expected/files.yml`.
     #[serde(default)]
     files: Option<PathBuf>,
+    /// Path to expected stdout relative to the benchmark config directory.
+    ///
+    /// Example: `expected.stdout`.
     #[serde(default)]
     stdout: Option<PathBuf>,
+    /// Path to expected stderr relative to the benchmark config directory.
+    ///
+    /// Example: `expected.stderr`.
     #[serde(default)]
     stderr: Option<PathBuf>,
+    /// Expected process exit code.
+    ///
+    /// Example: `101` for a benchmark expected to panic.
     #[serde(default)]
     exit_code: Option<i32>,
+    /// Whether all-zero metrics are allowed in generated summaries.
+    ///
+    /// Example: `true` for a run that intentionally does not collect costs.
     #[serde(default)]
     zero_metrics: bool,
+    /// Whether no benchmark output directory is expected.
+    ///
+    /// Example: `true` for an early argument validation failure.
     #[serde(default)]
     no_files: bool,
+    /// Whether filtered stdout must be empty.
+    ///
+    /// Example: `true` for a quiet successful run.
     #[serde(default)]
     no_stdout: bool,
+    /// Whether filtered stderr must be empty.
+    ///
+    /// Example: `true` when cargo should not emit benchmark diagnostics.
     #[serde(default)]
     no_stderr: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+/// Expected glob assertion for benchmark output files.
+///
+/// Example: require exactly one `callgrind.out.*` file.
 struct ExpectedGlob {
+    /// Glob pattern relative to an expected run directory.
+    ///
+    /// Example: `callgrind.out.*`.
     pattern: String,
+    /// Required number of files matching `pattern`.
+    ///
+    /// Example: `1`.
     count: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+/// Expected files for one benchmark function output directory.
+///
+/// Example: group `library_benchmark`, function `bench_sort`, id `small`.
 struct ExpectedRun {
+    /// Benchmark group directory below the benchmark output root.
+    ///
+    /// Example: `library_benchmark`.
     group: String,
+    /// Benchmark function name or template string used to locate the output directory.
+    ///
+    /// Example: `bench_sort`.
     function: String,
+    /// Optional benchmark id appended to the function directory name.
+    ///
+    /// Example: `small` for `bench_sort.small`.
     id: Option<String>,
+    /// Expected files and glob counts for the resolved function directory.
+    ///
+    /// Example: require `summary.json` and one callgrind output file.
     expected: Expected,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+/// Expected files manifest referenced by an `ExpectedConfig`.
+///
+/// Example: a YAML file listing all expected benchmark function output directories.
 struct ExpectedRuns {
+    /// Optional alternate home directory for expected output lookup.
+    ///
+    /// Example: a target-triple-specific output root.
     #[serde(default)]
     home_dir: Option<PathBuf>,
+    /// Expected output directories and files to assert.
+    ///
+    /// Example: entries for all functions generated by a templated benchmark.
     data: Vec<ExpectedRun>,
 }
 
 #[derive(Debug, Clone)]
+/// Workspace and benchmark selection metadata.
+///
+/// Example: produced once from cargo metadata before running benchmark tests.
 struct Metadata {
+    /// Cargo workspace root.
+    ///
+    /// Example: repository root containing `Cargo.toml`.
     workspace_root: PathBuf,
+    /// Cargo target directory from cargo metadata.
+    ///
+    /// Example: `target` or a custom `CARGO_TARGET_DIR`.
     target_directory: PathBuf,
+    /// Benchmarks selected by CLI arguments, filters, partitioning, and resume state.
+    ///
+    /// Example: only benchmarks matching `--filter='test_lib_*'`.
     benchmarks: Vec<Benchmark>,
+    /// Path to the `benchmark-tests/benches` directory.
+    ///
+    /// Example: used to write `test_bench_template.rs`.
     benches_dir: PathBuf,
+    /// Rust compiler version metadata used for version-gated runs.
+    ///
+    /// Example: channel `nightly` or semver `1.86.0`.
     rust_version: VersionMeta,
+    /// Whether the run is a llvm coverage run
+    ///
+    /// This is usually true when CARGO_LLVM_COV=1 is set. Coverage instrumentation changes the
+    /// benchmarked machine code, so DHAT read/write metrics can differ from normal benchmark
+    /// fixtures.
+    is_coverage_run: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
+/// Selected partition of the benchmark list.
+///
+/// Example: `part = 2`, `total = 4` runs the second quarter of benchmarks.
 pub struct Partition {
+    /// One-based partition number to run.
+    ///
+    /// Example: `2` in `--partition=2/4`.
     part: usize,
+    /// Total number of partitions.
+    ///
+    /// Example: `4` in `--partition=2/4`.
     total: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+/// YAML configuration for one benchmark invocation.
+///
+/// Example: one run can pass extra cargo args, benchmark args, envs, and expectations.
 struct RunConfig {
+    /// Extra cargo arguments passed before `--`.
+    ///
+    /// Example: `["--features", "client-requests"]`.
     #[serde(default)]
     cargo_args: Vec<String>,
+    /// Benchmark binary arguments passed after `--`.
+    ///
+    /// Example: `["--show-grid=true"]`.
     #[serde(default)]
     args: Vec<String>,
+    /// Data passed to the benchmark source template renderer.
+    ///
+    /// Example: `{ "tool": "callgrind" }`.
     #[serde(default)]
     template_data: HashMap<String, minijinja::Value>,
+    /// Expected process output, exit status, and generated files.
+    ///
+    /// Example: compare stdout with `expected.stdout` and validate `summary.json`.
     #[serde(default)]
     expected: Option<ExpectedConfig>,
+    /// Optional target triple include or exclude condition for this run.
+    ///
+    /// Example: skip a run on `aarch64-apple-darwin`.
     #[serde(default, with = "benchmark_tests::serde::runs_on")]
     runs_on: Option<RunsOn>,
+    /// Directories removed before this run starts.
+    ///
+    /// Example: `target/gungraun/benchmark-tests/test_lib_bench_tools`.
     #[serde(default)]
     rmdirs: Vec<PathBuf>,
+    /// Optional Rust compiler version or channel condition for this run.
+    ///
+    /// Example: `>=1.86.0` or `!=nightly`.
     #[serde(default, with = "benchmark_tests::serde::rust_version")]
     rust_version: Option<benchmark_tests::serde::rust_version::VersionComparator>,
+    /// Number of retries allowed for flaky assertion failures.
+    ///
+    /// Example: `2` allows up to two retries after the first failed attempt.
     #[serde(default)]
     flaky: Option<usize>,
+    /// Environment variables set for the cargo bench command.
+    ///
+    /// Example: `{ "RUSTFLAGS": "-C target-feature=-avx2" }`.
     #[serde(default)]
     envs: HashMap<String, String>,
+    /// Optional benchmark tolerance forwarded as `--tolerance=<value>`.
+    ///
+    /// Example: `0.01`.
     #[serde(default)]
     tolerance: Option<f64>,
+    /// Shell snippet executed before the benchmark command.
+    ///
+    /// Example: `mkdir -p /tmp/gungraun-fixture`.
     #[serde(default)]
     setup: Option<String>,
+    /// Shell snippet executed after the benchmark command.
+    ///
+    /// Example: `rm -rf /tmp/gungraun-fixture`.
     #[serde(default)]
     teardown: Option<String>,
 }
@@ -258,19 +466,19 @@ impl Benchmark {
             .map_err(|error| format!("Failed to deserialize '{}': {error}", path.display()))
             .expect("File should be deserializable");
 
-        let name = path.file_name().unwrap().to_string_lossy();
-        let name = name.strip_suffix(".conf.yml").unwrap().to_owned();
-        let (bench_name, name) = if config.template.is_some() {
-            (String::from(TEMPLATE_BENCH_NAME), name)
+        let config_name = path.file_name().unwrap().to_string_lossy();
+        let config_name = config_name.strip_suffix(".conf.yml").unwrap().to_owned();
+        let bench_name = if config.template.is_some() {
+            String::from(TEMPLATE_BENCH_NAME)
         } else {
-            (name.clone(), name.clone())
+            config_name.clone()
         };
 
         Benchmark {
             home_dir: target_dir.join("gungraun"),
             dest_dir: target_dir.join("gungraun").join(PACKAGE).join(&bench_name),
             bench_name,
-            name,
+            config_name,
             config,
             dir: path.parent().unwrap().to_path_buf(),
         }
@@ -360,6 +568,11 @@ impl Benchmark {
                 panic!("Running setup failed with {status:?}");
             }
         }
+
+        std::fs::create_dir_all(&self.home_dir)
+            .expect("Creating the gungraun home directory should succeed");
+        std::fs::write(self.home_dir.join(CONTINUE_FILE_NAME), &self.config_name)
+            .expect("Writing to the continue file should succeed");
 
         let mut command = std::process::Command::new(env!("CARGO"));
         command.args(["bench", "--package", PACKAGE, "--bench", &self.bench_name]);
@@ -504,7 +717,7 @@ impl Benchmark {
             for tries in 0..=max_tries {
                 print_info(format!(
                     "Running {}: Group: ({}/{num_groups}), Run: ({}/{})",
-                    &self.name,
+                    &self.config_name,
                     group_index + 1,
                     index + 1,
                     num_runs
@@ -572,7 +785,7 @@ impl Benchmark {
                     } else {
                         print_info(format!(
                             "Flaky test: Re-running {}: ({}/{max_tries})",
-                            &self.name,
+                            &self.config_name,
                             tries + 1,
                         ));
                         self.restore(backup_dir.as_ref());
@@ -600,7 +813,7 @@ impl Benchmark {
 }
 
 impl BenchmarkOutput {
-    fn assert(&self, bench_dir: &Path, _meta: &Metadata, expected: &ExpectedConfig) {
+    fn assert(&self, bench_dir: &Path, meta: &Metadata, expected: &ExpectedConfig) {
         let output = &self.output;
 
         print_info("STDERR:");
@@ -623,7 +836,7 @@ impl BenchmarkOutput {
                 .expect("Reading file should succeed");
 
             let filtered = self.filter_stderr(&output.stderr);
-            let expected_string = String::from_utf8_lossy(&expected_stderr);
+            let expected_string: String = String::from_utf8_lossy(&expected_stderr).into();
 
             if option_env!("BENCH_OVERWRITE").map_or(false, |s| s.eq_ignore_ascii_case("yes")) {
                 if filtered != expected_string {
@@ -667,8 +880,8 @@ impl BenchmarkOutput {
                 .read_to_end(&mut expected_stdout)
                 .expect("Reading file should succeed");
 
-            let filtered = self.filter_stdout(&output.stdout);
-            let expected_string = String::from_utf8_lossy(&expected_stdout);
+            let mut filtered = self.filter_stdout(&output.stdout);
+            let mut expected_string = String::from_utf8_lossy(&expected_stdout).into();
 
             if option_env!("BENCH_OVERWRITE").map_or(false, |s| s.eq_ignore_ascii_case("yes")) {
                 if filtered != expected_string {
@@ -687,6 +900,11 @@ impl BenchmarkOutput {
                     print_info("Skip overwrite since verifying stdout was successful");
                 }
             } else {
+                if meta.is_coverage_run {
+                    filtered = Self::normalize_coverage_stdout(filtered);
+                    expected_string = Self::normalize_coverage_stdout(expected_string);
+                }
+
                 if filtered != expected_string {
                     panic!(
                         "Assertion of stdout failed: {}",
@@ -696,6 +914,26 @@ impl BenchmarkOutput {
                 print_info("Verifying stdout successful");
             }
         }
+    }
+
+    fn normalize_coverage_stdout(stdout: String) -> String {
+        let mut result = String::new();
+        for line in stdout.lines() {
+            let (indent, line) = if line.starts_with("  ") || line.starts_with("|") {
+                (&line[0..2], &line[2..])
+            } else {
+                (&line[0..0], line)
+            };
+
+            let line = if line.starts_with("Reads bytes") || line.starts_with("Writes bytes") {
+                NUMBERS_DIFF_RE.replace(line, "(         )")
+            } else {
+                Cow::Borrowed(line)
+            };
+
+            writeln!(result, "{indent}{line}").unwrap();
+        }
+        result
     }
 
     fn filter_stderr(&self, stderr: &[u8]) -> String {
@@ -847,14 +1085,18 @@ impl BenchmarkOutput {
                 // to
                 //
                 //   RAM Hits:                |N/A             (*********)
+
+                // Callgrind/Cachegrind
                 if desc.starts_with("RAM Hits")
                     || desc.starts_with("Estimated Cycles")
                     || desc.starts_with("LL Hits")
                     || desc.starts_with("L1 Hits")
                     || desc.starts_with("SysTime")
                     || desc.starts_with("SysCpuTime")
+                    // Error tools like Memcheck
                     || desc.starts_with("Suppressed Errors")
                     || desc.starts_with("Suppressed Contexts")
+                    // DHAT
                     || desc.starts_with("At t-gmax bytes")
                     || desc.starts_with("At t-gmax blocks")
                 {
@@ -985,9 +1227,14 @@ impl BenchmarkOutput {
 }
 
 impl BenchmarkRunner {
-    pub fn new(benches: &[String], filter: Option<String>, partition: Option<Partition>) -> Self {
+    pub fn new(
+        benches: &[String],
+        filter: Option<String>,
+        partition: Option<Partition>,
+        resume: bool,
+    ) -> Self {
         Self {
-            metadata: Metadata::new(benches, filter, partition),
+            metadata: Metadata::new(benches, filter, partition, resume),
         }
     }
 
@@ -1027,6 +1274,13 @@ impl BenchmarkRunner {
                 bench.run(num_groups, index, group, &self.metadata, &compiled);
             }
         }
+
+        let _ = std::fs::remove_file(
+            self.metadata
+                .target_directory
+                .join("gungraun")
+                .join(CONTINUE_FILE_NAME),
+        );
 
         Ok(())
     }
@@ -1137,7 +1391,12 @@ impl ExpectedRun {
 }
 
 impl Metadata {
-    pub fn new(benches: &[String], filter: Option<String>, partition: Option<Partition>) -> Self {
+    pub fn new(
+        benches: &[String],
+        filter: Option<String>,
+        partition: Option<Partition>,
+        resume: bool,
+    ) -> Self {
         let meta = cargo_metadata::MetadataCommand::new()
             .no_deps()
             .exec()
@@ -1165,7 +1424,7 @@ impl Metadata {
             .map(|path| Benchmark::new(&path, &package_dir, &target_directory))
             .collect::<Vec<Benchmark>>();
 
-        benchmarks.sort_by_key(|b| b.name.clone());
+        benchmarks.sort_by_key(|b| b.config_name.clone());
         if let Some(partition) = partition {
             let chunk_size = benchmarks.len().div_ceil(partition.total);
             let chunk = benchmarks
@@ -1175,8 +1434,29 @@ impl Metadata {
             benchmarks = chunk.expect("The partition should map to a chunk of all benchmarks");
         }
 
+        // We do not check the exact command, so it is possible to resume at any point. The only
+        // condition is that the benchmark name must be part of the new command.
+        if resume {
+            let benchmark =
+                std::fs::read_to_string(target_directory.join("gungraun").join(CONTINUE_FILE_NAME))
+                    .expect("The continue file should exist");
+            let benchmark = benchmark.trim();
+            print_info(format!("Continue with {benchmark}"));
+
+            let index = benchmarks
+                .iter()
+                .position(|b| b.config_name == benchmark)
+                .unwrap_or_else(|| {
+                    panic!("Benchmark '{benchmark}' from continue file was not found")
+                });
+
+            benchmarks.drain(..index);
+        }
+
         print_info("Benchmarks to run:");
-        benchmarks.iter().for_each(|b| println!("  {}", b.name));
+        benchmarks
+            .iter()
+            .for_each(|b| println!("  {}", b.config_name));
 
         let rust_version = get_rust_version().expect("Rust version should be present");
 
@@ -1186,6 +1466,7 @@ impl Metadata {
             benchmarks,
             benches_dir,
             rust_version,
+            is_coverage_run: std::env::var(CARGO_LLVM_COV).is_ok_and(|v| v == "1"),
         }
     }
 
@@ -1286,7 +1567,7 @@ impl RunConfig {
         {
             let base_dir = home_dir.join(PACKAGE).join(bench_name);
             // These checks heavily depends on the creation of the `summary.json` files, but we
-            // create them per default.
+            // create them by default.
             for path in glob(&format!("{}/**/summary.json", base_dir.display()))
                 .unwrap()
                 .map(Result::unwrap)
@@ -1335,6 +1616,7 @@ fn main() {
     let mut benches = Vec::default();
     let mut filter = Option::default();
     let mut partition = Option::default();
+    let mut resume = false;
     for arg in std::env::args().skip(1) {
         match arg.split_once("=") {
             Some(("--filter", value)) => filter = Some(value.to_owned()),
@@ -1360,11 +1642,12 @@ fn main() {
                 }
             }
             Some(_) => panic!("Invalid argument: {arg}"),
+            None if arg == "--continue" => resume = true,
             None => benches.push(arg),
         }
     }
 
-    let runner = BenchmarkRunner::new(&benches, filter, partition);
+    let runner = BenchmarkRunner::new(&benches, filter, partition, resume);
 
     let mut map = HashMap::new();
     map.insert(

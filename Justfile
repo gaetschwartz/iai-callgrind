@@ -132,9 +132,9 @@ install-hooks:
 # Install rust toolchains and necessary components (Uses: 'rustup')
 [group('init workspace')]
 install-toolchains:
-    rustup toolchain install stable --component clippy
-    rustup toolchain install nightly --component rustfmt
-    rustup toolchain install {{ msrv }} --profile default --component rust-src
+    rustup toolchain install stable --component clippy --component llvm-tools
+    rustup toolchain install nightly --component rustfmt --component llvm-tools
+    rustup toolchain install {{ msrv }} --profile default --component rust-src --component llvm-tools
 
 # Show some introductory words and recommendations
 [group('init workspace')]
@@ -264,6 +264,52 @@ schema-gen-move: schema-gen
 [group('test')]
 test package *args:
     cargo test --package {{ package }} {{ args }}
+
+# Run all tests in a package with coverage. (Uses: 'cargo +nightly')
+[group('test')]
+test-cov package *args:
+    cargo +nightly llvm-cov clean --workspace
+    cargo +nightly llvm-cov test --package {{ package }} --all-features --no-fail-fast \
+        --lcov --output-path lcov.info {{ args }}
+
+# Run all tests in a package with coverage. (Uses: 'cargo +nightly')
+[group('test')]
+test-cov-runner *args:
+    cargo +nightly llvm-cov clean --workspace
+    cargo +nightly llvm-cov nextest --package gungraun-runner --package benchmark-tests --branch \
+        --all-features --no-fail-fast --lcov --output-path lcov.info {{ args }}
+
+[group('test')]
+test-cov-all:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    toolchain="${RUSTUP_TOOLCHAIN:-{{ msrv }}}"
+    echo "Ensure rust-src and llvm-tools are installed for the rust toolchain ${toolchain}"
+
+    components="$(rustup component list --toolchain "${toolchain}")"
+    grep -q '^\s*rust-src\s*.*installed' <<<"${components}"
+    grep -q '^\s*llvm-tools.*installed' <<<"${components}"
+
+    cargo llvm-cov clean --workspace
+    source <(cargo llvm-cov show-env --sh)
+
+    cargo nextest run --workspace --exclude client-request-tests --exclude gungraun \
+        --all-features --no-fail-fast
+    cargo nextest run -p gungraun --no-fail-fast
+    RUSTUP_TOOLCHAIN="${toolchain}" cargo test --package gungraun \
+        --test ui_tests --features ui_tests
+    cargo run --package benchmark-tests --bin bench --release
+
+    cargo llvm-cov report --profile bench --lcov --output-path lcov.bench.info
+    cargo llvm-cov report --profile release --lcov --output-path lcov.release.info
+    cargo llvm-cov report --profile debug --lcov --output-path lcov.debug.info
+
+    lcov \
+        --add-tracefile lcov.release.info \
+        --add-tracefile lcov.bench.info \
+        --add-tracefile lcov.debug.info \
+        --output-file lcov.info
 
 # Run all doc tests (Uses: 'cargo')
 [group('test')]

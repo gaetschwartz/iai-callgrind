@@ -26,7 +26,13 @@ else
   sudo apt-get install --update --assume-yes --no-install-recommends --no-upgrade libc6-dbg="${libc_version}"
 fi
 
-gh release download --repo gungraun/valgrind-builder -p "${archive_name}*"
+base_url="https://github.com/gungraun/valgrind-builder/releases/latest/download"
+curl --fail --location --retry 10 --retry-connrefused --retry-all-errors \
+  --output "${archive_name}" \
+  "${base_url}/${archive_name}"
+curl --fail --location --retry 10 --retry-connrefused --retry-all-errors \
+  --output "${archive_name}.sha256" \
+  "${base_url}/${archive_name}.sha256"
 sha256sum -c "${archive_name}.sha256"
 
 sudo tar xzf "$archive_name" -C /
