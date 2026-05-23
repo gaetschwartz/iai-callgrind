@@ -311,7 +311,11 @@ impl Accesses {
 }
 
 impl DhatData {
-    /// TODO: DOCS
+    /// Filters program points by entry point and additional frame glob patterns.
+    ///
+    /// Returns `true` if the program point list changed. If no entry point and no frames are
+    /// configured, the data is left unchanged. If filters are configured but no matching frames are
+    /// found, all program points are removed.
     pub fn filter_program_points(&mut self, entry_point: &EntryPoint, frames: &[String]) -> bool {
         let mut globs = frames.iter().collect::<Vec<_>>();
 
@@ -354,7 +358,11 @@ impl DhatData {
         }
     }
 
-    /// TODO: DOCS
+    /// Remaps program point frame indices after the frame table has been compacted.
+    ///
+    /// The `mapping_table` maps original frame indices to the new indices in the compact frame
+    /// table. If the frame table is empty, a synthetic root frame is inserted so the DHAT output
+    /// remains valid.
     pub fn sanitize(&mut self, mapping_table: &[usize]) {
         if self.frame_table.is_empty() {
             self.frame_table.insert(0, Frame::Root);
@@ -414,7 +422,9 @@ impl FromStr for Frame {
 }
 
 impl ProgramPoint {
-    /// TODO: DOCS
+    /// Returns `true` if all present metric fields are zero.
+    ///
+    /// Missing optional metric fields are treated as zero.
     pub fn is_zero(&self) -> bool {
         self.total_bytes == 0
             && self.total_blocks == 0

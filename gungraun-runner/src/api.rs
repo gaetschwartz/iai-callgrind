@@ -934,6 +934,17 @@ pub enum Pipe {
     Stderr,
 }
 
+/// Rewrite the output to match the configured [entry point][EntryPoint] and frame filters.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SanitizeOutput {
+    /// Leave the output files unchanged.
+    No,
+    /// Like [`Yes`][SanitizeOutput::Yes], but back up the original file with an `.orig` extension.
+    KeepOrig,
+    /// Rewrite the output to match the configured [entry point][EntryPoint] and frame filters.
+    Yes,
+}
+
 /// This is a special `Stdio` for the stdin method of [`Command`]
 ///
 /// Contains all the standard [`Stdio`] options and the [`Stdin::Setup`] option
@@ -1384,6 +1395,8 @@ pub struct Tool {
     pub raw_tool_args: RawToolArgs,
     /// The configuration for regression checks of tools which perform regression checks
     pub regression_config: Option<ToolRegressionConfig>,
+    /// Whether this tool's output files should be sanitized after parsing.
+    pub sanitize_output: Option<SanitizeOutput>,
     /// If true show the logging output of Valgrind (not Gungraun)
     pub show_log: Option<bool>,
 }
@@ -2516,6 +2529,7 @@ impl Tool {
             output_format: None,
             entry_point: None,
             frames: None,
+            sanitize_output: None,
         }
     }
 
@@ -2545,6 +2559,7 @@ impl Tool {
 
             self.raw_tool_args
                 .extend_ignore_flag(other.raw_tool_args.0.iter());
+            self.sanitize_output = update_option(&self.sanitize_output, &other.sanitize_output);
         }
     }
 }
@@ -2719,6 +2734,7 @@ mod tests {
                 entry_point: Some(EntryPoint::default()),
                 output_format: Some(ToolOutputFormat::None),
                 frames: Some(vec!["some::frame".to_owned()]),
+                sanitize_output: Some(SanitizeOutput::KeepOrig),
             }]),
             tools_override: None,
             output_format: None,
@@ -2749,6 +2765,7 @@ mod tests {
                 entry_point: Some(EntryPoint::default()),
                 output_format: Some(ToolOutputFormat::None),
                 frames: Some(vec!["some::frame".to_owned()]),
+                sanitize_output: Some(SanitizeOutput::KeepOrig),
             }]),
             tools_override: Some(Tools(vec![])),
             output_format: Some(OutputFormat::default()),
@@ -2920,6 +2937,7 @@ mod tests {
             output_format: Some(ToolOutputFormat::None),
             entry_point: Some(EntryPoint::Default),
             frames: Some(vec!["some::frame".to_owned()]),
+            sanitize_output: Some(SanitizeOutput::KeepOrig),
         };
         let expected = other.clone();
         base.update(&other);
@@ -2939,6 +2957,7 @@ mod tests {
             output_format: Some(ToolOutputFormat::None),
             entry_point: Some(EntryPoint::Default),
             frames: Some(vec!["some::frame".to_owned()]),
+            sanitize_output: Some(SanitizeOutput::KeepOrig),
         };
 
         let expected = base.clone();

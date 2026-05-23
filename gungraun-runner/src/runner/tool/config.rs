@@ -15,7 +15,7 @@ use super::parser::parser_factory;
 use super::path::ToolOutputPath;
 use super::regression::ToolRegressionConfig;
 use super::run::{RunOptions, ToolCommand};
-use crate::api::{self, EntryPoint, RawToolArgs, Tool, Tools, ValgrindTool};
+use crate::api::{self, EntryPoint, RawToolArgs, SanitizeOutput, Tool, Tools, ValgrindTool};
 use crate::runner::callgrind::flamegraph::Config as FlamegraphConfig;
 use crate::runner::common::{Analyzer, CapturedOutput, Config, ModulePath, Sandbox};
 use crate::runner::format::OutputFormat;
@@ -50,6 +50,8 @@ pub struct ToolConfig {
     pub is_enabled: bool,
     /// The tool specific regression check configuration
     pub regression_config: ToolRegressionConfig,
+    /// The resolved output sanitization mode for this tool.
+    pub sanitize_output: SanitizeOutput,
     /// The [`ValgrindTool`]
     pub tool: ValgrindTool,
 }
@@ -64,6 +66,7 @@ struct ToolConfigBuilder {
     kind: ValgrindTool,
     raw_tool_args: RawToolArgs,
     regression_config: ToolRegressionConfig,
+    sanitize_output: SanitizeOutput,
     tool: Option<Tool>,
 }
 
@@ -82,6 +85,7 @@ impl ToolConfig {
         entry_point: EntryPoint,
         is_default: bool,
         frames: Vec<String>,
+        sanitize_output: SanitizeOutput,
     ) -> Self {
         Self {
             args,
@@ -91,6 +95,7 @@ impl ToolConfig {
             is_default,
             is_enabled,
             regression_config,
+            sanitize_output,
             tool,
         }
     }
@@ -121,6 +126,7 @@ impl ToolConfigBuilder {
             self.entry_point.unwrap_or(EntryPoint::None),
             self.is_default,
             self.frames.iter().map(Into::into).collect(),
+            self.sanitize_output,
         ))
     }
 
@@ -256,6 +262,7 @@ impl ToolConfigBuilder {
                 .unwrap_or_default(),
             regression_config: ToolRegressionConfig::None,
             kind: valgrind_tool,
+            sanitize_output: SanitizeOutput::No,
         };
 
         // Since the construction sequence is currently always the same, the construction of the
@@ -266,6 +273,7 @@ impl ToolConfigBuilder {
         builder.meta_args(meta);
         builder.flamegraph_config();
         builder.regression_config(meta)?;
+        builder.sanitize_output();
 
         Ok(builder)
     }
@@ -307,6 +315,20 @@ impl ToolConfigBuilder {
         self.regression_config = regression_config;
 
         Ok(())
+    }
+
+    fn sanitize_output(&mut self) {
+        let apply_default = || {
+            if matches!(self.kind, ValgrindTool::DHAT) {
+                SanitizeOutput::Yes
+            } else {
+                SanitizeOutput::No
+            }
+        };
+
+        self.sanitize_output = self.tool.as_ref().map_or_else(apply_default, |t| {
+            t.sanitize_output.unwrap_or_else(apply_default)
+        });
     }
 
     fn tool_args(&mut self) {

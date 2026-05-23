@@ -9,7 +9,7 @@ use std::sync::atomic::AtomicBool;
 use std::time::Duration;
 
 use bon::builder;
-use gungraun::{EntryPoint, ExitWith, ValgrindTool};
+use gungraun::{EntryPoint, ExitWith, SanitizeOutput, ValgrindTool};
 use gungraun_runner::api::{RawToolArgs, Tools};
 use gungraun_runner::runner::common::{Assistant, AssistantKind, Config, ModulePath};
 use gungraun_runner::runner::format::OutputFormat;
@@ -249,6 +249,7 @@ pub fn tool_config_f(tool: Option<ValgrindTool>, is_default: Option<bool>) -> To
         EntryPoint::None,
         is_default.unwrap_or(true),
         vec![],
+        SanitizeOutput::Yes,
     )
 }
 

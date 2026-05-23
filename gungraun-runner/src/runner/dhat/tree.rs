@@ -14,7 +14,11 @@ use crate::runner::summary::ToolMetrics;
 /// The [`Data`] of each [`Node`]
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Data {
-    /// TODO: DOCS
+    /// Per-byte access histogram data from DHAT program points.
+    ///
+    /// The data is stored expanded while building trees so child nodes can be aggregated with
+    /// DHAT's access histogram semantics. It is compacted back to DHAT's run-length encoding
+    /// when a tree node is serialized as a program point.
     pub accesses: Option<Accesses>,
     /// The blocks at t-end
     pub blocks_at_end: Option<u64>,
@@ -80,7 +84,7 @@ pub struct RootTree {
 
 /// The trait to be implemented for a dhat prefix tree
 pub trait Tree: Into<DhatData> {
-    /// TODO: DOCS
+    /// Returns the frame table referenced by tree nodes.
     fn frame_table(&self) -> &BTreeMap<usize, Frame>;
 
     /// Creates a new `Tree` from the given parameters.
@@ -115,7 +119,7 @@ pub trait Tree: Into<DhatData> {
         }
     }
 
-    /// TODO: DOCS
+    /// Returns a mapping from original frame indices to compacted frame-table indices.
     fn mapping_table(&self) -> Vec<usize> {
         self.frame_table()
             .last_key_value()
@@ -147,7 +151,7 @@ pub trait Tree: Into<DhatData> {
     /// Set the [`Data`] of the root
     fn set_root_data(&mut self, data: Data);
 
-    /// TODO: DOCS
+    /// Creates an empty tree initialized with the given DHAT metadata.
     fn with_metadata(metadata: DhatMetadata) -> Self
     where
         Self: Sized + Default;

@@ -127,8 +127,7 @@ pub fn parser_factory(
                     output_path.clone(),
                     tool_config.entry_point.clone(),
                     tool_config.frames.clone(),
-                    // FIX: Extract this value from the tool_config
-                    true,
+                    tool_config.sanitize_output,
                 ))
             }
         }

@@ -534,8 +534,8 @@ pub use gungraun_macros::{binary_benchmark, library_benchmark};
 #[cfg(feature = "default")]
 pub use gungraun_runner::api::{
     CachegrindMetric, CachegrindMetrics, CallgrindMetrics, DelayKind, DhatMetric, DhatMetrics,
-    Direction, EntryPoint, ErrorMetric, EventKind, ExitWith, FlamegraphKind, Limit, Pipe, Stdin,
-    Stdio, ValgrindTool,
+    Direction, EntryPoint, ErrorMetric, EventKind, ExitWith, FlamegraphKind, Limit, Pipe,
+    SanitizeOutput, Stdin, Stdio, ValgrindTool,
 };
 #[cfg(feature = "default")]
 pub use lib_bench::LibraryBenchmarkConfig;

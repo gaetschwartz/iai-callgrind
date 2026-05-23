@@ -8,7 +8,7 @@ use anyhow::{Context, Result, anyhow};
 
 use super::model::DhatData;
 use super::tree::{RootTree, Tree};
-use crate::api::EntryPoint;
+use crate::api::{EntryPoint, SanitizeOutput};
 use crate::runner::tool::logfile_parser;
 use crate::runner::tool::parser::{Header, Parser, ParserOutput};
 use crate::runner::tool::path::ToolOutputPath;
@@ -18,8 +18,8 @@ use crate::runner::tool::path::ToolOutputPath;
 pub struct JsonParser {
     entry_point: EntryPoint,
     frames: Vec<String>,
-    optimize: bool,
     output_path: ToolOutputPath,
+    sanitize_output: SanitizeOutput,
 }
 
 impl JsonParser {
@@ -28,13 +28,13 @@ impl JsonParser {
         output_path: ToolOutputPath,
         entry_point: EntryPoint,
         frames: Vec<String>,
-        optimize: bool,
+        sanitize_output: SanitizeOutput,
     ) -> Self {
         Self {
             entry_point,
             frames,
-            optimize,
             output_path,
+            sanitize_output,
         }
     }
 }
@@ -74,7 +74,10 @@ impl Parser for JsonParser {
 
         dhat_data.filter_program_points(&self.entry_point, &self.frames);
 
-        let metrics = if self.optimize {
+        let metrics = if matches!(
+            self.sanitize_output,
+            SanitizeOutput::KeepOrig | SanitizeOutput::Yes
+        ) {
             // Instead of using a DhatTree, construction and then deconstruction a whole tree, it is
             // more efficient to use the RootTree with the filtered original program points
             // directly. However, the dhat data reconstructed from the root tree needs to be
@@ -83,14 +86,15 @@ impl Parser for JsonParser {
             let tree = RootTree::from_json(dhat_data);
             let metrics = tree.metrics();
 
-            // TODO: like with_added_extension use the original and append .orig
-            let orig = path.with_extension("out.orig");
-            std::fs::copy(&path, orig).with_context(|| {
-                format!(
-                    "Backing up original dhat data '{}' should succeed",
-                    path.display()
-                )
-            })?;
+            if self.sanitize_output == SanitizeOutput::KeepOrig {
+                let orig = path.with_extension("out.orig");
+                std::fs::copy(&path, orig).with_context(|| {
+                    format!(
+                        "Backing up original dhat data '{}' should succeed",
+                        path.display()
+                    )
+                })?;
+            }
 
             let mapping_table = tree.mapping_table();
             let mut new_data = DhatData {
@@ -102,7 +106,7 @@ impl Parser for JsonParser {
 
             serde_json::to_writer(File::create(&path)?, &new_data).with_context(|| {
                 format!(
-                    "Failed serializing optimized dhat output to '{}'",
+                    "Failed serializing sanitized dhat output to '{}'",
                     path.display()
                 )
             })?;
