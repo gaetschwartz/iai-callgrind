@@ -27,13 +27,16 @@
 #   - Copy mode tracks memory copy operations
 #   - Ad-hoc mode tracks custom events
 #   - Entry point configuration correctly affects cost attribution
+#   - Sanitization does not error/panic and Sanitize::KeepOrig keeps original file
 
 groups:
   - runs:
       - args: []
         expected:
           stdout: expected_stdout.1
+          files: expected_files.1.yml
   - runs:
       - args: []
         expected:
           stdout: expected_stdout.2
+          files: expected_files.1.yml

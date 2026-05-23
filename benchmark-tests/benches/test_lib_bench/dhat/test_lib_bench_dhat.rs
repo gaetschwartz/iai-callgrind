@@ -2,7 +2,7 @@ use std::hint::black_box;
 
 use benchmark_tests::{bubble_sort, setup_best_case_array, setup_worst_case_array};
 use gungraun::prelude::*;
-use gungraun::{Dhat, DhatMetric, EntryPoint, ValgrindTool};
+use gungraun::{Dhat, DhatMetric, EntryPoint, SanitizeOutput, ValgrindTool};
 
 #[inline(never)]
 fn custom_setup(start: i32) -> Vec<i32> {
@@ -133,9 +133,33 @@ fn alloc_in_func(start: i32) -> Vec<i32> {
     setup_worst_case_array(start)
 }
 
+#[library_benchmark]
+#[bench::default()]
+#[bench::yes(
+    config = LibraryBenchmarkConfig::default()
+        .tool(Dhat::default()
+            .sanitize_output(SanitizeOutput::Yes)
+        ),
+)]
+#[bench::no(
+    config = LibraryBenchmarkConfig::default()
+        .tool(Dhat::default()
+            .sanitize_output(SanitizeOutput::No)
+        ),
+)]
+#[bench::keep_orig(
+    config = LibraryBenchmarkConfig::default()
+        .tool(Dhat::default()
+            .sanitize_output(SanitizeOutput::KeepOrig)
+        ),
+)]
+fn sanitize() -> Vec<i32> {
+    black_box(bubble_sort(black_box(setup_worst_case_array(5))))
+}
+
 library_benchmark_group!(
     name = my_group,
-    benchmarks = [heap, copy, ad_hoc, alloc_in_func]
+    benchmarks = [heap, copy, ad_hoc, alloc_in_func, sanitize]
 );
 main!(
     config = LibraryBenchmarkConfig::default()
