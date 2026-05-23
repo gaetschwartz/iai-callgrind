@@ -35,7 +35,7 @@ use crate::runner::callgrind::flamegraph::{
 };
 use crate::runner::callgrind::parser::Sentinel;
 use crate::runner::format::{
-    self, BinaryBenchmarkHeader, Header, LibraryBenchmarkHeader, OutputFormat,
+    self, BinaryBenchmarkHeader, Header, LibraryBenchmarkHeader, ListFormat, OutputFormat,
 };
 use crate::runner::lib_bench::{self, LibBench};
 use crate::runner::summary::{FlamegraphSummary, Profile, ProfileData};
@@ -1317,13 +1317,23 @@ impl Groups {
     }
 
     /// Prints all groups in list format and a final benchmark summary.
-    pub fn list(self) {
-        let mut sum = 0u64;
-        for group in self.0 {
-            sum += group.list();
-        }
+    ///
+    /// When `ignored` is `true` no per-benchmark lines are emitted because gungraun has no
+    /// ignored-benchmark concept (see nextest's custom-harness contract). When `format` is
+    /// [`ListFormat::Terse`] the trailing blank line and summary are suppressed so the output is
+    /// directly parseable by `cargo nextest`.
+    pub fn list(self, format: ListFormat, ignored: bool) {
+        let sum = if ignored {
+            0
+        } else {
+            let mut sum = 0u64;
+            for group in self.0 {
+                sum += group.list();
+            }
+            sum
+        };
 
-        format::print_benchmark_list_summary(sum);
+        format::print_benchmark_list_summary(sum, format);
     }
 
     /// Returns the total number of filtered benchmarks across all groups.

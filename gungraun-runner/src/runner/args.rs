@@ -38,7 +38,7 @@ use strum::IntoEnumIterator;
 use super::cachegrind::regression::CachegrindRegressionConfig;
 use super::callgrind::regression::CallgrindRegressionConfig;
 use super::dhat::regression::DhatRegressionConfig;
-use super::format::OutputFormatKind;
+use super::format::{ListFormat, OutputFormatKind};
 use super::metrics::{Metric, TypeChecker};
 use super::summary::{BaselineName, SummaryFormat};
 use super::tool::regression::ToolRegressionConfig;
@@ -158,12 +158,6 @@ pub struct CommandLineArgs {
         required = false
     )]
     _force_run_in_process: bool,
-
-    #[arg(hide = true, long = "format", num_args = 0.., required = false)]
-    _format: Vec<String>,
-
-    #[arg(action = ArgAction::SetTrue, hide = true, long = "ignored", required = false)]
-    _ignored: bool,
 
     #[arg(action = ArgAction::SetTrue, hide = true, long = "include-ignored", required = false)]
     _include_ignored: bool,
@@ -723,6 +717,24 @@ pub struct CommandLineArgs {
     )]
     pub filter: Option<BenchmarkFilter>,
 
+    /// Hidden libtest-compat shim that controls the format of the `--list` output
+    ///
+    /// Only `terse` actually changes behavior (it suppresses the trailing blank line and
+    /// `0 tests, N benchmarks` summary so the listing matches what `cargo nextest` expects).
+    /// All other values, including `pretty`, `json`, `junit`, the empty string, and unknown
+    /// values, fall back to `pretty` to preserve compatibility with consumers that pass libtest
+    /// values gungraun doesn't natively emit. Hidden because it has no effect outside `--list`.
+    #[arg(
+        default_missing_value = "pretty",
+        default_value = "pretty",
+        hide = true,
+        long = "format",
+        num_args = 0..=1,
+        required = false,
+        value_parser = parse_list_format,
+    )]
+    pub format: ListFormat,
+
     #[rustfmt::skip]
     /// The command-line arguments to pass through to Helgrind
     ///
@@ -781,6 +793,15 @@ pub struct CommandLineArgs {
     )]
     pub home: Option<PathBuf>,
 
+    #[arg(action = ArgAction::SetTrue, hide = true, long = "ignored", required = false)]
+    /// Hidden libtest-compat shim consulted only by `--list`
+    ///
+    /// `cargo nextest` performs a second `--list --format terse --ignored` pass to discover the
+    /// set of ignored tests. Gungraun has no per-benchmark ignore concept, so when this flag is
+    /// paired with `--list` we emit an empty list (the contract nextest documents for harnesses
+    /// without ignored tests). Ignored otherwise.
+    pub ignored: bool,
+
     #[rustfmt::skip]
     /// Print a list of all benchmarks. With this argument no benchmarks are executed.
     ///
@@ -788,6 +809,10 @@ pub struct CommandLineArgs {
     /// However, future changes of the output format by cargo might not be incorporated into
     /// gungraun. As a consequence, it is not considered safe to rely on the output in
     /// scripts.
+    ///
+    /// Combine with `--format terse` for `cargo nextest`-compatible output (per-benchmark lines
+    /// only, no trailing blank line or summary). `--list --format terse --ignored` emits an
+    /// empty list because gungraun has no ignored-benchmark concept.
     #[arg(
         action = ArgAction::Set,
         default_missing_value = "true",
@@ -1727,6 +1752,22 @@ fn parse_helgrind_metrics(value: &str) -> Result<IndexSet<ErrorMetric>, String> 
     parse_tool_metrics(value, parse_error_metrics)
 }
 
+/// Parse the value of the hidden `--format` libtest-compat shim.
+///
+/// Only `terse` actually changes behavior. `pretty`, `json`, `junit`, the empty string and any
+/// unknown value all map to [`ListFormat::Pretty`] so we keep silently accepting values we don't
+/// natively support (matching the previous `Vec<String>` accept-all behavior).
+#[expect(
+    clippy::unnecessary_wraps,
+    reason = "clap value_parser requires Result return type"
+)]
+fn parse_list_format(value: &str) -> Result<ListFormat, String> {
+    match value {
+        "terse" => Ok(ListFormat::Terse),
+        _ => Ok(ListFormat::Pretty),
+    }
+}
+
 fn parse_limits<T: Eq + Hash>(
     value: &str,
     parse_metrics: fn(&str, Option<Metric>) -> ParsedMetrics<T>,
@@ -2241,6 +2282,77 @@ mod tests {
         };
 
         result.unwrap();
+    }
+
+    #[rstest]
+    #[case::parse_terse("terse", ListFormat::Terse)]
+    #[case::parse_pretty("pretty", ListFormat::Pretty)]
+    #[case::parse_empty("", ListFormat::Pretty)]
+    #[case::parse_json("json", ListFormat::Pretty)]
+    #[case::parse_junit("junit", ListFormat::Pretty)]
+    #[case::parse_unknown("nonsense", ListFormat::Pretty)]
+    fn test_parse_list_format(#[case] input: &str, #[case] expected: ListFormat) {
+        assert_eq!(parse_list_format(input).unwrap(), expected);
+    }
+
+    #[test]
+    fn test_format_default_when_unset_is_pretty() {
+        let actual = CommandLineArgs::parse_from::<[_; 0], &str>([]);
+        assert_eq!(actual.format, ListFormat::Pretty);
+    }
+
+    #[test]
+    fn test_format_bare_flag_is_pretty() {
+        let actual = CommandLineArgs::parse_from(["--format"]);
+        assert_eq!(actual.format, ListFormat::Pretty);
+    }
+
+    #[test]
+    fn test_format_equals_empty_is_pretty() {
+        let actual = CommandLineArgs::parse_from(["--format="]);
+        assert_eq!(actual.format, ListFormat::Pretty);
+    }
+
+    #[test]
+    fn test_format_equals_terse_is_terse() {
+        let actual = CommandLineArgs::parse_from(["--format=terse"]);
+        assert_eq!(actual.format, ListFormat::Terse);
+    }
+
+    #[test]
+    fn test_format_space_terse_is_terse() {
+        let actual = CommandLineArgs::parse_from(["--format", "terse"]);
+        assert_eq!(actual.format, ListFormat::Terse);
+    }
+
+    #[test]
+    fn test_format_unknown_value_is_pretty() {
+        let actual = CommandLineArgs::parse_from(["--format=json"]);
+        assert_eq!(actual.format, ListFormat::Pretty);
+    }
+
+    #[test]
+    fn test_list_format_terse_nextest_invocation() {
+        let actual = CommandLineArgs::parse_from(["--list", "--format", "terse"]);
+        assert!(actual.list);
+        assert!(!actual.ignored);
+        assert_eq!(actual.format, ListFormat::Terse);
+    }
+
+    #[test]
+    fn test_list_format_terse_ignored_nextest_invocation() {
+        let actual = CommandLineArgs::parse_from(["--list", "--format", "terse", "--ignored"]);
+        assert!(actual.list);
+        assert!(actual.ignored);
+        assert_eq!(actual.format, ListFormat::Terse);
+    }
+
+    #[test]
+    fn test_format_bare_flag_followed_by_other_flag_is_pretty() {
+        // `--format` followed by another flag must not gobble the flag as a value.
+        let actual = CommandLineArgs::parse_from(["--format", "--list"]);
+        assert!(actual.list);
+        assert_eq!(actual.format, ListFormat::Pretty);
     }
 
     #[rstest]
