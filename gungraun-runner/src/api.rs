@@ -1303,6 +1303,8 @@ pub struct LibraryBenchmarkConfig {
     pub envs: Vec<(OsString, Option<OsString>)>,
     /// The configuration of the output format
     pub output_format: Option<OutputFormat>,
+    /// Run the selected library benchmark in a [`Sandbox`] or not.
+    pub sandbox: Option<Sandbox>,
     /// The valgrind tools to run in addition to the default tool
     pub tools: Tools,
     /// The tool override at this configuration level
@@ -2149,6 +2151,7 @@ impl LibraryBenchmarkConfig {
             }
 
             self.output_format = update_option(&self.output_format, &other.output_format);
+            self.sandbox = update_option(&self.sandbox, &other.sandbox);
         }
         self
     }
@@ -2739,6 +2742,7 @@ mod tests {
             tools_override: None,
             output_format: None,
             default_tool: Some(ValgrindTool::BBV),
+            sandbox: Some(Sandbox::default()),
         };
 
         assert_eq!(base.update_from_all([Some(&other.clone())]), other);
@@ -2770,6 +2774,7 @@ mod tests {
             tools_override: Some(Tools(vec![])),
             output_format: Some(OutputFormat::default()),
             default_tool: Some(ValgrindTool::BBV),
+            sandbox: Some(Sandbox::default()),
         };
         let expected = LibraryBenchmarkConfig {
             tools: other.tools_override.as_ref().unwrap().clone(),

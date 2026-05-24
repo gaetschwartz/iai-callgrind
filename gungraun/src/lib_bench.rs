@@ -308,6 +308,39 @@ impl LibraryBenchmarkConfig {
         self
     }
 
+    /// Configures library benchmarks to run in a [`Sandbox`] (Default: false).
+    ///
+    /// If specified and enabled, the selected benchmark is run in a temporary directory. This also
+    /// includes benchmark-level `setup` and `teardown` functions.
+    ///
+    /// See the [`Sandbox`] documentation for more details.
+    ///
+    /// # Examples
+    ///
+    /// To enable the sandbox for all library benchmarks:
+    ///
+    /// ```rust
+    /// use gungraun::Sandbox;
+    /// use gungraun::prelude::*;
+    /// # #[library_benchmark] fn bench() {}
+    /// # library_benchmark_group!(name = my_group, benchmarks = bench);
+    /// # fn main() {
+    /// main!(
+    ///     config = LibraryBenchmarkConfig::default().sandbox(Sandbox::new(true)),
+    ///     library_benchmark_groups = my_group
+    /// );
+    /// # }
+    /// ```
+    ///
+    /// [`Sandbox`]: crate::Sandbox
+    pub fn sandbox<T>(&mut self, sandbox: T) -> &mut Self
+    where
+        T: Into<__internal::InternalSandbox>,
+    {
+        self.0.sandbox = Some(sandbox.into());
+        self
+    }
+
     /// Adds a configuration for a Valgrind tool.
     ///
     /// Valid configurations are [`crate::Callgrind`], [`crate::Cachegrind`], [`crate::Dhat`],

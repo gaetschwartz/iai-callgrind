@@ -317,6 +317,7 @@ impl LibBench {
                     .env_clear
                     .unwrap_or_else(|| config.env_clear.unwrap_or(args::defaults::ENV_CLEAR)),
                 envs,
+                sandbox: config.sandbox,
                 ..Default::default()
             },
             tools: tool_configs,
