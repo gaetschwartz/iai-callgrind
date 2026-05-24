@@ -318,6 +318,7 @@ impl LibBench {
                     .unwrap_or_else(|| config.env_clear.unwrap_or(args::defaults::ENV_CLEAR)),
                 envs,
                 sandbox: config.sandbox,
+                current_dir: config.current_dir,
                 ..Default::default()
             },
             tools: tool_configs,

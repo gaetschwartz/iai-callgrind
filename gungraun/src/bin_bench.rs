@@ -1232,7 +1232,7 @@ impl BinaryBenchmarkConfig {
     /// Sets the directory of the benchmarked binary (Default: Unchanged).
     ///
     /// Unchanged means, in the case of running with the sandbox enabled, the root of the sandbox.
-    /// In the case of running without sandboxing enabled, this'll be the directory which `cargo
+    /// In the case of running without sandboxing enabled, this will be the directory which `cargo
     /// bench` sets. If running the benchmark within the sandbox, and the path is relative then this
     /// new directory must be contained in the sandbox.
     ///

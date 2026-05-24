@@ -1,4 +1,5 @@
 use std::ffi::OsString;
+use std::path::PathBuf;
 
 use derive_more::AsRef;
 use gungraun_macros::IntoInner;
@@ -174,6 +175,52 @@ impl LibraryBenchmarkConfig {
     /// ```
     pub fn env_clear(&mut self, value: bool) -> &mut Self {
         self.0.env_clear = Some(value);
+        self
+    }
+
+    /// Sets the directory of the library benchmark (Default: Unchanged).
+    ///
+    /// Unchanged means, in the case of running with the [`Sandbox`][crate::Sandbox] enabled, the
+    /// root of the sandbox. In the case of running without sandboxing enabled, this will be the
+    /// directory which `cargo bench` sets. If running the benchmark within the sandbox, and the
+    /// path is relative then this new directory must be contained in the sandbox.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use gungraun::prelude::*;
+    /// # #[library_benchmark] fn bench() {}
+    /// # library_benchmark_group!(name = my_group, benchmarks = bench);
+    /// # fn main() {
+    /// main!(
+    ///     config = LibraryBenchmarkConfig::default().current_dir("/tmp"),
+    ///     library_benchmark_groups = my_group
+    /// );
+    /// # }
+    /// ```
+    ///
+    /// and the following will change the current directory to `fixtures` assuming it is contained
+    /// in the root of the sandbox
+    ///
+    /// ```rust
+    /// use gungraun::Sandbox;
+    /// use gungraun::prelude::*;
+    /// # #[library_benchmark] fn bench() {}
+    /// # library_benchmark_group!(name = my_group, benchmarks = bench);
+    /// # fn main() {
+    /// main!(
+    ///     config = LibraryBenchmarkConfig::default()
+    ///         .sandbox(Sandbox::new(true))
+    ///         .current_dir("fixtures"),
+    ///     library_benchmark_groups = my_group
+    /// );
+    /// # }
+    /// ```
+    pub fn current_dir<T>(&mut self, value: T) -> &mut Self
+    where
+        T: Into<PathBuf>,
+    {
+        self.0.current_dir = Some(value.into());
         self
     }
 
