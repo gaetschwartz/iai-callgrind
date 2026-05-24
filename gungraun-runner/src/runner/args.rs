@@ -793,13 +793,13 @@ pub struct CommandLineArgs {
     )]
     pub home: Option<PathBuf>,
 
-    #[arg(action = ArgAction::SetTrue, hide = true, long = "ignored", required = false)]
     /// Hidden libtest-compat shim consulted only by `--list`
     ///
     /// `cargo nextest` performs a second `--list --format terse --ignored` pass to discover the
     /// set of ignored tests. Gungraun has no per-benchmark ignore concept, so when this flag is
     /// paired with `--list` we emit an empty list (the contract nextest documents for harnesses
     /// without ignored tests). Ignored otherwise.
+    #[arg(action = ArgAction::SetTrue, hide = true, long = "ignored", required = false)]
     pub ignored: bool,
 
     #[rustfmt::skip]

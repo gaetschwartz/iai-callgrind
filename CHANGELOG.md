@@ -35,15 +35,15 @@ and this project adheres to
 ### Added
 
 - Honor `--format terse` when combined with `--list` so gungraun bench binaries
-  are compatible with `cargo nextest` test discovery. Terse output contains
-  only the per-benchmark lines without the trailing blank line and
-  `0 tests, N benchmarks` summary that the default libtest-pretty listing
-  emits. The previously hidden libtest-compat `--format` shim now actually
-  honors the value; any value other than `terse` (including `pretty`, `json`,
-  `junit`, the empty string, or unknown values) falls back to the existing
-  pretty output. `--list --format terse --ignored` emits empty stdout because
-  gungraun has no ignored-benchmark concept (the contract nextest documents
-  for harnesses without ignored tests).
+  are compatible with `cargo nextest` test discovery. Terse output contains only
+  the per-benchmark lines without the trailing blank line and
+  `0 tests, N benchmarks` summary that the default libtest-pretty listing emits.
+  The previously hidden libtest-compat `--format` shim now actually honors the
+  value; any value other than `terse` (including `pretty`, `json`, `junit`, the
+  empty string, or unknown values) falls back to the existing pretty output.
+  `--list --format terse --ignored` emits empty stdout because gungraun has no
+  ignored-benchmark concept (the contract nextest documents for harnesses
+  without ignored tests).
 
 ## [0.19.0] - 2026-05-15
 
