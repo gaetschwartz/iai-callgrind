@@ -7,5 +7,8 @@ benchmarks with the name changing from `LibraryBenchmarkConfig` to
 benchmarks have some additional configuration possibilities:
 
 - [Delay the Command](./configuration/delay.md)
-- [Sandbox](./configuration/sandbox.md)
 - [Configure the exit code of the Command](./configuration/exit_code.md).
+
+The [`Sandbox`](../library_benchmarks/configuration/sandbox.md) configuration is
+shared with library benchmarks. Use `BinaryBenchmarkConfig::sandbox` instead of
+`LibraryBenchmarkConfig::sandbox`.

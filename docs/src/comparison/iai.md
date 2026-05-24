@@ -43,7 +43,7 @@ Gungraun Pros:
 
 - Gungraun has functionality in place that provides a constant and reproducible
   benchmarking environment, like the
-  [`Sandbox`](../benchmarks/binary_benchmarks/configuration/sandbox.md) and
+  [`Sandbox`](../benchmarks/library_benchmarks/configuration/sandbox.md) and
   clearing environment variables.
 
 - Customizable output format to be able to show

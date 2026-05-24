@@ -1640,6 +1640,7 @@ impl Command {
     ///
     /// [env-cargo-exe]:
     /// https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-crates
+    /// [`Sandbox`]: crate::Sandbox
     pub fn new<T>(path: T) -> Self
     where
         T: AsRef<OsStr>,

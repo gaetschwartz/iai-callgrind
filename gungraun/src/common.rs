@@ -284,7 +284,7 @@ pub struct OutputFormat(__internal::InternalOutputFormat);
 /// # Background and reasons for using a `Sandbox`
 ///
 /// A [`Sandbox`] can help mitigating differences in benchmark results on different machines. As
-/// long as `$TMP_DIR` is unset or set to `/tmp`, the temporary directory has a constant length on
+/// long as `$TMPDIR` is unset or set to `/tmp`, the temporary directory has a constant length on
 /// unix machines (except android which uses `/data/local/tmp`). The directory itself
 /// is created with a constant length but random name like `/tmp/.a23sr8fk`. It is not implausible
 /// that an executable has different event counts just because the directory it is executed in has a
