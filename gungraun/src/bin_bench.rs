@@ -271,46 +271,6 @@ pub struct Command(__internal::InternalCommand);
 #[derive(Debug, Default, Clone, PartialEq, Eq, IntoInner, AsRef)]
 pub struct Delay(__internal::InternalDelay);
 
-/// The `Sandbox` in which the `setup`, `teardown` and the [`Command`] are run
-///
-/// The `Sandbox` is a temporary directory which is created before the execution of the
-/// [`setup`](`crate::binary_benchmark`) and deleted after the
-/// [`teardown`](`crate::binary_benchmark`). `setup`, the [`Command`] and `teardown` are executed
-/// inside this temporary directory.
-///
-/// # Background and reasons for using a `Sandbox`
-///
-/// A [`Sandbox`] can help mitigating differences in benchmark results on different machines. As
-/// long as `$TMP_DIR` is unset or set to `/tmp`, the temporary directory has a constant length on
-/// unix machines (except android which uses `/data/local/tmp`). The directory itself
-/// is created with a constant length but random name like `/tmp/.a23sr8fk`. It is not implausible
-/// that an executable has different event counts just because the directory it is executed in has a
-/// different length. For example, if a member of your project has set up the project in
-/// `/home/bob/workspace/our-project` running the benchmarks in this directory, and the ci runs the
-/// benchmarks in `/runner/our-project`, the event counts might differ. If possible, the benchmarks
-/// should be run in an as constant as possible environment. Clearing the environment variables is
-/// also such a counter-measure.
-///
-/// Other reasons for using a `Sandbox` are convenience, such as if you're creating files during
-/// `setup` and the [`Command`] run and don't want to delete all the files manually. Or, more
-/// importantly, if the [`Command`] is destructive and deletes files, it is usually safer to execute
-/// such a [`Command`] in a temporary directory where it cannot do any harm to your or others file
-/// systems during the benchmark runs.
-///
-/// # Sandbox cleanup
-///
-/// The changes the `setup` makes in this directory persist until the `teardown` has finished. So,
-/// the [`Command`] can for example pick up any files created by the `setup` method. If run in a
-/// `Sandbox`, the `teardown` usually doesn't have to delete any files, because the whole
-/// directory is deleted after its usage. There is an exception to the rule. If any of the files
-/// inside the directory is not removable, for example because the permissions of a file don't allow
-/// the file to be deleted, then the whole directory persists. You can use the `teardown` to reset
-/// all permission bits to be readable and writable, so the cleanup can succeed.
-///
-/// To simply copy fixtures or whole directories into the `Sandbox` use [`Sandbox::fixtures`].
-#[derive(Debug, Clone, IntoInner, AsRef)]
-pub struct Sandbox(__internal::InternalSandbox);
-
 impl Bench {
     /// Creates a new `Bench` with a unique [`BenchmarkId`].
     ///
@@ -444,7 +404,7 @@ impl Bench {
     /// Adds a `setup` function to be executed before the [`Command`] is executed.
     ///
     /// This `setup` function overwrites the `setup` function of [`BinaryBenchmark`]. In the
-    /// presence of a [`Sandbox`], this function is executed in the sandbox.
+    /// presence of a [`Sandbox`][crate::Sandbox], this function is executed in the sandbox.
     ///
     /// # Examples
     ///
@@ -485,7 +445,7 @@ impl Bench {
     /// Adds a `teardown` function to be executed after the [`Command`] is executed.
     ///
     /// This `teardown` function overwrites the `teardown` function of [`BinaryBenchmark`]. In the
-    /// presence of a [`Sandbox`], this function is executed in the sandbox.
+    /// presence of a [`Sandbox`][crate::Sandbox], this function is executed in the sandbox.
     ///
     /// # Examples
     ///
@@ -1272,7 +1232,7 @@ impl BinaryBenchmarkConfig {
     /// Sets the directory of the benchmarked binary (Default: Unchanged).
     ///
     /// Unchanged means, in the case of running with the sandbox enabled, the root of the sandbox.
-    /// In the case of running without sandboxing enabled, this'll be the directory which `cargo
+    /// In the case of running without sandboxing enabled, this will be the directory which `cargo
     /// bench` sets. If running the benchmark within the sandbox, and the path is relative then this
     /// new directory must be contained in the sandbox.
     ///
@@ -1453,16 +1413,7 @@ impl BinaryBenchmarkConfig {
     /// If specified, we create a temporary directory in which the `setup` and `teardown` functions
     /// of the `#[binary_benchmark]` (`#[bench]`, `#[benches]`) and the [`Command`] itself are run.
     ///
-    /// A good reason for using a temporary directory as workspace is, that the length of the path
-    /// where a benchmark is executed may have an influence on the benchmark results. For example,
-    /// running the benchmark in your repository `/home/me/my/repository` and someone else's
-    /// repository located under `/home/someone/else/repository` may produce different results only
-    /// because the length of the first path is shorter. To run benchmarks as deterministic as
-    /// possible across different systems, the length of the path should be the same wherever the
-    /// benchmark is executed. This crate ensures this property by using the tempfile crate which
-    /// creates the temporary directory in `/tmp` with a random name of fixed length like
-    /// `/tmp/.tmp12345678`. This ensures that the length of the directory will be the same on all
-    /// unix hosts where the benchmarks are run.
+    /// See the [`Sandbox`] documentation for more details.
     ///
     /// # Examples
     ///
@@ -1480,6 +1431,8 @@ impl BinaryBenchmarkConfig {
     /// );
     /// # }
     /// ```
+    ///
+    /// [`Sandbox`]: crate::Sandbox
     pub fn sandbox<T>(&mut self, sandbox: T) -> &mut Self
     where
         T: Into<__internal::InternalSandbox>,
@@ -1687,6 +1640,7 @@ impl Command {
     ///
     /// [env-cargo-exe]:
     /// https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-crates
+    /// [`Sandbox`]: crate::Sandbox
     pub fn new<T>(path: T) -> Self
     where
         T: AsRef<OsStr>,
@@ -2433,82 +2387,6 @@ where
             kind: DelayKind::DurationElapse(duration.into()),
             ..Default::default()
         })
-    }
-}
-
-impl Sandbox {
-    /// Creates a new `Sandbox` builder.
-    ///
-    /// By default, a [`Command`] is not run in a `Sandbox` because setting up a `Sandbox` usually
-    /// involves some user interaction, for example copying fixtures into it with
-    /// [`Sandbox::fixtures`].
-    ///
-    /// The temporary directory is only created immediately before the `setup` and the [`Command`]
-    /// are executed.
-    ///
-    /// # Examples
-    ///
-    /// Enables the sandbox for all benchmarks.
-    ///
-    /// ```rust
-    /// use gungraun::{BinaryBenchmarkConfig, Sandbox, main};
-    /// # use gungraun::binary_benchmark_group;
-    /// # binary_benchmark_group!(name = my_group, benchmarks = |_group| {});
-    /// # fn main() {
-    /// main!(
-    ///     config = BinaryBenchmarkConfig::default().sandbox(Sandbox::new(true)),
-    ///     binary_benchmark_groups = my_group
-    /// );
-    /// # }
-    /// ```
-    pub fn new(enabled: bool) -> Self {
-        Self(__internal::InternalSandbox {
-            enabled: Some(enabled),
-            ..Default::default()
-        })
-    }
-
-    /// Specify the directories and/or files you want to copy into the root of the `Sandbox`
-    ///
-    /// The paths are interpreted relative to the workspace root as it is reported by `cargo`. In a
-    /// multi-crate project this is the directory with the top-level `Cargo.toml`. Otherwise, it is
-    /// simply the directory with your `Cargo.toml` file in it.
-    ///
-    /// # Examples
-    ///
-    /// Assuming you crate's binary is called `my-foo` taking a file path as the first argument and
-    /// the fixtures directory is `$WORKSPACE_ROOT/benches/fixtures` containing a fixture
-    /// `fix_1.txt`:
-    ///
-    /// ```rust
-    /// # macro_rules! env { ($m:tt) => {{ "/some/path" }} }
-    /// # use gungraun::{binary_benchmark_group, main};
-    /// use gungraun::{BinaryBenchmarkConfig, Sandbox, binary_benchmark};
-    ///
-    /// #[binary_benchmark]
-    /// #[bench::fix_1(
-    ///      args = ("fix_1.txt"),
-    ///      config = BinaryBenchmarkConfig::default()
-    ///          .sandbox(Sandbox::new(true)
-    ///              .fixtures(["benches/fixtures/fix_1.txt"])
-    ///         )
-    /// )]
-    /// fn bench_with_fixtures(path: &str) -> gungraun::Command {
-    ///     gungraun::Command::new(env!("CARGO_BIN_EXE_my-foo"))
-    ///         .arg(path)
-    ///         .build()
-    /// }
-    ///
-    /// # binary_benchmark_group!(name = my_group, benchmarks = bench_with_fixtures);
-    /// # fn main() { main!(binary_benchmark_groups = my_group); }
-    /// ```
-    pub fn fixtures<I, T>(&mut self, paths: T) -> &mut Self
-    where
-        I: Into<PathBuf>,
-        T: IntoIterator<Item = I>,
-    {
-        self.0.fixtures.extend(paths.into_iter().map(Into::into));
-        self
     }
 }
 

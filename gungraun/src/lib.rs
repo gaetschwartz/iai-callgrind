@@ -516,14 +516,14 @@ mod macros;
 #[cfg(feature = "default")]
 pub use bin_bench::{
     Bench, BenchmarkId, BinaryBenchmark, BinaryBenchmarkConfig, BinaryBenchmarkGroup, Command,
-    Delay, Sandbox,
+    Delay,
 };
 #[cfg(feature = "default")]
 pub use bincode_next as bincode;
 #[cfg(feature = "default")]
 pub use common::{
     Bbv, Cachegrind, Callgrind, Dhat, Drd, FlamegraphConfig, Helgrind, Massif, Memcheck,
-    OutputFormat,
+    OutputFormat, Sandbox,
 };
 #[cfg(feature = "client_requests_defs")]
 pub use cty;

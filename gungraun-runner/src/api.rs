@@ -1109,7 +1109,7 @@ pub struct BinaryBenchmarkBench {
 /// only.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct BinaryBenchmarkConfig {
-    /// If some, set the working directory of the benchmarked binary to this path
+    /// If some, set the working directory of the selected binary benchmark to this path
     pub current_dir: Option<PathBuf>,
     /// The valgrind tool to run instead of the default callgrind
     pub default_tool: Option<ValgrindTool>,
@@ -1295,6 +1295,8 @@ pub struct LibraryBenchmarkBench {
 /// only.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct LibraryBenchmarkConfig {
+    /// If some, set the working directory of the library benchmark to this path
+    pub current_dir: Option<PathBuf>,
     /// The valgrind tool to run instead of the default callgrind
     pub default_tool: Option<ValgrindTool>,
     /// True if the environment variables should be cleared
@@ -1303,6 +1305,8 @@ pub struct LibraryBenchmarkConfig {
     pub envs: Vec<(OsString, Option<OsString>)>,
     /// The configuration of the output format
     pub output_format: Option<OutputFormat>,
+    /// Run the selected library benchmark in a [`Sandbox`] or not.
+    pub sandbox: Option<Sandbox>,
     /// The valgrind tools to run in addition to the default tool
     pub tools: Tools,
     /// The tool override at this configuration level
@@ -2149,6 +2153,8 @@ impl LibraryBenchmarkConfig {
             }
 
             self.output_format = update_option(&self.output_format, &other.output_format);
+            self.current_dir = update_option(&self.current_dir, &other.current_dir);
+            self.sandbox = update_option(&self.sandbox, &other.sandbox);
         }
         self
     }
@@ -2717,6 +2723,7 @@ mod tests {
     fn test_library_benchmark_config_update_from_all_when_no_tools_override() {
         let base = LibraryBenchmarkConfig::default();
         let other = LibraryBenchmarkConfig {
+            current_dir: Some(PathBuf::from("/tmp")),
             env_clear: Some(true),
             valgrind_args: RawToolArgs(vec!["--valgrind-arg=yes".to_owned()]),
             envs: vec![(OsString::from("MY_ENV"), Some(OsString::from("value")))],
@@ -2739,6 +2746,7 @@ mod tests {
             tools_override: None,
             output_format: None,
             default_tool: Some(ValgrindTool::BBV),
+            sandbox: Some(Sandbox::default()),
         };
 
         assert_eq!(base.update_from_all([Some(&other.clone())]), other);
@@ -2748,6 +2756,7 @@ mod tests {
     fn test_library_benchmark_config_update_from_all_when_tools_override() {
         let base = LibraryBenchmarkConfig::default();
         let other = LibraryBenchmarkConfig {
+            current_dir: Some(PathBuf::from("/tmp")),
             env_clear: Some(true),
             valgrind_args: RawToolArgs(vec!["--valgrind-arg=yes".to_owned()]),
             envs: vec![(OsString::from("MY_ENV"), Some(OsString::from("value")))],
@@ -2770,6 +2779,7 @@ mod tests {
             tools_override: Some(Tools(vec![])),
             output_format: Some(OutputFormat::default()),
             default_tool: Some(ValgrindTool::BBV),
+            sandbox: Some(Sandbox::default()),
         };
         let expected = LibraryBenchmarkConfig {
             tools: other.tools_override.as_ref().unwrap().clone(),

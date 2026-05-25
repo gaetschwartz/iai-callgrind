@@ -1,4 +1,5 @@
 use std::ffi::OsString;
+use std::path::PathBuf;
 
 use derive_more::AsRef;
 use gungraun_macros::IntoInner;
@@ -177,6 +178,52 @@ impl LibraryBenchmarkConfig {
         self
     }
 
+    /// Sets the directory of the library benchmark (Default: Unchanged).
+    ///
+    /// Unchanged means, in the case of running with the [`Sandbox`][crate::Sandbox] enabled, the
+    /// root of the sandbox. In the case of running without sandboxing enabled, this will be the
+    /// directory which `cargo bench` sets. If running the benchmark within the sandbox, and the
+    /// path is relative then this new directory must be contained in the sandbox.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use gungraun::prelude::*;
+    /// # #[library_benchmark] fn bench() {}
+    /// # library_benchmark_group!(name = my_group, benchmarks = bench);
+    /// # fn main() {
+    /// main!(
+    ///     config = LibraryBenchmarkConfig::default().current_dir("/tmp"),
+    ///     library_benchmark_groups = my_group
+    /// );
+    /// # }
+    /// ```
+    ///
+    /// and the following will change the current directory to `fixtures` assuming it is contained
+    /// in the root of the sandbox
+    ///
+    /// ```rust
+    /// use gungraun::Sandbox;
+    /// use gungraun::prelude::*;
+    /// # #[library_benchmark] fn bench() {}
+    /// # library_benchmark_group!(name = my_group, benchmarks = bench);
+    /// # fn main() {
+    /// main!(
+    ///     config = LibraryBenchmarkConfig::default()
+    ///         .sandbox(Sandbox::new(true))
+    ///         .current_dir("fixtures"),
+    ///     library_benchmark_groups = my_group
+    /// );
+    /// # }
+    /// ```
+    pub fn current_dir<T>(&mut self, value: T) -> &mut Self
+    where
+        T: Into<PathBuf>,
+    {
+        self.0.current_dir = Some(value.into());
+        self
+    }
+
     /// Adds environment variables which will be available in library benchmarks.
     ///
     /// These environment variables are available independently of the setting of
@@ -305,6 +352,39 @@ impl LibraryBenchmarkConfig {
         self.0
             .envs
             .extend(envs.into_iter().map(|k| (k.into(), None)));
+        self
+    }
+
+    /// Configures library benchmarks to run in a [`Sandbox`] (Default: false).
+    ///
+    /// If specified and enabled, the selected benchmark is run in a temporary directory. This also
+    /// includes benchmark-level `setup` and `teardown` functions.
+    ///
+    /// See the [`Sandbox`] documentation for more details.
+    ///
+    /// # Examples
+    ///
+    /// To enable the sandbox for all library benchmarks:
+    ///
+    /// ```rust
+    /// use gungraun::Sandbox;
+    /// use gungraun::prelude::*;
+    /// # #[library_benchmark] fn bench() {}
+    /// # library_benchmark_group!(name = my_group, benchmarks = bench);
+    /// # fn main() {
+    /// main!(
+    ///     config = LibraryBenchmarkConfig::default().sandbox(Sandbox::new(true)),
+    ///     library_benchmark_groups = my_group
+    /// );
+    /// # }
+    /// ```
+    ///
+    /// [`Sandbox`]: crate::Sandbox
+    pub fn sandbox<T>(&mut self, sandbox: T) -> &mut Self
+    where
+        T: Into<__internal::InternalSandbox>,
+    {
+        self.0.sandbox = Some(sandbox.into());
         self
     }
 

@@ -401,6 +401,11 @@ path = "benches/test_lib_bench/readme_example_fibonacci/test_lib_bench_readme_ex
 
 [[bench]]
 harness = false
+name = "test_lib_bench_sandbox"
+path = "benches/test_lib_bench/sandbox/test_lib_bench_sandbox.rs"
+
+[[bench]]
+harness = false
 name = "test_lib_bench_setup_and_teardown"
 path = "benches/test_lib_bench/setup_and_teardown/test_lib_bench_setup_and_teardown.rs"
 

@@ -112,6 +112,18 @@ fn bench_example(n: u64) -> u64 {
 # fn main() { main!(library_benchmark_groups = example); }
 ```
 
+## Use a Sandbox When Feasible
+
+Use a [`Sandbox`](./benchmarks/library_benchmarks/configuration/sandbox.md) for
+benchmarks that read or write files if it is feasible for the benchmark. A
+sandbox gives each benchmark run a temporary working directory with a more
+stable path, removes files created during the run, and helps protect your
+workspace from benchmarked code that creates, overwrites, or deletes files.
+
+Sandboxing is not always the right fit. If a benchmark intentionally depends on
+workspace-relative paths or other external state, either copy the needed
+fixtures into the sandbox or leave sandboxing disabled for that benchmark.
+
 ## Design for CI
 
 Gungraun excels in CI environments because it produces consistent measurements

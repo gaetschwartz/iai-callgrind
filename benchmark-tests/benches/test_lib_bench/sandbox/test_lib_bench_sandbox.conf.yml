@@ -1,0 +1,34 @@
+# Test Case: `test_lib_bench_sandbox`
+#
+# Description:
+#   Tests `Sandbox` configuration for file isolation in library benchmarks.
+#   Validates sandbox creation, fixture handling, current directory changes, and
+#   sandbox-disabled execution.
+#
+# Test Steps:
+#   1. Run benchmarks with `--nocapture` testing sandbox configurations
+#   2. Run benchmarks a second time to verify comparison output
+#
+# Test Inputs:
+#   - `Sandbox::new(true)` with fixtures: copies fixture files into sandbox
+#   - `Sandbox::new(true)` without fixtures: empty sandbox created
+#   - `Sandbox::new(false)`: no sandbox, runs in current directory
+#   - `Sandbox::new(false)`: no sandbox with fixtures, executes normally without
+#      copying fixtures
+#   - `current_dir` option to change working directory within sandbox and if no
+#      sandbox then in current benchmark directory
+#
+# Expected Outcomes:
+#   - Fixtures are copied into sandbox when specified
+#   - Missing fixtures are not visible in an empty sandbox
+#   - `current_dir` changes working directory correctly
+#   - With `Sandbox::new(false)`, files from the benchmark working directory are
+#     visible
+groups:
+  - runs:
+      - args: ["--nocapture", "--truncate-description=no"]
+        expected:
+          stdout: expected_stdout.1
+      - args: ["--nocapture", "--truncate-description=no"]
+        expected:
+          stdout: expected_stdout.2
