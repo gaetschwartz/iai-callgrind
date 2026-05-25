@@ -23,7 +23,7 @@ use std::{panic, thread};
 use anyhow::{Context, Result, anyhow};
 use log::{debug, warn};
 
-use super::format::{BinaryBenchmarkHeader, OutputFormat};
+use super::format::{BinaryBenchmarkHeader, ListFormat, OutputFormat};
 use super::meta::Metadata;
 use super::summary::{BaselineKind, BaselineName, BenchmarkKind, BenchmarkSummary, SummaryOutput};
 use super::tool::config::ToolConfigs;
@@ -769,9 +769,14 @@ pub fn benchmark_factory(config: &Config) -> Arc<dyn Benchmark> {
 }
 
 /// Print a list of all benchmarks with a short summary
-pub fn list(benchmark_groups: BinaryBenchmarkGroups, config: &Config) -> Result<()> {
+pub fn list(
+    benchmark_groups: BinaryBenchmarkGroups,
+    config: &Config,
+    format: ListFormat,
+    ignored: bool,
+) -> Result<()> {
     Groups::from_binary_benchmark(&config.module_path, benchmark_groups, &config.meta)
-        .map(Groups::list)
+        .map(|groups| groups.list(format, ignored))
 }
 
 /// The top-level method which should be used to initiate running all benchmarks

@@ -12,7 +12,7 @@ use std::sync::atomic::AtomicBool;
 
 use anyhow::Result;
 
-use super::format::{LibraryBenchmarkHeader, OutputFormat};
+use super::format::{LibraryBenchmarkHeader, ListFormat, OutputFormat};
 use super::meta::Metadata;
 use super::summary::{BaselineKind, BaselineName, BenchmarkKind, BenchmarkSummary, SummaryOutput};
 use super::tool::config::ToolConfigs;
@@ -569,9 +569,14 @@ pub fn benchmark_factory(config: &Config) -> Arc<dyn Benchmark> {
 }
 
 /// Print a list of all benchmarks with a short summary
-pub fn list(benchmark_groups: LibraryBenchmarkGroups, config: &Config) -> Result<()> {
+pub fn list(
+    benchmark_groups: LibraryBenchmarkGroups,
+    config: &Config,
+    format: ListFormat,
+    ignored: bool,
+) -> Result<()> {
     Groups::from_library_benchmark(&config.module_path, benchmark_groups, &config.meta)
-        .map(Groups::list)
+        .map(|groups| groups.list(format, ignored))
 }
 
 /// The top-level method which should be used to initiate running all benchmarks

@@ -3,19 +3,27 @@
 # Description:
 #   Tests the `--list` argument for listing all available benchmarks without
 #   executing them. Validates that the output correctly shows all benchmark IDs
-#   organized by groups.
+#   organized by groups, including the `--format terse` (cargo-nextest
+#   compatible) variant and the `--format terse --ignored` pass that must
+#   produce empty output because gungraun has no ignored-benchmark concept.
 #
 # Test Steps:
 #   1. Run with `--list` flag to list all benchmarks
+#   2. Run with `--list --format terse` (per-benchmark lines only)
+#   3. Run with `--list --format terse --ignored` (empty output)
 #
 # Test Inputs:
 #   - `--list` argument
+#   - The libtest-compatible `--format terse` and `--ignored` flags
 #   - Multiple groups with multiple benchmarks
 #   - Benchmarks defined with `#[binary_benchmark]` and `binary_benchmark_group!`
 #
 # Expected Outcomes:
 #   - Exit code 0 (success)
-#   - Stdout lists all benchmarks in expected format
+#   - Default `--list` stdout lists all benchmarks in expected format
+#   - `--format terse` output contains only per-benchmark lines, no blank line
+#     and no summary, matching nextest's parsing expectations
+#   - `--format terse --ignored` produces empty stdout
 #   - No benchmarks are executed (only listed)
 
 groups:
@@ -24,3 +32,11 @@ groups:
         expected:
           exit_code: 0
           stdout: expected_stdout
+      - args: ["--list", "--format", "terse"]
+        expected:
+          exit_code: 0
+          stdout: expected_stdout.terse
+      - args: ["--list", "--format", "terse", "--ignored"]
+        expected:
+          exit_code: 0
+          stdout: expected_stdout.terse_ignored

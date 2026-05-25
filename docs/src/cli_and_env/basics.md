@@ -67,6 +67,10 @@ Options:
           However, future changes of the output format by cargo might not be incorporated into
           gungraun. As a consequence, it is not considered safe to rely on the output in scripts.
 
+          Combine with `--format terse` for `cargo nextest`-compatible output (per-benchmark lines
+          only, no trailing blank line or summary). `--list --format terse --ignored` emits an empty
+          list because gungraun has no ignored-benchmark concept.
+
           [env: GUNGRAUN_LIST=]
           [default: false]
           [possible values: true, false]
@@ -187,6 +191,26 @@ Options:
             * `--valgrind-bin=/doesnotexist` (used with `--valgrind-runner` for container setups)
 
           [env: GUNGRAUN_VALGRIND_BIN=]
+
+      --workspace-root <WORKSPACE_ROOT>
+          Override the Cargo workspace root
+
+          By default, Gungraun queries `cargo metadata` to detect the workspace root. This is usually
+          correct, but this option provides the workspace root explicitly and avoids that part of the
+          Cargo metadata query.
+
+          To run without invoking `cargo` at all, also provide an explicit output location with
+          `--home`/`GUNGRAUN_HOME` or set `CARGO_TARGET_DIR`. If neither is provided, Gungraun still
+          queries `cargo metadata` to detect Cargo's effective target directory.
+
+          This can be useful when `gungraun-runner` executes in an environment where `cargo` is not
+          available, such as a container, VM, or emulator image.
+
+          Examples:
+            * `--workspace-root=/project`
+            * `GUNGRAUN_WORKSPACE_ROOT=/project GUNGRAUN_HOME=/tmp/gungraun cargo bench`
+
+          [env: GUNGRAUN_WORKSPACE_ROOT=]
 
       --valgrind-runner <VALGRIND_RUNNER>
           Specify an alternative executable to run Valgrind
@@ -345,7 +369,7 @@ Options:
 
           Possible values are one of [true, false, stdout, stderr].
 
-          This option is currently restricted to the `callgrind` run of benchmarks. The output of
+          This option is currently restricted to the Callgrind run of benchmarks. The output of
           additional tool runs like DHAT, Memcheck, ... is still captured, to prevent showing the
           same output of benchmarks multiple times. Use `GUNGRAUN_LOG=info` to also show captured and
           logged output.
@@ -917,6 +941,7 @@ Options:
       1: All other errors
       2: Parsing command-line arguments failed
       3: One or more regressions occurred
+
 ````
 
 <!-- end: gungraun-runner-help -->

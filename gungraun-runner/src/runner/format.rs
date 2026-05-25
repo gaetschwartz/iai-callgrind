@@ -69,6 +69,20 @@ pub enum OutputFormatKind {
     PrettyJson,
 }
 
+/// The libtest-compatible list format selected via `--format` together with `--list`
+///
+/// Mirrors the relevant subset of libtest's `--format` values. Gungraun only varies the trailing
+/// summary line of `--list`: per-benchmark lines are identical in both formats so they remain
+/// parseable by `cargo nextest` and similar libtest-format consumers.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum ListFormat {
+    /// Print per-benchmark lines followed by a blank line and the `0 tests, N benchmarks` summary
+    #[default]
+    Pretty,
+    /// Print only per-benchmark lines, suppressing the blank line and the summary
+    Terse,
+}
+
 /// The first line and header of a binary benchmark run
 ///
 /// For example `module::path id: some args`
@@ -1264,7 +1278,14 @@ pub fn no_capture_footer(nocapture: NoCapture) -> Option<String> {
 }
 
 /// Print the summary of the --list argument
-pub fn print_benchmark_list_summary(sum: u64) {
+///
+/// When `format` is [`ListFormat::Terse`] the trailing blank line and `0 tests, N benchmarks`
+/// summary are suppressed so the output consists solely of per-benchmark lines, matching the
+/// libtest terse listing format that `cargo nextest` expects.
+pub fn print_benchmark_list_summary(sum: u64, format: ListFormat) {
+    if format == ListFormat::Terse {
+        return;
+    }
     if sum != 0 {
         println!();
     }

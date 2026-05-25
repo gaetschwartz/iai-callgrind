@@ -295,11 +295,13 @@ pub fn run() -> Result<()> {
                 output_format,
                 list,
                 nosummary,
+                format,
+                ignored,
                 ..
             } = config.meta.args;
 
             if list {
-                return lib_bench::list(benchmark_groups, &config);
+                return lib_bench::list(benchmark_groups, &config, format, ignored);
             }
 
             lib_bench::run(benchmark_groups, config)
@@ -321,11 +323,13 @@ pub fn run() -> Result<()> {
                 output_format,
                 list,
                 nosummary,
+                format,
+                ignored,
                 ..
             } = config.meta.args;
 
             if list {
-                return bin_bench::list(benchmark_groups, &config);
+                return bin_bench::list(benchmark_groups, &config, format, ignored);
             }
 
             bin_bench::run(benchmark_groups, config)
