@@ -41,8 +41,7 @@ Arguments:
           If specified, only run benchmarks matching this wildcard pattern
 
           The wildcard pattern can contain `*` to match any amount of characters, `?` to match a
-          single character and simple classes `[...]` like `[abc] `to match the characters `a` or
-          `b`
+          single character and simple classes `[...]` like `[abc] `to match the characters `a` or `b`
           or `c`. Character classes can contain ranges, so `[abc]` could be rewritten as `[a-c]` and
           they can be negated with `[!...]` to not match the contained characters.
 
@@ -95,8 +94,7 @@ Options:
           Control whether environment variables are cleared before running a benchmark
 
           By default (`true`), environment variables are cleared to ensure reproducible benchmark
-          results across different environments. Set to `false` to preserve all environment
-          variables
+          results across different environments. Set to `false` to preserve all environment variables
           of the `cargo bench` process.
 
           Examples:
@@ -131,9 +129,9 @@ Options:
       --home <HOME>
           Specify the home directory of gungraun benchmark output files
 
-          All output files are by default stored under the `$PROJECT_ROOT/target/gungraun`
-          directory. This option lets you customize this home directory, and it will be created if
-          it doesn't exist.
+          All output files are by default stored under the `$PROJECT_ROOT/target/gungraun` directory.
+          This option lets you customize this home directory, and it will be created if it doesn't
+          exist.
 
           [env: GUNGRAUN_HOME=]
 
@@ -164,8 +162,8 @@ Options:
           `target/gungraun/$PACKAGE_NAME/$BENCHMARK_FILE/$GROUP/$BENCH_FUNCTION.$BENCH_ID`.
 
           This can be problematic if you're running the benchmarks not only for a single target
-          because you end up comparing the benchmark runs with the wrong targets. Setting this
-          option changes the default output path to
+          because you end up comparing the benchmark runs with the wrong targets. Setting this option
+          changes the default output path to
 
           `target/gungraun/$TARGET/$PACKAGE_NAME/$BENCHMARK_FILE/$GROUP/$BENCH_FUNCTION.$BENCH_ID`
 
@@ -197,10 +195,8 @@ Options:
       --workspace-root <WORKSPACE_ROOT>
           Override the Cargo workspace root
 
-          By default, Gungraun queries `cargo metadata` to detect the workspace root. This is
-          usually
-          correct, but this option provides the workspace root explicitly and avoids that part of
-          the
+          By default, Gungraun queries `cargo metadata` to detect the workspace root. This is usually
+          correct, but this option provides the workspace root explicitly and avoids that part of the
           Cargo metadata query.
 
           To run without invoking `cargo` at all, also provide an explicit output location with
@@ -237,8 +233,7 @@ Options:
           The interpolation priority is: `GUNGRAUN_VR_*` variables first, then `--envs` variables,
           then the system environment.
 
-          This is useful for running benchmarks in containers or other environments where Valgrind
-          is
+          This is useful for running benchmarks in containers or other environments where Valgrind is
           not available on the host. See the online guide for detailed examples.
 
           Examples:
@@ -294,8 +289,7 @@ Options:
       --valgrind-runner-root <VALGRIND_RUNNER_ROOT>
           Override the workspace root path for the Valgrind runner
 
-          This option is only effective when `--valgrind-runner` is specified. It allows
-          substituting
+          This option is only effective when `--valgrind-runner` is specified. It allows substituting
           the workspace root path prefix in the benchmark executable path and all other Valgrind
           arguments.
 
@@ -310,10 +304,10 @@ Options:
       --baseline[=<BASELINE>]
           Compare benchmark results against a previously saved baseline
 
-          This option compares the current benchmark run against a named baseline from a previous
-          run without modifying the saved baseline. Baselines store benchmark results for future
-          comparisons, useful for tracking performance over time or comparing against fixed
-          reference points like a release tag or main branch.
+          This option compares the current benchmark run against a named baseline from a previous run
+          without modifying the saved baseline. Baselines store benchmark results for future
+          comparisons, useful for tracking performance over time or comparing against fixed reference
+          points like a release tag or main branch.
 
           If this option is specified but no baseline with that name exists yet, Gungraun creates a
           new baseline with the current results instead of comparing.
@@ -360,9 +354,9 @@ Options:
           release tag) that you can later compare against using `--baseline`.
 
           This option conflicts with `--baseline` and `--load-baseline`. Use `--baseline` instead if
-          you want to compare without overwriting the reference baseline. See `--baseline` to
-          compare against a saved baseline without modifying it and `--load-baseline` to compare
-          existing baselines without running benchmarks.
+          you want to compare without overwriting the reference baseline. See `--baseline` to compare
+          against a saved baseline without modifying it and `--load-baseline` to compare existing
+          baselines without running benchmarks.
 
           Examples: * `--save-baseline` (uses the default baseline name "default") *
           `--save-baseline=main` (saves as baseline "main") * `--save-baseline=v1.0` (saves as
@@ -377,8 +371,8 @@ Options:
 
           This option is currently restricted to the Callgrind run of benchmarks. The output of
           additional tool runs like DHAT, Memcheck, ... is still captured, to prevent showing the
-          same output of benchmarks multiple times. Use `GUNGRAUN_LOG=info` to also show captured
-          and logged output.
+          same output of benchmarks multiple times. Use `GUNGRAUN_LOG=info` to also show captured and
+          logged output.
 
           If no value is given, the default missing value is `true` and doesn't capture stdout and
           stderr. Besides `true` or `false` you can specify the special values `stdout` or `stderr`.
@@ -410,8 +404,8 @@ Options:
           The json terminal output schema is the same as the schema with the `--save-summary`
           argument when saving to a `summary.json` file. All other output than the json output goes
           to stderr and only the summary output goes to stdout. When not printing pretty json, each
-          line is a dictionary summarizing a single benchmark. You can combine all lines
-          (benchmarks) into an array for example with `jq`
+          line is a dictionary summarizing a single benchmark. You can combine all lines (benchmarks)
+          into an array for example with `jq`
 
           `cargo bench -- --output-format=json | jq -s`
 
@@ -432,14 +426,14 @@ Options:
           benchmark output. The summary file contains benchmark results, metrics, detected
           regressions, and other metadata in a machine-readable format.
 
-          The summary file is saved as `summary.json` in the benchmark's output directory next to
-          the other usual benchmark output.
+          The summary file is saved as `summary.json` in the benchmark's output directory next to the
+          other usual benchmark output.
 
           Available formats: - `json`: Compact JSON without newlines (space-efficient) -
           `pretty-json`: Pretty-printed JSON with indentation (human-readable)
 
-          See also `--output-format` for printing JSON summaries to the terminal instead of saving
-          to a file.
+          See also `--output-format` for printing JSON summaries to the terminal instead of saving to
+          a file.
 
           Examples: * `--save-summary` (saves as compact JSON) * `--save-summary=json` (saves as
           compact JSON) * `--save-summary=pretty-json` (saves as pretty-printed JSON)
@@ -479,8 +473,7 @@ Options:
 
           If you're only interested in the comparisons between different benchmarks but not the
           metric
-          differences between the self comparisons of the new and old benchmark run, use this
-          option.
+          differences between the self comparisons of the new and old benchmark run, use this option.
           This option is only useful if `compare_by_id` is used in the `library_benchmark_group!` or
           `binary_benchmark_group!`. Note, that it does not prevent any benchmarks to be run,
           especially benchmarks which are not compared to another benchmark. Such benchmarks have
@@ -494,8 +487,7 @@ Options:
           Show changes only when they are above the `tolerance` level
 
           If no value is specified, the default value of `0.000_009_999_999_999_999_999` is based on
-          the number of decimal places of the percentages displayed in the terminal output in case
-          of
+          the number of decimal places of the percentages displayed in the terminal output in case of
           differences.
 
           Negative tolerance values are converted to their absolute value.
@@ -540,8 +532,7 @@ Options:
           <https://docs.rs/gungraun/latest/gungraun/enum.CachegrindMetric.html> for valid
           metrics and group members.
 
-          The `group` names, their abbreviations if present and `event` kinds are exactly the same
-          as
+          The `group` names, their abbreviations if present and `event` kinds are exactly the same as
           described in the `--cachegrind-limits` option.
 
           Examples:
@@ -560,8 +551,7 @@ Options:
           The order matters and the Callgrind metrics are shown in their insertion order of this
           option. More precisely, in case of duplicate metrics, the first specified one wins.
 
-          The `group` names, their abbreviations if present and `event` kinds are exactly the same
-          as
+          The `group` names, their abbreviations if present and `event` kinds are exactly the same as
           described in the `--callgrind-limits` option.
 
           For a list of valid metrics, groups and their members see the docs of `CallgrindMetrics`
@@ -576,8 +566,7 @@ Options:
           Examples:
             * --callgrind-metrics='ir' to show only `Instructions`
           * --callgrind-metrics='@all' to show all possible Callgrind metrics
-            * --callgrind-metrics='@default,@mr' to show cache miss rates in addition to the
-            defaults
+            * --callgrind-metrics='@default,@mr' to show cache miss rates in addition to the defaults
 
           [env: GUNGRAUN_CALLGRIND_METRICS=]
 
@@ -592,8 +581,7 @@ Options:
           <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetric.html> for valid metrics
           and group members.
 
-          The `group` names, their abbreviations if present and `event` kinds are exactly the same
-          as
+          The `group` names, their abbreviations if present and `event` kinds are exactly the same as
           described in the `--dhat-limits` option.
 
           Examples:
@@ -682,8 +670,7 @@ Options:
           option to benchmark library functions needs adjustments to the benchmarking functions with
           client-requests to measure the counts correctly. If you want to switch permanently to
           Cachegrind, it is usually better to activate the `cachegrind` feature of gungraun in
-          your Cargo.toml. However, setting a tool with this option overrides Cachegrind set with
-          the
+          your Cargo.toml. However, setting a tool with this option overrides Cachegrind set with the
           gungraun feature. See the guide for all details.
 
           [env: GUNGRAUN_DEFAULT_TOOL=]
@@ -888,8 +875,7 @@ Options:
       --dhat-limits <DHAT_LIMITS>
           Set performance regression limits for specific DHAT metrics
 
-          This is a `,` separate list of DhatMetrics=limit or DhatMetric=limit (key=value) pairs.
-          See
+          This is a `,` separate list of DhatMetrics=limit or DhatMetric=limit (key=value) pairs. See
           the description of --callgrind-limits for the details and
           <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetrics.html> respectively
           <https://docs.rs/gungraun/latest/gungraun/enum.DhatMetric.html> for valid metrics
@@ -926,10 +912,10 @@ Options:
       --regression-fail-fast[=<REGRESSION_FAIL_FAST>]
           Fail the entire benchmark run on the first performance regression
 
-          When enabled, this option causes Gungraun to stop immediately when a performance
-          regression is detected, rather than continuing to run all benchmarks and reporting
-          regressions at the end. The program exits with exit code `3` to indicate that one or more
-          regressions occurred.
+          When enabled, this option causes Gungraun to stop immediately when a performance regression
+          is detected, rather than continuing to run all benchmarks and reporting regressions at the
+          end. The program exits with exit code `3` to indicate that one or more regressions
+          occurred.
 
           Performance regressions are defined by limits set via `--callgrind-limits`,
           `--cachegrind-limits`, `--dhat-limits`, and similar options. Without this option, Gungraun
