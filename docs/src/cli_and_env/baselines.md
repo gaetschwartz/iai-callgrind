@@ -13,7 +13,9 @@ baselines. If you are familiar with
 the following command line arguments should also be very familiar to you:
 
 - `--save-baseline=NAME` (env: `GUNGRAUN_SAVE_BASELINE`): Compare against the
-  `NAME` baseline if present and then overwrite it.
+  `NAME` baseline if present and then overwrite it. When combined with
+  `--baseline=BASELINE`, compare against `BASELINE` and save the current results
+  as `NAME`.
 - `--baseline=NAME` (env: `GUNGRAUN_BASELINE`): Compare against the `NAME`
   baseline without overwriting it
 - `--load-baseline=NAME` (env: `GUNGRAUN_LOAD_BASELINE`): Load the `NAME`
@@ -31,6 +33,16 @@ git checkout feature
 # ... HACK ... HACK
 cargo bench --bench <benchmark> -- --baseline=main
 ```
+
+You can also compare against one baseline and save the current results under a
+different baseline name:
+
+```shell
+cargo bench --bench <benchmark> -- --baseline=main --save-baseline=pr_1234
+```
+
+This prints `Baselines: pr_1234|main`, reads the old/reference data from `main`,
+and saves the current/new data as `pr_1234`.
 
 Sticking to the above execution sequence,
 

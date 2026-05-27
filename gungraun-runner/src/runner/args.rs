@@ -30,7 +30,7 @@ use std::str::FromStr;
 
 use anyhow::Result;
 use clap::builder::{BoolishValueParser, PathBufValueParser, TypedValueParser};
-use clap::{ArgAction, Parser};
+use clap::{ArgAction, CommandFactory, Parser};
 use indexmap::{IndexMap, IndexSet, indexset};
 use simplematch::{DoWild, Options};
 use strum::IntoEnumIterator;
@@ -1070,22 +1070,24 @@ pub struct CommandLineArgs {
     /// Save benchmark results as a named baseline for future comparisons
     ///
     /// If a baseline with this name already exists, Gungraun first compares against it before
-    /// overwriting with the new results.
+    /// overwriting with the new results. If this option is used together with `--baseline`,
+    /// Gungraun compares against the baseline selected by `--baseline` and saves the new results
+    /// with the name selected by `--save-baseline`.
     ///
     /// This option is useful for creating reference measurements (like from the main branch or a
     /// release tag) that you can later compare against using `--baseline`.
     ///
-    /// This option conflicts with `--baseline` and `--load-baseline`. Use `--baseline` instead if
-    /// you want to compare without overwriting the reference baseline. See `--baseline` to compare
-    /// against a saved baseline without modifying it and `--load-baseline` to compare existing
-    /// baselines without running benchmarks.
+    /// This option conflicts with `--load-baseline`. See `--baseline` to compare against a saved
+    /// baseline without modifying it and `--load-baseline` to compare existing baselines without
+    /// running benchmarks.
     ///
     /// Examples:
     ///   * `--save-baseline` (uses the default baseline name "default")
     ///   * `--save-baseline=main` (saves as baseline "main")
     ///   * `--save-baseline=v1.0` (saves as baseline "v1.0")
+    ///   * `--save-baseline=pr_1234 --baseline=main` (compares against "main", saves as `pr_1234`)
     #[arg(
-        conflicts_with_all = &["baseline", "LOAD_BASELINE"],
+        conflicts_with = "LOAD_BASELINE",
         default_missing_value = "default",
         display_order = 200,
         env = "GUNGRAUN_SAVE_BASELINE",
@@ -1476,6 +1478,43 @@ pub struct CommandLineArgs {
         verbatim_doc_comment
     )]
     pub workspace_root: Option<PathBuf>,
+}
+
+impl CommandLineArgs {
+    /// Parses command-line arguments and exits on parsing or validation errors.
+    pub fn parse_validated_from<I, T>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = T>,
+        T: Into<OsString> + Clone,
+    {
+        Self::try_parse_validated_from(iter).unwrap_or_else(|error| error.exit())
+    }
+
+    /// Parses command-line arguments and validates relationships between parsed options.
+    pub fn try_parse_validated_from<I, T>(iter: I) -> clap::error::Result<Self>
+    where
+        I: IntoIterator<Item = T>,
+        T: Into<OsString> + Clone,
+    {
+        Self::try_parse_from(iter).and_then(|args| args.validate().map(|()| args))
+    }
+
+    fn validate(&self) -> clap::error::Result<()> {
+        if let (Some(save_baseline), Some(baseline)) = (&self.save_baseline, &self.baseline) {
+            if save_baseline == baseline {
+                let mut cmd = Self::command();
+                return Err(cmd.error(
+                    clap::error::ErrorKind::ValueValidation,
+                    format!(
+                        "--save-baseline and --baseline cannot use the same baseline name; use \
+                         only --save-baseline={save_baseline} instead"
+                    ),
+                ));
+            }
+        }
+
+        Ok(())
+    }
 }
 
 /// A wrapper type for raw command-line arguments
@@ -1958,6 +1997,44 @@ mod tests {
     #[test]
     fn test_parse_tool_args_when_empty_then_error() {
         parse_tool_args("").unwrap_err();
+    }
+
+    #[test]
+    fn test_save_baseline_with_baseline_is_allowed() {
+        let result = CommandLineArgs::try_parse_validated_from([
+            "--save-baseline=pr_1234",
+            "--baseline=main_2025_01_02",
+        ])
+        .unwrap();
+
+        assert_eq!(
+            result.save_baseline,
+            Some(BaselineName("pr_1234".to_owned()))
+        );
+        assert_eq!(
+            result.baseline,
+            Some(BaselineName("main_2025_01_02".to_owned()))
+        );
+    }
+
+    #[test]
+    fn test_save_baseline_with_same_baseline_is_rejected() {
+        let error =
+            CommandLineArgs::try_parse_validated_from(["--save-baseline=main", "--baseline=main"])
+                .unwrap_err();
+
+        assert_eq!(error.kind(), clap::error::ErrorKind::ValueValidation);
+        assert!(
+            error
+                .to_string()
+                .contains("use only --save-baseline=main instead")
+        );
+    }
+
+    #[test]
+    fn test_save_baseline_with_load_baseline_is_rejected() {
+        CommandLineArgs::try_parse_from(["--save-baseline=pr_1234", "--load-baseline=main"])
+            .unwrap_err();
     }
 
     #[rstest]

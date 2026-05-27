@@ -8,7 +8,6 @@ use std::path::PathBuf;
 use std::process::Command;
 
 use anyhow::{Context, Result, anyhow};
-use clap::Parser;
 use log::debug;
 
 use super::args::CommandLineArgs;
@@ -92,7 +91,7 @@ pub struct Metadata {
 impl Metadata {
     /// Create a `new` Metadata
     pub fn new(raw_command_line_args: &[String], target: &str) -> Result<Self> {
-        let args = CommandLineArgs::parse_from(raw_command_line_args);
+        let args = CommandLineArgs::parse_validated_from(raw_command_line_args);
 
         let arch = std::env::consts::ARCH.to_owned();
         debug!("Detected architecture: {arch}");

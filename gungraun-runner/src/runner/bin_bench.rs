@@ -35,9 +35,9 @@ use crate::api::{
 use crate::error::Error;
 use crate::runner::args;
 use crate::runner::common::{
-    Assistant, AssistantKind, BaselineDataProcessor, Baselines, BenchmarkDataProcessor,
-    BenchmarkSummaries, CapturedOutput, Config, Groups, LoadBaselineDataProcessor, ModulePath,
-    Runner, SaveBaselineDataProcessor,
+    Assistant, AssistantKind, BaselineAndSaveDataProcessor, BaselineDataProcessor, Baselines,
+    BenchmarkDataProcessor, BenchmarkSummaries, CapturedOutput, Config, Groups,
+    LoadBaselineDataProcessor, ModulePath, Runner, SaveBaselineDataProcessor,
 };
 
 #[derive(Debug)]
@@ -101,6 +101,12 @@ struct LoadBaselineBenchmark {
 }
 
 #[derive(Debug)]
+struct BaselineAndSaveBenchmark {
+    baseline: BaselineName,
+    save_baseline: BaselineName,
+}
+
+#[derive(Debug)]
 struct SaveBaselineBenchmark {
     baseline: BaselineName,
 }
@@ -156,6 +162,85 @@ pub trait Benchmark: Debug + Send + Sync {
         force_shutdown: &Arc<AtomicBool>,
         output_path: ToolOutputPath,
     ) -> Result<BenchmarkSummary>;
+}
+
+impl Benchmark for BaselineAndSaveBenchmark {
+    fn default_output_path(
+        &self,
+        bin_bench: &BinBench,
+        config: &Config,
+        group_module_path: &ModulePath,
+        use_temp_dir: bool,
+    ) -> Result<ToolOutputPath> {
+        let kind = if bin_bench.default_tool.has_output_file() {
+            ToolOutputPathKind::BaseOut(self.save_baseline.to_string())
+        } else {
+            ToolOutputPathKind::BaseLog(self.save_baseline.to_string())
+        };
+        let output_path = ToolOutputPath::new(
+            kind,
+            bin_bench.default_tool,
+            &BaselineKind::Name(self.baseline.clone()),
+            &config.meta.target_dir,
+            group_module_path,
+            &bin_bench.name(),
+            use_temp_dir,
+        )?;
+
+        if !use_temp_dir {
+            output_path.init()?;
+        }
+
+        Ok(output_path)
+    }
+
+    fn baselines(&self) -> Baselines {
+        (
+            Some(self.save_baseline.to_string()),
+            Some(self.baseline.to_string()),
+        )
+    }
+
+    fn run(
+        &self,
+        bin_bench: BinBench,
+        config: &Config,
+        captured_output: Option<CapturedOutput>,
+        force_shutdown: &Arc<AtomicBool>,
+        output_path: ToolOutputPath,
+    ) -> Result<BenchmarkSummary> {
+        let header = BinaryBenchmarkHeader::new(&config.meta, &bin_bench);
+        let benchmark_summary = bin_bench.create_benchmark_summary(
+            config,
+            &output_path,
+            &bin_bench.function_name,
+            header.description(),
+            self.baselines(),
+        );
+
+        bin_bench.tools.run(
+            benchmark_summary,
+            config,
+            &bin_bench.command.path,
+            &bin_bench.command.args,
+            &bin_bench.run_options,
+            &output_path,
+            &bin_bench.module_path,
+            captured_output.as_ref(),
+            force_shutdown,
+        )
+    }
+
+    fn data_processor(
+        &self,
+        tools: &ToolConfigs,
+        project_root: &Path,
+        output_path: &ToolOutputPath,
+    ) -> Box<dyn BenchmarkDataProcessor> {
+        Box::new(BaselineAndSaveDataProcessor {
+            analyzers: tools.analyzers(project_root, output_path),
+        })
+    }
 }
 
 impl Benchmark for BaselineBenchmark {
@@ -741,7 +826,14 @@ impl Benchmark for SaveBaselineBenchmark {
 ///
 /// Panics when `--load-baseline` is active but no comparison baseline is configured.
 pub fn benchmark_factory(config: &Config) -> Arc<dyn Benchmark> {
-    if let Some(baseline_name) = &config.meta.args.save_baseline {
+    if let (Some(save_baseline), Some(baseline)) =
+        (&config.meta.args.save_baseline, &config.meta.args.baseline)
+    {
+        Arc::new(BaselineAndSaveBenchmark {
+            baseline: baseline.clone(),
+            save_baseline: save_baseline.clone(),
+        })
+    } else if let Some(baseline_name) = &config.meta.args.save_baseline {
         Arc::new(SaveBaselineBenchmark {
             baseline: baseline_name.clone(),
         })
@@ -805,6 +897,19 @@ mod tests {
             timeout: timeout.into().map(Duration::from_millis),
             kind,
         }
+    }
+
+    #[test]
+    fn test_baseline_and_save_benchmark_uses_different_display_baselines() {
+        let benchmark = BaselineAndSaveBenchmark {
+            baseline: BaselineName("main".to_owned()),
+            save_baseline: BaselineName("pr_1234".to_owned()),
+        };
+
+        assert_eq!(
+            benchmark.baselines(),
+            (Some("pr_1234".to_owned()), Some("main".to_owned()))
+        );
     }
 
     #[rstest]

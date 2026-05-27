@@ -24,9 +24,18 @@ use crate::api::{
 use crate::error::Error;
 use crate::runner::args;
 use crate::runner::common::{
-    BaselineDataProcessor, Baselines, BenchmarkDataProcessor, BenchmarkSummaries, CapturedOutput,
-    Config, Groups, LoadBaselineDataProcessor, ModulePath, Runner, SaveBaselineDataProcessor,
+    BaselineAndSaveDataProcessor, BaselineDataProcessor, Baselines, BenchmarkDataProcessor,
+    BenchmarkSummaries, CapturedOutput, Config, Groups, LoadBaselineDataProcessor, ModulePath,
+    Runner, SaveBaselineDataProcessor,
 };
+
+/// Implements [`Benchmark`] to compare a [`LibBench`] against one baseline and save the new run as
+/// another baseline.
+#[derive(Debug)]
+pub struct BaselineAndSaveBenchmark {
+    baseline: BaselineName,
+    save_baseline: BaselineName,
+}
 
 /// Implements [`Benchmark`] to run a [`LibBench`] and compare against an earlier [`BenchmarkKind`]
 #[derive(Debug)]
@@ -139,6 +148,87 @@ pub trait Benchmark: Debug + Send + Sync {
         force_shutdown: &Arc<AtomicBool>,
         output_path: ToolOutputPath,
     ) -> Result<BenchmarkSummary>;
+}
+
+impl Benchmark for BaselineAndSaveBenchmark {
+    fn default_output_path(
+        &self,
+        lib_bench: &LibBench,
+        config: &Config,
+        group_module_path: &ModulePath,
+        use_temp_dir: bool,
+    ) -> Result<ToolOutputPath> {
+        let kind = if lib_bench.default_tool.has_output_file() {
+            ToolOutputPathKind::BaseOut(self.save_baseline.to_string())
+        } else {
+            ToolOutputPathKind::BaseLog(self.save_baseline.to_string())
+        };
+
+        let output_path = ToolOutputPath::new(
+            kind,
+            lib_bench.default_tool,
+            &BaselineKind::Name(self.baseline.clone()),
+            &config.meta.target_dir,
+            group_module_path,
+            &lib_bench.name(),
+            use_temp_dir,
+        )?;
+
+        if !use_temp_dir {
+            output_path.init()?;
+        }
+
+        Ok(output_path)
+    }
+
+    fn baselines(&self) -> Baselines {
+        (
+            Some(self.save_baseline.to_string()),
+            Some(self.baseline.to_string()),
+        )
+    }
+
+    fn run(
+        &self,
+        lib_bench: LibBench,
+        config: &Config,
+        main_index: usize,
+        captured_output: Option<CapturedOutput>,
+        force_shutdown: &Arc<AtomicBool>,
+        output_path: ToolOutputPath,
+    ) -> Result<BenchmarkSummary> {
+        let header = LibraryBenchmarkHeader::new(&lib_bench);
+        let benchmark_summary = lib_bench.create_benchmark_summary(
+            config,
+            &output_path,
+            &lib_bench.function_name,
+            header.description(),
+            self.baselines(),
+        );
+
+        lib_bench.tools.run(
+            benchmark_summary,
+            config,
+            &config.bench_bin,
+            &lib_bench.bench_args(main_index),
+            &lib_bench.run_options,
+            &output_path,
+            &lib_bench.module_path,
+            captured_output.as_ref(),
+            force_shutdown,
+        )
+    }
+
+    fn data_processor(
+        &self,
+        tools: &ToolConfigs,
+        project_root: &Path,
+        output_path: &ToolOutputPath,
+    ) -> Box<dyn BenchmarkDataProcessor> {
+        Box::new(BaselineAndSaveDataProcessor {
+            analyzers: tools.analyzers(project_root, output_path),
+        })
+    }
 }
 
 impl Benchmark for BaselineBenchmark {
@@ -543,7 +633,14 @@ impl Benchmark for SaveBaselineBenchmark {
 ///
 /// Panics when `--load-baseline` is active but no comparison baseline is configured.
 pub fn benchmark_factory(config: &Config) -> Arc<dyn Benchmark> {
-    if let Some(baseline_name) = &config.meta.args.save_baseline {
+    if let (Some(save_baseline), Some(baseline)) =
+        (&config.meta.args.save_baseline, &config.meta.args.baseline)
+    {
+        Arc::new(BaselineAndSaveBenchmark {
+            baseline: baseline.clone(),
+            save_baseline: save_baseline.clone(),
+        })
+    } else if let Some(baseline_name) = &config.meta.args.save_baseline {
         Arc::new(SaveBaselineBenchmark {
             baseline: baseline_name.clone(),
         })
@@ -584,4 +681,22 @@ pub fn list(
 /// The top-level method which should be used to initiate running all benchmarks
 pub fn run(benchmark_groups: LibraryBenchmarkGroups, config: Config) -> Result<BenchmarkSummaries> {
     Runner::from_library_benchmark(benchmark_groups, config).and_then(Runner::run)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_baseline_and_save_benchmark_uses_different_display_baselines() {
+        let benchmark = BaselineAndSaveBenchmark {
+            baseline: BaselineName("main".to_owned()),
+            save_baseline: BaselineName("pr_1234".to_owned()),
+        };
+
+        assert_eq!(
+            benchmark.baselines(),
+            (Some("pr_1234".to_owned()), Some("main".to_owned()))
+        );
+    }
 }
