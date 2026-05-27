@@ -39,10 +39,9 @@ cachemissrates
 cachesim
 cacheuse
 cachuse
+CALLGRIND
 Callgrind
-CALLGRIND
 callgrind
-CALLGRIND
 CFLAGS
 cicd
 Clearify
@@ -92,8 +91,8 @@ exidx
 exitcode
 Flamegraph
 flamegraph
-Flamegraphs
 flamegraphs
+Flamegraphs
 fldcw
 formattable
 freelike
@@ -108,8 +107,8 @@ gungnir
 gungraun
 hard_limit
 Hasher
-HEAPBLOCK
 heapblock
+HEAPBLOCK
 Heisler
 Helgrind
 hitrate
@@ -129,12 +128,13 @@ indexset
 inlines
 instrs
 iquote
+isize
 isystem
 Itamar
 itertools
 jcnd
-jitter
 JITter
+jitter
 jsonschema
 Justfile
 kcachegrind
@@ -220,8 +220,8 @@ printenv
 println
 proccontrol
 profraw
-pthread
 PTHREAD
+pthread
 punct
 pushd
 quickstart
@@ -257,8 +257,8 @@ rustified
 RUSTSEC
 rustup
 rustversion
-rwlock
 RWLOCK
+rwlock
 rwlocks
 sandboxing
 sanitized
@@ -345,4 +345,3 @@ xchgq
 xleak
 xtleak
 xtree
-bksu
