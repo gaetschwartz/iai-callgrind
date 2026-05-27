@@ -465,18 +465,24 @@ book-term-output path:
     output=$(npx ansi-to-html -f#000 "{{ path }}" | head -c -1 | sed 's/#5F5/#42c142/g')
     echo "<pre><code class=\"hljs\">${output}</code></pre>"
 
-# Update the gungraun-runner help text in the guide (Depends on: build-runner; Uses: 'python3', 'prettier' or 'npx prettier')
+# Update the gungraun-runner help text in the guide (Depends on: build-runner, fmt, fmt-prettier; Uses: 'python3', 'prettier' or 'npx prettier')
 [group('guide')]
-book-update-help: build-runner
+book-update-help: build-runner fmt
     #!/usr/bin/env python3
-    import subprocess, pathlib
+    import subprocess, pathlib, os
 
     file_path = "docs/src/cli_and_env/basics.md"
     start_marker = "<!-- start: gungraun-runner-help -->"
     end_marker = "<!-- end: gungraun-runner-help -->"
 
     runner = str(pathlib.Path("target/release/gungraun-runner").resolve())
-    help_text = subprocess.check_output([runner, "--help"], text=True)
+    help_text = subprocess.check_output(
+        [runner, "--help"],
+        text=True,
+        # Enforce a fixed help width for the guide. Keep this in sync with `max_term_width` in
+        # `args.rs`.
+        env={**os.environ, "__GUNGRAUN_TERM_WIDTH": "101"}
+    )
 
     with open(file_path, "r") as f:
         content = f.read()
@@ -490,7 +496,9 @@ book-update-help: build-runner
     with open(file_path, "w") as f:
         f.write(new_content)
 
-# Bump the gungraun version in the book (Uses: 'sed', 'find')
+    subprocess.run(["just", "fmt-prettier"], check=True)
+
+# Bump the gungraun version in the book (Uses: 'sed', 'find', Depends on: book-update-help())
 [group('chore')]
 book-bump old_version new_version:
     #!/usr/bin/env -S sh -e
@@ -510,6 +518,8 @@ book-bump old_version new_version:
     vprefix="s:v${old_version_escaped}:v{{ new_version }}:g"
     find docs/src/ -type f -iname '*.md' -exec sed -Ei -e "$links" -e "$strings" -e "$at" \
         -e "$flag" -e "$vprefix" '{}' \;
+
+    just book-update-help
 
 # Bump the version of gungraun (and gungraun-runner, and the guide), gungraun-macros or the MSRV (Uses: 'cargo', 'grep'; Depends on: book-bump)
 [group('chore')]
