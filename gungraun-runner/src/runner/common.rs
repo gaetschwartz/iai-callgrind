@@ -1321,7 +1321,7 @@ impl Groups {
     /// When `ignored` is `true` no per-benchmark lines are emitted because gungraun has no
     /// ignored-benchmark concept (see nextest's custom-harness contract). When `format` is
     /// [`ListFormat::Terse`] the trailing blank line and summary are suppressed so the output is
-    /// directly parseable by `cargo nextest`.
+    /// directly parsable by `cargo nextest`.
     pub fn list(self, format: ListFormat, ignored: bool) {
         let sum = if ignored {
             0

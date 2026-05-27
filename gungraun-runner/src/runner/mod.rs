@@ -24,6 +24,9 @@ pub mod envs {
     pub const GUNGRAUN_COLOR: &str = "GUNGRAUN_COLOR";
     /// Set the logging output of Gungraun
     pub const GUNGRAUN_LOG: &str = "GUNGRAUN_LOG";
+
+    /// Internally used to set the terminal width for the --help print usable in just recipes
+    pub const GUNGRAUN_TERM_WIDTH: &str = "__GUNGRAUN_TERM_WIDTH";
 }
 
 pub mod format;
@@ -40,7 +43,7 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use args::CommandLineArgs;
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 use common::{BenchmarkSummaries, Config, ModulePath};
 use format::OutputFormatKind;
 use log::debug;
@@ -251,17 +254,34 @@ where
 
 /// Run this benchmark
 pub fn run() -> Result<()> {
-    let runner_args = match Cli::parse()? {
-        Cli::Runner(runner_args) => runner_args,
-        Cli::ShortHelp => {
-            CommandLineArgs::parse_from(["-h"]);
-            return Ok(());
+    // The term width env var is not intended for public usage.
+    let term_width = std::env::var(envs::GUNGRAUN_TERM_WIDTH)
+        .ok()
+        .and_then(|v| v.trim().parse::<usize>().ok());
+
+    let runner_args = match (Cli::parse()?, term_width) {
+        (Cli::Runner(runner_args), _) => runner_args,
+        (Cli::ShortHelp, Some(width)) => {
+            return CommandLineArgs::command()
+                .term_width(width)
+                .print_help()
+                .map_err(Into::into);
         }
-        Cli::LongHelp => {
-            CommandLineArgs::parse_from(["--help"]);
-            return Ok(());
+        (Cli::ShortHelp, None) => {
+            return CommandLineArgs::command().print_help().map_err(Into::into);
         }
-        Cli::Version => {
+        (Cli::LongHelp, Some(width)) => {
+            return CommandLineArgs::command()
+                .term_width(width)
+                .print_long_help()
+                .map_err(Into::into);
+        }
+        (Cli::LongHelp, None) => {
+            return CommandLineArgs::command()
+                .print_long_help()
+                .map_err(Into::into);
+        }
+        (Cli::Version, _) => {
             CommandLineArgs::parse_from(["--version"]);
             return Ok(());
         }

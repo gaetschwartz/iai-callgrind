@@ -73,7 +73,7 @@ pub enum OutputFormatKind {
 ///
 /// Mirrors the relevant subset of libtest's `--format` values. Gungraun only varies the trailing
 /// summary line of `--list`: per-benchmark lines are identical in both formats so they remain
-/// parseable by `cargo nextest` and similar libtest-format consumers.
+/// parsable by `cargo nextest` and similar libtest-format consumers.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum ListFormat {
     /// Print per-benchmark lines followed by a blank line and the `0 tests, N benchmarks` summary
