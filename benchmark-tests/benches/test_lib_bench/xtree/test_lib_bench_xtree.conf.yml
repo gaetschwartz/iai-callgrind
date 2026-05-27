@@ -9,6 +9,9 @@
 #   1. Run with various xtree configurations (first group: without memory leak)
 #   2. Run with xtree options and memory leak to test leak detection and report
 #   3. Run with xtree in subprocess to test multi-process handling
+#   4. Create two named baselines and run --save-baseline together with
+#      --baseline in both directions to verify xtree/xleak files are preserved
+#      for both saved baselines.
 #
 # Test Inputs:
 #   - `xtree-memory=full` for memory profiling
@@ -16,11 +19,14 @@
 #   - Combined xtree-memory and xtree-leak options
 #   - Benchmarks with and without intentional memory leaks
 #   - Subprocess benchmarks that leak memory
+#   - Combined --save-baseline/--baseline baseline mode
 #
 # Expected Outcomes:
 #   - xtree/xleak output files are created correctly
 #   - Memory leaks are detected and reported
 #   - Baseline save/load works with xtree output
+#   - Combined --save-baseline/--baseline works with xtree/xleak output files
+#     without removing the comparison baseline files.
 #
 # Test Environment:
 #   - Excluded on nightly Rust due to memcheck reporting issues (Rust issue
@@ -64,6 +70,23 @@ groups:
       - args: ["--save-baseline=other"]
         expected:
           files: expected_files.2d.>=1.89.yml
+  - rust_version: ">=1.89"
+    runs:
+      - args: ["--save-baseline=foo"]
+        expected:
+          files: expected_files.3a.>=1.89.yml
+      - args: ["--save-baseline=bar"]
+        expected:
+          files: expected_files.3b.>=1.89.yml
+      - args: ["--save-baseline=foo", "--baseline=bar"]
+        expected:
+          files: expected_files.3b.>=1.89.yml
+      - args: ["--save-baseline=foo", "--baseline=bar"]
+        expected:
+          files: expected_files.3b.>=1.89.yml
+      - args: ["--save-baseline=bar", "--baseline=foo"]
+        expected:
+          files: expected_files.3b.>=1.89.yml
   - rust_version: "<1.89"
     runs:
       - args: []
@@ -98,3 +121,20 @@ groups:
       - args: ["--save-baseline=other"]
         expected:
           files: expected_files.2d.yml
+  - rust_version: "<1.89"
+    runs:
+      - args: ["--save-baseline=foo"]
+        expected:
+          files: expected_files.3a.yml
+      - args: ["--save-baseline=bar"]
+        expected:
+          files: expected_files.3b.yml
+      - args: ["--save-baseline=foo", "--baseline=bar"]
+        expected:
+          files: expected_files.3b.yml
+      - args: ["--save-baseline=foo", "--baseline=bar"]
+        expected:
+          files: expected_files.3b.yml
+      - args: ["--save-baseline=bar", "--baseline=foo"]
+        expected:
+          files: expected_files.3b.yml
