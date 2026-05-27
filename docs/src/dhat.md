@@ -84,6 +84,17 @@ main!(
 # }
 ```
 
+## Sanitized DHAT Output Files
+
+Gungraun rewrites DHAT output files by default (`SanitizeOutput::Yes`) to match
+the configured `Dhat::entry_point` and additional `Dhat::frames` filters. This
+keeps the metrics shown in `dh_view.html` aligned with the metrics Gungraun
+reports in the terminal.
+
+Use `Dhat::sanitize_output(SanitizeOutput::No)` to keep DHAT output files
+unchanged, or `SanitizeOutput::KeepOrig` to write sanitized output while keeping
+the original files with an `.orig` extension.
+
 ## Usage on the Command-Line
 
 Running DHAT instead of or in addition to Callgrind is straightforward and no
@@ -212,90 +223,187 @@ Running the benchmark produces the following output:
 
 <pre><code class="hljs"><span style="color:#0A0">lib_bench_find_primes::my_group::bench_library</span>
 <span style="color:#555">  </span><span style="color:#555">=======</span> DHAT <span style="color:#555">=========================================================================</span>
-<span style="color:#555">  </span>Total bytes:                        <b>11472</b>|N/A                  (<span style="color:#555">No change</span>)
-<span style="color:#555">  </span>Total blocks:                           <b>9</b>|N/A                  (<span style="color:#555">No change</span>)
-<span style="color:#555">  </span>At t-gmax bytes:                    <b>10264</b>|N/A                  (<span style="color:#555">No change</span>)
-<span style="color:#555">  </span>At t-gmax blocks:                       <b>4</b>|N/A                  (<span style="color:#555">No change</span>)
-<span style="color:#555">  </span>At t-end bytes:                         <b>0</b>|N/A                  (<span style="color:#555">No change</span>)
-<span style="color:#555">  </span>At t-end blocks:                        <b>0</b>|N/A                  (<span style="color:#555">No change</span>)
-<span style="color:#555">  </span>Reads bytes:                          <b>808</b>|N/A                  (<span style="color:#555">No change</span>)
-<span style="color:#555">  </span>Writes bytes:                       <b>10345</b>|N/A                  (<span style="color:#555">No change</span>)
+<span style="color:#555">  </span>Total bytes:                        <b>11464</b>|N/A                  (<span style="color:#555">*********</span>)
+<span style="color:#555">  </span>Total blocks:                           <b>9</b>|N/A                  (<span style="color:#555">*********</span>)
+<span style="color:#555">  </span>At t-gmax bytes:                    <b>10264</b>|N/A                  (<span style="color:#555">*********</span>)
+<span style="color:#555">  </span>At t-gmax blocks:                       <b>4</b>|N/A                  (<span style="color:#555">*********</span>)
+<span style="color:#555">  </span>At t-end bytes:                         <b>0</b>|N/A                  (<span style="color:#555">*********</span>)
+<span style="color:#555">  </span>At t-end blocks:                        <b>0</b>|N/A                  (<span style="color:#555">*********</span>)
+<span style="color:#555">  </span>Reads bytes:                          <b>776</b>|N/A                  (<span style="color:#555">*********</span>)
+<span style="color:#555">  </span>Writes bytes:                       <b>10337</b>|N/A                  (<span style="color:#555">*********</span>)
 
-Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.47449s</code></pre>
+Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.55922s</code></pre>
 
-The problem here is that the spawned thread is not included in the metrics.
-Looking at the output files of the DHAT output in `dh_view.html` (heavily
-shortened to save some space):
+The problem here is that the spawned thread is not included in the metrics. The
+DHAT output files shown in `dh_view.html` also do not show any threads because
+DHAT output files are sanitized by default. The output in this example is
+shortened to save space:
 
 ```text
 Invocation {
   Mode:    heap
-  Command: /home/some/project/target/release/deps/lib_bench_find_primes-59f714debd12ac0a --gungraun-run my_group 0 0 lib_bench_find_primes::my_group::bench_library
-  PID:     262049
+  Command: /fast/lenny/workspace/programming/gungraun/gungraun/target/release/deps/lib_bench_find_primes-f6831ae18d944771 --gungraun-run 00000 00000 00000
+  PID:     1971323
 }
 
 Times {
-  t-gmax: 2,826,328 instrs (99.56% of program duration)
-  t-end:  2,838,795 instrs
+  t-gmax: 2,942,796 instrs (99.58% of program duration)
+  t-end:  2,955,202 instrs
 }
 
-▼ PP 1/1 (3 children) {
-    Total:     47,303 bytes (100%, 16,663.06/Minstr) in 39 blocks (100%, 13.74/Minstr), avg size 1,212.9 bytes, avg lifetime 858,522.46 instrs (30.24% of program duration)
-    At t-gmax: 27,261 bytes (100%) in 10 blocks (100%), avg size 2,726.1 bytes
-    At t-end:  456 bytes (100%) in 1 blocks (100%), avg size 456 bytes
-    Reads:     45,572 bytes (100%, 16,053.29/Minstr), 0.96/byte
-    Writes:    48,000 bytes (100%, 16,908.58/Minstr), 1.01/byte
+▼ PP 1/1 (8 children) {
+    Total:     11,464 bytes (100%, 3,879.26/Minstr) in 9 blocks (100%, 3.05/Minstr), avg size 1,273.78 bytes, avg lifetime 1,657,484.56 instrs (56.09% of program duration)
+    At t-gmax: 10,264 bytes (100%) in 4 blocks (100%), avg size 2,566 bytes
+    At t-end:  0 bytes (0%) in 0 blocks (0%), avg size 0 bytes
+    Reads:     776 bytes (100%, 262.59/Minstr), 0.07/byte
+    Writes:    10,337 bytes (100%, 3,497.9/Minstr), 0.9/byte
     Allocated at {
       #0: [root]
     }
   }
-  ├─▼ PP 1.1/3 (14 children) {
-  │     Total:     46,503 bytes (98.31%, 16,381.25/Minstr) in 30 blocks (76.92%, 10.57/Minstr), avg size 1,550.1 bytes, avg lifetime 880,394 instrs (31.01% of program duration)
-  │     At t-gmax: 26,925 bytes (98.77%) in 8 blocks (80%), avg size 3,365.63 bytes
-  │     At t-end:  456 bytes (100%) in 1 blocks (100%), avg size 456 bytes
-  │     Reads:     45,108 bytes (98.98%, 15,889.84/Minstr), 0.97/byte
-  │     Writes:    47,640 bytes (99.25%, 16,781.77/Minstr), 1.02/byte
+  ├─▼ PP 1.1/8 (2 children) {
+  │     Total:     9,928 bytes (86.6%, 3,359.5/Minstr) in 2 blocks (22.22%, 0.68/Minstr), avg size 4,964 bytes, avg lifetime 1,244,629 instrs (42.12% of program duration)
+  │     At t-gmax: 9,928 bytes (96.73%) in 2 blocks (50%), avg size 4,964 bytes
+  │     At t-end:  0 bytes (0%) in 0 blocks (0%), avg size 0 bytes
+  │     Reads:     24 bytes (3.09%, 8.12/Minstr), 0/byte
+  │     Writes:    9,856 bytes (95.35%, 3,335.14/Minstr), 0.99/byte
   │     Allocated at {
-  │       #1: 0x48F47A8: malloc (in /usr/lib/valgrind/vgpreload_dhat-amd64-linux.so)
+  │       #1: 0x40522FC: alloc (alloc.rs:95)
+  │       #2: 0x40522FC: alloc_impl_runtime (alloc.rs:190)
+  │       #3: 0x40522FC: alloc_impl (alloc.rs:312)
+  │       #4: 0x40522FC: allocate (alloc.rs:429)
+  │       #5: 0x40522FC: alloc::raw_vec::RawVecInner<A>::finish_grow (mod.rs:558)
   │     }
   │   }
-  │   ├── PP 1.1.1/14 {
-  │   │     Total:     32,736 bytes (69.2%, 11,531.65/Minstr) in 10 blocks (25.64%, 3.52/Minstr), avg size 3,273.6 bytes, avg lifetime 235,134.1 instrs (8.28% of program duration)
-  │   │     Max:       16,384 bytes in 1 blocks, avg size 16,384 bytes
-  │   │     At t-gmax: 16,384 bytes (60.1%) in 1 blocks (10%), avg size 16,384 bytes
+  │   ├── PP 1.1.1/2 {
+  │   │     Total:     9,832 bytes (85.76%, 3,327.01/Minstr) in 1 blocks (11.11%, 0.34/Minstr), avg size 9,832 bytes, avg lifetime 6,263 instrs (0.21% of program duration)
+  │   │     Max:       9,832 bytes in 1 blocks, avg size 9,832 bytes
+  │   │     At t-gmax: 9,832 bytes (95.79%) in 1 blocks (25%), avg size 9,832 bytes
   │   │     At t-end:  0 bytes (0%) in 0 blocks (0%), avg size 0 bytes
-  │   │     Reads:     26,184 bytes (57.46%, 9,223.63/Minstr), 0.8/byte
-  │   │     Writes:    26,184 bytes (54.55%, 9,223.63/Minstr), 0.8/byte
+  │   │     Reads:     0 bytes (0%, 0/Minstr), 0/byte
+  │   │     Writes:    9,832 bytes (95.11%, 3,327.01/Minstr), 1/byte
   │   │     Allocated at {
-  │   │       ^1: 0x48F47A8: malloc (in /usr/lib/valgrind/vgpreload_dhat-amd64-linux.so)
-  │   │       #2: 0x4050CE3: UnknownInlinedFun (alloc.rs:94)
-  │   │       #3: 0x4050CE3: UnknownInlinedFun (alloc.rs:189)
-  │   │       #4: 0x4050CE3: UnknownInlinedFun (alloc.rs:250)
-  │   │       #5: 0x4050CE3: UnknownInlinedFun (mod.rs:476)
-  │   │       #6: 0x4050CE3: with_capacity_in<alloc::alloc::Global> (mod.rs:422)
-  │   │       #7: 0x4050CE3: with_capacity_in<u64, alloc::alloc::Global> (mod.rs:190)
-  │   │       #8: 0x4050CE3: with_capacity_in<u64, alloc::alloc::Global> (mod.rs:929)
-  │   │       #9: 0x4050CE3: with_capacity<u64> (mod.rs:500)
-  │   │       #10: 0x4050CE3: from_iter<u64, core::iter::adapters::filter::Filter<core::ops::range::RangeInclusive<u64>, benchmark_tests::find_primes::{closure_env#0}>> (spec_from_iter_nested.rs:31)
-  │   │       #11: 0x4050CE3: <alloc::vec::Vec<T> as alloc::vec::spec_from_iter::SpecFromIter<T,I>>::from_iter (spec_from_iter.rs:34)
-  │   │       #12: 0x404EF57: from_iter<u64, core::iter::adapters::filter::Filter<core::ops::range::RangeInclusive<u64>, benchmark_tests::find_primes::{closure_env#0}>> (mod.rs:3633)
-  │   │       #13: 0x404EF57: collect<core::iter::adapters::filter::Filter<core::ops::range::RangeInclusive<u64>, benchmark_tests::find_primes::{closure_env#0}>, alloc::vec::Vec<u64, alloc::alloc::Global>> (iterator.rs:2027)
-  │   │       #14: 0x404EF57: benchmark_tests::find_primes (lib.rs:31)
-  │   │       #15: 0x40504D0: {closure#0} (lib.rs:38)
-  │   │       #16: 0x40504D0: std::sys::backtrace::__rust_begin_short_backtrace (backtrace.rs:158)
-  │   │       #17: 0x404FAD4: {closure#0}<benchmark_tests::find_primes_multi_thread::{closure_env#0}, alloc::vec::Vec<u64, alloc::alloc::Global>> (mod.rs:559)
-  │   │       #18: 0x404FAD4: call_once<alloc::vec::Vec<u64, alloc::alloc::Global>, std::thread::{impl#0}::spawn_unchecked_::{closure#1}::{closure_env#0}<benchmark_tests::find_primes_multi_thread::{closure_env#0}, alloc::vec::Vec<u64, alloc::alloc::Global>>> (unwind_safe.rs:272)
-  │   │       #19: 0x404FAD4: do_call<core::panic::unwind_safe::AssertUnwindSafe<std::thread::{impl#0}::spawn_unchecked_::{closure#1}::{closure_env#0}<benchmark_tests::find_primes_multi_thread::{closure_env#0}, alloc::vec::Vec<u64, alloc::alloc::Global>>>, alloc::vec::Vec<u64, alloc::alloc::Global>> (panicking.rs:589)
-  │   │       #20: 0x404FAD4: catch_unwind<alloc::vec::Vec<u64, alloc::alloc::Global>, core::panic::unwind_safe::AssertUnwindSafe<std::thread::{impl#0}::spawn_unchecked_::{closure#1}::{closure_env#0}<benchmark_tests::find_primes_multi_thread::{closure_env#0}, alloc::vec::Vec<u64, alloc::alloc::Global>>>> (panicking.rs:552)
-  │   │       #21: 0x404FAD4: catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<std::thread::{impl#0}::spawn_unchecked_::{closure#1}::{closure_env#0}<benchmark_tests::find_primes_multi_thread::{closure_env#0}, alloc::vec::Vec<u64, alloc::alloc::Global>>>, alloc::vec::Vec<u64, alloc::alloc::Global>> (panic.rs:359)
-  │   │       #22: 0x404FAD4: {closure#1}<benchmark_tests::find_primes_multi_thread::{closure_env#0}, alloc::vec::Vec<u64, alloc::alloc::Global>> (mod.rs:557)
-  │   │       #23: 0x404FAD4: core::ops::function::FnOnce::call_once{{vtable.shim}} (function.rs:253)
-  │   │       #24: 0x408461E: call_once<(), dyn core::ops::function::FnOnce<(), Output=()>, alloc::alloc::Global> (boxed.rs:1971)
-  │   │       #25: 0x408461E: std::sys::pal::unix::thread::Thread::new::thread_start (thread.rs:107)
-  │   │       #26: 0x49F09CA: ??? (in /usr/lib/libc.so.6)
-  │   │       #27: 0x4A74833: clone (in /usr/lib/libc.so.6)
+  │   │       ^1: 0x40522FC: alloc (alloc.rs:95)
+  │   │       ^2: 0x40522FC: alloc_impl_runtime (alloc.rs:190)
+  │   │       ^3: 0x40522FC: alloc_impl (alloc.rs:312)
+  │   │       ^4: 0x40522FC: allocate (alloc.rs:429)
+  │   │       ^5: 0x40522FC: alloc::raw_vec::RawVecInner<A>::finish_grow (mod.rs:558)
+  │   │       #6: 0x4052393: grow_amortized<alloc::alloc::Global> (mod.rs:527)
+  │   │       #7: 0x4052393: alloc::raw_vec::RawVecInner<A>::reserve::do_reserve_and_handle (mod.rs:666)
+  │   │       #8: 0x4050284: reserve<alloc::alloc::Global> (mod.rs:673)
+  │   │       #9: 0x4050284: reserve<u64, alloc::alloc::Global> (mod.rs:340)
+  │   │       #10: 0x4050284: reserve<u64, alloc::alloc::Global> (mod.rs:1446)
+  │   │       #11: 0x4050284: append_elements<u64, alloc::alloc::Global> (mod.rs:2879)
+  │   │       #12: 0x4050284: spec_extend<u64, alloc::alloc::Global, alloc::alloc::Global> (spec_extend.rs:34)
+  │   │       #13: 0x4050284: extend<u64, alloc::alloc::Global, alloc::vec::Vec<u64, alloc::alloc::Global>> (mod.rs:3933)
+  │   │       #14: 0x4050284: benchmark_tests::find_primes_multi_thread (lib.rs:49)
+  │   │       #15: 0x404D140: lib_bench_find_primes::bench_library::__gungraun_wrapper_mod::bench_library (lib_bench_find_primes.rs:16)
+  │   │       #16: 0x404D158: lib_bench_find_primes::bench_library::__gungraun_wrapper_id_mod::wrapper (lib_bench_find_primes.rs:15)
+  │   │       #17: 0x404D0F1: lib_bench_find_primes::bench_library::__run_wrapper (lib_bench_find_primes.rs:6)
+  │   │       #18: 0x404E331: lib_bench_find_primes::main (macros.rs:588)
+  │   │       #19: 0x404D1F2: call_once<fn(), ()> (function.rs:250)
+  │   │       #20: 0x404D1F2: std::sys::backtrace::__rust_begin_short_backtrace (backtrace.rs:166)
+  │   │       #21: 0x404D1E8: std::rt::lang_start::{{closure}} (rt.rs:206)
+  │   │       #22: 0x4085263: call_once<(), (dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)> (function.rs:287)
+  │   │       #23: 0x4085263: do_call<&(dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe), i32> (panicking.rs:581)
+  │   │       #24: 0x4085263: catch_unwind<i32, &(dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)> (panicking.rs:544)
+  │   │       #25: 0x4085263: catch_unwind<&(dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe), i32> (panic.rs:359)
+  │   │       #26: 0x4085263: {closure#0} (rt.rs:175)
+  │   │       #27: 0x4085263: do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (panicking.rs:581)
+  │   │       #28: 0x4085263: catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (panicking.rs:544)
+  │   │       #29: 0x4085263: catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (panic.rs:359)
+  │   │       #30: 0x4085263: std::rt::lang_start_internal (rt.rs:171)
+  │   │       #31: 0x404F7FB: main (in /fast/lenny/workspace/programming/gungraun/gungraun/target/release/deps/lib_bench_find_primes-f6831ae18d944771)
   │   │     }
   │   │   }
+  ...
+```
+
+To actually see all program points that DHAT records you need to either run
+without sanitization or keep the original files and inspect those. We're going
+for the latter, which conveniently lets us inspect the sanitized _and_ original
+output files.
+
+```rust
+# extern crate gungraun;
+# mod benchmark_tests { pub fn find_primes_multi_thread (_: u64) -> Vec<u64> { vec![] } }
+# use std::hint::black_box;
+# use gungraun::prelude::*;
+# use gungraun::{Dhat, ValgrindTool, SanitizeOutput};
+#[library_benchmark(
+    config = LibraryBenchmarkConfig::default()
+        .default_tool(ValgrindTool::DHAT)
+        .tool(Dhat::default().sanitize_output(SanitizeOutput::KeepOrig))
+)]
+fn bench_library() -> Vec<u64> {
+    black_box(benchmark_tests::find_primes_multi_thread(black_box(1)))
+}
+# fn main() {}
+```
+
+After running the benchmark again, the `dhat.*.out.orig` file (also shortened)
+includes the metrics of the thread:
+
+```text
+Invocation {
+  Mode:    heap
+  Command: /fast/lenny/workspace/programming/gungraun/gungraun/target/release/deps/lib_bench_find_primes-f6831ae18d944771 --gungraun-run 00000 00000 00000
+  PID:     2007925
+}
+
+Times {
+  t-gmax: 2,940,202 instrs (99.58% of program duration)
+  t-end:  2,952,524 instrs
+}
+
+▼ PP 1/1 (19 children) {
+    Total:     47,327 bytes (100%, 16,029.34/Minstr) in 38 blocks (100%, 12.87/Minstr), avg size 1,245.45 bytes, avg lifetime 863,000.68 instrs (29.23% of program duration)
+    At t-gmax: 27,326 bytes (100%) in 10 blocks (100%), avg size 2,732.6 bytes
+    At t-end:  544 bytes (100%) in 1 blocks (100%), avg size 544 bytes
+    Reads:     45,739 bytes (100%, 15,491.49/Minstr), 0.97/byte
+    Writes:    48,163 bytes (100%, 16,312.48/Minstr), 1.02/byte
+    Allocated at {
+      #0: [root]
+    }
+  }
+  ├── PP 1.1/19 {
+  │     Total:     32,736 bytes (69.17%, 11,087.46/Minstr) in 10 blocks (26.32%, 3.39/Minstr), avg size 3,273.6 bytes, avg lifetime 248,000.9 instrs (8.4% of program duration)
+  │     Max:       16,384 bytes in 1 blocks, avg size 16,384 bytes
+  │     At t-gmax: 16,384 bytes (59.96%) in 1 blocks (10%), avg size 16,384 bytes
+  │     At t-end:  0 bytes (0%) in 0 blocks (0%), avg size 0 bytes
+  │     Reads:     26,184 bytes (57.25%, 8,868.34/Minstr), 0.8/byte
+  │     Writes:    26,184 bytes (54.37%, 8,868.34/Minstr), 0.8/byte
+  │     Allocated at {
+  │       #1: 0x4052446: alloc (alloc.rs:95)
+  │       #2: 0x4052446: alloc_impl_runtime (alloc.rs:190)
+  │       #3: 0x4052446: alloc_impl (alloc.rs:312)
+  │       #4: 0x4052446: allocate (alloc.rs:429)
+  │       #5: 0x4052446: try_allocate_in<alloc::alloc::Global> (mod.rs:464)
+  │       #6: 0x4052446: with_capacity_in<alloc::alloc::Global> (mod.rs:433)
+  │       #7: 0x4052446: with_capacity_in<u64, alloc::alloc::Global> (mod.rs:177)
+  │       #8: 0x4052446: with_capacity_in<u64, alloc::alloc::Global> (mod.rs:965)
+  │       #9: 0x4052446: with_capacity<u64> (mod.rs:524)
+  │       #10: 0x4052446: <alloc::vec::Vec<T> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<T,I>>::from_iter (spec_from_iter_nested.rs:30)
+  │       #11: 0x40507F0: from_iter<u64, core::iter::adapters::filter::Filter<core::ops::range::RangeInclusive<u64>, benchmark_tests::find_primes::{closure_env#0}>> (spec_from_iter.rs:33)
+  │       #12: 0x40507F0: from_iter<u64, core::iter::adapters::filter::Filter<core::ops::range::RangeInclusive<u64>, benchmark_tests::find_primes::{closure_env#0}>> (mod.rs:3865)
+  │       #13: 0x40507F0: collect<core::iter::adapters::filter::Filter<core::ops::range::RangeInclusive<u64>, benchmark_tests::find_primes::{closure_env#0}>, alloc::vec::Vec<u64, alloc::alloc::Global>> (iterator.rs:2064)
+  │       #14: 0x40507F0: benchmark_tests::find_primes (lib.rs:33)
+  │       #15: 0x4052BD9: {closure#0} (lib.rs:98)
+  │       #16: 0x4052BD9: std::sys::backtrace::__rust_begin_short_backtrace (backtrace.rs:166)
+  │       #17: 0x4051568: {closure#0}<benchmark_tests::find_primes_multi_thread::{closure_env#1}, alloc::vec::Vec<u64, alloc::alloc::Global>> (lifecycle.rs:91)
+  │       #18: 0x4051568: call_once<alloc::vec::Vec<u64, alloc::alloc::Global>, std::thread::lifecycle::spawn_unchecked::{closure#1}::{closure_env#0}<benchmark_tests::find_primes_multi_thread::{closure_env#1}, alloc::vec::Vec<u64, alloc::alloc::Global>>> (unwind_safe.rs:274)
+  │       #19: 0x4051568: do_call<core::panic::unwind_safe::AssertUnwindSafe<std::thread::lifecycle::spawn_unchecked::{closure#1}::{closure_env#0}<benchmark_tests::find_primes_multi_thread::{closure_env#1}, alloc::vec::Vec<u64, alloc::alloc::Global>>>, alloc::vec::Vec<u64, alloc::alloc::Global>> (panicking.rs:581)
+  │       #20: 0x4051568: catch_unwind<alloc::vec::Vec<u64, alloc::alloc::Global>, core::panic::unwind_safe::AssertUnwindSafe<std::thread::lifecycle::spawn_unchecked::{closure#1}::{closure_env#0}<benchmark_tests::find_primes_multi_thread::{closure_env#1}, alloc::vec::Vec<u64, alloc::alloc::Global>>>> (panicking.rs:544)
+  │       #21: 0x4051568: catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<std::thread::lifecycle::spawn_unchecked::{closure#1}::{closure_env#0}<benchmark_tests::find_primes_multi_thread::{closure_env#1}, alloc::vec::Vec<u64, alloc::alloc::Global>>>, alloc::vec::Vec<u64, alloc::alloc::Global>> (panic.rs:359)
+  │       #22: 0x4051568: {closure#1}<benchmark_tests::find_primes_multi_thread::{closure_env#1}, alloc::vec::Vec<u64, alloc::alloc::Global>> (lifecycle.rs:89)
+  │       #23: 0x4051568: core::ops::function::FnOnce::call_once{{vtable.shim}} (function.rs:250)
+  │       #24: 0x408D0FE: call_once<(), (dyn core::ops::function::FnOnce<(), Output=()> + core::marker::Send), alloc::alloc::Global> (boxed.rs:2240)
+  │       #25: 0x408D0FE: <std::sys::thread::unix::Thread>::new::thread_start (unix.rs:118)
+  │       #26: 0x49F81B8: ??? (in /usr/lib/libc.so.6)
+  │       #27: 0x4A7D043: clone (in /usr/lib/libc.so.6)
+  │     }
+  │   }
+
   ...
 ```
 
@@ -397,18 +505,60 @@ Running this benchmark results in:
 
 Gungraun result: <b><span style="color:#0A0">Ok</span></b>. 1 without regressions; 0 regressed; 0 filtered; 1 benchmarks finished in 0.45178s</code></pre>
 
-To verify the setup, compare these numbers with the data of the program point
-with the thread of the `dh_view.html` output shown above. Eventually, these are
-the same metrics:
+Compare these numbers with the thread program point from the original output
+shown above. The sanitized output file then contains only that program point:
 
 ```text
-  │   ├── PP 1.1.1/12 {
-  │   │     Total:     32,736 bytes (69.91%, 11,537.69/Minstr) in 10 blocks (27.03%, 3.52/Minstr), avg size 3,273.6 bytes, avg lifetime 235,111.9 instrs (8.29% of program duration)
-  │   │     Max:       16,384 bytes in 1 blocks, avg size 16,384 bytes
-  │   │     At t-gmax: 16,384 bytes (61.03%) in 1 blocks (11.11%), avg size 16,384 bytes
-  │   │     At t-end:  0 bytes (0%) in 0 blocks (0%), avg size 0 bytes
-  │   │     Reads:     26,184 bytes (57.08%, 9,228.46/Minstr), 0.8/byte
-  │   │     Writes:    26,184 bytes (54.23%, 9,228.46/Minstr), 0.8/byte
+  Invocation {
+  Mode:    heap
+  Command: /fast/lenny/workspace/programming/gungraun/gungraun/target/release/deps/lib_bench_find_primes-f6831ae18d944771 --gungraun-run 00000 00000 00000
+  PID:     1941428
+}
+
+Times {
+  t-gmax: 2,940,191 instrs (99.58% of program duration)
+  t-end:  2,952,454 instrs
+}
+
+─ PP 1/1 {
+    Total:     32,736 bytes (100%, 11,087.73/Minstr) in 10 blocks (100%, 3.39/Minstr), avg size 3,273.6 bytes, avg lifetime 248,000.9 instrs (8.4% of program duration)
+    At t-gmax: 16,384 bytes (100%) in 1 blocks (100%), avg size 16,384 bytes
+    At t-end:  0 bytes (0%) in 0 blocks (0%), avg size 0 bytes
+    Reads:     26,184 bytes (100%, 8,868.55/Minstr), 0.8/byte
+    Writes:    26,184 bytes (100%, 8,868.55/Minstr), 0.8/byte
+    Allocated at {
+      #0: [root]
+      #1: 0x4052536: alloc (alloc.rs:95)
+      #2: 0x4052536: alloc_impl_runtime (alloc.rs:190)
+      #3: 0x4052536: alloc_impl (alloc.rs:312)
+      #4: 0x4052536: allocate (alloc.rs:429)
+      #5: 0x4052536: try_allocate_in<alloc::alloc::Global> (mod.rs:464)
+      #6: 0x4052536: with_capacity_in<alloc::alloc::Global> (mod.rs:433)
+      #7: 0x4052536: with_capacity_in<u64, alloc::alloc::Global> (mod.rs:177)
+      #8: 0x4052536: with_capacity_in<u64, alloc::alloc::Global> (mod.rs:965)
+      #9: 0x4052536: with_capacity<u64> (mod.rs:524)
+      #10: 0x4052536: <alloc::vec::Vec<T> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<T,I>>::from_iter (spec_from_iter_nested.rs:30)
+      #11: 0x40508E0: from_iter<u64, core::iter::adapters::filter::Filter<core::ops::range::RangeInclusive<u64>, benchmark_tests::find_primes::{closure_env#0}>> (spec_from_iter.rs:33)
+      #12: 0x40508E0: from_iter<u64, core::iter::adapters::filter::Filter<core::ops::range::RangeInclusive<u64>, benchmark_tests::find_primes::{closure_env#0}>> (mod.rs:3865)
+      #13: 0x40508E0: collect<core::iter::adapters::filter::Filter<core::ops::range::RangeInclusive<u64>, benchmark_tests::find_primes::{closure_env#0}>, alloc::vec::Vec<u64, alloc::alloc::Global>> (iterator.rs:2064)
+      #14: 0x40508E0: benchmark_tests::find_primes (lib.rs:33)
+      #15: 0x4052CC9: {closure#0} (lib.rs:98)
+      #16: 0x4052CC9: std::sys::backtrace::__rust_begin_short_backtrace (backtrace.rs:166)
+      #17: 0x4051658: {closure#0}<benchmark_tests::find_primes_multi_thread::{closure_env#1}, alloc::vec::Vec<u64, alloc::alloc::Global>> (lifecycle.rs:91)
+      #18: 0x4051658: call_once<alloc::vec::Vec<u64, alloc::alloc::Global>, std::thread::lifecycle::spawn_unchecked::{closure#1}::{closure_env#0}<benchmark_tests::find_primes_multi_thread::{closure_env#1}, alloc::vec::Vec<u64, alloc::alloc::Global>>> (unwind_safe.rs:274)
+      #19: 0x4051658: do_call<core::panic::unwind_safe::AssertUnwindSafe<std::thread::lifecycle::spawn_unchecked::{closure#1}::{closure_env#0}<benchmark_tests::find_primes_multi_thread::{closure_env#1}, alloc::vec::Vec<u64, alloc::alloc::Global>>>, alloc::vec::Vec<u64, alloc::alloc::Global>> (panicking.rs:581)
+      #20: 0x4051658: catch_unwind<alloc::vec::Vec<u64, alloc::alloc::Global>, core::panic::unwind_safe::AssertUnwindSafe<std::thread::lifecycle::spawn_unchecked::{closure#1}::{closure_env#0}<benchmark_tests::find_primes_multi_thread::{closure_env#1}, alloc::vec::Vec<u64, alloc::alloc::Global>>>> (panicking.rs:544)
+      #21: 0x4051658: catch_unwind<core::panic::unwind_safe::AssertUnwindSafe<std::thread::lifecycle::spawn_unchecked::{closure#1}::{closure_env#0}<benchmark_tests::find_primes_multi_thread::{closure_env#1}, alloc::vec::Vec<u64, alloc::alloc::Global>>>, alloc::vec::Vec<u64, alloc::alloc::Global>> (panic.rs:359)
+      #22: 0x4051658: {closure#1}<benchmark_tests::find_primes_multi_thread::{closure_env#1}, alloc::vec::Vec<u64, alloc::alloc::Global>> (lifecycle.rs:89)
+      #23: 0x4051658: core::ops::function::FnOnce::call_once{{vtable.shim}} (function.rs:250)
+      #24: 0x408D24E: call_once<(), (dyn core::ops::function::FnOnce<(), Output=()> + core::marker::Send), alloc::alloc::Global> (boxed.rs:2240)
+      #25: 0x408D24E: <std::sys::thread::unix::Thread>::new::thread_start (unix.rs:118)
+      #26: 0x49F81B8: ??? (in /usr/lib/libc.so.6)
+      #27: 0x4A7D043: clone (in /usr/lib/libc.so.6)
+    }
+  }
+
+PP significance threshold: total >= 0.1 blocks (1%)
 ```
 
 [dhat]: https://valgrind.org/docs/manual/dh-manual.html

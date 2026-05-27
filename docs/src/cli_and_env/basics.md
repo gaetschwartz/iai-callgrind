@@ -348,19 +348,21 @@ Options:
           Save benchmark results as a named baseline for future comparisons
 
           If a baseline with this name already exists, Gungraun first compares against it before
-          overwriting with the new results.
+          overwriting with the new results. If this option is used together with `--baseline`,
+          Gungraun compares against the baseline selected by `--baseline` and saves the new results
+          with the name selected by `--save-baseline`.
 
           This option is useful for creating reference measurements (like from the main branch or a
           release tag) that you can later compare against using `--baseline`.
 
-          This option conflicts with `--baseline` and `--load-baseline`. Use `--baseline` instead if
-          you want to compare without overwriting the reference baseline. See `--baseline` to compare
-          against a saved baseline without modifying it and `--load-baseline` to compare existing
-          baselines without running benchmarks.
+          This option conflicts with `--load-baseline`. See `--baseline` to compare against a saved
+          baseline without modifying it and `--load-baseline` to compare existing baselines without
+          running benchmarks.
 
           Examples: * `--save-baseline` (uses the default baseline name "default") *
           `--save-baseline=main` (saves as baseline "main") * `--save-baseline=v1.0` (saves as
-          baseline "v1.0")
+          baseline "v1.0") * `--save-baseline=pr_1234 --baseline=main` (compares against "main",
+          saves as `pr_1234`)
 
           [env: GUNGRAUN_SAVE_BASELINE=]
 

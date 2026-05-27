@@ -1,5 +1,6 @@
-<!-- spell-checker:ignore serde dewert binstall jembishop kehl DaniPopes bytemuck hargut -->
-<!-- spell-checker:ignore ryanpeach hashbrown tgross35 gaetschwartz cfgs riscv nihohit -->
+<!-- spell-checker:ignore serde dewert binstall jembishop kehl DaniPopes -->
+<!-- spell-checker:ignore ryanpeach hashbrown tgross35 gaetschwartz cfgs -->
+<!-- spell-checker:ignore riscv nihohit bytemuck hargut sandersaares -->
 <!--
 Added for new features.
 Changed for changes in existing functionality.
@@ -32,18 +33,55 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.19.1] - 2026-05-27
+
 ### Added
 
-- Honor `--format terse` when combined with `--list` so gungraun bench binaries
-  are compatible with `cargo nextest` test discovery. Terse output contains only
-  the per-benchmark lines without the trailing blank line and
+- ([#573], [#643]): DHAT output files are now tailored to configured entry
+  points and additional DHAT frame filters by default. The new
+  `Dhat::sanitize_output` option controls whether output files are sanitized.
+  Optionally, keep `.orig` backups with `SanitizeOutput::KeepOrig`.
+- ([#644]): Honor `--format terse` when combined with `--list` so gungraun bench
+  binaries are compatible with `cargo nextest` test discovery. Terse output
+  contains only the per-benchmark lines without the trailing blank line and
   `0 tests, N benchmarks` summary that the default libtest-pretty listing emits.
   The previously hidden libtest-compat `--format` shim now actually honors the
   value; any value other than `terse` (including `pretty`, `json`, `junit`, the
   empty string, or unknown values) falls back to the existing pretty output.
   `--list --format terse --ignored` emits empty stdout because gungraun has no
   ignored-benchmark concept (the contract nextest documents for harnesses
-  without ignored tests).
+  without ignored tests). Thanks to @sandersaares
+- ([#568], [#646]): Support running library benchmarks in a sandbox with
+  `LibraryBenchmarkConfig::sandbox`, matching the existing binary benchmark
+  sandbox behavior. Support changing the current directory for library
+  benchmarks with `LibraryBenchmarkConfig::current_dir`.
+
+### Changed
+
+- ([#635]): Gungraun can avoid querying Cargo metadata when
+  `GUNGRAUN_WORKSPACE_ROOT` and `GUNGRAUN_HOME` or `CARGO_TARGET_DIR` are set,
+  improving support for running without executing `cargo` for example in
+  containerized environments.
+- ([#648]): Support combining `--save-baseline` with `--baseline` to compare
+  against one baseline while saving the current run under another baseline name.
+- Bump mdbook -> 0.5.2 and use mdbook-linkcheck2
+- Updated dependencies, including `shlex` 2, `log`, `serde_json`, and
+  `minijinja`.
+
+### Fixed
+
+- ([#635]): Fixed `--separate-targets` metadata detection to use the rust build
+  target of the `gungraun` library instead of the runner.
+- ([#640]): Fixed broken guide edit links.
+
+[#568]: https://github.com/gungraun/gungraun/issues/568
+[#573]: https://github.com/gungraun/gungraun/issues/573
+[#635]: https://github.com/gungraun/gungraun/pull/635
+[#640]: https://github.com/gungraun/gungraun/pull/640
+[#643]: https://github.com/gungraun/gungraun/pull/643
+[#644]: https://github.com/gungraun/gungraun/pull/644
+[#646]: https://github.com/gungraun/gungraun/pull/646
+[#648]: https://github.com/gungraun/gungraun/pull/648
 
 ## [0.19.0] - 2026-05-15
 
