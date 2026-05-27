@@ -2,10 +2,13 @@
 #
 # Description:
 #   Tests the `--nocapture` flag combined with various `Stdio` configurations
-#   for stdout and stderr handling in binary benchmarks.
+#   for stdout and stderr handling in binary benchmarks, including baseline
+#   save/load and combined save/compare baseline modes.
 #
 # Test Steps:
 #   1. Run benchmark with `--nocapture` testing different Stdio configurations
+#   2. Run `--nocapture` together with named save, load, and combined
+#      save/compare baseline modes.
 #
 # Test Inputs:
 #   - `Stdio::Inherit` - inherit from parent process
@@ -15,6 +18,8 @@
 #   - Sandbox mode enabled/disabled for file creation tests
 #   - `DHAT` tool for memory profiling
 #   - `Stdin::Setup(Pipe::Stdout)` for piped input
+#   - `--save-baseline`, `--load-baseline`, and combined
+#     `--save-baseline`/`--baseline` baseline modes
 #
 # Expected Outcomes:
 #   - Stdio configurations work as specified
@@ -22,6 +27,8 @@
 #   - Files created when using `Stdio::File` (both pre-existing and new)
 #   - Output captured appropriately based on Stdio config
 #   - Setup output pipes to command stdin when configured
+#   - Baseline labels are printed correctly when saving one baseline while
+#     comparing against another.
 
 groups:
   - runs:
@@ -38,3 +45,6 @@ groups:
       - args: ["--nocapture", "--load-baseline=foo", "--baseline=bar"]
         expected:
           stdout: expected_stdout.2c
+      - args: ["--nocapture", "--save-baseline=foo", "--baseline=bar"]
+        expected:
+          stdout: expected_stdout.2d

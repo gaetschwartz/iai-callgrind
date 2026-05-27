@@ -30,8 +30,8 @@ use crate::error::Error;
 use crate::runner::args::NoCapture;
 use crate::runner::bin_bench::{self, BinBench};
 use crate::runner::callgrind::flamegraph::{
-    BaselineFlamegraphGenerator, Flamegraph, FlamegraphGenerator, LoadBaselineFlamegraphGenerator,
-    SaveBaselineFlamegraphGenerator,
+    BaselineAndSaveFlamegraphGenerator, BaselineFlamegraphGenerator, Flamegraph,
+    FlamegraphGenerator, LoadBaselineFlamegraphGenerator, SaveBaselineFlamegraphGenerator,
 };
 use crate::runner::callgrind::parser::Sentinel;
 use crate::runner::format::{
@@ -86,6 +86,13 @@ pub enum MaxParallel {
     Serial,
     /// Use this as maximum for the amount of parallelism (N >= 2)
     Count(usize),
+}
+
+/// Data processor used when saving current outputs as a baseline.
+#[derive(Debug)]
+pub struct BaselineAndSaveDataProcessor {
+    /// Analyzer pipeline used to parse and process benchmark outputs.
+    pub analyzers: Vec<Analyzer>,
 }
 
 /// Data processor used for regular benchmark runs without explicit baseline save/load mode.
@@ -223,6 +230,33 @@ pub struct CapturedOutput {
 pub trait BenchmarkDataProcessor: std::fmt::Debug + Send {
     /// Returns the analyzer pipeline used for parsing and artifact generation.
     fn analyzers(&self) -> &[Analyzer];
+
+    /// Removes existing output files targeted by this processor.
+    ///
+    /// This clears the active output path and associated log, xtree, and xleak files.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if reading output directories or removing files fails.
+    fn clear(&self) -> Result<()> {
+        for (_, output_path, _, _, _) in self.analyzers() {
+            output_path.clear()?;
+            if matches!(
+                output_path.kind,
+                ToolOutputPathKind::Out | ToolOutputPathKind::BaseOut(_)
+            ) {
+                output_path.to_log_output().clear()?;
+            }
+            if let Some(path) = output_path.to_xtree_output() {
+                path.clear()?;
+            }
+            if let Some(path) = output_path.to_xleak_output() {
+                path.clear()?;
+            }
+        }
+
+        Ok(())
+    }
 
     /// Copies temporary output files to their final benchmark output location.
     ///
@@ -583,6 +617,71 @@ impl AssistantKind {
             Self::Teardown => "teardown",
         }
         .to_owned()
+    }
+}
+
+impl BenchmarkDataProcessor for BaselineAndSaveDataProcessor {
+    fn finalize(
+        &mut self,
+        benchmark_summary: &mut BenchmarkSummary,
+        config: &Config,
+        header: &Header,
+    ) -> Result<()> {
+        if !self.has_benchmarks() {
+            return Ok(());
+        }
+
+        self.create_benchmark_directory()
+            .and_then(|()| self.remove_summary())
+            // This'll only clear the save baseline but leave the comparison baseline intact
+            .and_then(|()| self.clear())
+            .and_then(|()| self.move_temp())
+            .and_then(|()| self.sanitize())
+            .and_then(|()| self.parse(benchmark_summary, config, header, None))
+            .and_then(|()| self.copy_temp())
+    }
+
+    fn has_benchmarks(&self) -> bool {
+        !self.analyzers.is_empty()
+    }
+
+    fn analyzers(&self) -> &[Analyzer] {
+        &self.analyzers
+    }
+
+    fn generate_flamegraphs(
+        &self,
+        config: &Config,
+        header: &Header,
+        output_path: &ToolOutputPath,
+        flamegraph_config: &ToolFlamegraphConfig,
+        entry_point: &EntryPoint,
+    ) -> Result<Vec<FlamegraphSummary>> {
+        if output_path.tool == ValgrindTool::Callgrind {
+            if let ToolFlamegraphConfig::Callgrind(flamegraph_config) = &flamegraph_config {
+                let save_baseline = output_path.loaded_baseline_name().expect(
+                    "The saved baseline of a baseline-and-save output path should have a name",
+                );
+                let baseline = output_path.baseline_name().cloned().expect(
+                    "The comparison baseline of a baseline-and-save output path should have a name",
+                );
+
+                return BaselineAndSaveFlamegraphGenerator {
+                    baseline,
+                    save_baseline,
+                }
+                .create(
+                    &Flamegraph::new(header.to_title(), flamegraph_config.to_owned()),
+                    output_path,
+                    (*entry_point == EntryPoint::Default)
+                        .then(Sentinel::default)
+                        .as_ref(),
+                    &config.meta.project_root,
+                );
+            }
+        }
+
+        Ok(vec![])
     }
 }
 
@@ -1321,7 +1420,7 @@ impl Groups {
     /// When `ignored` is `true` no per-benchmark lines are emitted because gungraun has no
     /// ignored-benchmark concept (see nextest's custom-harness contract). When `format` is
     /// [`ListFormat::Terse`] the trailing blank line and summary are suppressed so the output is
-    /// directly parseable by `cargo nextest`.
+    /// directly parsable by `cargo nextest`.
     pub fn list(self, format: ListFormat, ignored: bool) {
         let sum = if ignored {
             0

@@ -6,17 +6,16 @@
 #   level.
 #
 # Test Steps:
-#   1. Run benchmarks three times to create a baseline, then again to compare
-#      against the baseline and a third time to assure there are no differences
-#      between the second and third run.
-#   2. Run benchmarks with --save-baseline the first time to create the named
-#      baseline. Then, a second time to assure there are no differences. Then run
-#      with --baseline to compare a normal run with the named baseline. Then run
-#      a last time with --save-baseline
-#   3. Create two different name baselines in two runs. The run with
-#      --load-baseline and --baseline to compare these baselines. Run again with
-#      --baseline to compare the named baseline with the normal baseline.
-#      Afterwards, run a last time with --save-baseline
+#   1. Run benchmarks three times to create a baseline, compare against it, and
+#      verify repeated runs keep the same flamegraph file set.
+#   2. Run with --save-baseline to create a named baseline, repeat it, compare a
+#      normal run with --baseline, then save the named baseline again to verify
+#      differential flamegraph cleanup.
+#   3. Create two named baselines, compare them with --load-baseline and
+#      --baseline, compare a normal run with a named baseline, then save again.
+#   4. Create two named baselines, run --save-baseline together with --baseline
+#      to save current data under one baseline while comparing against the other,
+#      repeat the same direction, then reverse the baseline direction.
 #
 # Test Inputs:
 #   - FlamegraphKind::Regular: generates regular flamegraph only
@@ -24,7 +23,8 @@
 #   - FlamegraphKind::All: generates both regular and differential
 #   - FlamegraphKind::None: generates no flamegraphs
 #   - Configuration at multiple levels (bench, group, main)
-#   - --baseline, --save-baseline and --load-baseline for comparison flamegraphs
+#   - --baseline, --save-baseline, --load-baseline, and combined
+#     --save-baseline/--baseline for comparison flamegraphs
 #   - Functions with recursive calls and deep stacks
 #
 # Expected Outcomes:
@@ -32,7 +32,15 @@
 #   - Configuration inheritance from main > group > bench levels works correctly
 #   - No flamegraphs generated when kind is None
 #   - Differential flamegraphs are generated.
-#   - Differential flamegraphs are cleanup up correctly between runs.
+#   - Differential flamegraphs are cleaned up correctly between runs.
+#   - Combined --save-baseline/--baseline writes regular flamegraphs for the
+#     saved baseline and differential flamegraphs against the comparison baseline.
+#   - Repeated combined runs clean up stale differential flamegraphs for the same
+#     saved/comparison baseline pair.
+#   - Reusing one saved baseline with a different comparison baseline removes
+#     stale differential flamegraphs for the saved baseline only, so
+#     base@bar.diff.base@foo is replaced by base@bar.diff.base@baz without
+#     deleting unrelated base@foo diff files.
 
 groups:
   - runs:
@@ -56,7 +64,7 @@ groups:
         expected:
           files: expected_files.2c.yml
       # The differential flamegraphs created in the previous run between the
-      # normal baseline and the named baseline should be cleanup up in this run.
+      # normal baseline and the named baseline should be cleaned up in this run.
       - args: ["--save-baseline=foo"]
         expected:
           files: expected_files.2d.yml
@@ -79,3 +87,31 @@ groups:
       - args: ["--save-baseline=foo"]
         expected:
           files: expected_files.3e.yml
+      - args: ["--save-baseline=foo", "--baseline=bar"]
+        expected:
+          files: expected_files.3f.yml
+  - runs:
+      - args: ["--save-baseline=foo"]
+        expected:
+          files: expected_files.3a.yml
+      - args: ["--save-baseline=bar"]
+        expected:
+          files: expected_files.3b.yml
+      - args: ["--save-baseline=baz"]
+        expected:
+          files: expected_files.4a.yml
+      - args: ["--save-baseline=foo", "--baseline=bar"]
+        expected:
+          files: expected_files.4b.yml
+      - args: ["--save-baseline=foo", "--baseline=bar"]
+        expected:
+          files: expected_files.4b.yml
+      # This verifies stale diff cleanup when a saved baseline is reused with a
+      # different comparison baseline: base@bar.diff.base@foo must be replaced
+      # by base@bar.diff.base@baz, while unrelated base@foo diffs remain.
+      - args: ["--save-baseline=bar", "--baseline=foo"]
+        expected:
+          files: expected_files.4c.yml
+      - args: ["--save-baseline=bar", "--baseline=baz"]
+        expected:
+          files: expected_files.4d.yml
