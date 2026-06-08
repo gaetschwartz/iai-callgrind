@@ -33,6 +33,17 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.19.2] - 2026-06-08
+
+### Changed
+
+- ([#655],[#657]): Update proc-macro-error2 to proc-macro-error3 to address
+  RUSTSEC-2026-0173 and fix the future incompatibility warning
+- Update dependencies
+
+[#655]: https://github.com/gungraun/gungraun/issues/655
+[#657]: https://github.com/gungraun/gungraun/pull/657
+
 ## [0.19.1] - 2026-05-27
 
 ### Added

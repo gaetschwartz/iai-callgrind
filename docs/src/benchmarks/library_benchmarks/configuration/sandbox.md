@@ -209,4 +209,4 @@ main!(library_benchmark_groups = my_group);
 # }
 ```
 
-[`Sandbox`]: https://docs.rs/gungraun/0.19.1/gungraun/struct.Sandbox.html
+[`Sandbox`]: https://docs.rs/gungraun/0.19.2/gungraun/struct.Sandbox.html
