@@ -6,7 +6,7 @@ use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::vec::Vec;
 
-use proc_macro_error2::{abort, emit_error};
+use proc_macro_error3::{abort, emit_error};
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, TokenStreamExt, format_ident, quote, quote_spanned};
 use syn::parse::Parse;

@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use derive_more::{Deref as DerefDerive, DerefMut as DerefMutDerive};
-use proc_macro_error2::abort;
+use proc_macro_error3::abort;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, TokenStreamExt, format_ident, quote, quote_spanned};
 use syn::parse::Parse;

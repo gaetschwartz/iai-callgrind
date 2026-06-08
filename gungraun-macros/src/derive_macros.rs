@@ -1,4 +1,4 @@
-use proc_macro_error2::abort;
+use proc_macro_error3::abort;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::parse2;
