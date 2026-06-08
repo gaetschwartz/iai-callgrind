@@ -11,7 +11,7 @@ mod derive_macros;
 mod lib_bench;
 
 use proc_macro::TokenStream;
-use proc_macro_error2::proc_macro_error;
+use proc_macro_error3::proc_macro_error;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
