@@ -3,30 +3,24 @@
 
 <h1 align="center">Gungraun</h1>
 
-<div align="center">High-precision, one-shot and consistent benchmarking framework/harness for Rust. All Valgrind tools at your fingertips.</div>
+High-precision, one-shot and consistent benchmarking framework/harness for
+Rust.<br>All Valgrind tools at your fingertips.
 
-<br>
-<div align="center">
-    <a href="https://gungraun.github.io/gungraun">Guide</a>
-    |
-    <a href="https://docs.rs/crate/gungraun/">API Docs</a>
-    |
-    <a href="https://github.com/gungraun/gungraun/blob/main/CHANGELOG.md">Changelog</a>
-</div>
-<div align="center">
-    <a href="https://github.com/gungraun/gungraun/actions/workflows/cicd.yml" style="text-decoration:none">
-        <img src="https://github.com/gungraun/gungraun/actions/workflows/cicd.yml/badge.svg" alt="GitHub branch checks state"/>
-    </a>
-    |
-    <a href="https://crates.io/crates/gungraun" style="text-decoration:none">
-        <img src="https://shields.io/crates/v/gungraun.svg" alt="Crates.io"/>
-    </a>
-    |
-    <a href="https://docs.rs/gungraun/" style="text-decoration:none">
-        <img src="https://img.shields.io/docsrs/gungraun/latest" alt="docs.rs"/>
-    </a>
-</div>
-<br>
+[Guide] | [API Docs] | [Changelog]<br>
+[![Github action][github-action-badge]][github-action-url]
+[![Crates.io][crates-io-badge]][crates-io-url]
+[![docs.rs][docs-rs-badge]][docs-rs-url]
+
+[crates-io-badge]: https://img.shields.io/crates/v/gungraun
+[crates-io-url]: https://crates.io/crates/gungraun
+[docs-rs-badge]: https://img.shields.io/docsrs/gungraun/latest
+[docs-rs-url]: https://docs.rs/gungraun/0.19.2/gungraun/
+[github-action-badge]:
+    https://github.com/gungraun/gungraun/actions/workflows/cicd.yml/badge.svg
+[github-action-url]:
+    https://github.com/gungraun/gungraun/actions/workflows/cicd.yml
+[API Docs]: https://docs.rs/crate/gungraun/
+[Changelog]: https://github.com/gungraun/gungraun/blob/main/CHANGELOG.md
 
 Gungraun leverages Valgrind's profiling tools like
 [Callgrind][callgrind-manual], [Cachegrind][cachegrind-manual] and
