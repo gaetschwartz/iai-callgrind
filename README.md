@@ -18,10 +18,10 @@
         <img src="https://github.com/gungraun/gungraun/actions/workflows/cicd.yml/badge.svg" alt="GitHub branch checks state"/>
     </a>
     <a href="https://crates.io/crates/gungraun">
-        <img src="https://img.shields.io/crates/v/gungraun.svg" alt="Crates.io"/>
+        <img src="https://shields.io/crates/v/gungraun.svg" alt="Crates.io"/>
     </a>
     <a href="https://docs.rs/gungraun/">
-        <img src="https://docs.rs/gungraun/badge.svg" alt="docs.rs"/>
+        <img src="https://img.shields.io/docsrs/gungraun/latest" alt="docs.rs"/>
     </a>
 </div>
 <br>
