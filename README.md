@@ -14,13 +14,13 @@
     <a href="https://github.com/gungraun/gungraun/blob/main/CHANGELOG.md">Changelog</a>
 </div>
 <div align="center">
-    <a href="https://github.com/gungraun/gungraun/actions/workflows/cicd.yml">
+    <a href="https://github.com/gungraun/gungraun/actions/workflows/cicd.yml" style="text-decoration:none">
         <img src="https://github.com/gungraun/gungraun/actions/workflows/cicd.yml/badge.svg" alt="GitHub branch checks state"/>
     </a>
-    <a href="https://crates.io/crates/gungraun">
+    <a href="https://crates.io/crates/gungraun" style="text-decoration:none">
         <img src="https://shields.io/crates/v/gungraun.svg" alt="Crates.io"/>
     </a>
-    <a href="https://docs.rs/gungraun/">
+    <a href="https://docs.rs/gungraun/" style="text-decoration:none">
         <img src="https://img.shields.io/docsrs/gungraun/latest" alt="docs.rs"/>
     </a>
 </div>
