@@ -14,7 +14,7 @@ use regex::Regex;
 use tempfile::{Builder, TempDir};
 
 use crate::api::ValgrindTool;
-use crate::runner::callgrind::parser::parse_header;
+use crate::runner::callgrind;
 use crate::runner::common::ModulePath;
 use crate::runner::summary::{BaselineKind, BaselineName};
 use crate::util::truncate_str_utf8;
@@ -906,10 +906,8 @@ impl ToolOutputPath {
                     .as_str();
 
                 if out_type == ".out" {
-                    let properties = parse_header(
-                        &mut BufReader::new(File::open(entry.path())?)
-                            .lines()
-                            .map(Result::unwrap),
+                    let properties = callgrind::parser::parse_header(
+                        &mut BufReader::new(File::open(entry.path())?).lines(),
                     )?;
                     if let Some(bases) = groups.get_mut(out_type) {
                         if let Some(pids) = bases.get_mut(&base) {

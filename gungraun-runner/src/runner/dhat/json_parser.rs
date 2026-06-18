@@ -48,9 +48,7 @@ impl Parser for JsonParser {
             let file = File::open(&logfile)
                 .with_context(|| format!("Error opening dhat log file '{}'", logfile.display()))?;
 
-            let iter = BufReader::new(file)
-                .lines()
-                .map(std::result::Result::unwrap);
+            let iter = BufReader::new(file).lines();
             let header = logfile_parser::parse_header(&logfile, iter)?;
 
             assert_eq!(

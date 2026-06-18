@@ -187,8 +187,7 @@ impl Parser for DhatLogfileParser {
 
         let mut iter = BufReader::new(file)
             .lines()
-            .map(std::result::Result::unwrap)
-            .skip_while(|l| l.trim().is_empty());
+            .skip_while(|l| l.as_ref().is_ok_and(|l| l.trim().is_empty()));
 
         let header = parse_header(&path, &mut iter)?;
 
@@ -197,6 +196,7 @@ impl Parser for DhatLogfileParser {
 
         let mut state = State::HeaderSpace;
         for line in iter {
+            let line = line?;
             if !Self::parse_line(&line, &mut state, &mut metrics, &mut details)? {
                 break;
             }

@@ -54,15 +54,15 @@ impl CallgrindParser for SummaryParser {
             path.display()
         );
 
-        let mut iter = BufReader::new(File::open(path)?)
-            .lines()
-            .map(Result::unwrap);
+        let mut iter = BufReader::new(File::open(path)?).lines();
 
         let properties = parse_header(&mut iter)
             .map_err(|error| Error::ParseError(path.to_owned(), error.to_string()))?;
 
         let mut metrics = None;
         for line in iter {
+            let line = line?;
+
             if let Some(suffix) = line.strip_prefix("summary:") {
                 trace!("Found line with summary: '{line}'");
 
