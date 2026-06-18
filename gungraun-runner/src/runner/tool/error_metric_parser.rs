@@ -46,8 +46,7 @@ impl Parser for ErrorMetricLogfileParser {
 
         let mut iter = BufReader::new(file)
             .lines()
-            .map(std::result::Result::unwrap)
-            .skip_while(|l| l.trim().is_empty());
+            .skip_while(|l| l.as_ref().is_ok_and(|l| l.trim().is_empty()));
 
         let header = parse_header(&path, &mut iter)?;
 
@@ -63,6 +62,7 @@ impl Parser for ErrorMetricLogfileParser {
 
         let mut state = State::HeaderSpace;
         for line in iter {
+            let line = line?;
             match &state {
                 State::HeaderSpace if EMPTY_LINE_RE.is_match(&line) => {}
                 State::HeaderSpace | State::Body => {

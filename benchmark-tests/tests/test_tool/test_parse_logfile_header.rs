@@ -52,7 +52,7 @@ fn test_parse_logfile_header(#[case] name: &str, #[case] expected_header: Header
         let file = File::open(&path).unwrap();
         let reader = BufReader::new(file);
 
-        let header = parse_header(&path, &mut reader.lines().map(Result::unwrap)).unwrap();
+        let header = parse_header(&path, &mut reader.lines()).unwrap();
         logfile_headers.push(header);
     }
 

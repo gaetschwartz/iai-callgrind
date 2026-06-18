@@ -188,14 +188,17 @@ impl From<Sentinel> for String {
 /// Parse the callgrind output files header
 pub fn parse_header<I>(iter: &mut I) -> Result<CallgrindProperties>
 where
-    I: Iterator<Item = String>,
+    I: Iterator<Item = std::io::Result<String>>,
 {
-    if !iter
-        .by_ref()
-        .find(|l| !l.trim().is_empty())
-        .ok_or_else(|| anyhow!("Empty file"))?
-        .contains("callgrind format")
-    {
+    let first_non_empty = loop {
+        match iter.next().transpose()? {
+            Some(line) if line.trim().is_empty() => {}
+            Some(line) => break line,
+            None => return Err(anyhow!("Empty file")),
+        }
+    };
+
+    if !first_non_empty.contains("callgrind format") {
         warn!("Missing file format specifier. Assuming callgrind format.");
     }
 
@@ -208,10 +211,13 @@ where
     let mut cmd: Option<String> = None;
     let mut creator: Option<String> = None;
 
-    for line in iter.filter(|line| {
+    for line in std::iter::once(Ok(first_non_empty)).chain(iter) {
+        let line = line?;
         let line = line.trim();
-        !line.is_empty() && !line.starts_with('#')
-    }) {
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+
         match line.split_once(':').map(|(k, v)| (k.trim(), v.trim())) {
             Some(("version", version)) if version != "1" => {
                 return Err(anyhow!(
@@ -220,15 +226,15 @@ where
             }
             Some(("pid", value)) => {
                 trace!("Using pid '{value}' from line: '{line}'");
-                pid = Some(value.parse::<i32>().unwrap());
+                pid = Some(value.parse::<i32>()?);
             }
             Some(("thread", value)) => {
                 trace!("Using thread '{value}' from line: '{line}'");
-                thread = Some(value.parse::<usize>().unwrap());
+                thread = Some(value.parse::<usize>()?);
             }
             Some(("part", value)) => {
                 trace!("Using part '{value}' from line: '{line}'");
-                part = Some(value.parse::<u64>().unwrap());
+                part = Some(value.parse::<u64>()?);
             }
             Some(("desc", value)) if !value.starts_with("Option:") => {
                 trace!("Using description '{value}' from line: '{line}'");
@@ -282,6 +288,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::io::{BufRead, BufReader, Cursor, ErrorKind};
+
     use rstest::rstest;
 
     use super::*;
@@ -316,5 +324,51 @@ mod tests {
     #[case::hex("0x*", "0x00000000000083f0")]
     fn test_sentinel_from_glob_matches(#[case] input: &str, #[case] haystack: &str) {
         assert!(Sentinel::new(input).matches(haystack));
+    }
+
+    #[test]
+    fn parse_header_when_format_banner_is_present() {
+        let mut lines = [
+            Ok(String::from("# callgrind format")),
+            Ok(String::from("pid: 123")),
+            Ok(String::from("cmd: bench command")),
+            Ok(String::from("events: Ir Dr Dw")),
+        ]
+        .into_iter();
+
+        let header = parse_header(&mut lines).unwrap();
+
+        assert_eq!(header.pid, Some(123));
+        assert_eq!(header.cmd.as_deref(), Some("bench command"));
+        assert_eq!(header.metrics_prototype.0.len(), 3);
+    }
+
+    #[test]
+    fn parse_header_when_format_banner_is_missing() {
+        let mut lines = [
+            Ok(String::new()),
+            Ok(String::from("pid: 123")),
+            Ok(String::from("cmd: bench command")),
+            Ok(String::from("events: Ir Dr Dw")),
+        ]
+        .into_iter();
+
+        let header = parse_header(&mut lines).unwrap();
+
+        assert_eq!(header.pid, Some(123));
+        assert_eq!(header.cmd.as_deref(), Some("bench command"));
+        assert_eq!(header.metrics_prototype.0.len(), 3);
+    }
+
+    #[test]
+    fn parse_header_when_invalid_utf8_then_error_but_not_panic() {
+        // Invalid utf8
+        let bytes = b"\n\xFF\npid: 123\nevents: Ir Dr Dw\n".to_vec();
+        let mut lines = BufReader::new(Cursor::new(bytes)).lines();
+
+        let err = parse_header(&mut lines).unwrap_err();
+        let io_err = err.downcast_ref::<std::io::Error>().unwrap();
+
+        assert_eq!(io_err.kind(), ErrorKind::InvalidData);
     }
 }

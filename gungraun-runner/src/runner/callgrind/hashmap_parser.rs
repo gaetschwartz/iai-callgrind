@@ -8,7 +8,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Component, Path, PathBuf};
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use log::trace;
 use serde::{Deserialize, Serialize};
 
@@ -137,9 +137,7 @@ impl CallgrindParser for HashMapParser {
 
     #[expect(clippy::too_many_lines)]
     fn parse_single(&self, path: &Path) -> Result<(CallgrindProperties, Self::Output)> {
-        let mut iter = BufReader::new(File::open(path)?)
-            .lines()
-            .map(Result::unwrap);
+        let mut iter = BufReader::new(File::open(path)?).lines();
         let config = parse_header(&mut iter)
             .map_err(|error| Error::ParseError(path.to_owned(), error.to_string()))?;
 
@@ -157,6 +155,7 @@ impl CallgrindParser for HashMapParser {
         // We start within the header
         let mut is_header = true;
         for line in iter {
+            let line = line?;
             let line = line.trim();
 
             if line.is_empty() || line.starts_with('#') {
@@ -191,7 +190,12 @@ impl CallgrindParser for HashMapParser {
                         .is_some_and(|sentinel| sentinel.matches(func))
                     {
                         trace!("Found sentinel: {func}");
-                        sentinel_key = Some(current_id.clone().try_into().expect("A valid id"));
+                        sentinel_key = Some(
+                            current_id
+                                .clone()
+                                .try_into()
+                                .map_err(|error| anyhow!("Malformed file: {error}"))?,
+                        );
                     }
                 }
                 Some(("fi" | "fe", inline)) => {
@@ -214,12 +218,14 @@ impl CallgrindParser for HashMapParser {
                     });
                 }
                 Some(("calls", calls)) => {
-                    let record = cfn_record.as_mut().expect("Valid calls line");
+                    let record = cfn_record
+                        .as_mut()
+                        .ok_or_else(|| anyhow!("Malformed file: A cfn record should be present"))?;
                     record.calls = calls
                         .split_ascii_whitespace()
-                        .take(1)
-                        .map(|s| s.parse::<u64>().unwrap())
-                        .sum();
+                        .next()
+                        .ok_or_else(|| anyhow!("Missing calls count"))?
+                        .parse::<u64>()?;
                 }
                 None if line.starts_with(|c: char| c.is_ascii_digit()) => {
                     let mut metrics = config.metrics_prototype.clone();
@@ -229,15 +235,20 @@ impl CallgrindParser for HashMapParser {
                     )?;
 
                     if let Some(cfn_record) = cfn_record.take() {
+                        let id = cfn_record.id.ok_or_else(|| {
+                            anyhow!("Malformed file: A cfn record id should be present")
+                        })?;
                         cfn_totals
-                            .entry(cfn_record.id.expect("cfn record id must be present"))
+                            .entry(id)
                             .and_modify(|value| value.metrics.add(&metrics))
                             .or_insert(Value {
                                 metrics: metrics.clone(),
                             });
                     }
 
-                    let id = current_id.try_into().expect("A valid id");
+                    let id = current_id
+                        .try_into()
+                        .map_err(|error| anyhow!("Malformed file: {error}"))?;
                     match fn_totals.get_mut(&id) {
                         Some(value) => value.metrics.add(&metrics),
                         None => {
@@ -252,7 +263,7 @@ impl CallgrindParser for HashMapParser {
                 None if line.starts_with("totals:") || line.starts_with("summary:") => {
                     // we ignore these
                 }
-                Some(_) | None => panic!("Malformed line: '{line}'"),
+                Some(_) | None => return Err(anyhow!("Malformed line: '{line}'")),
             }
         }
 

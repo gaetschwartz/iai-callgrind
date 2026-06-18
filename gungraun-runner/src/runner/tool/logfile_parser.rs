@@ -46,9 +46,9 @@ pub fn extract_pid(line: &str) -> Result<i32> {
 /// The logfile header is the same for all tools
 pub fn parse_header<I>(path: &Path, mut lines: I) -> Result<Header>
 where
-    I: Iterator<Item = String>,
+    I: Iterator<Item = std::io::Result<String>>,
 {
-    let next = lines.next();
+    let next = lines.next().transpose()?;
 
     let (pid, next) = if let Some(next) = next {
         (extract_pid(&next)?, next)
@@ -58,7 +58,8 @@ where
 
     let mut parent_pid = None;
     let mut command = None;
-    for line in std::iter::once(next).chain(lines) {
+    for line in std::iter::once(Ok(next)).chain(lines) {
+        let line = line?;
         if EMPTY_LINE_RE.is_match(&line) {
             // The header is separated from the body by at least one empty line. The first
             // empty line is removed from the iterator.

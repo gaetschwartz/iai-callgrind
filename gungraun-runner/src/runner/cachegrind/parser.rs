@@ -35,16 +35,19 @@ pub struct CachegrindProperties {
 /// Parse the callgrind output files header
 pub fn parse_header<I>(iter: &mut I) -> Result<CachegrindProperties>
 where
-    I: Iterator<Item = String>,
+    I: Iterator<Item = std::io::Result<String>>,
 {
     let mut metrics_prototype: Option<Metrics> = None;
     let mut desc: Vec<String> = vec![];
     let mut cmd: Option<String> = None;
 
-    for line in iter.filter(|line| {
+    for line in iter {
+        let line = line?;
         let line = line.trim();
-        !line.is_empty() && !line.starts_with('#')
-    }) {
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+
         match line.split_once(':').map(|(k, v)| (k.trim(), v.trim())) {
             Some(("desc", value)) if !value.starts_with("Option:") => {
                 trace!("Using description '{value}' from line: '{line}'");
