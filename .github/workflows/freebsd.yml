@@ -19,7 +19,7 @@ jobs:
     name: Build with feature powerset
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: cross-platform-actions/action@v1.2.0
         with:
           environment_variables: VALGRIND_REQUESTS_VALGRIND_INCLUDE VALGRIND_REQUESTS_VALGRIND_PATH CARGO_TERM_COLOR
@@ -69,7 +69,7 @@ jobs:
             partition: "6/6"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: cross-platform-actions/action@v1.2.0
         env:
           RUST_BACKTRACE: "0"

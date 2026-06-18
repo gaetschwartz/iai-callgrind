@@ -31,7 +31,7 @@ jobs:
           - toolchain: stable
             os: macos-14
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
@@ -60,7 +60,7 @@ jobs:
     name: Run basic unit and integrations tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
@@ -94,7 +94,7 @@ jobs:
           - powerpc64le-unknown-linux-gnu
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
@@ -116,7 +116,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, test_basic]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: cross-platform-actions/action@v1
         env:
           VALGRIND_REQUESTS_VALGRIND_INCLUDE: "/usr/local/include"
@@ -156,7 +156,7 @@ jobs:
           - macos-14
           - macos-15-intel
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - name: Install valgrind
         run: |
@@ -175,7 +175,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, test_basic]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: cross-platform-actions/action@v1
         env:
           VALGRIND_REQUESTS_STRATEGY: strict

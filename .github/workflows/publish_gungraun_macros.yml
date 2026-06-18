@@ -9,7 +9,7 @@ jobs:
     name: Publish to crates.io
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - name: Publish gungraun-macros
         run: cargo publish -p gungraun-macros --token ${{ secrets.CRATES_GITHUB_TOKEN }}

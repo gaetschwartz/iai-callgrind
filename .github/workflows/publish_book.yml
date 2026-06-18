@@ -15,7 +15,7 @@ jobs:
       docs: ${{ steps.filter.outputs.docs }}
       force: ${{ steps.tag-check.outputs.force }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
         id: filter
         with:
@@ -43,7 +43,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: taiki-e/install-action@cargo-binstall
       - uses: taiki-e/install-action@just
