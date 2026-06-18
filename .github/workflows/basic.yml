@@ -26,7 +26,7 @@ jobs:
           - "--deny warnings advisories"
           - bans licenses sources
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: EmbarkStudios/cargo-deny-action@v2
         with:
           command: check ${{ matrix.checks }}
@@ -41,7 +41,7 @@ jobs:
           - stable
           - nightly-2026-05-01
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
@@ -59,7 +59,7 @@ jobs:
     name: Check format and spelling
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
@@ -74,7 +74,7 @@ jobs:
     name: Run lints
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy

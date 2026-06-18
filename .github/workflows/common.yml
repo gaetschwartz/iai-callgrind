@@ -21,7 +21,7 @@ jobs:
     name: Check gungraun json schema
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
@@ -36,7 +36,7 @@ jobs:
     env:
       DOCS_RS: "1"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
         with:
@@ -95,7 +95,7 @@ jobs:
             cargo: cargo
             needs_ndk: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           target: ${{ matrix.target }}

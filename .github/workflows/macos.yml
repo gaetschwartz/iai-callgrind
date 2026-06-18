@@ -15,7 +15,7 @@ jobs:
     name: Build with feature powerset
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
@@ -36,7 +36,7 @@ jobs:
     name: Run unit and integrations tests
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - name: "Prepare: Run cargo update"
         run: cargo update
