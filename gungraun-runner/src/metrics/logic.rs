@@ -1,9 +1,6 @@
-//! The module containing all elements and logic around the [`Metrics`], [`MetricsDiff`], ...
-
-#![allow(clippy::cast_precision_loss)]
+//! TODO: DOCS
 
 use std::borrow::Cow;
-use std::cmp::Ordering;
 use std::fmt::Display;
 use std::hash::Hash;
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
@@ -12,81 +9,11 @@ use std::str::FromStr;
 use anyhow::{Context, Result, anyhow};
 use either_or_both::EitherOrBoth;
 use indexmap::IndexMap;
-#[cfg(feature = "schema")]
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
-use super::summary::Diffs;
-use crate::api::{self, CachegrindMetric, DhatMetric, ErrorMetric, EventKind};
+use crate::api::Limit;
+use crate::metrics::model::{Metric, MetricKind, Metrics, MetricsDiff, MetricsSummary};
+use crate::summary::model::Diffs;
 use crate::util::{Union, to_string_unsigned_short};
-
-/// The metric measured by valgrind or derived from one or more other metrics
-///
-/// The valgrind metrics measured by any of its tools are `u64`. However, to be able to represent
-/// derived metrics like cache miss/hit rates it is inevitable to have a type which can store a
-/// `u64` or a `f64`. When doing math with metrics, the original type should be preserved as far as
-/// possible by using `u64` operations. A float metric should be a last resort.
-///
-/// Float operations with a `Metric` that stores a `u64` introduce a precision loss and are to be
-/// avoided. Especially comparison between a `u64` metric and `f64` metric are not exact because the
-/// `u64` has to be converted to a `f64`. Also, if adding/multiplying two `u64` metrics would result
-/// in an overflow the metric saturates at `u64::MAX`. This choice was made to preserve precision
-/// and the original type (instead of for example adding the two `u64` by converting both of them to
-/// `f64`).
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-pub enum Metric {
-    /// An integer `Metric`
-    Int(u64),
-    /// A float `Metric`
-    Float(f64),
-}
-
-/// The different metrics distinguished by tool and if it is an error checking tool as `ErrorMetric`
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-pub enum MetricKind {
-    /// The `None` kind if there are no metrics for a tool
-    None,
-    /// The Callgrind metric kind
-    Callgrind(EventKind),
-    /// The Cachegrind metric kind
-    Cachegrind(CachegrindMetric),
-    /// The DHAT metric kind
-    Dhat(DhatMetric),
-    /// The Memcheck metric kind
-    Memcheck(ErrorMetric),
-    /// The Helgrind metric kind
-    Helgrind(ErrorMetric),
-    /// The DRD metric kind
-    DRD(ErrorMetric),
-}
-
-/// The `Metrics` backed by an [`indexmap::IndexMap`]
-///
-/// The insertion order is preserved.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-pub struct Metrics<K: Hash + Eq>(pub IndexMap<K, Metric>);
-
-/// The `MetricsDiff` describes the difference between a `new` and `old` metric as percentage and
-/// factor.
-///
-/// Only if both metrics are present there is also a `Diffs` present. Otherwise, it just stores the
-/// `new` or `old` metric.
-#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-pub struct MetricsDiff {
-    /// If both metrics are present there is also a `Diffs` present
-    pub diffs: Option<Diffs>,
-    /// Either the `new`, `old` or both metrics
-    pub metrics: EitherOrBoth<Metric>,
-}
-
-/// The `MetricsSummary` contains all differences between two tool run segments
-#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-pub struct MetricsSummary<K: Hash + Eq = EventKind>(IndexMap<K, MetricsDiff>);
 
 /// Trait for tools which summarize and calculate derived metrics
 pub trait Summarize: Hash + Eq + Clone {
@@ -141,6 +68,7 @@ impl Metric {
     /// given metric was [`Metric::Int`]. The metrics of float type are usually percentages with a
     /// value range of `0.0` to `100.0`. Converting `u64` to `f64` within this range happens without
     /// precision loss.
+    #[expect(clippy::cast_precision_loss)]
     pub fn try_convert<T: Display + TypeChecker>(&self, metric_kind: T) -> Option<(T, Self)> {
         if metric_kind.verify_metric(*self) {
             Some((metric_kind, *self))
@@ -155,6 +83,7 @@ impl Metric {
 impl Add for Metric {
     type Output = Self;
 
+    #[expect(clippy::cast_precision_loss)]
     fn add(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
             (Self::Int(a), Self::Int(b)) => Self::Int(a.saturating_add(b)),
@@ -183,6 +112,7 @@ impl Display for Metric {
 impl Div for Metric {
     type Output = Self;
 
+    #[expect(clippy::cast_precision_loss)]
     fn div(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
             (Self::Int(a), Self::Int(b)) => Self::Float((a as f64) / (b as f64)),
@@ -192,8 +122,6 @@ impl Div for Metric {
         }
     }
 }
-
-impl Eq for Metric {}
 
 impl From<u64> for Metric {
     fn from(value: u64) -> Self {
@@ -207,11 +135,11 @@ impl From<f64> for Metric {
     }
 }
 
-impl From<api::Limit> for Metric {
-    fn from(value: api::Limit) -> Self {
+impl From<Limit> for Metric {
+    fn from(value: Limit) -> Self {
         match value {
-            api::Limit::Int(a) => Self::Int(a),
-            api::Limit::Float(f) => Self::Float(f),
+            Limit::Int(a) => Self::Int(a),
+            Limit::Float(f) => Self::Float(f),
         }
     }
 }
@@ -233,6 +161,7 @@ impl FromStr for Metric {
 impl Mul<u64> for Metric {
     type Output = Self;
 
+    #[expect(clippy::cast_precision_loss)]
     fn mul(self, rhs: u64) -> Self::Output {
         match self {
             Self::Int(a) => Self::Int(a.saturating_mul(rhs)),
@@ -241,37 +170,10 @@ impl Mul<u64> for Metric {
     }
 }
 
-impl Ord for Metric {
-    fn cmp(&self, other: &Self) -> Ordering {
-        match (self, other) {
-            (Self::Int(a), Self::Int(b)) => a.cmp(b),
-            (Self::Int(a), Self::Float(b)) => (*a as f64).total_cmp(b),
-            (Self::Float(a), Self::Int(b)) => a.total_cmp(&(*b as f64)),
-            (Self::Float(a), Self::Float(b)) => a.total_cmp(b),
-        }
-    }
-}
-
-impl PartialEq for Metric {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::Int(a), Self::Int(b)) => a == b,
-            (Self::Int(a), Self::Float(b)) => (*a as f64).total_cmp(b) == Ordering::Equal,
-            (Self::Float(a), Self::Int(b)) => a.total_cmp(&(*b as f64)) == Ordering::Equal,
-            (Self::Float(a), Self::Float(b)) => a.total_cmp(b) == Ordering::Equal,
-        }
-    }
-}
-
-impl PartialOrd for Metric {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
 impl Sub for Metric {
     type Output = Self;
 
+    #[expect(clippy::cast_precision_loss)]
     fn sub(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
             (Self::Int(a), Self::Int(b)) => Self::Int(a.saturating_sub(b)),
@@ -595,6 +497,7 @@ where
 }
 
 impl From<Metric> for f64 {
+    #[expect(clippy::cast_precision_loss)]
     fn from(value: Metric) -> Self {
         match value {
             Metric::Int(a) => a as Self,
@@ -606,6 +509,7 @@ impl From<Metric> for f64 {
 impl Mul<Metric> for u64 {
     type Output = Metric;
 
+    #[expect(clippy::cast_precision_loss)]
     fn mul(self, rhs: Metric) -> Self::Output {
         match rhs {
             Metric::Int(b) => Metric::Int(self.saturating_mul(b)),
@@ -625,7 +529,7 @@ mod tests {
 
     use super::*;
     use crate::api::EventKind::{self, *};
-    use crate::runner::summary::Diffs;
+    use crate::summary::model::Diffs;
 
     fn expected_metrics<I, T>(events: T) -> Metrics<EventKind>
     where
@@ -875,6 +779,7 @@ mod tests {
     #[case::zero_one_float(0, 1.0f64, 0.0f64)]
     #[case::one_float(1, 1.0f64, 1.0f64)]
     #[case::one_two_float(1, 2.0f64, 2.0f64)]
+    #[expect(clippy::cast_precision_loss)]
     #[case::u64_max_two_float(u64::MAX, 2.0f64, 2.0f64 * (u64::MAX as f64))]
     fn test_metric_mul_u64<B, E>(#[case] a: u64, #[case] b: B, #[case] expected: E)
     where

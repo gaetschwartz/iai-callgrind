@@ -15,7 +15,7 @@ use log::{Level, debug, log_enabled, trace};
 use which::{which, which_in};
 
 use crate::error::Error;
-use crate::runner::metrics::Metric;
+use crate::metrics::model::Metric;
 
 /// The union over two [`IndexMaps`][IndexMap]
 #[derive(Debug)]

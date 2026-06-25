@@ -10,10 +10,11 @@ use serde::{Deserialize, Serialize};
 
 use super::CacheSummary;
 use crate::api::EventKind;
-use crate::runner::metrics::{Metric, Summarize};
+use crate::metrics::logic::Summarize;
+use crate::metrics::model::Metric;
 
 /// The Callgrind-specific `Metrics`
-pub type Metrics = crate::runner::metrics::Metrics<EventKind>;
+pub type Metrics = crate::metrics::model::Metrics<EventKind>;
 
 /// The [`Positions`] type
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

@@ -5,8 +5,8 @@ use gungraun::ValgrindTool;
 use gungraun_runner::runner::callgrind::hashmap_parser::{CallgrindMap, HashMapParser};
 use gungraun_runner::runner::callgrind::parser::CallgrindParser;
 use gungraun_runner::runner::common::ModulePath;
-use gungraun_runner::runner::summary::{BaselineKind, BenchmarkSummary};
 use gungraun_runner::runner::tool::path::{ToolOutputPath, ToolOutputPathKind};
+use gungraun_runner::summary::model::{BaselineKind, BenchmarkSummary};
 
 use crate::common::Summary;
 

@@ -2,9 +2,9 @@
 use indexmap::{IndexMap, IndexSet};
 
 use crate::api::{self, DhatMetric};
-use crate::runner::metrics::{Metric, MetricKind, MetricsSummary};
-use crate::runner::summary::ToolRegression;
+use crate::metrics::model::{Metric, MetricKind, MetricsSummary};
 use crate::runner::tool::regression::RegressionConfig;
+use crate::summary::model::ToolRegression;
 
 /// The dhat regression check configuration
 #[derive(Debug, Clone, PartialEq)]
@@ -102,7 +102,7 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
-    use crate::runner::metrics::Metrics;
+    use crate::metrics::model::Metrics;
     use crate::runner::tool::regression::RegressionMetrics;
 
     fn costs_fixture(costs: [u64; 2]) -> Metrics<DhatMetric> {

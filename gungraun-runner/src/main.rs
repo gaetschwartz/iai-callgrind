@@ -57,7 +57,7 @@ fn main() {
     .init();
 
     print_warnings();
-    match gungraun_runner::runner::run() {
+    match gungraun_runner::runner::run::run() {
         Ok(()) => {}
         Err(error) => {
             if let Some(Error::RegressionError(is_fatal)) = error.downcast_ref::<Error>() {

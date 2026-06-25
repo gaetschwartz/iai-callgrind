@@ -4,7 +4,7 @@
 //! used during the development of `gungraun`.
 use std::fs::File;
 
-use gungraun_runner::runner::summary::BenchmarkSummary;
+use gungraun_runner::summary::model::BenchmarkSummary;
 use schemars::generate::SchemaSettings;
 
 fn main() {

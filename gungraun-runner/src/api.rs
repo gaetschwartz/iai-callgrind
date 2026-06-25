@@ -111,18 +111,18 @@ use anyhow::anyhow;
 use indexmap::IndexSet;
 #[cfg(feature = "runner")]
 use indexmap::indexset;
-#[cfg(feature = "schema")]
+#[cfg(feature = "summary")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "runner")]
 use strum::{EnumIter, IntoEnumIterator};
 
 #[cfg(feature = "runner")]
-use crate::runner;
+use crate::metrics;
 #[cfg(feature = "runner")]
-use crate::runner::metrics::Summarize;
+use crate::metrics::logic::Summarize;
 #[cfg(feature = "runner")]
-use crate::runner::metrics::TypeChecker;
+use crate::metrics::logic::TypeChecker;
 #[cfg(feature = "runner")]
 use crate::util;
 
@@ -132,7 +132,7 @@ use crate::util;
 /// See the [Cachegrind
 /// documentation](https://valgrind.org/docs/manual/cg-manual.html#cg-manual.cgopts) for details.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "summary", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(EnumIter))]
 pub enum CachegrindMetric {
     /// The default event. I cache reads (which equals the number of instructions executed)
@@ -635,7 +635,7 @@ pub enum DelayKind {
 
 /// The metrics collected by DHAT
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "summary", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(EnumIter))]
 pub enum DhatMetric {
     /// In ad-hoc mode, Total units measured over the entire execution
@@ -765,7 +765,7 @@ pub enum EntryPoint {
 /// variants are defined in this enum determines the order of the metrics in the benchmark terminal
 /// output.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "summary", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(EnumIter))]
 pub enum ErrorMetric {
     /// The amount of detected unsuppressed errors
@@ -784,7 +784,7 @@ pub enum ErrorMetric {
 /// See the [Callgrind
 /// documentation](https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options) for details.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize, PartialOrd, Ord)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "summary", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(EnumIter))]
 pub enum EventKind {
     /// The default event. I cache reads (which equals the number of instructions executed)
@@ -1041,7 +1041,7 @@ pub enum ToolRegressionConfig {
 /// Note the default changes from `Callgrind` to `Cachegrind` if the `cachegrind` feature is
 /// selected.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub enum ValgrindTool {
     /// Callgrind: a call-graph generating cache and branch prediction profiler
     /// <https://valgrind.org/docs/manual/cl-manual.html>
@@ -2178,11 +2178,11 @@ impl LibraryBenchmarkConfig {
 }
 
 #[cfg(feature = "runner")]
-impl From<runner::metrics::Metric> for Limit {
-    fn from(value: runner::metrics::Metric) -> Self {
+impl From<metrics::model::Metric> for Limit {
+    fn from(value: metrics::model::Metric) -> Self {
         match value {
-            runner::metrics::Metric::Int(a) => Self::Int(a),
-            runner::metrics::Metric::Float(b) => Self::Float(b),
+            metrics::model::Metric::Int(a) => Self::Int(a),
+            metrics::model::Metric::Float(b) => Self::Float(b),
         }
     }
 }

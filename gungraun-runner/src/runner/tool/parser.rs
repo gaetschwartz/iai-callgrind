@@ -13,8 +13,8 @@ use super::path::ToolOutputPath;
 use crate::api::{EntryPoint, ValgrindTool};
 use crate::runner::dhat::json_parser::JsonParser;
 use crate::runner::dhat::logfile_parser::DhatLogfileParser;
-use crate::runner::summary::ToolMetrics;
 use crate::runner::{cachegrind, callgrind};
+use crate::summary::model::ToolMetrics;
 
 /// The combined header of output and log files
 #[derive(Debug, Clone, PartialEq, Eq)]

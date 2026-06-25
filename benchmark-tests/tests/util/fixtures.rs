@@ -14,13 +14,13 @@ use gungraun_runner::api::{RawToolArgs, Tools};
 use gungraun_runner::runner::common::{Assistant, AssistantKind, Config, ModulePath};
 use gungraun_runner::runner::format::OutputFormat;
 use gungraun_runner::runner::meta::Metadata;
-use gungraun_runner::runner::summary::BaselineKind;
 use gungraun_runner::runner::tasks::ProcessHandler;
 use gungraun_runner::runner::tool::args::ToolArgs;
 use gungraun_runner::runner::tool::config::{ToolConfig, ToolConfigs, ToolFlamegraphConfig};
 use gungraun_runner::runner::tool::path::{ToolOutputPath, ToolOutputPathKind};
 use gungraun_runner::runner::tool::regression::ToolRegressionConfig;
 use gungraun_runner::runner::tool::run::{RunOptions, ToolCommand, ToolCommandChild};
+use gungraun_runner::summary::model::BaselineKind;
 
 use crate::util::common::DEFAULT_TOOL;
 

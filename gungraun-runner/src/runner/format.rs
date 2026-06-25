@@ -16,12 +16,12 @@ use super::bin_bench::BinBench;
 use super::common::{Baselines, BenchmarkSummaries, Config, ModulePath};
 use super::lib_bench::LibBench;
 use super::meta::Metadata;
-use super::metrics::{Metric, MetricKind, MetricsDiff};
-use super::summary::{Diffs, ProfileData, ProfileInfo, ToolMetricSummary, ToolRegression};
 use crate::api::{
     self, CachegrindMetric, CachegrindMetrics, CallgrindMetrics, DhatMetric, DhatMetrics,
     ErrorMetric, EventKind, Tool, ToolOutputFormat, ValgrindTool,
 };
+use crate::metrics::model::{Metric, MetricKind, MetricsDiff};
+use crate::summary::model::{Diffs, ProfileData, ProfileInfo, ToolMetricSummary, ToolRegression};
 use crate::util::{
     make_relative, to_string_signed_short, to_string_unsigned_short, truncate_str_utf8,
 };
@@ -1405,7 +1405,7 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
-    use crate::runner::metrics::{Metrics, MetricsSummary};
+    use crate::metrics::model::{Metrics, MetricsSummary};
 
     #[rstest]
     #[case::simple("some::module", Some("id"), Some("1, 2"), "some::module id:1, 2")]
