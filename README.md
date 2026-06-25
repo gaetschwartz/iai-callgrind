@@ -9,7 +9,7 @@
 <div align="center">
     <a href="https://gungraun.github.io/gungraun">Guide</a>
     |
-    <a href="https://docs.rs/crate/gungraun/">Released API Docs</a>
+    <a href="https://docs.rs/crate/gungraun/">API Docs</a>
     |
     <a href="https://github.com/gungraun/gungraun/blob/main/CHANGELOG.md">Changelog</a>
 </div>
@@ -17,9 +17,11 @@
     <a href="https://github.com/gungraun/gungraun/actions/workflows/cicd.yml" style="text-decoration:none">
         <img src="https://github.com/gungraun/gungraun/actions/workflows/cicd.yml/badge.svg" alt="GitHub branch checks state"/>
     </a>
+    |
     <a href="https://crates.io/crates/gungraun" style="text-decoration:none">
         <img src="https://shields.io/crates/v/gungraun.svg" alt="Crates.io"/>
     </a>
+    |
     <a href="https://docs.rs/gungraun/" style="text-decoration:none">
         <img src="https://img.shields.io/docsrs/gungraun/latest" alt="docs.rs"/>
     </a>
@@ -124,8 +126,9 @@ silent. The last syllable `raun` can be pronounced like the english word `rain`.
 ## Links
 
 - Gungraun/Iai-Callgrind is [mentioned][talk] in a talk at [RustNation
-  UK][rustnation] about [Towards Impeccable Rust][talk-video] by Jon Gjengset
-- Gungraun/Iai-Callgrind is supported by [bencher]
+  UK][rustnation] about [Towards Impeccable Rust][talk-video] by Jon Gjengset.
+- Gungraun is listed in the [The Rust Performance Book][perf-book].
+- Gungraun and the predecessor Iai-Callgrind are supported by [bencher].
 
 ## Related Projects
 
@@ -149,8 +152,8 @@ Gungraun is powered by [Valgrind].
 
 ## License
 
-Gungraun is like Iai dual licensed under the Apache 2.0 license and the MIT
-license at your option.
+Gungraun is dual licensed under the Apache 2.0 license and the MIT license at
+your option.
 
 According to [Valgrind's documentation][valgrind-client-request-mechanism]:
 
@@ -162,7 +165,7 @@ We have included the original license where we made use of the original header
 files.
 
 [api-docs]: https://docs.rs/gungraun/latest/gungraun/
-[bencher]: https://bencher.dev/learn/benchmarking/rust/iai/
+[bencher]: https://bencher.dev/learn/benchmarking/rust/gungraun/
 [cargo-valgrind]: https://github.com/jfrimmel/cargo-valgrind
 [criterion]: https://github.com/bheisler/criterion.rs
 [dhat-rs]: https://github.com/nnethercote/dhat-rs
@@ -175,6 +178,7 @@ files.
 [migration-checklist]:
     https://gungraun.github.io/gungraun/latest/html/migration/iai-callgrind-to-gungraun.html
 [open-an-issue]: https://github.com/gungraun/gungraun/issues
+[perf-book]: https://nnethercote.github.io/perf-book/benchmarking.html
 [quickstart-binary]:
     https://gungraun.github.io/gungraun/latest/html/benchmarks/binary_benchmarks/quickstart.html
 [quickstart-library]:
