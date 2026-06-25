@@ -92,6 +92,24 @@ impl Error {
     ) -> Self {
         Self::ProcessError(Box::new(name), Box::new(output), output_path.map(Box::new))
     }
+
+    /// Creates a new [`Error::ProcessError`].
+    ///
+    /// This error type is especially large so the large values are stored on the heap to reduce the
+    /// overall size of the [`Error`] enum.
+    pub fn new_job_error(
+        orig_error: anyhow::Error,
+        header: Header,
+        captured_output: CapturedOutput,
+        output_path: ToolOutputPath,
+    ) -> Self {
+        Self::JobError(
+            Box::new(orig_error),
+            header,
+            captured_output,
+            Box::new(output_path),
+        )
+    }
 }
 
 impl Display for Error {

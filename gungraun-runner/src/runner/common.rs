@@ -13,6 +13,7 @@ use std::fs::File;
 use std::io::{Seek, Write, stderr, stdout};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio as StdStdio};
+use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, atomic};
 use std::time::{Duration, Instant};
 
@@ -949,14 +950,32 @@ impl Group {
     /// Returns an error if benchmark execution, output finalization, printing, or regression checks
     /// fail.
     pub fn run(self, config: &Arc<Config>) -> Result<BenchmarkSummaries> {
+        let num_threads = match self.max_parallel {
+            MaxParallel::Serial => {
+                let result = self.run_serial(config);
+                if let Err(error) = &result {
+                    if let Some(Error::JobError(_, _, _, path)) = error.downcast_ref::<Error>() {
+                        // Avoid an error within the error situation.
+                        let _ = path
+                            .init()
+                            .and_then(|()| path.clear_temp_files(true))
+                            .and_then(|()| path.copy_temp());
+                    }
+                }
+
+                return result;
+            }
+            MaxParallel::NoMaximum => config.meta.args.parallel,
+            MaxParallel::Count(num) => config.meta.args.parallel.min(num),
+        };
+
+        self.run_parallel(config, num_threads)
+    }
+
+    fn run_parallel(self, config: &Arc<Config>, num_threads: usize) -> Result<BenchmarkSummaries> {
         let mut benchmark_summaries = BenchmarkSummaries::default();
 
         let compare_by_id = self.compare_by_id;
-        let num_threads = match self.max_parallel {
-            MaxParallel::NoMaximum => config.meta.args.parallel,
-            MaxParallel::Serial => 1,
-            MaxParallel::Count(num) => config.meta.args.parallel.min(num),
-        };
         let num_benches = self.benches.len();
         let module_path = Arc::new(self.module_path.clone());
         let main_index = self.index;
@@ -983,14 +1002,7 @@ impl Group {
         let force_shutdown = thread_pool.clone_force_shutdown();
         let mut error = None;
         for result in thread_pool {
-            let JobResult {
-                mut benchmark_summary,
-                fail_fast,
-                header,
-                output_format,
-                captured_output,
-                mut data_processor,
-            } = match result {
+            let job_result = match result {
                 // On error, wait for all threads to finish and/or shutdown their running processes
                 // and don't rely on the thread pool drop to finish before the runner exits.
                 _ if error.is_some() => {
@@ -1013,39 +1025,14 @@ impl Group {
                 }
             };
 
-            if !data_processor.has_benchmarks() {
-                continue;
-            }
-
-            if let Err(e) = data_processor
-                .finalize(&mut benchmark_summary, config, &header)
-                .and_then(|()| {
-                    benchmark_summary.print_and_save(
-                        config,
-                        &header,
-                        &output_format,
-                        captured_output,
-                    )
-                })
-                .and_then(|()| benchmark_summary.check_regression(fail_fast))
-            {
+            if let Err(e) = job_result.process_data(
+                config,
+                compare_by_id,
+                &mut benchmark_summaries,
+                &mut comparison_summaries,
+            ) {
                 force_shutdown.store(true, atomic::Ordering::Release);
                 error = Some(e);
-                continue;
-            }
-
-            benchmark_summaries.add_summary(benchmark_summary.clone());
-            if compare_by_id && output_format.is_default() {
-                if let Some(id) = &benchmark_summary.id {
-                    if let Some(sums) = comparison_summaries.get_mut(id) {
-                        for sum in sums.iter() {
-                            sum.compare_and_print(id, &benchmark_summary, &output_format);
-                        }
-                        sums.push(benchmark_summary);
-                    } else {
-                        comparison_summaries.insert(id.clone(), vec![benchmark_summary]);
-                    }
-                }
             }
         }
 
@@ -1054,6 +1041,137 @@ impl Group {
         // will be dropped and all threads are properly joined and closed.
         if let Some(error) = error {
             return Err(error);
+        }
+
+        Ok(benchmark_summaries)
+    }
+
+    fn run_serial(self, config: &Arc<Config>) -> Result<BenchmarkSummaries> {
+        let compare_by_id = self.compare_by_id;
+        let mut benchmark_summaries = BenchmarkSummaries::default();
+
+        match self.benches {
+            Benches::LibBenches(lib_benches) => {
+                let mut comparison_summaries: HashMap<String, Vec<BenchmarkSummary>> =
+                    HashMap::with_capacity(lib_benches.len());
+
+                for bench in lib_benches {
+                    let fail_fast = bench.is_fail_fast();
+                    let benchmark: Arc<dyn lib_bench::Benchmark> =
+                        lib_bench::benchmark_factory(config);
+
+                    let captured_output = CapturedOutput::new()?;
+                    let header = LibraryBenchmarkHeader::new(&bench).into();
+
+                    let output_format = bench.output_format.clone();
+
+                    let force_shutdown = Arc::new(AtomicBool::new(false));
+                    let output_path =
+                        benchmark.default_output_path(&bench, config, &self.module_path, true)?;
+
+                    let data_processor = benchmark.data_processor(
+                        &bench.tools,
+                        &config.meta.project_root,
+                        &output_path,
+                    );
+
+                    // Return a job error on error to match the behavior in `run_parallel` and have
+                    // better error reporting
+                    let benchmark_summary = match benchmark.run(
+                        bench,
+                        config,
+                        self.index,
+                        Some(captured_output.try_clone()?),
+                        &force_shutdown,
+                        output_path.clone(),
+                    ) {
+                        Ok(benchmark_summary) => benchmark_summary,
+                        Err(error) => {
+                            return Err(Into::into(Error::new_job_error(
+                                error,
+                                header,
+                                captured_output,
+                                output_path,
+                            )));
+                        }
+                    };
+
+                    let job_result = JobResult {
+                        benchmark_summary,
+                        captured_output,
+                        data_processor,
+                        fail_fast,
+                        header,
+                        output_format,
+                    };
+
+                    job_result.process_data(
+                        config,
+                        compare_by_id,
+                        &mut benchmark_summaries,
+                        &mut comparison_summaries,
+                    )?;
+                }
+            }
+            Benches::BinBenches(bin_benches) => {
+                let mut comparison_summaries: HashMap<String, Vec<BenchmarkSummary>> =
+                    HashMap::with_capacity(bin_benches.len());
+
+                for bench in bin_benches {
+                    let fail_fast = bench.is_fail_fast();
+                    let benchmark: Arc<dyn bin_bench::Benchmark> =
+                        bin_bench::benchmark_factory(config);
+
+                    let captured_output = CapturedOutput::new()?;
+                    let header = BinaryBenchmarkHeader::new(&config.meta, &bench).into();
+
+                    let output_format = bench.output_format.clone();
+
+                    let force_shutdown = Arc::new(AtomicBool::new(false));
+                    let output_path =
+                        benchmark.default_output_path(&bench, config, &self.module_path, true)?;
+
+                    let data_processor = benchmark.data_processor(
+                        &bench.tools,
+                        &config.meta.project_root,
+                        &output_path,
+                    );
+
+                    let benchmark_summary = match benchmark.run(
+                        bench,
+                        config,
+                        Some(captured_output.try_clone()?),
+                        &force_shutdown,
+                        output_path.clone(),
+                    ) {
+                        Ok(benchmark_summary) => benchmark_summary,
+                        Err(error) => {
+                            return Err(Into::into(Error::new_job_error(
+                                error,
+                                header,
+                                captured_output,
+                                output_path,
+                            )));
+                        }
+                    };
+
+                    let job_result = JobResult {
+                        benchmark_summary,
+                        captured_output,
+                        data_processor,
+                        fail_fast,
+                        header,
+                        output_format,
+                    };
+
+                    job_result.process_data(
+                        config,
+                        compare_by_id,
+                        &mut benchmark_summaries,
+                        &mut comparison_summaries,
+                    )?;
+                }
+            }
         }
 
         Ok(benchmark_summaries)
@@ -1111,6 +1229,53 @@ impl BenchmarkDataProcessor for LoadBaselineDataProcessor {
         }
 
         Ok(vec![])
+    }
+}
+
+impl JobResult {
+    /// TODO: DOCS
+    fn process_data(
+        self,
+        config: &Arc<Config>,
+        compare_by_id: bool,
+        benchmark_summaries: &mut BenchmarkSummaries,
+        comparison_summaries: &mut HashMap<String, Vec<BenchmarkSummary>>,
+    ) -> Result<()> {
+        let Self {
+            mut benchmark_summary,
+            fail_fast,
+            header,
+            output_format,
+            captured_output,
+            mut data_processor,
+        } = self;
+
+        if !data_processor.has_benchmarks() {
+            return Ok(());
+        }
+
+        data_processor
+            .finalize(&mut benchmark_summary, config, &header)
+            .and_then(|()| {
+                benchmark_summary.print_and_save(config, &header, &output_format, captured_output)
+            })
+            .and_then(|()| benchmark_summary.check_regression(fail_fast))?;
+
+        benchmark_summaries.add_summary(benchmark_summary.clone());
+        if compare_by_id && output_format.is_default() {
+            if let Some(id) = &benchmark_summary.id {
+                if let Some(sums) = comparison_summaries.get_mut(id) {
+                    for sum in sums.iter() {
+                        sum.compare_and_print(id, &benchmark_summary, &output_format);
+                    }
+                    sums.push(benchmark_summary);
+                } else {
+                    comparison_summaries.insert(id.clone(), vec![benchmark_summary]);
+                }
+            }
+        }
+
+        Ok(())
     }
 }
 
