@@ -17,6 +17,12 @@ consistent benchmarking framework/harness for Rust.
 readme = "README.md"
 
 [dependencies]
+gungraun-runner = { path = "../gungraun-runner", version = ">=0.16", default-features = false, features = [
+  "summary",
+] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
 
 [package.metadata.docs.rs]
 all-features = true

@@ -192,8 +192,7 @@ pub enum CachegrindMetric {
 /// A collection of groups of [`CachegrindMetric`]s
 ///
 /// The members of each group are fully documented in the docs of each variant of this enum
-#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CachegrindMetrics {
     /// The default group contains all metrics except the [`CachegrindMetrics::CacheMisses`],
     /// [`CachegrindMetrics::CacheMissRates`], [`CachegrindMetrics::CacheHitRates`] and
@@ -377,7 +376,6 @@ pub enum CachegrindMetrics {
 /// command-line flags. [`CallgrindMetrics`] groups these metrics to make it less cumbersome to
 /// specify multiple [`EventKind`]s at once if necessary.
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Serialize, Deserialize, PartialOrd, Ord)]
-#[non_exhaustive]
 pub enum CallgrindMetrics {
     /// The default group contains all event kinds except the [`CallgrindMetrics::CacheMisses`],
     /// [`CallgrindMetrics::CacheMissRates`], [`CallgrindMetrics::CacheHitRates`] and
@@ -620,7 +618,6 @@ pub enum CommandKind {
 }
 
 /// The kind of `Delay`
-#[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum DelayKind {
     /// Delay the `Command` for a fixed [`Duration`]
@@ -1005,7 +1002,7 @@ pub enum ToolFlamegraphConfig {
 }
 
 /// The tool specific metrics to show in the terminal output
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ToolOutputFormat {
     /// The Callgrind configuration
     Callgrind(Vec<CallgrindMetrics>),

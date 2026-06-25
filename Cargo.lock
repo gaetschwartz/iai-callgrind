@@ -887,6 +887,12 @@ dependencies = [
 [[package]]
 name = "gungraun-summary"
 version = "6.0.0"
+dependencies = [
+ "gungraun-runner",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
 
 [[package]]
 name = "hashbrown"
