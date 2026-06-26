@@ -7,10 +7,7 @@ use gungraun_summary::v6::BenchmarkSummary;
 
 #[test]
 fn test_summary() {
-    let current = PathBuf::from(file!())
-        .parent()
-        .unwrap()
-        .join("fixtures/summary.json");
+    let current = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/summary.json");
 
     let summary: BenchmarkSummary = serde_json::from_reader(File::open(&current).unwrap()).unwrap();
     let p = summary.profiles.0;

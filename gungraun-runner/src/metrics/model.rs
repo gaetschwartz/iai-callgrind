@@ -1,4 +1,4 @@
-//! TODO: DOCS
+//! Metric value and diff types used in serialized Gungraun summaries.
 
 use std::cmp::Ordering;
 use std::hash::Hash;

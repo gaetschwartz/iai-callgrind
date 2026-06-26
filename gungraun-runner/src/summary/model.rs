@@ -1,4 +1,7 @@
-//! TODO: DOCS
+//! Summary data model types serialized to and from Gungraun summary JSON.
+//!
+//! These types define schema version 6 and are re-exported by `gungraun-summary::v6` for consumers
+//! that want direct access to the parsed summary model.
 
 use std::path::PathBuf;
 
@@ -14,6 +17,7 @@ use crate::metrics::model::{Metric, MetricKind, Metrics, MetricsSummary};
 /// The version of the summary json schema
 pub const SCHEMA_VERSION: &str = "6";
 
+// TODO: STOPPED HERE improving documentation of exported structs, ...
 /// The `BaselineKind` describing the baseline
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
