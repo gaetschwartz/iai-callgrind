@@ -36,6 +36,47 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.19.3] - 2026-06-27
+
+### Added
+
+- ([#668]): Added the new `gungraun-summary` package for consuming Gungraun
+  summary JSON as typed Rust data. The package currently supports summary schema
+  version `v6` and provides version-aware parsing helpers for loading summary
+  files.
+
+### Changed
+
+- ([#668]): Moved summary schema ownership and generation into
+  `gungraun-summary`. Summary schemas now live under `gungraun-summary/schemas`,
+  and the related documentation/tooling was updated accordingly. For
+  backwards-compatibility `gungraun-runner/schemas` is symlinked to the new
+  location in the gungraun-summary package.
+- ([#679]): Allow bincode-next version v3 in addition to v2. v3 is
+  backwards-compatible to v2. However, keep v2 in the lock file due to the MSRV.
+- ([#597],[#679]): True serial execution of benchmarks instead of routing
+  through the thread-pool with one worker. The goal was to run benchmarks and
+  processing of data in parallel to speed up the overall benchmark execution.
+  Although Valgrind is able to handle this scenario, it is desirable to keep the
+  workflow serial for isolation purposes. This change also fixes the slow down
+  in [#597] in the usage scenario in which many groups only contain a single or
+  few benchmarks.
+- Rename the private `ui_tests` feature to `__ui_tests`
+- Update dependencies
+
+### Fixed
+
+- ([#669]): Fix unwraps in parsers. These are all defensive fixes, with little
+  to no occurrences in real situations. However, in case of malformed files or
+  utf8 errors, proper error propagation is now used.
+- ([#669]): Fix Callgrind parser when missing the format banner. This is also a
+  defensive fix, since Valgrind should always print this banner.
+
+[#597]: https://github.com/gungraun/gungraun/issues/597
+[#668]: https://github.com/gungraun/gungraun/pull/668
+[#669]: https://github.com/gungraun/gungraun/pull/669
+[#679]: https://github.com/gungraun/gungraun/pull/679
+
 ## [0.19.2] - 2026-06-08
 
 ### Changed
