@@ -9,8 +9,12 @@ use std::path::Path;
 pub use gungraun_runner::api::{
     CachegrindMetric, DhatMetric, ErrorMetric, EventKind, ValgrindTool,
 };
-pub use gungraun_runner::metrics::model::*;
-pub use gungraun_runner::summary::model::*;
+pub use gungraun_runner::metrics::model::{Metric, MetricKind, MetricsDiff, MetricsSummary};
+pub use gungraun_runner::summary::model::{
+    BenchmarkKind, BenchmarkSummary, Diffs, FlamegraphSummary, Profile, ProfileData, ProfileInfo,
+    ProfilePart, ProfileTotal, Profiles, SCHEMA_VERSION, SummaryFormat, SummaryOutput,
+    ToolMetricSummary, ToolRegression,
+};
 
 use crate::error::{Error, Result};
 

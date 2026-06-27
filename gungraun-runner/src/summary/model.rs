@@ -17,8 +17,11 @@ use crate::metrics::model::{Metric, MetricKind, Metrics, MetricsSummary};
 pub const SCHEMA_VERSION: &str = "6";
 
 /// Describes which baseline a summary compares against.
+///
+/// # Benchmark Summary
+///
+/// This struct is not part of the recent summary anymore.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub enum BaselineKind {
     /// Compare new against `*.old` output files
     Old,
@@ -112,8 +115,11 @@ pub enum ToolMetricSummary {
 ///
 /// This enum is used where the summary needs to store metrics keyed by the tool that produced them,
 /// without comparison metadata.
+///
+/// # Benchmark Summary
+///
+/// This struct is not part of the recent summary anymore.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub enum ToolMetrics {
     /// If there are no metrics extracted from a tool (currently Massif, BBV)
     #[default]
@@ -168,8 +174,11 @@ pub enum ToolRegression {
 }
 
 /// A baseline file used when comparing a new benchmark result with older data.
+///
+/// # Benchmark Summary
+///
+/// This struct is not part of the recent summary anymore.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct Baseline {
     /// The kind of the `Baseline`
     pub kind: BaselineKind,
@@ -178,8 +187,11 @@ pub struct Baseline {
 }
 
 /// The user-visible name of a baseline.
+///
+/// # Benchmark Summary
+///
+/// This struct is not part of the recent summary anymore.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct BaselineName(pub String);
 
 /// A `BenchmarkSummary` which contains all collected data of a single benchmark run
@@ -252,7 +264,6 @@ pub struct Diffs {
 
 /// All flamegraph outputs recorded for a benchmark and their totals.
 #[derive(Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct FlamegraphSummaries {
     /// The `FlamegraphSummary`s
     pub summaries: Vec<FlamegraphSummary>,
@@ -350,9 +361,8 @@ pub struct ProfileTotal {
 }
 
 /// Contains all [`Profile`]s with the data for each [`ValgrindTool`] run
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
-#[derive(Default)]
 pub struct Profiles(pub Vec<Profile>);
 
 /// Describes where Gungraun wrote the summary file and in which format.

@@ -63,8 +63,11 @@ pub enum MetricKind {
 }
 
 /// An insertion-ordered mapping from metric identifier to [`Metric`].
+///
+/// # Benchmark Summary
+///
+/// This struct is not part of the recent summary anymore.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct Metrics<K: Hash + Eq>(pub IndexMap<K, Metric>);
 
 /// Comparison data for one metric in a parsed summary.
