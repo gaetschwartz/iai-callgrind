@@ -64,8 +64,8 @@ impl Assert {
 
     /// Asserts that `assert` returns true and panics if it returns false
     ///
-    /// `assert` takes the deserialized json from the`summary.json` as input and returns a boolean.
-    /// The input is the [`gungraun_runner::runner::summary::BenchmarkSummary`] struct.
+    /// `assert` takes the deserialized json from the `summary.json` as input and returns a boolean.
+    /// The input is the [`gungraun_runner::summary::model::BenchmarkSummary`] struct.
     ///
     /// # Errors
     ///

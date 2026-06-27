@@ -1,7 +1,7 @@
-//! Summary data model types serialized to and from Gungraun summary JSON.
+//! Summary data model types deserialized from Gungraun summary JSON.
 //!
-//! These types define schema version 6 and are re-exported by `gungraun-summary::v6` for consumers
-//! that want direct access to the parsed summary model.
+//! These types represent the consumer-facing structure of a parsed summary file
+//! and are re-exported by `gungraun-summary::v6`.
 
 use std::path::PathBuf;
 
@@ -13,11 +13,10 @@ use serde::{Deserialize, Serialize};
 use crate::api::{CachegrindMetric, DhatMetric, ErrorMetric, EventKind, ValgrindTool};
 use crate::metrics::model::{Metric, MetricKind, Metrics, MetricsSummary};
 
-/// The version of the summary json schema
+/// The version string stored in version 6 summary JSON files.
 pub const SCHEMA_VERSION: &str = "6";
 
-// FIX: Improve documentation of exported structs, ...
-/// The `BaselineKind` describing the baseline
+/// Describes which baseline a summary compares against.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub enum BaselineKind {
@@ -27,7 +26,7 @@ pub enum BaselineKind {
     Name(BaselineName),
 }
 
-/// The `BenchmarkKind`, differentiating between library and binary benchmarks
+/// Identifies whether a summary describes a library or binary benchmark.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub enum BenchmarkKind {
@@ -37,7 +36,7 @@ pub enum BenchmarkKind {
     BinaryBenchmark,
 }
 
-/// The format (json, ...) in which the summary file should be saved or printed
+/// Identifies the format of a summary file written by Gungraun.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(clap::ValueEnum))]
@@ -48,26 +47,71 @@ pub enum SummaryFormat {
     PrettyJson,
 }
 
-/// The `ToolMetricSummary` contains the `MetricsSummary` distinguished by tool and metric kinds
+/// A [`ValgrindTool`] metric data summary.
+///
+/// Each variant contains all metric data including the differences to the old or a
+/// [`BenchmarkSummary::baselines`] run for a single [`ValgrindTool`]. The contained
+/// [`MetricsSummary`] is keyed by the metric enum used by that tool.
+///
+/// The [`ToolMetricSummary::ErrorTool`] variant is used by Memcheck, Helgrind and DRD. Massif and
+/// BBV are special cases because they do not have a metrics summary and therefore use the
+/// [`ToolMetricSummary::None`] variant.
+///
+/// # Examples
+///
+/// This is the summary of a Callgrind run which had only [`EventKind::Ir`] (instruction counts)
+/// measurement activated. Since there is a [`Diffs`] present, there was an old run and a new run
+/// which were compared with each other. Per convention the new run is on the left side of an
+/// [`EitherOrBoth::Both`] or [`EitherOrBoth::Left`] and the old run on the right side or a
+/// [`EitherOrBoth::Right`].
+///
+/// ```rust
+/// use either_or_both::EitherOrBoth;
+/// use gungraun_runner::api::EventKind;
+/// use gungraun_runner::metrics::model::{Metric, MetricsDiff, MetricsSummary};
+/// use gungraun_runner::summary::model::{Diffs, ToolMetricSummary};
+/// use indexmap::IndexMap;
+///
+/// let callgrind_summary = ToolMetricSummary::Callgrind(MetricsSummary(IndexMap::from([(
+///     EventKind::Ir,
+///     MetricsDiff {
+///         diffs: Some(Diffs {
+///             diff_pct: -50.0,
+///             factor: -2.0,
+///         }),
+///         metrics: EitherOrBoth::Both(Metric::Int(1), Metric::Int(2)),
+///     },
+/// )])));
+///
+/// match callgrind_summary {
+///     ToolMetricSummary::Callgrind(metrics) => {
+///         assert!(metrics.0.contains_key(&EventKind::Ir));
+///     }
+///     _ => {}
+/// }
+/// ```
+///
+/// [`ValgrindTool`]: crate::api::ValgrindTool
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub enum ToolMetricSummary {
     /// If there are no metrics extracted (currently Massif, BBV)
     #[default]
     None,
-    /// The error summary of tools which reports errors (Memcheck, Helgrind, DRD)
+    /// The summary of tools which report errors (Memcheck, Helgrind, DRD) ([`ErrorMetric`])
     ErrorTool(MetricsSummary<ErrorMetric>),
-    /// The dhat summary
+    /// The metric summary of [`DhatMetric`]s
     Dhat(MetricsSummary<DhatMetric>),
-    /// The Callgrind summary
+    /// The Callgrind summary of [`EventKind`]
     Callgrind(MetricsSummary<EventKind>),
-    /// The Cachegrind summary
+    /// The summary of [`CachegrindMetric`]s
     Cachegrind(MetricsSummary<CachegrindMetric>),
 }
 
-/// The metrics distinguished per tool class
+/// A per-tool collection of raw metric values.
 ///
-/// The tool classes are: DHAT, error metrics from Memcheck, DRD, Helgrind and Callgrind
+/// This enum is used where the summary needs to store metrics keyed by the tool that produced them,
+/// without comparison metadata.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub enum ToolMetrics {
@@ -84,17 +128,20 @@ pub enum ToolMetrics {
     Cachegrind(Metrics<CachegrindMetric>),
 }
 
-/// A detected performance regression depending on the limit either `Soft` or `Hard`
+/// A regression detected while evaluating a [`BenchmarkSummary`].
+///
+/// Soft regressions compare a new value against an older measurement using a percentage threshold.
+/// Hard regressions compare a new value against an absolute limit.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub enum ToolRegression {
     /// A performance regression triggered by a soft limit
     Soft {
-        /// The metric kind per tool
+        /// The [`MetricKind`] per tool
         metric: MetricKind,
-        /// The value of the new benchmark run
+        /// The [`Metric`] value of the new benchmark run
         new: Metric,
-        /// The value of the old benchmark run
+        /// The [`Metric`] value of the old benchmark run
         old: Metric,
         /// The difference between new and old in percent. Serialized as string to preserve
         /// infinity values and avoid null in json.
@@ -109,20 +156,18 @@ pub enum ToolRegression {
     },
     /// A performance regression triggered by a hard limit
     Hard {
-        /// The metric kind per tool
+        /// The [`MetricKind`] per tool
         metric: MetricKind,
-        /// The value of the benchmark run
+        /// The [`Metric`] value of the benchmark run
         new: Metric,
-        /// The difference between new and the limit
+        /// The difference between new and the limit as [`Metric`]
         diff: Metric,
-        /// The limit
+        /// The limit as [`Metric`]
         limit: Metric,
     },
 }
 
-/// A `Baseline` depending on the [`BaselineKind`] which points to the corresponding path
-///
-/// This baseline is used for comparisons with the new output of valgrind tools.
+/// A baseline file used when comparing a new benchmark result with older data.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct Baseline {
@@ -132,25 +177,33 @@ pub struct Baseline {
     pub path: PathBuf,
 }
 
-/// The name of the baseline
+/// The user-visible name of a baseline.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct BaselineName(pub String);
 
-/// The `BenchmarkSummary` containing all the information of a single benchmark run
+/// A `BenchmarkSummary` which contains all collected data of a single benchmark run
 ///
-/// This includes produced files, recorded callgrind events, performance regressions ...
+/// This is the top-level type most consumers work with after deserializing a Gungraun summary file.
+/// Its fields describe the benchmark run itself, while `profiles` contains the collected metric
+/// data, differences, and any `ToolRegression` values.
+///
+/// The `module_path` together with the `id` can serve as a unique identifier of a benchmark run. If
+/// the `id` is not present then the unique identifier is just the `module_path`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct BenchmarkSummary {
-    /// The baselines if any. An absent first baseline indicates that new output was produced. An
-    /// absent second baseline indicates the usage of the usual "*.old" output.
+    /// The baselines if any.
+    ///
+    /// An absent first baseline indicates that new output was produced. An absent second baseline
+    /// indicates the usage of the usual "*.old" output.
     pub baselines: (Option<String>, Option<String>),
-    /// The path to the binary which is executed by valgrind. In case of a library benchmark this
-    /// is the compiled benchmark file. In case of a binary benchmark this is the path to the
-    /// command.
+    /// The path to the binary which is executed by Gungraun and in turn Valgrind.
+    ///
+    /// In case of a library benchmark this is the compiled benchmark file. In case of a binary
+    /// benchmark this is the path to the executable.
     pub benchmark_exe: PathBuf,
-    /// The path to the benchmark file
+    /// The path to the file containing this benchmark
     pub benchmark_file: PathBuf,
     /// More details describing this benchmark run
     pub details: Option<String>,
@@ -164,18 +217,24 @@ pub struct BenchmarkSummary {
     pub module_path: String,
     /// The directory of the package
     pub package_dir: PathBuf,
-    /// The summary of other valgrind tool runs
+    /// This is the container with all the benchmark data (metrics, differences, comparisons, ...)
+    ///
+    /// If there were no errors during the benchmark run, there is at least one [`Profile`]
+    /// present.
     pub profiles: Profiles,
     /// The project's root directory
     pub project_root: PathBuf,
     /// The destination and kind of the summary file
     pub summary_output: Option<SummaryOutput>,
-    /// The version of this format. Only backwards incompatible changes cause an increase of the
-    /// version
+    /// The version string of this format.
+    ///
+    /// This is not semver and only major version numbers are used. There might be text occurrences
+    /// of `v6` within this library documentation but v6 is stored as raw number `6` without the
+    /// `v` prefix. Only backwards incompatible changes cause an increase of the version
     pub version: String,
 }
 
-/// The differences between two `Metrics` as percentage and factor
+/// Percentage and factor differences derived from two compared metric values.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct Diffs {
@@ -185,13 +244,13 @@ pub struct Diffs {
     #[cfg_attr(feature = "summary", schemars(with = "String"))]
     pub diff_pct: f64,
     /// The factor of the difference between two `Metrics` serialized as string to preserve
-    /// infinity values and void `null` in json
+    /// infinity values and avoid `null` in json
     #[serde(with = "crate::serde::float_64")]
     #[cfg_attr(feature = "summary", schemars(with = "String"))]
     pub factor: f64,
 }
 
-/// All callgrind flamegraph summaries and their totals
+/// All flamegraph outputs recorded for a benchmark and their totals.
 #[derive(Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct FlamegraphSummaries {
@@ -201,11 +260,9 @@ pub struct FlamegraphSummaries {
     pub totals: Vec<FlamegraphSummary>,
 }
 
-/// The callgrind `FlamegraphSummary` records all created paths for an [`EventKind`] specific
-/// flamegraph
+/// File paths for one flamegraph associated with a specific [`EventKind`].
 ///
-/// Either the `regular_path`, `old_path` or the `diff_path` are present. Never can all of them be
-/// absent.
+/// At least one of `regular_path`, `base_path`, or `diff_path` is present.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct FlamegraphSummary {
@@ -219,7 +276,7 @@ pub struct FlamegraphSummary {
     pub regular_path: Option<PathBuf>,
 }
 
-/// The `ToolSummary` containing all information about a valgrind tool run
+/// `Profile` data for one [`ValgrindTool`] recorded in a benchmark summary.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct Profile {
@@ -230,16 +287,16 @@ pub struct Profile {
     /// The paths to the `*.out` files. Not all tools produce an output in addition to the log
     /// files
     pub out_paths: Vec<PathBuf>,
-    /// The metrics and details about the tool run
+    /// The data with the metrics and details about the tool run
     pub summaries: ProfileData,
     /// The Valgrind tool like `DHAT`, `Memcheck` etc.
     pub tool: ValgrindTool,
 }
 
-/// The `ToolRun` contains all information about a single tool run with possibly multiple segments
+/// All [`ProfilePart`]-level and [`ProfileTotal`] data of a single tool run.
 ///
-/// The total is always present and summarizes all tool run segments. In the special case of a
-/// single tool run segment, the total equals the metrics of this segment.
+/// The [`ProfileTotal`] is always present and summarizes all [`ProfilePart`]s. If the tool produced
+/// only one part, the total matches that part's metrics.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct ProfileData {
@@ -249,56 +306,56 @@ pub struct ProfileData {
     pub total: ProfileTotal,
 }
 
-/// Some additional and necessary information about the tool run segment
+/// Metadata describing a single [`ProfilePart`] of a benchmark
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct ProfileInfo {
-    /// The executed command extracted from Valgrind output
+    /// The executed command
     pub command: String,
     /// More details for example from the logging output of the tool run
     pub details: Option<String>,
-    /// The parent pid of this process
+    /// The parent pid of this process if present
     pub parent_pid: Option<i32>,
-    /// The part of this tool run (only callgrind)
+    /// The part number of this tool run if present (only Callgrind)
     pub part: Option<u64>,
-    /// The path to the file from the tool run
+    /// The path to the output file containing the data of the tool run
     pub path: PathBuf,
-    /// The pid of this process
+    /// The pid of the benchmark process
     pub pid: i32,
-    /// The thread of this tool run (only callgrind)
+    /// The thread number of this tool run if present (only Callgrind)
     pub thread: Option<usize>,
 }
 
-/// A single segment of a tool run and if present the comparison with the "old" segment
+/// A single part of a tool run with the collected metric data
 ///
-/// A tool run can produce multiple segments, for example for each process and subprocess with
-/// (--trace-children).
+/// A tool run can produce multiple parts, for example one per process when child tracing is
+/// enabled.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct ProfilePart {
-    /// Details like command, pid, ppid, thread number etc. (see [`ProfileInfo`])
+    /// [`ProfileInfo`] like command, pid, ppid, thread number etc.
     pub details: EitherOrBoth<ProfileInfo>,
-    /// The [`ToolMetricSummary`]
+    /// The [`ToolMetricSummary`] containing the actual data
     pub metrics_summary: ToolMetricSummary,
 }
 
-/// The total metrics over all [`ProfilePart`]s and if detected any [`ToolRegression`]
+/// Aggregated metrics, differences and regressions over all parts of a tool run.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct ProfileTotal {
     /// The detected regressions if any
     pub regressions: Vec<ToolRegression>,
-    /// The summary of metrics of the tool
+    /// The [`ToolMetricSummary`] of the tool containing the collected metric data
     pub summary: ToolMetricSummary,
 }
 
-/// The collection of all generated [`Profile`]s
+/// Contains all [`Profile`]s with the data for each [`ValgrindTool`] run
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 #[derive(Default)]
 pub struct Profiles(pub Vec<Profile>);
 
-/// Manage the summary output file with this `SummaryOutput`
+/// Describes where Gungraun wrote the summary file and in which format.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct SummaryOutput {

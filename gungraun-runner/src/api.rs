@@ -126,11 +126,10 @@ use crate::metrics::logic::TypeChecker;
 #[cfg(feature = "runner")]
 use crate::util;
 
-/// All metrics which cachegrind produces and additionally some derived events
+/// Identifiers for Cachegrind metrics that can appear in a parsed summary.
 ///
-/// Depending on the options passed to Cachegrind, these are the events that Cachegrind can produce.
-/// See the [Cachegrind
-/// documentation](https://valgrind.org/docs/manual/cg-manual.html#cg-manual.cgopts) for details.
+/// This enum covers both raw Cachegrind events and Gungraun-derived values
+/// such as hit rates and estimated cycles.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(EnumIter))]
@@ -154,14 +153,34 @@ pub enum CachegrindMetric {
     /// LL cache data write misses (--cache-sim=yes)
     DLmw,
     /// I1 cache miss rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     I1MissRate,
     /// LL/L2 instructions cache miss rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     LLiMissRate,
     /// D1 cache miss rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     D1MissRate,
     /// LL/L2 data cache miss rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     LLdMissRate,
     /// LL/L2 cache miss rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     LLMissRate,
     /// Derived event showing the L1 hits (--cache-sim=yes)
     L1hits,
@@ -170,10 +189,22 @@ pub enum CachegrindMetric {
     /// Derived event showing the RAM hits (--cache-sim=yes)
     RamHits,
     /// L1 cache hit rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     L1HitRate,
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     /// LL/L2 cache hit rate (--cache-sim=yes)
     LLHitRate,
     /// RAM hit rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     RamHitRate,
     /// Derived event showing the total amount of cache reads and writes (--cache-sim=yes)
     TotalRW,
@@ -630,7 +661,7 @@ pub enum DelayKind {
     PathExists(PathBuf),
 }
 
-/// The metrics collected by DHAT
+/// Identifiers for DHAT metrics that can appear in a parsed summary.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(EnumIter))]
@@ -756,11 +787,9 @@ pub enum EntryPoint {
     Custom(String),
 }
 
-/// The error metrics from a tool which reports errors
+/// Identifiers for the error counts reported by error-detecting Valgrind tools.
 ///
-/// The tools which report only errors are `helgrind`, `drd` and `memcheck`. The order in which the
-/// variants are defined in this enum determines the order of the metrics in the benchmark terminal
-/// output.
+/// These values appear in parsed summaries for `Memcheck`, `Helgrind`, and `DRD`.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(EnumIter))]
@@ -775,11 +804,10 @@ pub enum ErrorMetric {
     SuppressedContexts,
 }
 
-/// All `EventKind`s callgrind produces and additionally some derived events
+/// Identifiers for Callgrind events that can appear in a parsed summary.
 ///
-/// Depending on the options passed to Callgrind, these are the events that Callgrind can produce.
-/// See the [Callgrind
-/// documentation](https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options) for details.
+/// This enum includes both raw Callgrind events and Gungraun-derived values such as hit rates and
+/// aggregate counts.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize, PartialOrd, Ord)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(EnumIter))]
@@ -802,15 +830,35 @@ pub enum EventKind {
     DLmr,
     /// LL cache data write misses (--cache-sim=yes)
     DLmw,
-    /// I1 cache miss rate (--cache-sim=yes)
+    /// I1 cache miss rate (--cache-sim=yes).
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     I1MissRate,
     /// LL/L2 instructions cache miss rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     LLiMissRate,
     /// D1 cache miss rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     D1MissRate,
     /// LL/L2 data cache miss rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     LLdMissRate,
     /// LL/L2 cache miss rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     LLMissRate,
     /// Derived event showing the L1 hits (--cache-sim=yes)
     L1hits,
@@ -819,10 +867,22 @@ pub enum EventKind {
     /// Derived event showing the RAM hits (--cache-sim=yes)
     RamHits,
     /// L1 cache hit rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     L1HitRate,
     /// LL/L2 cache hit rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     LLHitRate,
     /// RAM hit rate (--cache-sim=yes)
+    #[cfg_attr(
+        any(feature = "runner", feature = "summary"),
+        doc = "A [`Metric::Float`][crate::metrics::model::Metric]"
+    )]
     RamHitRate,
     /// Derived event showing the total amount of cache reads and writes (--cache-sim=yes)
     TotalRW,
@@ -1033,10 +1093,7 @@ pub enum ToolRegressionConfig {
     None,
 }
 
-/// The valgrind tools which can be run
-///
-/// Note the default changes from `Callgrind` to `Cachegrind` if the `cachegrind` feature is
-/// selected.
+/// The Valgrind tools which can be run in a benchmark
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub enum ValgrindTool {

@@ -1,4 +1,7 @@
-//! Metric value and diff types used in serialized Gungraun summaries.
+//! Metric value and comparison types used inside parsed Gungraun summaries.
+//!
+//! These types describe raw metric values, per-metric diffs, and grouped metric summaries that
+//! appear throughout the version 6 summary model.
 
 use std::cmp::Ordering;
 use std::hash::Hash;
@@ -12,12 +15,14 @@ use serde::{Deserialize, Serialize};
 use crate::api::{CachegrindMetric, DhatMetric, ErrorMetric, EventKind};
 use crate::summary::model::Diffs;
 
-/// The metric measured by valgrind or derived from one or more other metrics
+/// The value type used for metrics measured by a benchmark tool
 ///
-/// The valgrind metrics measured by any of its tools are `u64`. However, to be able to represent
-/// derived metrics like cache miss/hit rates it is inevitable to have a type which can store a
-/// `u64` or a `f64`. When doing math with metrics, the original type should be preserved as far as
-/// possible by using `u64` operations. A float metric should be a last resort.
+/// Raw metrics emitted by Valgrind tools are [`Metric::Int`] which is the default metric type.
+/// Metrics that have [`Metric::Float`] type are documented as such. Derived values, such as miss
+/// rates and hit rates, require floating-point representation. `Metric` preserves both forms in the
+/// parsed summary model.
+///
+/// # Developer Notes
 ///
 /// Float operations with a `Metric` that stores a `u64` introduce a precision loss and are to be
 /// avoided. Especially comparison between a `u64` metric and `f64` metric are not exact because the
@@ -34,11 +39,14 @@ pub enum Metric {
     Float(f64),
 }
 
-/// The different metrics distinguished by tool and if it is an error checking tool as `ErrorMetric`
+/// Identifies a metric kind by tool
+///
+/// This enum appears in places where a summary needs to describe a metric without separately
+/// carrying the tool family that owns it.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub enum MetricKind {
-    /// The `None` kind if there are no metrics for a tool
+    /// The `None` kind if there are no metrics for a tool (i.e. BBV and Massif)
     None,
     /// The Callgrind metric kind
     Callgrind(EventKind),
@@ -54,28 +62,27 @@ pub enum MetricKind {
     DRD(ErrorMetric),
 }
 
-/// The `Metrics` backed by an [`indexmap::IndexMap`]
-///
-/// The insertion order is preserved.
+/// An insertion-ordered mapping from metric identifier to [`Metric`].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct Metrics<K: Hash + Eq>(pub IndexMap<K, Metric>);
 
-/// The `MetricsDiff` describes the difference between a `new` and `old` metric as percentage and
-/// factor.
+/// Comparison data for one metric in a parsed summary.
 ///
-/// Only if both metrics are present there is also a `Diffs` present. Otherwise, it just stores the
-/// `new` or `old` metric.
+/// If both, old and new values, are present, [`Diffs`] stores the derived percentage and factor.
+/// Otherwise the summary only stores whichever side is available. Per convention, the left side or
+/// [`EitherOrBoth::Left`] stores the new [`Metric`] and the right side or [`EitherOrBoth::Right`]
+/// stores the old metric.
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct MetricsDiff {
-    /// If both metrics are present there is also a `Diffs` present
+    /// If both metrics ([`EitherOrBoth::Both`]) are present there is also a `Diffs` present
     pub diffs: Option<Diffs>,
-    /// Either the `new`, `old` or both metrics
+    /// Either the `new` ([`EitherOrBoth::Left`]), `old` ([`EitherOrBoth::Right`]) or both metrics
     pub metrics: EitherOrBoth<Metric>,
 }
 
-/// The `MetricsSummary` contains all differences between two tool run segments
+/// An insertion-ordered mapping from metric identifier to [`MetricsDiff`].
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct MetricsSummary<K: Hash + Eq = EventKind>(pub IndexMap<K, MetricsDiff>);

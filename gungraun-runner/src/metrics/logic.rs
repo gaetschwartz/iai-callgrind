@@ -22,6 +22,8 @@ pub trait Summarize: Hash + Eq + Clone {
 }
 
 /// Trait for checking the [`Metric`] type of a metric kind (like [`api::EventKind`])
+///
+/// [`api::EventKind`]: crate::api::EventKind
 pub trait TypeChecker {
     /// Returns `true` if the metric kind is a [`Metric::Float`].
     fn is_float(&self) -> bool;
