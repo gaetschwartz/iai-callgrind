@@ -14,7 +14,7 @@ Security in case of vulnerabilities.
 
 All notable changes to this project will be documented in this file.
 
-This is the combined CHANGELOG for all packages: `gungraun`, `gungraun-runner`
+This is the combined CHANGELOG for the packages: `gungraun`, `gungraun-runner`
 and `gungraun-macros`. `gungraun` and `gungraun-runner` use the same version
 which is the version used here. `gungraun-macros` uses a different version
 number but is not a standalone package, so its changes are also listed here.
@@ -26,6 +26,9 @@ were renamed from `iai-callgrind` to `gungraun`, `iai-callgrind-runner` to
 The `valgrind-requests` package was extracted from the `gungraun` package and is
 now an independent package with an own
 [CHANGELOG](./valgrind-requests/CHANGELOG.md) file.
+
+With the release of `0.19.3`, the `gungraun-summary` package was created as a
+separate package with an own [CHANGELOG](/gungraun-summary/CHANGELOG.md).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to
