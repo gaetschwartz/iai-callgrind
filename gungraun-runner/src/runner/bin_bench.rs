@@ -25,7 +25,6 @@ use log::{debug, warn};
 
 use super::format::{BinaryBenchmarkHeader, ListFormat, OutputFormat};
 use super::meta::Metadata;
-use super::summary::{BaselineKind, BaselineName, BenchmarkKind, BenchmarkSummary, SummaryOutput};
 use super::tool::config::ToolConfigs;
 use super::tool::path::{ToolOutputPath, ToolOutputPathKind};
 use super::tool::run::RunOptions;
@@ -38,6 +37,9 @@ use crate::runner::common::{
     Assistant, AssistantKind, BaselineAndSaveDataProcessor, BaselineDataProcessor, Baselines,
     BenchmarkDataProcessor, BenchmarkSummaries, CapturedOutput, Config, Groups,
     LoadBaselineDataProcessor, ModulePath, Runner, SaveBaselineDataProcessor,
+};
+use crate::summary::model::{
+    BaselineKind, BaselineName, BenchmarkKind, BenchmarkSummary, SummaryOutput,
 };
 
 #[derive(Debug)]

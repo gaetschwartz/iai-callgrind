@@ -16,7 +16,7 @@ use tempfile::{Builder, TempDir};
 use crate::api::ValgrindTool;
 use crate::runner::callgrind;
 use crate::runner::common::ModulePath;
-use crate::runner::summary::{BaselineKind, BaselineName};
+use crate::summary::model::{BaselineKind, BaselineName};
 use crate::util::truncate_str_utf8;
 
 // This regex matches the original file name without the prefix as it is created by callgrind.

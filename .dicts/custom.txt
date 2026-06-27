@@ -345,3 +345,4 @@ xchgq
 xleak
 xtleak
 xtree
+schemagen

@@ -20,9 +20,9 @@ use crate::runner::callgrind::flamegraph::Config as FlamegraphConfig;
 use crate::runner::common::{Analyzer, CapturedOutput, Config, ModulePath, Sandbox};
 use crate::runner::format::OutputFormat;
 use crate::runner::meta::Metadata;
-use crate::runner::summary::BenchmarkSummary;
 use crate::runner::tasks::ProcessHandler;
 use crate::runner::{DEFAULT_TOGGLE, cachegrind, callgrind};
+use crate::summary::model::BenchmarkSummary;
 
 /// The tool specific flamegraph configuration
 #[derive(Debug, Clone, PartialEq)]

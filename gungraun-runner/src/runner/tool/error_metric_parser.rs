@@ -13,8 +13,8 @@ use super::logfile_parser::{EMPTY_LINE_RE, EXTRACT_FIELDS_RE, STRIP_PREFIX_RE, p
 use super::parser::{Parser, ParserOutput};
 use super::path::ToolOutputPath;
 use crate::api::ErrorMetric;
-use crate::runner::metrics::Metrics;
-use crate::runner::summary::ToolMetrics;
+use crate::metrics::model::Metrics;
+use crate::summary::model::ToolMetrics;
 
 static EXTRACT_ERROR_SUMMARY_RE: LazyLock<Regex> = LazyLock::new(|| {
     regex::Regex::new(

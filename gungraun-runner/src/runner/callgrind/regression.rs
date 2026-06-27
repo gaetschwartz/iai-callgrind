@@ -2,9 +2,9 @@
 use indexmap::{IndexMap, IndexSet};
 
 use crate::api::{self, EventKind};
-use crate::runner::metrics::{Metric, MetricKind, MetricsSummary};
-use crate::runner::summary::ToolRegression;
+use crate::metrics::model::{Metric, MetricKind, MetricsSummary};
 use crate::runner::tool::regression::RegressionConfig;
+use crate::summary::model::ToolRegression;
 
 /// The callgrind regression check configuration
 #[derive(Debug, Clone, PartialEq)]
@@ -103,8 +103,9 @@ mod tests {
 
     use super::*;
     use crate::api::{CallgrindMetrics, Limit};
+    use crate::metrics::logic::TypeChecker;
+    use crate::metrics::model::Metric;
     use crate::runner::callgrind::model::Metrics;
-    use crate::runner::metrics::{Metric, TypeChecker};
 
     fn cachesim_costs(costs: [u64; 9]) -> Metrics {
         Metrics::with_metric_kinds([

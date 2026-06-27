@@ -10,13 +10,13 @@ use log::debug;
 use regex::Regex;
 
 use crate::api::DhatMetric;
-use crate::runner::metrics::Metrics;
-use crate::runner::summary::ToolMetrics;
+use crate::metrics::model::Metrics;
 use crate::runner::tool::logfile_parser::{
     EMPTY_LINE_RE, EXTRACT_FIELDS_RE, STRIP_PREFIX_RE, parse_header,
 };
 use crate::runner::tool::parser::{Parser, ParserOutput};
 use crate::runner::tool::path::ToolOutputPath;
+use crate::summary::model::ToolMetrics;
 
 // The different regex have to consider --time-stamp=yes
 static METRICS_RE: LazyLock<Regex> = LazyLock::new(|| {

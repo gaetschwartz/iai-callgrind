@@ -5,8 +5,8 @@ use gungraun_runner::api::{EntryPoint, SanitizeOutput, ValgrindTool};
 use gungraun_runner::runner::dhat::json_parser::{JsonParser, parse};
 use gungraun_runner::runner::dhat::model::DhatData;
 use gungraun_runner::runner::dhat::tree::{RootTree, Tree};
-use gungraun_runner::runner::summary::ToolMetrics;
 use gungraun_runner::runner::tool::parser::Parser;
+use gungraun_runner::summary::model::ToolMetrics;
 use pretty_assertions::assert_eq;
 use tempfile::{TempDir, tempdir};
 

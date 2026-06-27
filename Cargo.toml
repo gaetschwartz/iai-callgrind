@@ -4,10 +4,10 @@ members = [
   "gungraun",
   "gungraun-runner",
   "gungraun-macros",
+  "gungraun-summary",
   "valgrind-requests",
   "benchmark-tests",
   "client-request-tests",
-  "schema-gen",
 ]
 resolver = "3"
 
@@ -19,7 +19,7 @@ keywords = ["performance", "benchmark", "profiling", "valgrind", "callgrind"]
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/gungraun/gungraun"
 rust-version = "1.85.1"
-version = "0.19.2"
+version = "0.19.3"
 
 [workspace.dependencies]
 anyhow = { version = "1.0.46" }
@@ -76,6 +76,7 @@ simplematch = "0.3"
 strum = { version = "0.28" }
 syn = { version = "2.0.87", features = ["full", "extra-traits"] }
 tempfile = { version = "3.10.0" }
+thiserror = { version = "2.0.3" }
 trybuild = "1.0.18"
 valico = { version = "4" }
 version-compare = { version = "0.2" }

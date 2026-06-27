@@ -210,7 +210,9 @@ build-hack *args: (build-hack-runner args) (build-hack-valgrind-requests args)
 [group('build')]
 build-hack-runner *args:
     cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features \
-        --exclude-features api build {{ args }}
+        --exclude-features api,schema,summary build {{ args }}
+    cargo hack --package gungraun-runner --feature-powerset \
+        --include-features api,schema,summary build --lib {{ args }}
 
 # A thorough build of the valgrind-requests package (Uses: 'cargo-hack')
 [group('build')]
@@ -229,7 +231,7 @@ build-tests-hack *args: (build-tests-hack-runner args) (build-tests-hack-valgrin
 [group('build')]
 build-tests-hack-runner *args:
     cargo hack --package gungraun-runner --feature-powerset --exclude-no-default-features \
-        --exclude-features api test --no-run {{ args }}
+        --exclude-features api,schema,summary test --no-run {{ args }}
 
 # A build of the tests in the valgrind-requests package with `cargo hack` (Uses: 'cargo-hack')
 [group('build')]
@@ -246,19 +248,20 @@ clean:
 # Run the json summary schema generator and format the resulting file (Uses: 'cargo', 'prettier' or 'npx prettier')
 [group('summary schema')]
 schema-gen:
-    cargo run --package schema-gen --release
+    cargo run --package gungraun-summary --release --features schema \
+        --bin gungraun-summary-schemagen
     {{ prettier_bin }} --write {{ schema_path }}
 
 # Run the json summary schema generator and diff the generated file with the latest schema file (Uses: 'diff', 'find', 'coreutils')
 [group('summary schema')]
 schema-gen-diff: schema-gen
-    diff {{ schema_path }} `find gungraun-runner/schemas -iname 'summary.*.schema.json' | sort -n \
+    diff {{ schema_path }} `find gungraun-summary/schemas -iname 'summary.*.schema.json' | sort -n \
         | tail -n 1` && rm {{ schema_path }}
 
 # Run the json summary schema generator and replace the old schema file (Uses: 'coreutils')
 [group('summary schema')]
 schema-gen-move: schema-gen
-    mv {{ schema_path }} `ls -1 gungraun-runner/schemas/summary.*.schema.json | sort -n | tail -n 1`
+    mv {{ schema_path }} `ls -1 gungraun-summary/schemas/summary.*.schema.json | sort -n | tail -n 1`
 
 # Run all tests in a package. (Uses: 'cargo')
 [group('test')]

@@ -32,7 +32,7 @@ const TEMPLATE_CONTENT: &str = r#"fn main() {
     panic!("should be replaced by a rendered template");
 }
 "#;
-const SCHEMA_PATH: &str = "gungraun-runner/schemas";
+const SCHEMA_PATH: &str = "gungraun-summary/schemas";
 const SCHEMA_VERSION: &str = "6";
 const CONTINUE_FILE_NAME: &str = "benchmark-tests.continue";
 const CARGO_LLVM_COV: &str = "CARGO_LLVM_COV";

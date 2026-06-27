@@ -23,7 +23,6 @@ use tempfile::{TempDir, tempfile};
 
 use super::format::{OutputFormatKind, SummaryFormatter};
 use super::meta::Metadata;
-use super::summary::{BenchmarkSummary, SummaryOutput};
 use crate::api::{
     self, BinaryBenchmarkGroups, EntryPoint, LibraryBenchmarkGroups, Pipe, ValgrindTool,
 };
@@ -39,12 +38,14 @@ use crate::runner::format::{
     self, BinaryBenchmarkHeader, Header, LibraryBenchmarkHeader, ListFormat, OutputFormat,
 };
 use crate::runner::lib_bench::{self, LibBench};
-use crate::runner::summary::{FlamegraphSummary, Profile, ProfileData};
 use crate::runner::tasks::ThreadPool;
 use crate::runner::tool::config::ToolFlamegraphConfig;
 use crate::runner::tool::parser::{Parser, ParserOutput};
 use crate::runner::tool::path::{ToolOutputPath, ToolOutputPathKind};
 use crate::runner::tool::regression::ToolRegressionConfig;
+use crate::summary::model::{
+    BenchmarkSummary, FlamegraphSummary, Profile, ProfileData, SummaryOutput,
+};
 use crate::util::{copy_directory, make_absolute};
 
 /// Analyzer tuple containing parser, output path, regression config, flamegraph config, and entry

@@ -8,8 +8,8 @@ use polonius_the_crab::{ForLt, PoloniusResult, polonius};
 
 use super::model::{Accesses, DhatData, DhatMetadata, Frame, Mode, ProgramPoint};
 use crate::api::DhatMetric;
-use crate::runner::metrics::Metrics;
-use crate::runner::summary::ToolMetrics;
+use crate::metrics::model::Metrics;
+use crate::summary::model::ToolMetrics;
 
 /// The [`Data`] of each [`Node`]
 #[derive(Debug, Default, Clone, PartialEq, Eq)]

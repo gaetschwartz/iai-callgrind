@@ -5,11 +5,12 @@ use anyhow::Result;
 use indexmap::indexmap;
 
 use crate::api::CachegrindMetric;
+use crate::metrics::logic::Summarize;
+use crate::metrics::model::Metric;
 use crate::runner::callgrind::{CacheSummary, CyclesEstimator};
-use crate::runner::metrics::{Metric, Summarize};
 
 /// The Cachegrind-specific `Metrics`
-pub type Metrics = crate::runner::metrics::Metrics<CachegrindMetric>;
+pub type Metrics = crate::metrics::model::Metrics<CachegrindMetric>;
 
 impl TryFrom<&Metrics> for CacheSummary {
     type Error = anyhow::Error;

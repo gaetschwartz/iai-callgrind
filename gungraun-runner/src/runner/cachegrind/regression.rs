@@ -2,9 +2,9 @@
 use indexmap::{IndexMap, IndexSet};
 
 use crate::api::{self, CachegrindMetric};
-use crate::runner::metrics::{Metric, MetricKind, MetricsSummary};
-use crate::runner::summary::ToolRegression;
+use crate::metrics::model::{Metric, MetricKind, MetricsSummary};
 use crate::runner::tool::regression::RegressionConfig;
+use crate::summary::model::ToolRegression;
 
 /// The callgrind regression check configuration
 #[derive(Debug, Clone, PartialEq)]

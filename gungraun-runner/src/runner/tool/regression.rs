@@ -5,11 +5,12 @@ use std::hash::Hash;
 use either_or_both::EitherOrBoth;
 
 use crate::api;
+use crate::metrics::logic::Summarize;
+use crate::metrics::model::{Metric, MetricsSummary};
 use crate::runner::cachegrind::regression::CachegrindRegressionConfig;
 use crate::runner::callgrind::regression::CallgrindRegressionConfig;
 use crate::runner::dhat::regression::DhatRegressionConfig;
-use crate::runner::metrics::{Metric, MetricsSummary, Summarize};
-use crate::runner::summary::{ProfileTotal, ToolMetricSummary, ToolRegression};
+use crate::summary::model::{ProfileTotal, ToolMetricSummary, ToolRegression};
 
 /// A short-lived utility enum used to hold the raw regressions until they can be transformed into a
 /// real [`ToolRegression`]

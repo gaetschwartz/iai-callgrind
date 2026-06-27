@@ -10,8 +10,8 @@ pub mod regression;
 pub mod summary_parser;
 
 use self::model::Metrics;
-use super::metrics::Metric;
 use crate::api::EventKind;
+use crate::metrics::model::Metric;
 
 /// The derived metrics of the cache metrics
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -169,7 +169,7 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
-    use crate::runner::metrics::Metric;
+    use crate::metrics::model::Metric;
 
     #[rstest]
     #[case::zero([0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [

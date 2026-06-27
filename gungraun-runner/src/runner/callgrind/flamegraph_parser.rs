@@ -9,7 +9,7 @@ use log::debug;
 use super::hashmap_parser::{CallgrindMap, HashMapParser, SourcePath};
 use super::parser::{CallgrindParser, CallgrindProperties, Sentinel};
 use crate::api::EventKind;
-use crate::runner::metrics::Metric;
+use crate::metrics::model::Metric;
 
 /// The `FlamegraphMap` based on a [`CallgrindMap`]
 #[derive(Debug, Clone, Default, PartialEq, Eq)]

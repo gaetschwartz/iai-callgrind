@@ -39,14 +39,15 @@ use super::cachegrind::regression::CachegrindRegressionConfig;
 use super::callgrind::regression::CallgrindRegressionConfig;
 use super::dhat::regression::DhatRegressionConfig;
 use super::format::{ListFormat, OutputFormatKind};
-use super::metrics::{Metric, TypeChecker};
-use super::summary::{BaselineName, SummaryFormat};
 use super::tool::regression::ToolRegressionConfig;
 use crate::api::{
     CachegrindMetric, CachegrindMetrics, CallgrindMetrics, DhatMetric, DhatMetrics, ErrorMetric,
     EventKind, RawToolArgs, ValgrindTool,
 };
+use crate::metrics::logic::TypeChecker;
+use crate::metrics::model::Metric;
 use crate::runner::common::CapturedOutput;
+use crate::summary::model::{BaselineName, SummaryFormat};
 use crate::util;
 
 const DOWILD_OPTIONS: Options<u8> = Options::new().enable_escape(true).enable_classes(true);
