@@ -42,7 +42,7 @@ publish = false
 my_lib = { path = ".." }
 
 [dev-dependencies]
-gungraun = "0.19.2"
+gungraun = "0.19.3"
 
 # Assuming there is a gungraun benchmark in `benchmarks/benches/gungraun.rs`
 [[bench]]
