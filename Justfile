@@ -246,7 +246,8 @@ clean:
 # Run the json summary schema generator and format the resulting file (Uses: 'cargo', 'prettier' or 'npx prettier')
 [group('summary schema')]
 schema-gen:
-    cargo run --package schema-gen --release
+    cargo run --package gungraun-summary --release --features schema \
+        --bin gungraun-summary-schemagen
     {{ prettier_bin }} --write {{ schema_path }}
 
 # Run the json summary schema generator and diff the generated file with the latest schema file (Uses: 'diff', 'find', 'coreutils')

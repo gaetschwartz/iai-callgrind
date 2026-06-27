@@ -891,6 +891,7 @@ dependencies = [
  "either-or-both",
  "gungraun-runner",
  "indexmap",
+ "schemars",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
@@ -1780,15 +1781,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc984f4f9ceb736a7bb755c3e3bd17dc56370af2600c9780dcc48c66453da34d"
 dependencies = [
  "regex",
-]
-
-[[package]]
-name = "schema-gen"
-version = "0.19.3"
-dependencies = [
- "gungraun-runner",
- "schemars",
- "serde_json",
 ]
 
 [[package]]

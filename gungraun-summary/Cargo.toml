@@ -16,15 +16,24 @@ consistent benchmarking framework/harness for Rust.
 """
 readme = "README.md"
 
+[features]
+schema = ["gungraun-runner/schema", "dep:schemars"]
+
 [dependencies]
 either-or-both = { workspace = true }
 gungraun-runner = { path = "../gungraun-runner", version = ">=0.19.3", default-features = false, features = [
   "summary",
 ] }
 indexmap = { workspace = true }
+schemars = { workspace = true, optional = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+
+[[bin]]
+name = "gungraun-summary-schemagen"
+path = "src/main.rs"
+required-features = ["schema"]
 
 [package.metadata.docs.rs]
 all-features = true

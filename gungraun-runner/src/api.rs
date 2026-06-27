@@ -111,7 +111,7 @@ use anyhow::anyhow;
 use indexmap::IndexSet;
 #[cfg(feature = "runner")]
 use indexmap::indexset;
-#[cfg(feature = "summary")]
+#[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "runner")]
@@ -131,7 +131,7 @@ use crate::util;
 /// This enum covers both raw Cachegrind events and Gungraun-derived values
 /// such as hit rates and estimated cycles.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(EnumIter))]
 pub enum CachegrindMetric {
     /// The default event. I cache reads (which equals the number of instructions executed)
@@ -663,7 +663,7 @@ pub enum DelayKind {
 
 /// Identifiers for DHAT metrics that can appear in a parsed summary.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(EnumIter))]
 pub enum DhatMetric {
     /// In ad-hoc mode, Total units measured over the entire execution
@@ -791,7 +791,7 @@ pub enum EntryPoint {
 ///
 /// These values appear in parsed summaries for `Memcheck`, `Helgrind`, and `DRD`.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(EnumIter))]
 pub enum ErrorMetric {
     /// The amount of detected unsuppressed errors
@@ -809,7 +809,7 @@ pub enum ErrorMetric {
 /// This enum includes both raw Callgrind events and Gungraun-derived values such as hit rates and
 /// aggregate counts.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize, PartialOrd, Ord)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(EnumIter))]
 pub enum EventKind {
     /// The default event. I cache reads (which equals the number of instructions executed)
@@ -1095,7 +1095,7 @@ pub enum ToolRegressionConfig {
 
 /// The Valgrind tools which can be run in a benchmark
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum ValgrindTool {
     /// Callgrind: a call-graph generating cache and branch prediction profiler
     /// <https://valgrind.org/docs/manual/cl-manual.html>

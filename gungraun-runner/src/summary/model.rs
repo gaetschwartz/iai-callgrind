@@ -6,7 +6,7 @@
 use std::path::PathBuf;
 
 use either_or_both::EitherOrBoth;
-#[cfg(feature = "summary")]
+#[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -31,7 +31,7 @@ pub enum BaselineKind {
 
 /// Identifies whether a summary describes a library or binary benchmark.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum BenchmarkKind {
     /// A library benchmark
     LibraryBenchmark,
@@ -41,7 +41,7 @@ pub enum BenchmarkKind {
 
 /// Identifies the format of a summary file written by Gungraun.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "runner", derive(clap::ValueEnum))]
 pub enum SummaryFormat {
     /// The format in a space optimal json representation without newlines
@@ -96,7 +96,7 @@ pub enum SummaryFormat {
 ///
 /// [`ValgrindTool`]: crate::api::ValgrindTool
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum ToolMetricSummary {
     /// If there are no metrics extracted (currently Massif, BBV)
     #[default]
@@ -139,7 +139,7 @@ pub enum ToolMetrics {
 /// Soft regressions compare a new value against an older measurement using a percentage threshold.
 /// Hard regressions compare a new value against an absolute limit.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum ToolRegression {
     /// A performance regression triggered by a soft limit
     Soft {
@@ -152,12 +152,12 @@ pub enum ToolRegression {
         /// The difference between new and old in percent. Serialized as string to preserve
         /// infinity values and avoid null in json.
         #[serde(with = "crate::serde::float_64")]
-        #[cfg_attr(feature = "summary", schemars(with = "String"))]
+        #[cfg_attr(feature = "schema", schemars(with = "String"))]
         diff_pct: f64,
         /// The value of the limit which was exceeded to cause a performance regression. Serialized
         /// as string to preserve infinity values and avoid null in json.
         #[serde(with = "crate::serde::float_64")]
-        #[cfg_attr(feature = "summary", schemars(with = "String"))]
+        #[cfg_attr(feature = "schema", schemars(with = "String"))]
         limit: f64,
     },
     /// A performance regression triggered by a hard limit
@@ -203,7 +203,7 @@ pub struct BaselineName(pub String);
 /// The `module_path` together with the `id` can serve as a unique identifier of a benchmark run. If
 /// the `id` is not present then the unique identifier is just the `module_path`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct BenchmarkSummary {
     /// The baselines if any.
     ///
@@ -248,17 +248,17 @@ pub struct BenchmarkSummary {
 
 /// Percentage and factor differences derived from two compared metric values.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct Diffs {
     /// The percentage of the difference between two `Metrics` serialized as string to preserve
     /// infinity values and avoid `null` in json
     #[serde(with = "crate::serde::float_64")]
-    #[cfg_attr(feature = "summary", schemars(with = "String"))]
+    #[cfg_attr(feature = "schema", schemars(with = "String"))]
     pub diff_pct: f64,
     /// The factor of the difference between two `Metrics` serialized as string to preserve
     /// infinity values and avoid `null` in json
     #[serde(with = "crate::serde::float_64")]
-    #[cfg_attr(feature = "summary", schemars(with = "String"))]
+    #[cfg_attr(feature = "schema", schemars(with = "String"))]
     pub factor: f64,
 }
 
@@ -275,7 +275,7 @@ pub struct FlamegraphSummaries {
 ///
 /// At least one of `regular_path`, `base_path`, or `diff_path` is present.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct FlamegraphSummary {
     /// If present, the path to the file of the old regular (non-differential) flamegraph
     pub base_path: Option<PathBuf>,
@@ -289,7 +289,7 @@ pub struct FlamegraphSummary {
 
 /// `Profile` data for one [`ValgrindTool`] recorded in a benchmark summary.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct Profile {
     /// Details and information about the created flamegraphs if any
     pub flamegraphs: Vec<FlamegraphSummary>,
@@ -309,7 +309,7 @@ pub struct Profile {
 /// The [`ProfileTotal`] is always present and summarizes all [`ProfilePart`]s. If the tool produced
 /// only one part, the total matches that part's metrics.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct ProfileData {
     /// All [`ProfilePart`]s
     pub parts: Vec<ProfilePart>,
@@ -319,7 +319,7 @@ pub struct ProfileData {
 
 /// Metadata describing a single [`ProfilePart`] of a benchmark
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct ProfileInfo {
     /// The executed command
     pub command: String,
@@ -342,7 +342,7 @@ pub struct ProfileInfo {
 /// A tool run can produce multiple parts, for example one per process when child tracing is
 /// enabled.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct ProfilePart {
     /// [`ProfileInfo`] like command, pid, ppid, thread number etc.
     pub details: EitherOrBoth<ProfileInfo>,
@@ -352,7 +352,7 @@ pub struct ProfilePart {
 
 /// Aggregated metrics, differences and regressions over all parts of a tool run.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct ProfileTotal {
     /// The detected regressions if any
     pub regressions: Vec<ToolRegression>,
@@ -362,12 +362,12 @@ pub struct ProfileTotal {
 
 /// Contains all [`Profile`]s with the data for each [`ValgrindTool`] run
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct Profiles(pub Vec<Profile>);
 
 /// Describes where Gungraun wrote the summary file and in which format.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct SummaryOutput {
     /// The [`SummaryFormat`]
     pub format: SummaryFormat,

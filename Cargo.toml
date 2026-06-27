@@ -8,7 +8,6 @@ members = [
   "valgrind-requests",
   "benchmark-tests",
   "client-request-tests",
-  "schema-gen",
 ]
 resolver = "3"
 

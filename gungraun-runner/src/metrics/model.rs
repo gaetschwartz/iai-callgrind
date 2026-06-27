@@ -8,7 +8,7 @@ use std::hash::Hash;
 
 use either_or_both::EitherOrBoth;
 use indexmap::IndexMap;
-#[cfg(feature = "summary")]
+#[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -31,7 +31,7 @@ use crate::summary::model::Diffs;
 /// and the original type (instead of for example adding the two `u64` by converting both of them to
 /// `f64`).
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum Metric {
     /// An integer `Metric`
     Int(u64),
@@ -44,7 +44,7 @@ pub enum Metric {
 /// This enum appears in places where a summary needs to describe a metric without separately
 /// carrying the tool family that owns it.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum MetricKind {
     /// The `None` kind if there are no metrics for a tool (i.e. BBV and Massif)
     None,
@@ -77,7 +77,7 @@ pub struct Metrics<K: Hash + Eq>(pub IndexMap<K, Metric>);
 /// [`EitherOrBoth::Left`] stores the new [`Metric`] and the right side or [`EitherOrBoth::Right`]
 /// stores the old metric.
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct MetricsDiff {
     /// If both metrics ([`EitherOrBoth::Both`]) are present there is also a `Diffs` present
     pub diffs: Option<Diffs>,
@@ -87,7 +87,7 @@ pub struct MetricsDiff {
 
 /// An insertion-ordered mapping from metric identifier to [`MetricsDiff`].
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
-#[cfg_attr(feature = "summary", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct MetricsSummary<K: Hash + Eq = EventKind>(pub IndexMap<K, MetricsDiff>);
 
 impl Eq for Metric {}

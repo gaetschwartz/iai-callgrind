@@ -1,10 +1,7 @@
 //! A utility binary to create the json schema for the summary.json file
-//!
-//! This binary is not considered a part of the published `gungraun-runner` package and is only
-//! used during the development of `gungraun`.
 use std::fs::File;
 
-use gungraun_runner::summary::model::BenchmarkSummary;
+use gungraun_summary::v6::BenchmarkSummary;
 use schemars::generate::SchemaSettings;
 
 fn main() {
