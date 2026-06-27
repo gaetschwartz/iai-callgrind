@@ -28,7 +28,7 @@ now an independent package with an own
 [CHANGELOG](./valgrind-requests/CHANGELOG.md) file.
 
 With the release of `0.19.3`, the `gungraun-summary` package was created as a
-separate package with an own [CHANGELOG](/gungraun-summary/CHANGELOG.md).
+separate package with an own [CHANGELOG](./gungraun-summary/CHANGELOG.md).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to

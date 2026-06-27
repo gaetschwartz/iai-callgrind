@@ -17,11 +17,6 @@ search = 'path = "../gungraun-runner", version = "={current_version}"'
 replace = 'path = "../gungraun-runner", version = "={new_version}"'
 
 [[tool.bumpversion.files]]
-filename = "schema-gen/Cargo.toml"
-search = 'path = "../gungraun-runner", version = "={current_version}"'
-replace = 'path = "../gungraun-runner", version = "={new_version}"'
-
-[[tool.bumpversion.files]]
 filename = "gungraun/src/__internal/mod.rs"
 search = "const LIBRARY_VERSION: &str = \"{current_version}\""
 replace = "const LIBRARY_VERSION: &str = \"{new_version}\""
