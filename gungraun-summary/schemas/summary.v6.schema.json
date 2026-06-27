@@ -1,11 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "BenchmarkSummary",
-  "description": "The `BenchmarkSummary` containing all the information of a single benchmark run\n\nThis includes produced files, recorded callgrind events, performance regressions ...",
+  "description": "A `BenchmarkSummary` which contains all collected data of a single benchmark run\n\nThis is the top-level type most consumers work with after deserializing a Gungraun summary file.\nIts fields describe the benchmark run itself, while `profiles` contains the collected metric\ndata, differences, and any `ToolRegression` values.\n\nThe `module_path` together with the `id` can serve as a unique identifier of a benchmark run. If\nthe `id` is not present then the unique identifier is just the `module_path`.",
   "type": "object",
   "properties": {
     "baselines": {
-      "description": "The baselines if any. An absent first baseline indicates that new output was produced. An\nabsent second baseline indicates the usage of the usual \"*.old\" output.",
+      "description": "The baselines if any.\n\nAn absent first baseline indicates that new output was produced. An absent second baseline\nindicates the usage of the usual \"*.old\" output.",
       "type": "array",
       "items": [
         {
@@ -19,11 +19,11 @@
       "minItems": 2
     },
     "benchmark_exe": {
-      "description": "The path to the binary which is executed by valgrind. In case of a library benchmark this\nis the compiled benchmark file. In case of a binary benchmark this is the path to the\ncommand.",
+      "description": "The path to the binary which is executed by Gungraun and in turn Valgrind.\n\nIn case of a library benchmark this is the compiled benchmark file. In case of a binary\nbenchmark this is the path to the executable.",
       "type": "string"
     },
     "benchmark_file": {
-      "description": "The path to the benchmark file",
+      "description": "The path to the file containing this benchmark",
       "type": "string"
     },
     "details": {
@@ -55,7 +55,7 @@
       "type": "string"
     },
     "profiles": {
-      "description": "The summary of other valgrind tool runs",
+      "description": "This is the container with all the benchmark data (metrics, differences, comparisons, ...)\n\nIf there were no errors during the benchmark run, there is at least one [`Profile`]\npresent.",
       "allOf": [
         {
           "$ref": "#/definitions/Profiles"
@@ -78,7 +78,7 @@
       ]
     },
     "version": {
-      "description": "The version of this format. Only backwards incompatible changes cause an increase of the\nversion",
+      "description": "The version string of this format.\n\nThis is not semver and only major version numbers are used. There might be text occurrences\nof `v6` within this library documentation but v6 is stored as raw number `6` without the\n`v` prefix. Only backwards incompatible changes cause an increase of the version",
       "type": "string"
     }
   },
@@ -96,7 +96,7 @@
   ],
   "definitions": {
     "BenchmarkKind": {
-      "description": "The `BenchmarkKind`, differentiating between library and binary benchmarks",
+      "description": "Identifies whether a summary describes a library or binary benchmark.",
       "oneOf": [
         {
           "description": "A library benchmark",
@@ -111,7 +111,7 @@
       ]
     },
     "CachegrindMetric": {
-      "description": "All metrics which cachegrind produces and additionally some derived events\n\nDepending on the options passed to Cachegrind, these are the events that Cachegrind can produce.\nSee the [Cachegrind\ndocumentation](https://valgrind.org/docs/manual/cg-manual.html#cg-manual.cgopts) for details.",
+      "description": "Identifiers for Cachegrind metrics that can appear in a parsed summary.\n\nThis enum covers both raw Cachegrind events and Gungraun-derived values\nsuch as hit rates and estimated cycles.",
       "oneOf": [
         {
           "description": "The default event. I cache reads (which equals the number of instructions executed)",
@@ -159,27 +159,27 @@
           "const": "DLmw"
         },
         {
-          "description": "I1 cache miss rate (--cache-sim=yes)",
+          "description": "I1 cache miss rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "I1MissRate"
         },
         {
-          "description": "LL/L2 instructions cache miss rate (--cache-sim=yes)",
+          "description": "LL/L2 instructions cache miss rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "LLiMissRate"
         },
         {
-          "description": "D1 cache miss rate (--cache-sim=yes)",
+          "description": "D1 cache miss rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "D1MissRate"
         },
         {
-          "description": "LL/L2 data cache miss rate (--cache-sim=yes)",
+          "description": "LL/L2 data cache miss rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "LLdMissRate"
         },
         {
-          "description": "LL/L2 cache miss rate (--cache-sim=yes)",
+          "description": "LL/L2 cache miss rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "LLMissRate"
         },
@@ -199,17 +199,17 @@
           "const": "RamHits"
         },
         {
-          "description": "L1 cache hit rate (--cache-sim=yes)",
+          "description": "L1 cache hit rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "L1HitRate"
         },
         {
-          "description": "LL/L2 cache hit rate (--cache-sim=yes)",
+          "description": "A [`Metric::Float`][crate::metrics::model::Metric]\nLL/L2 cache hit rate (--cache-sim=yes)",
           "type": "string",
           "const": "LLHitRate"
         },
         {
-          "description": "RAM hit rate (--cache-sim=yes)",
+          "description": "RAM hit rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "RamHitRate"
         },
@@ -246,7 +246,7 @@
       ]
     },
     "DhatMetric": {
-      "description": "The metrics collected by DHAT",
+      "description": "Identifiers for DHAT metrics that can appear in a parsed summary.",
       "oneOf": [
         {
           "description": "In ad-hoc mode, Total units measured over the entire execution",
@@ -316,7 +316,7 @@
       ]
     },
     "Diffs": {
-      "description": "The differences between two `Metrics` as percentage and factor",
+      "description": "Percentage and factor differences derived from two compared metric values.",
       "type": "object",
       "properties": {
         "diff_pct": {
@@ -324,7 +324,7 @@
           "type": "string"
         },
         "factor": {
-          "description": "The factor of the difference between two `Metrics` serialized as string to preserve\ninfinity values and void `null` in json",
+          "description": "The factor of the difference between two `Metrics` serialized as string to preserve\ninfinity values and avoid `null` in json",
           "type": "string"
         }
       },
@@ -427,7 +427,7 @@
       ]
     },
     "ErrorMetric": {
-      "description": "The error metrics from a tool which reports errors\n\nThe tools which report only errors are `helgrind`, `drd` and `memcheck`. The order in which the\nvariants are defined in this enum determines the order of the metrics in the benchmark terminal\noutput.",
+      "description": "Identifiers for the error counts reported by error-detecting Valgrind tools.\n\nThese values appear in parsed summaries for `Memcheck`, `Helgrind`, and `DRD`.",
       "oneOf": [
         {
           "description": "The amount of detected unsuppressed errors",
@@ -452,7 +452,7 @@
       ]
     },
     "EventKind": {
-      "description": "All `EventKind`s callgrind produces and additionally some derived events\n\nDepending on the options passed to Callgrind, these are the events that Callgrind can produce.\nSee the [Callgrind\ndocumentation](https://valgrind.org/docs/manual/cl-manual.html#cl-manual.options) for details.",
+      "description": "Identifiers for Callgrind events that can appear in a parsed summary.\n\nThis enum includes both raw Callgrind events and Gungraun-derived values such as hit rates and\naggregate counts.",
       "oneOf": [
         {
           "description": "The default event. I cache reads (which equals the number of instructions executed)",
@@ -500,27 +500,27 @@
           "const": "DLmw"
         },
         {
-          "description": "I1 cache miss rate (--cache-sim=yes)",
+          "description": "I1 cache miss rate (--cache-sim=yes).\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "I1MissRate"
         },
         {
-          "description": "LL/L2 instructions cache miss rate (--cache-sim=yes)",
+          "description": "LL/L2 instructions cache miss rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "LLiMissRate"
         },
         {
-          "description": "D1 cache miss rate (--cache-sim=yes)",
+          "description": "D1 cache miss rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "D1MissRate"
         },
         {
-          "description": "LL/L2 data cache miss rate (--cache-sim=yes)",
+          "description": "LL/L2 data cache miss rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "LLdMissRate"
         },
         {
-          "description": "LL/L2 cache miss rate (--cache-sim=yes)",
+          "description": "LL/L2 cache miss rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "LLMissRate"
         },
@@ -540,17 +540,17 @@
           "const": "RamHits"
         },
         {
-          "description": "L1 cache hit rate (--cache-sim=yes)",
+          "description": "L1 cache hit rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "L1HitRate"
         },
         {
-          "description": "LL/L2 cache hit rate (--cache-sim=yes)",
+          "description": "LL/L2 cache hit rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "LLHitRate"
         },
         {
-          "description": "RAM hit rate (--cache-sim=yes)",
+          "description": "RAM hit rate (--cache-sim=yes)\nA [`Metric::Float`][crate::metrics::model::Metric]",
           "type": "string",
           "const": "RamHitRate"
         },
@@ -642,7 +642,7 @@
       ]
     },
     "FlamegraphSummary": {
-      "description": "The callgrind `FlamegraphSummary` records all created paths for an [`EventKind`] specific\nflamegraph\n\nEither the `regular_path`, `old_path` or the `diff_path` are present. Never can all of them be\nabsent.",
+      "description": "File paths for one flamegraph associated with a specific [`EventKind`].\n\nAt least one of `regular_path`, `base_path`, or `diff_path` is present.",
       "type": "object",
       "properties": {
         "base_path": {
@@ -669,7 +669,7 @@
       "required": ["event_kind"]
     },
     "Metric": {
-      "description": "The metric measured by valgrind or derived from one or more other metrics\n\nThe valgrind metrics measured by any of its tools are `u64`. However, to be able to represent\nderived metrics like cache miss/hit rates it is inevitable to have a type which can store a\n`u64` or a `f64`. When doing math with metrics, the original type should be preserved as far as\npossible by using `u64` operations. A float metric should be a last resort.\n\nFloat operations with a `Metric` that stores a `u64` introduce a precision loss and are to be\navoided. Especially comparison between a `u64` metric and `f64` metric are not exact because the\n`u64` has to be converted to a `f64`. Also, if adding/multiplying two `u64` metrics would result\nin an overflow the metric saturates at `u64::MAX`. This choice was made to preserve precision\nand the original type (instead of for example adding the two `u64` by converting both of them to\n`f64`).",
+      "description": "The value type used for metrics measured by a benchmark tool\n\nRaw metrics emitted by Valgrind tools are [`Metric::Int`] which is the default metric type.\nMetrics that have [`Metric::Float`] type are documented as such. Derived values, such as miss\nrates and hit rates, require floating-point representation. `Metric` preserves both forms in the\nparsed summary model.\n\n# Developer Notes\n\nFloat operations with a `Metric` that stores a `u64` introduce a precision loss and are to be\navoided. Especially comparison between a `u64` metric and `f64` metric are not exact because the\n`u64` has to be converted to a `f64`. Also, if adding/multiplying two `u64` metrics would result\nin an overflow the metric saturates at `u64::MAX`. This choice was made to preserve precision\nand the original type (instead of for example adding the two `u64` by converting both of them to\n`f64`).",
       "oneOf": [
         {
           "description": "An integer `Metric`",
@@ -699,10 +699,10 @@
       ]
     },
     "MetricKind": {
-      "description": "The different metrics distinguished by tool and if it is an error checking tool as `ErrorMetric`",
+      "description": "Identifies a metric kind by tool\n\nThis enum appears in places where a summary needs to describe a metric without separately\ncarrying the tool family that owns it.",
       "oneOf": [
         {
-          "description": "The `None` kind if there are no metrics for a tool",
+          "description": "The `None` kind if there are no metrics for a tool (i.e. BBV and Massif)",
           "type": "string",
           "const": "None"
         },
@@ -775,11 +775,11 @@
       ]
     },
     "MetricsDiff": {
-      "description": "The `MetricsDiff` describes the difference between a `new` and `old` metric as percentage and\nfactor.\n\nOnly if both metrics are present there is also a `Diffs` present. Otherwise, it just stores the\n`new` or `old` metric.",
+      "description": "Comparison data for one metric in a parsed summary.\n\nIf both, old and new values, are present, [`Diffs`] stores the derived percentage and factor.\nOtherwise the summary only stores whichever side is available. Per convention, the left side or\n[`EitherOrBoth::Left`] stores the new [`Metric`] and the right side or [`EitherOrBoth::Right`]\nstores the old metric.",
       "type": "object",
       "properties": {
         "diffs": {
-          "description": "If both metrics are present there is also a `Diffs` present",
+          "description": "If both metrics ([`EitherOrBoth::Both`]) are present there is also a `Diffs` present",
           "anyOf": [
             {
               "$ref": "#/definitions/Diffs"
@@ -790,7 +790,7 @@
           ]
         },
         "metrics": {
-          "description": "Either the `new`, `old` or both metrics",
+          "description": "Either the `new` ([`EitherOrBoth::Left`]), `old` ([`EitherOrBoth::Right`]) or both metrics",
           "allOf": [
             {
               "$ref": "#/definitions/EitherOrBoth2"
@@ -801,35 +801,35 @@
       "required": ["metrics"]
     },
     "MetricsSummary": {
-      "description": "The `MetricsSummary` contains all differences between two tool run segments",
+      "description": "An insertion-ordered mapping from metric identifier to [`MetricsDiff`].",
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/MetricsDiff"
       }
     },
     "MetricsSummary2": {
-      "description": "The `MetricsSummary` contains all differences between two tool run segments",
+      "description": "An insertion-ordered mapping from metric identifier to [`MetricsDiff`].",
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/MetricsDiff"
       }
     },
     "MetricsSummary3": {
-      "description": "The `MetricsSummary` contains all differences between two tool run segments",
+      "description": "An insertion-ordered mapping from metric identifier to [`MetricsDiff`].",
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/MetricsDiff"
       }
     },
     "MetricsSummary4": {
-      "description": "The `MetricsSummary` contains all differences between two tool run segments",
+      "description": "An insertion-ordered mapping from metric identifier to [`MetricsDiff`].",
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/MetricsDiff"
       }
     },
     "Profile": {
-      "description": "The `ToolSummary` containing all information about a valgrind tool run",
+      "description": "`Profile` data for one [`ValgrindTool`] recorded in a benchmark summary.",
       "type": "object",
       "properties": {
         "flamegraphs": {
@@ -854,7 +854,7 @@
           }
         },
         "summaries": {
-          "description": "The metrics and details about the tool run",
+          "description": "The data with the metrics and details about the tool run",
           "allOf": [
             {
               "$ref": "#/definitions/ProfileData"
@@ -873,7 +873,7 @@
       "required": ["flamegraphs", "log_paths", "out_paths", "summaries", "tool"]
     },
     "ProfileData": {
-      "description": "The `ToolRun` contains all information about a single tool run with possibly multiple segments\n\nThe total is always present and summarizes all tool run segments. In the special case of a\nsingle tool run segment, the total equals the metrics of this segment.",
+      "description": "All [`ProfilePart`]-level and [`ProfileTotal`] data of a single tool run.\n\nThe [`ProfileTotal`] is always present and summarizes all [`ProfilePart`]s. If the tool produced\nonly one part, the total matches that part's metrics.",
       "type": "object",
       "properties": {
         "parts": {
@@ -895,11 +895,11 @@
       "required": ["parts", "total"]
     },
     "ProfileInfo": {
-      "description": "Some additional and necessary information about the tool run segment",
+      "description": "Metadata describing a single [`ProfilePart`] of a benchmark",
       "type": "object",
       "properties": {
         "command": {
-          "description": "The executed command extracted from Valgrind output",
+          "description": "The executed command",
           "type": "string"
         },
         "details": {
@@ -907,27 +907,27 @@
           "type": ["string", "null"]
         },
         "parent_pid": {
-          "description": "The parent pid of this process",
+          "description": "The parent pid of this process if present",
           "type": ["integer", "null"],
           "format": "int32"
         },
         "part": {
-          "description": "The part of this tool run (only callgrind)",
+          "description": "The part number of this tool run if present (only Callgrind)",
           "type": ["integer", "null"],
           "format": "uint64",
           "minimum": 0
         },
         "path": {
-          "description": "The path to the file from the tool run",
+          "description": "The path to the output file containing the data of the tool run",
           "type": "string"
         },
         "pid": {
-          "description": "The pid of this process",
+          "description": "The pid of the benchmark process",
           "type": "integer",
           "format": "int32"
         },
         "thread": {
-          "description": "The thread of this tool run (only callgrind)",
+          "description": "The thread number of this tool run if present (only Callgrind)",
           "type": ["integer", "null"],
           "format": "uint",
           "minimum": 0
@@ -936,11 +936,11 @@
       "required": ["command", "path", "pid"]
     },
     "ProfilePart": {
-      "description": "A single segment of a tool run and if present the comparison with the \"old\" segment\n\nA tool run can produce multiple segments, for example for each process and subprocess with\n(--trace-children).",
+      "description": "A single part of a tool run with the collected metric data\n\nA tool run can produce multiple parts, for example one per process when child tracing is\nenabled.",
       "type": "object",
       "properties": {
         "details": {
-          "description": "Details like command, pid, ppid, thread number etc. (see [`ProfileInfo`])",
+          "description": "[`ProfileInfo`] like command, pid, ppid, thread number etc.",
           "allOf": [
             {
               "$ref": "#/definitions/EitherOrBoth"
@@ -948,7 +948,7 @@
           ]
         },
         "metrics_summary": {
-          "description": "The [`ToolMetricSummary`]",
+          "description": "The [`ToolMetricSummary`] containing the actual data",
           "allOf": [
             {
               "$ref": "#/definitions/ToolMetricSummary"
@@ -959,7 +959,7 @@
       "required": ["details", "metrics_summary"]
     },
     "ProfileTotal": {
-      "description": "The total metrics over all [`ProfilePart`]s and if detected any [`ToolRegression`]",
+      "description": "Aggregated metrics, differences and regressions over all parts of a tool run.",
       "type": "object",
       "properties": {
         "regressions": {
@@ -970,7 +970,7 @@
           }
         },
         "summary": {
-          "description": "The summary of metrics of the tool",
+          "description": "The [`ToolMetricSummary`] of the tool containing the collected metric data",
           "allOf": [
             {
               "$ref": "#/definitions/ToolMetricSummary"
@@ -981,14 +981,14 @@
       "required": ["regressions", "summary"]
     },
     "Profiles": {
-      "description": "The collection of all generated [`Profile`]s",
+      "description": "Contains all [`Profile`]s with the data for each [`ValgrindTool`] run",
       "type": "array",
       "items": {
         "$ref": "#/definitions/Profile"
       }
     },
     "SummaryFormat": {
-      "description": "The format (json, ...) in which the summary file should be saved or printed",
+      "description": "Identifies the format of a summary file written by Gungraun.",
       "oneOf": [
         {
           "description": "The format in a space optimal json representation without newlines",
@@ -1003,7 +1003,7 @@
       ]
     },
     "SummaryOutput": {
-      "description": "Manage the summary output file with this `SummaryOutput`",
+      "description": "Describes where Gungraun wrote the summary file and in which format.",
       "type": "object",
       "properties": {
         "format": {
@@ -1022,7 +1022,7 @@
       "required": ["format", "path"]
     },
     "ToolMetricSummary": {
-      "description": "The `ToolMetricSummary` contains the `MetricsSummary` distinguished by tool and metric kinds",
+      "description": "A [`ValgrindTool`] metric data summary.\n\nEach variant contains all metric data including the differences to the old or a\n[`BenchmarkSummary::baselines`] run for a single [`ValgrindTool`]. The contained\n[`MetricsSummary`] is keyed by the metric enum used by that tool.\n\nThe [`ToolMetricSummary::ErrorTool`] variant is used by Memcheck, Helgrind and DRD. Massif and\nBBV are special cases because they do not have a metrics summary and therefore use the\n[`ToolMetricSummary::None`] variant.\n\n# Examples\n\nThis is the summary of a Callgrind run which had only [`EventKind::Ir`] (instruction counts)\nmeasurement activated. Since there is a [`Diffs`] present, there was an old run and a new run\nwhich were compared with each other. Per convention the new run is on the left side of an\n[`EitherOrBoth::Both`] or [`EitherOrBoth::Left`] and the old run on the right side or a\n[`EitherOrBoth::Right`].\n\n```rust\nuse either_or_both::EitherOrBoth;\nuse gungraun_runner::api::EventKind;\nuse gungraun_runner::metrics::model::{Metric, MetricsDiff, MetricsSummary};\nuse gungraun_runner::summary::model::{Diffs, ToolMetricSummary};\nuse indexmap::IndexMap;\n\nlet callgrind_summary = ToolMetricSummary::Callgrind(MetricsSummary(IndexMap::from([(\n    EventKind::Ir,\n    MetricsDiff {\n        diffs: Some(Diffs {\n            diff_pct: -50.0,\n            factor: -2.0,\n        }),\n        metrics: EitherOrBoth::Both(Metric::Int(1), Metric::Int(2)),\n    },\n)])));\n\nmatch callgrind_summary {\n    ToolMetricSummary::Callgrind(metrics) => {\n        assert!(metrics.0.contains_key(&EventKind::Ir));\n    }\n    _ => {}\n}\n```\n\n[`ValgrindTool`]: crate::api::ValgrindTool",
       "oneOf": [
         {
           "description": "If there are no metrics extracted (currently Massif, BBV)",
@@ -1030,7 +1030,7 @@
           "const": "None"
         },
         {
-          "description": "The error summary of tools which reports errors (Memcheck, Helgrind, DRD)",
+          "description": "The summary of tools which report errors (Memcheck, Helgrind, DRD) ([`ErrorMetric`])",
           "type": "object",
           "properties": {
             "ErrorTool": {
@@ -1041,7 +1041,7 @@
           "required": ["ErrorTool"]
         },
         {
-          "description": "The dhat summary",
+          "description": "The metric summary of [`DhatMetric`]s",
           "type": "object",
           "properties": {
             "Dhat": {
@@ -1052,7 +1052,7 @@
           "required": ["Dhat"]
         },
         {
-          "description": "The Callgrind summary",
+          "description": "The Callgrind summary of [`EventKind`]",
           "type": "object",
           "properties": {
             "Callgrind": {
@@ -1063,7 +1063,7 @@
           "required": ["Callgrind"]
         },
         {
-          "description": "The Cachegrind summary",
+          "description": "The summary of [`CachegrindMetric`]s",
           "type": "object",
           "properties": {
             "Cachegrind": {
@@ -1076,7 +1076,7 @@
       ]
     },
     "ToolRegression": {
-      "description": "A detected performance regression depending on the limit either `Soft` or `Hard`",
+      "description": "A regression detected while evaluating a [`BenchmarkSummary`].\n\nSoft regressions compare a new value against an older measurement using a percentage threshold.\nHard regressions compare a new value against an absolute limit.",
       "oneOf": [
         {
           "description": "A performance regression triggered by a soft limit",
@@ -1094,7 +1094,7 @@
                   "type": "string"
                 },
                 "metric": {
-                  "description": "The metric kind per tool",
+                  "description": "The [`MetricKind`] per tool",
                   "allOf": [
                     {
                       "$ref": "#/definitions/MetricKind"
@@ -1102,7 +1102,7 @@
                   ]
                 },
                 "new": {
-                  "description": "The value of the new benchmark run",
+                  "description": "The [`Metric`] value of the new benchmark run",
                   "allOf": [
                     {
                       "$ref": "#/definitions/Metric"
@@ -1110,7 +1110,7 @@
                   ]
                 },
                 "old": {
-                  "description": "The value of the old benchmark run",
+                  "description": "The [`Metric`] value of the old benchmark run",
                   "allOf": [
                     {
                       "$ref": "#/definitions/Metric"
@@ -1132,7 +1132,7 @@
               "type": "object",
               "properties": {
                 "diff": {
-                  "description": "The difference between new and the limit",
+                  "description": "The difference between new and the limit as [`Metric`]",
                   "allOf": [
                     {
                       "$ref": "#/definitions/Metric"
@@ -1140,7 +1140,7 @@
                   ]
                 },
                 "limit": {
-                  "description": "The limit",
+                  "description": "The limit as [`Metric`]",
                   "allOf": [
                     {
                       "$ref": "#/definitions/Metric"
@@ -1148,7 +1148,7 @@
                   ]
                 },
                 "metric": {
-                  "description": "The metric kind per tool",
+                  "description": "The [`MetricKind`] per tool",
                   "allOf": [
                     {
                       "$ref": "#/definitions/MetricKind"
@@ -1156,7 +1156,7 @@
                   ]
                 },
                 "new": {
-                  "description": "The value of the benchmark run",
+                  "description": "The [`Metric`] value of the benchmark run",
                   "allOf": [
                     {
                       "$ref": "#/definitions/Metric"
@@ -1173,7 +1173,7 @@
       ]
     },
     "ValgrindTool": {
-      "description": "The valgrind tools which can be run\n\nNote the default changes from `Callgrind` to `Cachegrind` if the `cachegrind` feature is\nselected.",
+      "description": "The Valgrind tools which can be run in a benchmark",
       "oneOf": [
         {
           "description": "Callgrind: a call-graph generating cache and branch prediction profiler\n<https://valgrind.org/docs/manual/cl-manual.html>",
