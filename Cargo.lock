@@ -888,7 +888,9 @@ dependencies = [
 name = "gungraun-summary"
 version = "6.0.0"
 dependencies = [
+ "either-or-both",
  "gungraun-runner",
+ "indexmap",
  "serde",
  "serde_json",
  "thiserror 2.0.18",

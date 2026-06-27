@@ -5,7 +5,6 @@
 
 use std::path::PathBuf;
 
-use derive_more::AsRef;
 use either_or_both::EitherOrBoth;
 #[cfg(feature = "summary")]
 use schemars::JsonSchema;
@@ -17,7 +16,7 @@ use crate::metrics::model::{Metric, MetricKind, Metrics, MetricsSummary};
 /// The version of the summary json schema
 pub const SCHEMA_VERSION: &str = "6";
 
-// TODO: STOPPED HERE improving documentation of exported structs, ...
+// FIX: Improve documentation of exported structs, ...
 /// The `BaselineKind` describing the baseline
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
@@ -251,7 +250,7 @@ pub struct ProfileData {
 }
 
 /// Some additional and necessary information about the tool run segment
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, AsRef)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "summary", derive(JsonSchema))]
 pub struct ProfileInfo {
     /// The executed command extracted from Valgrind output

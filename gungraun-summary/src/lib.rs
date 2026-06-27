@@ -21,6 +21,9 @@
 //! backwards-compatibility. For example gungraun-summary v8.x.x will contain the v6, v7 and v8
 //! modules to be able to deserialize the summary versions 6, 7 and 8.
 //!
+//! Any external types which are needed to work with the data model (like
+//! [`either_or_both::EitherOrBoth`]) are re-exported from this crate's root.
+//!
 //! The minor and patch versions are used to fix and extend the functionality of the crate itself
 //! but not to change the underlying data model.
 //!
@@ -83,3 +86,6 @@
 pub mod error;
 pub mod util;
 pub mod v6;
+
+pub use either_or_both;
+pub use indexmap;

@@ -6,6 +6,10 @@
 use std::fs;
 use std::path::Path;
 
+pub use gungraun_runner::api::{
+    CachegrindMetric, DhatMetric, ErrorMetric, EventKind, ValgrindTool,
+};
+pub use gungraun_runner::metrics::model::*;
 pub use gungraun_runner::summary::model::*;
 
 use crate::error::{Error, Result};

@@ -55,13 +55,7 @@ runner = [
   "dep:which",
   "either-or-both/indexmap",
 ]
-summary = [
-  "api",
-  "dep:derive_more",
-  "dep:schemars",
-  "either-or-both/schema",
-  "indexmap/serde",
-]
+summary = ["api", "dep:schemars", "either-or-both/schema", "indexmap/serde"]
 
 [package.metadata.docs.rs]
 all-features = true
