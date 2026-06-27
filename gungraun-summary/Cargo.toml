@@ -1,18 +1,16 @@
 [package]
 authors = ["gamma0987 <gamma0987@posteo.de>"]
 name = "gungraun-summary"
-# FIX: categories, keywords, version, description
-categories.workspace = true
+categories = ["data-structures", "parser-implementations"]
 edition.workspace = true
 homepage.workspace = true
-keywords.workspace = true
+keywords = ["gungraun", "summary", "json", "serde", "schema"]
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 version = "6.0.0"
 description = """
-Binary package needed by the Gungraun library. A high-precision, one-shot and \
-consistent benchmarking framework/harness for Rust.
+Typed Rust data model and parsing helpers for Gungraun summary JSON files
 """
 readme = "README.md"
 
