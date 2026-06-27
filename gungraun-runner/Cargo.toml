@@ -55,7 +55,7 @@ runner = [
   "dep:which",
   "either-or-both/indexmap",
 ]
-schema = ["api", "dep:schemars", "either-or-both/schema", "indexmap/serde"]
+schema = ["summary", "dep:schemars", "either-or-both/schema"]
 summary = ["api", "indexmap/serde"]
 
 [package.metadata.docs.rs]
