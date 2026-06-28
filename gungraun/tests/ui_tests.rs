@@ -1,6 +1,6 @@
 //! The ui tests
 
-#[cfg(feature = "ui_tests")]
+#[cfg(feature = "__ui_tests")]
 #[test]
 fn ui() {
     use std::path::PathBuf;

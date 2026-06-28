@@ -20,6 +20,7 @@ rust-version.workspace = true
 version.workspace = true
 
 [features]
+__ui_tests = []
 benchmark = [
   "gungraun-runner",
   "dep:bincode-next",
@@ -30,7 +31,6 @@ cachegrind = ["gungraun-macros/cachegrind", "client_requests"]
 client_requests = ["client_requests_defs", "valgrind-requests/act"]
 client_requests_defs = ["valgrind-requests/stubs", "dep:cty"]
 default = ["benchmark"]
-ui_tests = []
 # Looks like a bug to have to create a feature instead of
 # `dep:gungraun-runner` in the benchmark feature directly
 gungraun-runner = ["dep:gungraun-runner"]

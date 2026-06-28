@@ -301,7 +301,7 @@ test-cov-all:
         --all-features --no-fail-fast
     cargo nextest run -p gungraun --no-fail-fast
     RUSTUP_TOOLCHAIN="${toolchain}" cargo test --package gungraun \
-        --test ui_tests --features ui_tests
+        --test ui_tests --features __ui_tests
     cargo run --package benchmark-tests --bin bench --release
 
     cargo llvm-cov report --profile bench --lcov --output-path lcov.bench.info
@@ -326,13 +326,13 @@ test-ui:
     rustup component list --toolchain "${RUSTUP_TOOLCHAIN:-{{ msrv }}}" \
         | grep -q '^\s*rust-src\s*.*installed'
     RUSTUP_TOOLCHAIN="${RUSTUP_TOOLCHAIN:-{{ msrv }}}" cargo test --package gungraun \
-        --test ui_tests --features ui_tests
+        --test ui_tests --features __ui_tests
 
 # Run the UI tests with the MSRV if RUSTUP_TOOLCHAIN is unset and overwrite the error message fixtures (Uses: 'cargo')
 [group('test')]
 test-ui-overwrite:
     RUSTUP_TOOLCHAIN="${RUSTUP_TOOLCHAIN:-{{ msrv }}}" TRYBUILD=overwrite cargo test \
-        --package gungraun --test ui_tests --features ui_tests
+        --package gungraun --test ui_tests --features __ui_tests
 
 # Test all packages. This excludes client request and benchmark tests which need to be run separately (Uses: 'cargo')
 [group('test')]
