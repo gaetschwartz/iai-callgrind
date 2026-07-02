@@ -5,6 +5,8 @@
 
 #![allow(missing_docs)]
 
+pub mod api;
+
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::ffi::OsString;
@@ -17,8 +19,14 @@ use std::time::Duration;
 
 use bon::builder;
 
-use crate::api::{EntryPoint, ExitWith, RawToolArgs, SanitizeOutput, Tools, ValgrindTool};
+use crate::api::{
+    CachegrindMetric, DhatMetric, EntryPoint, ExitWith, RawToolArgs, SanitizeOutput, Tools,
+    ValgrindTool,
+};
+use crate::metrics::model::Metric;
+use crate::runner::cachegrind::regression::CachegrindRegressionConfig;
 use crate::runner::common::{Assistant, AssistantKind, Config, ModulePath};
+use crate::runner::dhat::regression::DhatRegressionConfig;
 use crate::runner::format::OutputFormat;
 use crate::runner::meta::Metadata;
 use crate::runner::tasks::ProcessHandler;
@@ -80,6 +88,32 @@ pub fn command_child_f(exe: &Path, args: Option<&[&str]>, stdout: Option<StdStdi
     command
         .spawn()
         .expect("Spawning the process should succeed.")
+}
+
+#[builder(finish_fn = "fixture")]
+pub fn cachegrind_regression_config_f(
+    soft_limits: Option<Vec<(CachegrindMetric, f64)>>,
+    hard_limits: Option<Vec<(CachegrindMetric, Metric)>>,
+    fail_fast: Option<bool>,
+) -> CachegrindRegressionConfig {
+    CachegrindRegressionConfig {
+        soft_limits: soft_limits.map_or_else(Vec::default, |s| s.into_iter().collect()),
+        hard_limits: hard_limits.map_or_else(Vec::default, |h| h.into_iter().collect()),
+        fail_fast: fail_fast.unwrap_or(false),
+    }
+}
+
+#[builder(finish_fn = "fixture")]
+pub fn dhat_regression_config_f(
+    soft_limits: Option<Vec<(DhatMetric, f64)>>,
+    hard_limits: Option<Vec<(DhatMetric, Metric)>>,
+    fail_fast: Option<bool>,
+) -> DhatRegressionConfig {
+    DhatRegressionConfig {
+        soft_limits: soft_limits.map_or_else(Vec::default, |s| s.into_iter().collect()),
+        hard_limits: hard_limits.map_or_else(Vec::default, |h| h.into_iter().collect()),
+        fail_fast: fail_fast.unwrap_or(false),
+    }
 }
 
 #[builder(finish_fn = "fixture")]

@@ -91,32 +91,27 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
-    use crate::api::CachegrindMetrics;
+    use crate::api::CachegrindMetric::*;
+    use crate::api::{CachegrindMetrics, Limit};
+    use crate::fixtures::api::cachegrind_regression_config_f as api_cachegrind_regression_config_f;
+    use crate::fixtures::cachegrind_regression_config_f;
 
     #[rstest]
-    #[case(
-        api::CachegrindRegressionConfig {
-            soft_limits: Vec::default(),
-            hard_limits: Vec::default(),
-            fail_fast: Some(true),
-        },
-        CachegrindRegressionConfig {
-            soft_limits: Vec::default(),
-            hard_limits: Vec::default(),
-            fail_fast: true,
-        }
+    #[case::fail_fast(
+        api_cachegrind_regression_config_f().fail_fast(true).fixture(),
+        cachegrind_regression_config_f().fail_fast(true).fixture(),
     )]
-    #[case(
-        api::CachegrindRegressionConfig {
-            soft_limits: vec![(CachegrindMetrics::from(CachegrindMetric::Ir), 5f64)],
-            hard_limits: Vec::default(),
-            fail_fast: Some(true),
-        },
-        CachegrindRegressionConfig {
-            soft_limits: vec![(CachegrindMetric::Ir, 5f64)],
-            hard_limits: Vec::default(),
-            fail_fast: true,
-        }
+    #[case::soft_limit(
+        api_cachegrind_regression_config_f()
+            .soft_limits(vec![(CachegrindMetrics::from(Ir), 5f64)])
+            .fixture(),
+        cachegrind_regression_config_f().soft_limits(vec![(Ir, 5f64)]).fixture(),
+    )]
+    #[case::hard_limit(
+        api_cachegrind_regression_config_f()
+            .hard_limits(vec![(CachegrindMetrics::from(Ir), Limit::Int(10))])
+            .fixture(),
+        cachegrind_regression_config_f().hard_limits(vec![(Ir, Metric::Int(10))]).fixture(),
     )]
     fn test_try_from_regression_config(
         #[case] input: api::CachegrindRegressionConfig,

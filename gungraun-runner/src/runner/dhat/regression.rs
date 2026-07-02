@@ -93,34 +93,28 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
-    use crate::api::DhatMetrics;
+    use crate::api::{DhatMetrics, Limit};
+    use crate::fixtures::api::dhat_regression_config_f as api_dhat_regression_config_f;
+    use crate::fixtures::dhat_regression_config_f;
     use crate::metrics::model::Metrics;
     use crate::runner::tool::regression::RegressionMetrics;
 
     #[rstest]
-    #[case(
-        api::DhatRegressionConfig {
-            soft_limits: Vec::default(),
-            hard_limits: Vec::default(),
-            fail_fast: Some(true),
-        },
-        DhatRegressionConfig {
-            soft_limits: Vec::default(),
-            hard_limits: Vec::default(),
-            fail_fast: true,
-        }
+    #[case::fail_fast(
+        api_dhat_regression_config_f().fail_fast(true).fixture(),
+        dhat_regression_config_f().fail_fast(true).fixture(),
     )]
-    #[case(
-        api::DhatRegressionConfig {
-            soft_limits: vec![(DhatMetrics::from(DhatMetric::TotalBytes), 5f64)],
-            hard_limits: Vec::default(),
-            fail_fast: Some(true),
-        },
-        DhatRegressionConfig {
-            soft_limits: vec![(TotalBytes, 5f64)],
-            hard_limits: Vec::default(),
-            fail_fast: true,
-        }
+    #[case::soft_limit(
+        api_dhat_regression_config_f()
+            .soft_limits(vec![(DhatMetrics::from(TotalBytes), 5f64)])
+            .fixture(),
+        dhat_regression_config_f().soft_limits(vec![(TotalBytes, 5f64)]).fixture(),
+    )]
+    #[case::hard_limit(
+        api_dhat_regression_config_f()
+            .hard_limits(vec![(DhatMetrics::from(TotalBytes), Limit::Int(10))])
+            .fixture(),
+        dhat_regression_config_f().hard_limits(vec![(TotalBytes, Metric::Int(10))]).fixture(),
     )]
     fn test_try_from_regression_config(
         #[case] input: api::DhatRegressionConfig,
