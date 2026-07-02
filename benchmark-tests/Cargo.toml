@@ -27,7 +27,7 @@ either-or-both = { workspace = true }
 fs_extra = { workspace = true }
 glob = { workspace = true }
 gungraun = { path = "../gungraun", features = ["client_requests"] }
-gungraun-runner = { path = "../gungraun-runner" }
+gungraun-runner = { path = "../gungraun-runner", features = ["__fixtures"] }
 minijinja = { workspace = true }
 once_cell = { workspace = true }
 pretty_assertions = { workspace = true }

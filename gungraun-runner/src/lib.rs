@@ -8,6 +8,9 @@
 pub mod api;
 #[cfg(feature = "runner")]
 pub mod error;
+#[cfg(any(feature = "__fixtures", test))]
+#[path = "../fixtures/mod.rs"]
+pub mod fixtures;
 #[cfg(any(feature = "runner", feature = "summary", feature = "schema"))]
 pub mod metrics;
 #[cfg(feature = "runner")]

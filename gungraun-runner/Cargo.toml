@@ -21,6 +21,7 @@ rust-version.workspace = true
 version.workspace = true
 
 [features]
+__fixtures = ["dep:bon", "runner"]
 api = ["dep:serde", "either-or-both/serde"]
 default = ["runner"]
 runner = [
@@ -65,6 +66,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 [dependencies]
 anyhow = { workspace = true, optional = true }
 bincode-next = { workspace = true, optional = true }
+bon = { workspace = true, optional = true }
 cargo_metadata = { workspace = true, optional = true }
 clap = { workspace = true, optional = true, features = [
   "derive",
