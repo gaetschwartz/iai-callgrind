@@ -583,14 +583,18 @@ impl Cachegrind {
     /// If set to true, then the benchmarks fail on the first encountered regression
     ///
     /// The default is `false` and the whole benchmark run fails with a regression error after all
-    /// benchmarks have been run.
+    /// benchmarks have been run. This option does not enable regression checks by itself. Configure
+    /// regression checks explicitly with [`Cachegrind::soft_limits`] or
+    /// [`Cachegrind::hard_limits`].
     ///
     /// # Examples
     ///
     /// ```
-    /// use gungraun::Cachegrind;
+    /// use gungraun::{Cachegrind, CachegrindMetric};
     ///
-    /// let config = Cachegrind::default().fail_fast(true);
+    /// let config = Cachegrind::default()
+    ///     .soft_limits([(CachegrindMetric::Ir, 5f64)])
+    ///     .fail_fast(true);
     /// ```
     pub fn fail_fast(&mut self, value: bool) -> &mut Self {
         if let Some(__internal::InternalToolRegressionConfig::Cachegrind(config)) =
@@ -905,14 +909,17 @@ impl Callgrind {
     /// If set to true, then the benchmarks fail on the first encountered regression
     ///
     /// The default is `false` and the whole benchmark run fails with a regression error after all
-    /// benchmarks have been run.
+    /// benchmarks have been run. This option does not enable regression checks by itself. Configure
+    /// regression checks explicitly with [`Callgrind::soft_limits`] or [`Callgrind::hard_limits`].
     ///
     /// # Examples
     ///
     /// ```
-    /// use gungraun::Callgrind;
+    /// use gungraun::{Callgrind, EventKind};
     ///
-    /// let config = Callgrind::default().fail_fast(true);
+    /// let config = Callgrind::default()
+    ///     .soft_limits([(EventKind::Ir, 5f64)])
+    ///     .fail_fast(true);
     /// ```
     pub fn fail_fast(&mut self, value: bool) -> &mut Self {
         if let Some(__internal::InternalToolRegressionConfig::Callgrind(config)) =
@@ -1448,14 +1455,17 @@ impl Dhat {
     /// If set to true, then the benchmarks fail on the first encountered regression
     ///
     /// The default is `false` and the whole benchmark run fails with a regression error after all
-    /// benchmarks have been run.
+    /// benchmarks have been run. This option does not enable regression checks by itself. Configure
+    /// regression checks explicitly with [`Dhat::soft_limits`] or [`Dhat::hard_limits`].
     ///
     /// # Examples
     ///
     /// ```
-    /// use gungraun::Dhat;
+    /// use gungraun::{Dhat, DhatMetric};
     ///
-    /// let config = Dhat::default().fail_fast(true);
+    /// let config = Dhat::default()
+    ///     .soft_limits([(DhatMetric::TotalBytes, 5f64)])
+    ///     .fail_fast(true);
     /// ```
     pub fn fail_fast(&mut self, value: bool) -> &mut Self {
         if let Some(__internal::InternalToolRegressionConfig::Dhat(config)) =

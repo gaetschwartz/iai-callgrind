@@ -54,43 +54,76 @@ impl TryFrom<api::CachegrindRegressionConfig> for CachegrindRegressionConfig {
             fail_fast,
         } = value;
 
-        let (soft_limits, hard_limits) = if soft_limits.is_empty() && hard_limits.is_empty() {
-            (
-                IndexMap::from([(CachegrindMetric::Ir, 10f64)]),
-                IndexMap::new(),
-            )
-        } else {
-            let hard_limits = hard_limits
-                .into_iter()
-                .flat_map(|(cachegrind_metrics, metric)| {
-                    IndexSet::from(cachegrind_metrics)
-                        .into_iter()
-                        .map(move |metric_kind| {
-                            Metric::from(metric)
-                                .try_convert(metric_kind)
-                                .ok_or_else(|| {
-                                    format!(
-                                        "Invalid hard limit for \
-                                         '{metric_kind:?}/{cachegrind_metrics:?}': Expected a \
-                                         'Int' but found '{metric:?}'"
-                                    )
-                                })
-                        })
-                })
-                .collect::<Result<IndexMap<CachegrindMetric, Metric>, String>>()?;
+        let hard_limits = hard_limits
+            .into_iter()
+            .flat_map(|(cachegrind_metrics, metric)| {
+                IndexSet::from(cachegrind_metrics)
+                    .into_iter()
+                    .map(move |metric_kind| {
+                        Metric::from(metric)
+                            .try_convert(metric_kind)
+                            .ok_or_else(|| {
+                                format!(
+                                    "Invalid hard limit for \
+                                     '{metric_kind:?}/{cachegrind_metrics:?}': Expected a 'Int' \
+                                     but found '{metric:?}'"
+                                )
+                            })
+                    })
+            })
+            .collect::<Result<IndexMap<CachegrindMetric, Metric>, String>>()?;
 
-            let soft_limits = soft_limits
-                .into_iter()
-                .flat_map(|(m, l)| IndexSet::from(m).into_iter().map(move |e| (e, l)))
-                .collect::<IndexMap<_, _>>();
-
-            (soft_limits, hard_limits)
-        };
+        let soft_limits = soft_limits
+            .into_iter()
+            .flat_map(|(m, l)| IndexSet::from(m).into_iter().map(move |e| (e, l)))
+            .collect::<IndexMap<_, _>>();
 
         Ok(Self {
             soft_limits: soft_limits.into_iter().collect(),
             hard_limits: hard_limits.into_iter().collect(),
             fail_fast: fail_fast.unwrap_or(false),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use rstest::rstest;
+
+    use super::*;
+    use crate::api::CachegrindMetrics;
+
+    #[rstest]
+    #[case(
+        api::CachegrindRegressionConfig {
+            soft_limits: Vec::default(),
+            hard_limits: Vec::default(),
+            fail_fast: Some(true),
+        },
+        CachegrindRegressionConfig {
+            soft_limits: Vec::default(),
+            hard_limits: Vec::default(),
+            fail_fast: true,
+        }
+    )]
+    #[case(
+        api::CachegrindRegressionConfig {
+            soft_limits: vec![(CachegrindMetrics::from(CachegrindMetric::Ir), 5f64)],
+            hard_limits: Vec::default(),
+            fail_fast: Some(true),
+        },
+        CachegrindRegressionConfig {
+            soft_limits: vec![(CachegrindMetric::Ir, 5f64)],
+            hard_limits: Vec::default(),
+            fail_fast: true,
+        }
+    )]
+    fn test_try_from_regression_config(
+        #[case] input: api::CachegrindRegressionConfig,
+        #[case] expected: CachegrindRegressionConfig,
+    ) {
+        let config = CachegrindRegressionConfig::try_from(input).unwrap();
+
+        assert_eq!(config, expected);
     }
 }
