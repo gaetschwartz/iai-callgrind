@@ -3,6 +3,11 @@ use std::time::Duration;
 
 use gungraun::ExitWith;
 use gungraun_runner::error::Error;
+use gungraun_runner::fixtures::{
+    assistant_f, config_f, force_shutdown_f, module_path_f, process_handler_f, run_options_f,
+    setup_child_f, teardown_child_f, test_file_f, tool_command_child_f, tool_command_f,
+    tool_config_f, tool_output_path_f,
+};
 use gungraun_runner::runner::args::NoCapture;
 use gungraun_runner::runner::common::AssistantKind;
 use gungraun_runner::runner::tool::run::RunOptions;
@@ -13,11 +18,6 @@ use crate::assert_not_elapsed;
 use crate::util::common::{
     BENCH_BIN_FAKE_EXE, ECHO_EXE, EXIT_WITH_EXE, FILE_EXISTS_EXE, TIMEOUT_EXE,
     cleanup_test_process_handler, tool_output_path_dump,
-};
-use crate::util::fixtures::{
-    assistant_f, config_f, force_shutdown_f, module_path_f, process_handler_f, run_options_f,
-    setup_child_f, teardown_child_f, test_file_f, tool_command_child_f, tool_command_f,
-    tool_config_f, tool_output_path_f,
 };
 
 #[test]

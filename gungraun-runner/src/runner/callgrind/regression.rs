@@ -57,35 +57,29 @@ impl TryFrom<api::CallgrindRegressionConfig> for CallgrindRegressionConfig {
             fail_fast,
         } = value;
 
-        let (soft_limits, hard_limits) = if soft_limits.is_empty() && hard_limits.is_empty() {
-            (IndexMap::from([(EventKind::Ir, 10f64)]), IndexMap::new())
-        } else {
-            let hard_limits = hard_limits
-                .into_iter()
-                .flat_map(|(callgrind_metrics, metric)| {
-                    IndexSet::from(callgrind_metrics)
-                        .into_iter()
-                        .map(move |metric_kind| {
-                            Metric::from(metric)
-                                .try_convert(metric_kind)
-                                .ok_or_else(|| {
-                                    format!(
-                                        "Invalid hard limit for \
-                                         '{metric_kind:?}/{callgrind_metrics:?}': Expected a \
-                                         'Int' but found '{metric:?}'"
-                                    )
-                                })
-                        })
-                })
-                .collect::<Result<IndexMap<EventKind, Metric>, String>>()?;
+        let hard_limits = hard_limits
+            .into_iter()
+            .flat_map(|(callgrind_metrics, metric)| {
+                IndexSet::from(callgrind_metrics)
+                    .into_iter()
+                    .map(move |metric_kind| {
+                        Metric::from(metric)
+                            .try_convert(metric_kind)
+                            .ok_or_else(|| {
+                                format!(
+                                    "Invalid hard limit for \
+                                     '{metric_kind:?}/{callgrind_metrics:?}': Expected a 'Int' \
+                                     but found '{metric:?}'"
+                                )
+                            })
+                    })
+            })
+            .collect::<Result<IndexMap<EventKind, Metric>, String>>()?;
 
-            let soft_limits = soft_limits
-                .into_iter()
-                .flat_map(|(m, l)| IndexSet::from(m).into_iter().map(move |e| (e, l)))
-                .collect::<IndexMap<_, _>>();
-
-            (soft_limits, hard_limits)
-        };
+        let soft_limits = soft_limits
+            .into_iter()
+            .flat_map(|(m, l)| IndexSet::from(m).into_iter().map(move |e| (e, l)))
+            .collect::<IndexMap<_, _>>();
 
         Ok(Self {
             soft_limits: soft_limits.into_iter().collect(),
@@ -214,7 +208,7 @@ mod tests {
     }
 
     #[rstest]
-    #[case::empty_then_default(Vec::<(EventKind, f64)>::new(), vec![(EventKind::Ir, 10f64)])]
+    #[case::empty(Vec::<(EventKind, f64)>::new(), Vec::<(EventKind, f64)>::new())]
     #[case::single(vec![(Ir, 0f64)], vec![(Ir, 0f64)])]
     #[case::two(vec![(Ir, 0f64), (Dr, 10f64)], vec![(Ir, 0f64), (Dr, 10f64)])]
     #[case::duplicate(vec![(Ir, 0f64), (Ir, 10f64)], vec![(Ir, 10f64)])]
@@ -253,7 +247,7 @@ mod tests {
     }
 
     #[rstest]
-    #[case::empty_then_default(Vec::<(EventKind, f64)>::new(), Vec::<(EventKind, f64)>::new())]
+    #[case::empty(Vec::<(EventKind, f64)>::new(), Vec::<(EventKind, f64)>::new())]
     #[case::single(vec![(Ir, 0)], vec![(Ir, 0)])]
     #[case::single_convert(vec![(L1HitRate, 1)], vec![(L1HitRate, 1f64)])]
     #[case::two(vec![(Ir, 0), (Dr, 2)], vec![(Ir, 0), (Dr, 2)])]
@@ -295,11 +289,7 @@ mod tests {
         V: Into<Metric>,
     {
         let expected = CallgrindRegressionConfig {
-            soft_limits: if hard_limits.is_empty() {
-                vec![(EventKind::Ir, 10f64)]
-            } else {
-                Vec::default()
-            },
+            soft_limits: Vec::default(),
             hard_limits: expected_hard_limits
                 .into_iter()
                 .map(|(m, l)| (m, l.into()))

@@ -1,3 +1,12 @@
+//! This module contains test fixtures for gungraun-runner types
+//!
+//! The fixtures are usable via the `__fixtures` feature gate in other packages than gungraun-runner
+//! and in the gungraun-runner crate itself within cfg(test) modules
+
+#![allow(missing_docs)]
+
+pub mod api;
+
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::ffi::OsString;
@@ -9,20 +18,26 @@ use std::sync::atomic::AtomicBool;
 use std::time::Duration;
 
 use bon::builder;
-use gungraun::{EntryPoint, ExitWith, SanitizeOutput, ValgrindTool};
-use gungraun_runner::api::{RawToolArgs, Tools};
-use gungraun_runner::runner::common::{Assistant, AssistantKind, Config, ModulePath};
-use gungraun_runner::runner::format::OutputFormat;
-use gungraun_runner::runner::meta::Metadata;
-use gungraun_runner::runner::tasks::ProcessHandler;
-use gungraun_runner::runner::tool::args::ToolArgs;
-use gungraun_runner::runner::tool::config::{ToolConfig, ToolConfigs, ToolFlamegraphConfig};
-use gungraun_runner::runner::tool::path::{ToolOutputPath, ToolOutputPathKind};
-use gungraun_runner::runner::tool::regression::ToolRegressionConfig;
-use gungraun_runner::runner::tool::run::{RunOptions, ToolCommand, ToolCommandChild};
-use gungraun_runner::summary::model::BaselineKind;
 
-use crate::util::common::DEFAULT_TOOL;
+use crate::api::{
+    CachegrindMetric, DhatMetric, EntryPoint, ExitWith, RawToolArgs, SanitizeOutput, Tools,
+    ValgrindTool,
+};
+use crate::metrics::model::Metric;
+use crate::runner::cachegrind::regression::CachegrindRegressionConfig;
+use crate::runner::common::{Assistant, AssistantKind, Config, ModulePath};
+use crate::runner::dhat::regression::DhatRegressionConfig;
+use crate::runner::format::OutputFormat;
+use crate::runner::meta::Metadata;
+use crate::runner::tasks::ProcessHandler;
+use crate::runner::tool::args::ToolArgs;
+use crate::runner::tool::config::{ToolConfig, ToolConfigs, ToolFlamegraphConfig};
+use crate::runner::tool::path::{ToolOutputPath, ToolOutputPathKind};
+use crate::runner::tool::regression::ToolRegressionConfig;
+use crate::runner::tool::run::{RunOptions, ToolCommand, ToolCommandChild};
+use crate::summary::model::BaselineKind;
+
+pub const DEFAULT_TOOL: ValgrindTool = ValgrindTool::Callgrind;
 
 #[builder(finish_fn = "fixture")]
 pub fn assistant_f(kind: AssistantKind) -> Assistant {
@@ -38,7 +53,7 @@ pub fn config_f(
     Config {
         bench_bin: bench_bin.to_path_buf(),
         bench_file: bench_file
-            .map_or_else(|| PathBuf::from("does_not_exist.rs"), |f| f.to_path_buf()),
+            .map_or_else(|| PathBuf::from("does_not_exist.rs"), Path::to_path_buf),
         meta: metadata.map_or_else(|| metadata_f().fixture(), Clone::clone),
         module_path: ModulePath::new("does_not_exist"),
         package_dir: PathBuf::from("test_package"),
@@ -73,6 +88,32 @@ pub fn command_child_f(exe: &Path, args: Option<&[&str]>, stdout: Option<StdStdi
     command
         .spawn()
         .expect("Spawning the process should succeed.")
+}
+
+#[builder(finish_fn = "fixture")]
+pub fn cachegrind_regression_config_f(
+    soft_limits: Option<Vec<(CachegrindMetric, f64)>>,
+    hard_limits: Option<Vec<(CachegrindMetric, Metric)>>,
+    fail_fast: Option<bool>,
+) -> CachegrindRegressionConfig {
+    CachegrindRegressionConfig {
+        soft_limits: soft_limits.map_or_else(Vec::default, |s| s.into_iter().collect()),
+        hard_limits: hard_limits.map_or_else(Vec::default, |h| h.into_iter().collect()),
+        fail_fast: fail_fast.unwrap_or(false),
+    }
+}
+
+#[builder(finish_fn = "fixture")]
+pub fn dhat_regression_config_f(
+    soft_limits: Option<Vec<(DhatMetric, f64)>>,
+    hard_limits: Option<Vec<(DhatMetric, Metric)>>,
+    fail_fast: Option<bool>,
+) -> DhatRegressionConfig {
+    DhatRegressionConfig {
+        soft_limits: soft_limits.map_or_else(Vec::default, |s| s.into_iter().collect()),
+        hard_limits: hard_limits.map_or_else(Vec::default, |h| h.into_iter().collect()),
+        fail_fast: fail_fast.unwrap_or(false),
+    }
 }
 
 #[builder(finish_fn = "fixture")]
@@ -309,7 +350,7 @@ pub fn tool_output_path_f(
     if !files.is_empty() {
         let dir = path.dest_dir();
         for (path, content) in files {
-            std::fs::write(dir.join(path), content).unwrap()
+            std::fs::write(dir.join(path), content).unwrap();
         }
     }
 

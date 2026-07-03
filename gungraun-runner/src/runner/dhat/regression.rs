@@ -54,38 +54,29 @@ impl TryFrom<api::DhatRegressionConfig> for DhatRegressionConfig {
             fail_fast,
         } = value;
 
-        let (soft_limits, hard_limits) = if soft_limits.is_empty() && hard_limits.is_empty() {
-            (
-                IndexMap::from([(DhatMetric::TotalBytes, 10f64)]),
-                IndexMap::new(),
-            )
-        } else {
-            let hard_limits = hard_limits
-                .into_iter()
-                .flat_map(|(dhat_metrics, metric)| {
-                    IndexSet::from(dhat_metrics)
-                        .into_iter()
-                        .map(move |metric_kind| {
-                            Metric::from(metric)
-                                .try_convert(metric_kind)
-                                .ok_or_else(|| {
-                                    format!(
-                                        "Invalid hard limit for \
-                                         '{metric_kind:?}/{dhat_metrics:?}': Expected a 'Int' but \
-                                         found '{metric:?}'"
-                                    )
-                                })
-                        })
-                })
-                .collect::<Result<IndexMap<DhatMetric, Metric>, String>>()?;
+        let hard_limits = hard_limits
+            .into_iter()
+            .flat_map(|(dhat_metrics, metric)| {
+                IndexSet::from(dhat_metrics)
+                    .into_iter()
+                    .map(move |metric_kind| {
+                        Metric::from(metric)
+                            .try_convert(metric_kind)
+                            .ok_or_else(|| {
+                                format!(
+                                    "Invalid hard limit for '{metric_kind:?}/{dhat_metrics:?}': \
+                                     Expected a 'Int' but found '{metric:?}'"
+                                )
+                            })
+                    })
+            })
+            .collect::<Result<IndexMap<DhatMetric, Metric>, String>>()?;
 
-            let soft_limits = soft_limits
-                .into_iter()
-                .flat_map(|(m, l)| IndexSet::from(m).into_iter().map(move |e| (e, l)))
-                .collect::<IndexMap<_, _>>();
+        let soft_limits = soft_limits
+            .into_iter()
+            .flat_map(|(m, l)| IndexSet::from(m).into_iter().map(move |e| (e, l)))
+            .collect::<IndexMap<_, _>>();
 
-            (soft_limits, hard_limits)
-        };
         Ok(Self {
             soft_limits: soft_limits.into_iter().collect(),
             hard_limits: hard_limits.into_iter().collect(),
@@ -102,8 +93,37 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
+    use crate::api::{DhatMetrics, Limit};
+    use crate::fixtures::api::dhat_regression_config_f as api_dhat_regression_config_f;
+    use crate::fixtures::dhat_regression_config_f;
     use crate::metrics::model::Metrics;
     use crate::runner::tool::regression::RegressionMetrics;
+
+    #[rstest]
+    #[case::fail_fast(
+        api_dhat_regression_config_f().fail_fast(true).fixture(),
+        dhat_regression_config_f().fail_fast(true).fixture(),
+    )]
+    #[case::soft_limit(
+        api_dhat_regression_config_f()
+            .soft_limits(vec![(DhatMetrics::from(TotalBytes), 5f64)])
+            .fixture(),
+        dhat_regression_config_f().soft_limits(vec![(TotalBytes, 5f64)]).fixture(),
+    )]
+    #[case::hard_limit(
+        api_dhat_regression_config_f()
+            .hard_limits(vec![(DhatMetrics::from(TotalBytes), Limit::Int(10))])
+            .fixture(),
+        dhat_regression_config_f().hard_limits(vec![(TotalBytes, Metric::Int(10))]).fixture(),
+    )]
+    fn test_try_from_regression_config(
+        #[case] input: api::DhatRegressionConfig,
+        #[case] expected: DhatRegressionConfig,
+    ) {
+        let config = DhatRegressionConfig::try_from(input).unwrap();
+
+        assert_eq!(config, expected);
+    }
 
     fn costs_fixture(costs: [u64; 2]) -> Metrics<DhatMetric> {
         Metrics::with_metric_kinds([(TotalBytes, costs[0]), (TotalBlocks, costs[1])])

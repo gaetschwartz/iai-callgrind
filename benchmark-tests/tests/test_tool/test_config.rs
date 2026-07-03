@@ -1,6 +1,5 @@
 use gungraun_runner::api::{Tool, Tools, ValgrindTool};
-
-use crate::util::fixtures::tool_configs_f;
+use gungraun_runner::fixtures::tool_configs_f;
 
 #[test]
 fn test_tool_configs_apply_cli_valgrind_args_to_default_tool() {
