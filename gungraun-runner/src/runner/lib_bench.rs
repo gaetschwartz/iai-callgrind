@@ -429,7 +429,7 @@ impl LibBench {
     /// [`Group`]: [crate::runner::common::Group]
     fn name(&self) -> String {
         if let Some(bench_id) = &self.id {
-            format!("{}.{}", &self.function_name, bench_id)
+            format!("{}.{}", self.function_name, bench_id)
         } else {
             self.function_name.clone()
         }

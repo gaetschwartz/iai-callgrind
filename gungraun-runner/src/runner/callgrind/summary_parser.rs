@@ -70,7 +70,7 @@ impl CallgrindParser for SummaryParser {
                 inner.add_iter_str(suffix.split_ascii_whitespace())?;
                 metrics = Some(inner);
 
-                trace!("Updated counters to '{:?}'", &metrics);
+                trace!("Updated counters to '{metrics:?}'");
             }
 
             if let Some(suffix) = line.strip_prefix("totals:") {
@@ -80,7 +80,7 @@ impl CallgrindParser for SummaryParser {
                 inner.add_iter_str(suffix.split_ascii_whitespace())?;
                 metrics = Some(inner);
 
-                trace!("Updated counters to '{:?}'", &metrics);
+                trace!("Updated counters to '{metrics:?}'");
                 break;
             }
         }

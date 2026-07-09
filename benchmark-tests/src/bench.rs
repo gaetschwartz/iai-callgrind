@@ -717,7 +717,7 @@ impl Benchmark {
             for tries in 0..=max_tries {
                 print_info(format!(
                     "Running {}: Group: ({}/{num_groups}), Run: ({}/{})",
-                    &self.config_name,
+                    self.config_name,
                     group_index + 1,
                     index + 1,
                     num_runs
@@ -785,7 +785,7 @@ impl Benchmark {
                     } else {
                         print_info(format!(
                             "Flaky test: Re-running {}: ({}/{max_tries})",
-                            &self.config_name,
+                            self.config_name,
                             tries + 1,
                         ));
                         self.restore(backup_dir.as_ref());

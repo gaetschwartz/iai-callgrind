@@ -734,34 +734,34 @@ impl BenchmarkId {
                 if index > MAX_LENGTH_ID {
                     return Err(format!(
                         "Invalid id '{}': Maximum length of {MAX_LENGTH_ID} bytes reached",
-                        &self.0,
+                        self.0,
                     ));
                 }
                 if byte.is_ascii() {
                     if !(byte.is_ascii_alphanumeric() || byte == b'_') {
                         return Err(format!(
                             "Invalid id '{}' at position {index}: Invalid character '{}'",
-                            &self.0,
+                            self.0,
                             char::from(byte)
                         ));
                     }
                 } else {
                     return Err(format!(
                         "Invalid id '{}' at position {index}: Encountered non-ascii character",
-                        &self.0
+                        self.0
                     ));
                 }
             }
         } else if first.is_ascii() {
             return Err(format!(
                 "Invalid id '{}': As first character is '{}' not allowed",
-                &self.0,
+                self.0,
                 char::from(first)
             ));
         } else {
             return Err(format!(
                 "Invalid id '{}': Encountered non-ascii character as first character",
-                &self.0
+                self.0
             ));
         }
         Ok(())

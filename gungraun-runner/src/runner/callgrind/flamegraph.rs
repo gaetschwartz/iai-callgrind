@@ -548,7 +548,7 @@ impl OutputPath {
             let entry = entry?;
             let file_name = entry.file_name().to_string_lossy().to_string();
             if let Some(suffix) =
-                file_name.strip_prefix(format!("callgrind.{}", &self.name).as_str())
+                file_name.strip_prefix(format!("callgrind.{}", self.name).as_str())
             {
                 let path = entry.path();
 
@@ -692,7 +692,7 @@ impl OutputPath {
             let path = entry?;
             let file_name = path.file_name().to_string_lossy().to_string();
             if let Some(suffix) =
-                file_name.strip_prefix(format!("callgrind.{}.", &self.name).as_str())
+                file_name.strip_prefix(format!("callgrind.{}.", self.name).as_str())
             {
                 if suffix.ends_with(to_match) {
                     paths.push(path.path());
