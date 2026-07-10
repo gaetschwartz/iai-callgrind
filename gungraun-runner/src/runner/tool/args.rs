@@ -338,8 +338,8 @@ impl ValgrindArgs {
         let mut vec: Vec<OsString> = vec![];
 
         vec.push(format!("--tool={}", self.tool.id()).into());
-        vec.push(format!("--error-exitcode={}", &self.error_exitcode).into());
-        vec.push(format!("--trace-children={}", &bool_to_yesno(self.trace_children)).into());
+        vec.push(format!("--error-exitcode={}", self.error_exitcode).into());
+        vec.push(format!("--trace-children={}", bool_to_yesno(self.trace_children)).into());
         vec.push(format!("--fair-sched={}", self.fair_sched).into());
         vec.push(format!("--vgdb={}", self.vgdb).into());
         if self.verbose {

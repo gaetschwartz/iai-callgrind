@@ -100,7 +100,7 @@ total heap usage: <__FILTER__>"
             err.write_all(&output.stderr).unwrap();
             panic!(
                 "Assertion of exit code failed: Actual: {}, Expected: {}",
-                &output.status.code().unwrap(),
+                output.status.code().unwrap(),
                 expected_code
             )
         }

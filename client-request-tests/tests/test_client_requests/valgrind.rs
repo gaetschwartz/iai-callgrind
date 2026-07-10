@@ -101,7 +101,7 @@ Rerun with --leak-check=full to see details of leaked memory"
             err.write_all(&output.stderr).unwrap();
             panic!(
                 "Assertion of exit code failed: Actual: {}, Expected: {}",
-                &output.status.code().unwrap(),
+                output.status.code().unwrap(),
                 expected_code
             )
         }
