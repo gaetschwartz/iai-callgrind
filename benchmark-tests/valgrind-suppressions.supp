@@ -20,6 +20,17 @@
    ...
 }
 {
+   drd_delete_current_info_drop_glue
+   drd:ConflictingAccess
+   ...
+   fun:delete_current_info
+   fun:*stack_overflow3imp12drop_handler*
+   fun:drop
+   fun:drop_glue<std::sys::pal::unix::stack_overflow::Handler>
+   fun:*Thread3new12thread_start*
+   ...
+}
+{
    memcheck_set_current_info
    Memcheck:Leak
    match-leak-kinds: reachable
