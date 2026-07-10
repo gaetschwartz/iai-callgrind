@@ -48,7 +48,7 @@ derive_more = { workspace = true, default-features = false, features = [
   "as_ref",
 ], optional = true }
 gungraun-macros = { path = "../gungraun-macros", version = "=0.9.1", optional = true }
-gungraun-runner = { path = "../gungraun-runner", version = "=0.19.3", default-features = false, features = [
+gungraun-runner = { path = "../gungraun-runner", version = "=0.19.4", default-features = false, features = [
   "api",
 ], optional = true }
 valgrind-requests = { path = "../valgrind-requests", version = "1", optional = true, default-features = false }

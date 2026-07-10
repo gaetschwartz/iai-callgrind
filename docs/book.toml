@@ -8,7 +8,7 @@ description = "Gungraun, a high-precision and consistent one-shot benchmarking f
 edition = "2024"
 
 [build]
-build-dir = "book/0.19.3"
+build-dir = "book/0.19.4"
 
 [output.html]
 git-repository-url = "https://github.com/gungraun/gungraun"
