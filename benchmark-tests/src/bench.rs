@@ -578,17 +578,6 @@ impl Benchmark {
         command.args(["bench", "--package", PACKAGE, "--bench", &self.bench_name]);
         command.args(cargo_args);
 
-        // FIX: A temporary measure due to intermittent errors in the ci when comparing two
-        // consecutive runs and there is no difference expected but there is a difference of 5
-        // instructions and a single data cache read in
-        // ./string/../sysdeps/x86_64/multiarch/memchr-avx2.S. Remove this fix if the glibc version
-        // has been updated including the ubuntu specific version which had recently been patched
-        // which might caused this issue.
-        let mut envs = envs.clone();
-        if !cfg!(target_os = "macos") {
-            envs.insert("RUSTFLAGS".to_owned(), "-C target-feature=-avx2".to_owned());
-        }
-
         if !envs.is_empty() {
             let envs_string = envs
                 .iter()
