@@ -36,6 +36,20 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.19.4] - 2026-07-10
+
+### Fixed
+
+- ([#684]): Default regression limits were applied if only regression fail-fast
+  was set in `Callgrind::fail_fast`, `Dhat::fail_fast`, and
+  `Cachegrind::fail_fast`.
+- ([#688]): Update dependencies. Fixes crossbeam-epoch RUSTSEC-2026-0204. Fixes
+  quick-xml (transitive dependency via inferno), RUSTSEC-2026-0194 and
+  RUSTSEC-2026-0195.
+
+[#684]: https://github.com/gungraun/gungraun/pull/684
+[#688]: https://github.com/gungraun/gungraun/pull/688
+
 ## [0.19.3] - 2026-06-27
 
 ### Added
