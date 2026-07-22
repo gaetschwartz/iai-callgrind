@@ -102,6 +102,7 @@ gmax
 gnuabi
 gnueabi
 gnueabihf
+graphify
 grcov
 gungnir
 gungraun
