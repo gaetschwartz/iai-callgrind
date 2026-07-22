@@ -528,6 +528,7 @@ impl BinaryBenchmark {
             vis: visibility,
             sig: item_fn.sig.clone(),
             block: item_fn.block.clone(),
+            modifiers: item_fn.modifiers.clone(),
         };
 
         let config = self.config.render_as_code();
@@ -567,6 +568,7 @@ impl BinaryBenchmark {
             vis: syn::Visibility::Inherited,
             sig: item_fn.sig.clone(),
             block: item_fn.block.clone(),
+            modifiers: item_fn.modifiers.clone(),
         };
 
         let mod_name = &item_fn.sig.ident;

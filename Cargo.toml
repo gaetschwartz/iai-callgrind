@@ -58,7 +58,7 @@ polonius-the-crab = { version = "0.5" }
 predicates = { version = "3" }
 pretty_assertions = "1.1"
 proc-macro-error3 = "3.0.0"
-proc-macro2 = "1.0.88"
+proc-macro2 = "1.0.91"
 quote = "1.0.35"
 regex = { version = "1.12" }
 rstest = { version = ">=0.17, <0.27", default-features = false }
@@ -74,7 +74,7 @@ shlex = { version = "2.0" }
 signal-hook = { version = "0.4" }
 simplematch = "0.3"
 strum = { version = "0.28" }
-syn = { version = "2.0.87", features = ["full", "extra-traits"] }
+syn = { version = "3", features = ["full", "extra-traits"] }
 tempfile = { version = "3.10.0" }
 thiserror = { version = "2.0.3" }
 trybuild = "1.0.18"
