@@ -121,8 +121,8 @@ generate-lockfile:
 
 # Generate and update Cargo.lock with cargo resolver v3 fallback (Uses: 'cargo +stable')
 [group('dependencies')]
-update-dependencies:
-    CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS=fallback cargo +stable update
+update-dependencies *args:
+    CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS=fallback cargo +stable update {{ args }}
 
 # Install git hooks (Uses: 'coreutils')
 [group('init workspace')]

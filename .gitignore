@@ -9,6 +9,9 @@ callgrind.out*
 callgrind.log*
 cachegrind.out*
 cachegrind.log*
+graphify-out/
+entities.json
+mempalace.yaml
 
 # Swap
 [._]*.s[a-v][a-z]

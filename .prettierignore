@@ -8,3 +8,6 @@ docs/theme
 *.supp
 *.stderr
 *.stdout
+graphify-out/
+.omo/
+.serena

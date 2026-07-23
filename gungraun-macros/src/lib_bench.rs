@@ -897,6 +897,7 @@ fn create_item_fn(item_fn: &ItemFn) -> ItemFn {
         vis,
         sig: item_fn.sig.clone(),
         block,
+        modifiers: item_fn.modifiers.clone(),
     }
 }
 
@@ -908,6 +909,7 @@ fn create_item_fn(item_fn: &ItemFn) -> ItemFn {
         vis,
         sig: item_fn.sig.clone(),
         block: item_fn.block.clone(),
+        modifiers: item_fn.modifiers.clone(),
     }
 }
 
